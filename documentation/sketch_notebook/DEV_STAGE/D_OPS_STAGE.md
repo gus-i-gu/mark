@@ -1,4 +1,4 @@
-# [M] Session 003 | 11:??_07_07_2026 | Markei
+# [M] Session 004 | 11:??_07_07_2026 | Markei
 
 # D_OPS_STAGE — Main Operational Materialization Stage
 
@@ -7,318 +7,392 @@
 > - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 > - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 >
-> Purpose: Codex-ready operational implementation brief for the current StoragePage runtime failure.
+> Purpose: Codex-ready operational implementation brief for making Markei packageable as a simple Windows desktop app.
 > Status: Main-approved for Codex materialization after user review.
 
 ---
 
 # 1. Main Operational Synthesis
 
-The previous Repository ImportError is no longer the active blocker.
-
-Operational evidence confirms `app/core/repository.py` now defines a module-level `Repository` class and initializes a SQLite connection/cursor.
-
-The active failure is now:
+The new milestone is:
 
 ```text
-KeyError: "color"
+Make Markei installable/executable and usable by non-developer users.
 ```
 
-The execution path is:
+Operational, Design, and Didactic stages agree that this is not merely an `.exe` question.
+
+The central operational blocker is path/data separation:
 
 ```text
-python main.py
-↓
-app/main.py
-↓
-MainWindow.__init__
-↓
-StoragePage(self)
-↓
-StoragePage.__init__
-↓
-StoragePage.build_ui()
-↓
-StoragePage.load_products()
-↓
-ProductService.get_price_variation(product)
-↓
-StoragePage expects variation["color"]
-↓
-KeyError: "color"
+Program files/resources
+    must be bundled with the app.
+
+User data
+    must live in a user-writable app data folder.
 ```
 
-The immediate operational cause is a return-shape mismatch:
-
-- `StoragePage.load_products()` expects `variation["color"]`.
-- `ProductService.get_price_variation()` returns dictionaries containing `delta`, `percentage`, and `text`, but no `color` key.
-
-Therefore the failing source target is:
+Current development behavior is repository-relative:
 
 ```text
-app/desktop/ui/pages/storage_page.py
+app/database/schema.sql
+app/database/seed.sql
+app/database/market.sqlite
 ```
 
-`app/core/services.py` is relevant for inspection but should not be patched to return Qt objects.
+This is acceptable while developing from a source checkout, but it is fragile for a packaged Windows desktop app.
+
+The first reliable packaging milestone should therefore be:
+
+```text
+Source app continues to run.
+Database initialization becomes packaging-safe.
+PyInstaller onedir build can launch.
+Packaged app can create/read/write user data outside the bundle.
+```
 
 ---
 
-# 2. Shiboken Warning Synthesis
+# 2. Approved Operational Direction
 
-The terminal also reports:
+Use PyInstaller `onedir` as the first packaging path.
 
-```text
-Shiboken::Conversions::_pythonToCppCopy:
-Cannot copy-convert (...) list to C++.
-```
-
-Operational analysis identifies the likely cause in `StoragePage.build_ui()`:
-
-```python
-self.table.setHorizontalHeaderLabels([
-    [
-        "Product",
-        "Brand",
-        "Quantity",
-        "Price",
-        "Δ Price",
-        "Cycle",
-        "Next Purchase",
-        "Remaining",
-        "Status",
-        "ID",
-    ]
-])
-```
-
-`setHorizontalHeaderLabels()` expects a flat list of strings, but StoragePage passes a nested list.
-
-This warning is independent from the `KeyError`:
-
-- Shiboken warning occurs during table header setup.
-- `KeyError: "color"` occurs later during row rendering.
-
-Both should be repaired in the same focused StoragePage patch because both are in the same file and affect the same startup path.
-
----
-
-# 3. Main Operational Decision
-
-Approved operational patch scope:
-
-```text
-app/desktop/ui/pages/storage_page.py
-```
-
-Do not modify for this task unless strictly necessary:
-
-```text
-app/core/services.py
-app/core/repository.py
-app/core/database.py
-app/core/models.py
-```
+Do not begin with `onefile`.
 
 Reason:
 
-- The service/repository read path is coherent enough to reach UI row rendering.
-- The runtime blocker is in UI consumption and UI table setup.
-- The design boundary requires Qt presentation values to remain in the UI layer.
+- `onedir` is easier to inspect and debug;
+- PySide6/Qt support files are easier to verify;
+- missing schema/resource files are easier to diagnose;
+- `onefile` complicates temporary extraction and writable SQLite paths.
+
+The first user-facing artifact is not a polished installer yet.
+
+Approved first artifact:
+
+```text
+A zipped dist/Markei folder containing Markei.exe and support files.
+```
+
+Installer tooling such as Inno Setup, NSIS, WiX, or MSIX is deferred until the runtime path behavior is stable.
 
 ---
 
-# 4. Required Code Changes
+# 3. Required Code / Repository Changes
 
-## 4.1 Fix header label list shape
+## 3.1 Make database paths packaging-safe
 
-In `StoragePage.build_ui()`, replace the nested list passed to `setHorizontalHeaderLabels()` with a flat list:
+Primary targets:
 
-```python
-self.table.setHorizontalHeaderLabels([
-    "Product",
-    "Brand",
-    "Quantity",
-    "Price",
-    "Δ Price",
-    "Cycle",
-    "Next Purchase",
-    "Remaining",
-    "Status",
-    "ID",
-])
+```text
+app/core/config.py
+app/core/database.py
 ```
 
-Expected effect:
+Optional new helper target if cleaner:
 
-- removes the Shiboken list-to-C++ conversion warning from this table-header call;
-- preserves the existing 10-column table structure.
-
-## 4.2 Fix price variation color handling in UI
-
-In `StoragePage`, add a UI-local helper that derives presentation color from semantic price variation data:
-
-```python
-def price_variation_color(self, variation: dict) -> QColor:
-    delta = variation.get("delta")
-
-    if delta is None or delta == 0:
-        return QColor(150, 150, 150)
-
-    if delta > 0:
-        return QColor(230, 126, 34)
-
-    return QColor(46, 204, 113)
+```text
+app/core/paths.py
 ```
 
-Then replace direct access to:
+Required behavior:
+
+1. Schema/seed files remain bundled resources.
+2. The live SQLite database file is created in a user-writable app data directory.
+3. The app must work both from source and from a frozen PyInstaller build.
+4. The app must not write the live user database inside the frozen application bundle.
+
+Conceptual path split:
+
+```text
+RESOURCE_DATABASE_DIR
+    location containing bundled schema.sql and seed.sql
+
+USER_DATABASE_DIR
+    user-writable Markei data folder
+
+DATABASE_PATH
+    USER_DATABASE_DIR / market.sqlite
+
+SCHEMA_PATH
+    RESOURCE_DATABASE_DIR / schema.sql
+
+SEED_PATH
+    RESOURCE_DATABASE_DIR / seed.sql
+```
+
+Windows target for user data:
+
+```text
+%LOCALAPPDATA%\Markei\market.sqlite
+```
+
+Implementation may use the standard library only, for example:
 
 ```python
-variation["color"]
+Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "Markei"
+```
+
+Do not add `platformdirs` unless Codex determines it is necessary and records the reason. The preferred first patch should avoid adding a new runtime dependency.
+
+## 3.2 Add frozen resource path handling
+
+When running from source, resource paths should resolve to the repository/project resource location.
+
+When frozen by PyInstaller, resource paths should resolve through the PyInstaller runtime resource base.
+
+Typical detection pattern:
+
+```python
+if getattr(sys, "frozen", False):
+    resource_base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+else:
+    resource_base = project_root
+```
+
+Codex should inspect actual current paths before choosing exact implementation.
+
+## 3.3 Preserve safe initialization behavior
+
+Current initialization deletes an existing database file before rebuilding.
+
+For normal startup/user-run behavior:
+
+```text
+If market.sqlite is missing:
+    create it from schema.sql and optional seed.sql.
+
+If market.sqlite exists:
+    connect to it; do not delete it.
+```
+
+Destructive reset behavior must not happen during normal startup.
+
+If a reset helper remains, it should be explicit and not called automatically by `connect()`.
+
+## 3.4 Add development packaging dependency
+
+Create or update:
+
+```text
+requirements-dev.txt
 ```
 
 with:
 
-```python
-self.price_variation_color(variation)
+```text
+pyinstaller
 ```
 
-Expected effect:
+Do not add PyInstaller to `requirements.txt` unless there is already a project convention that runtime and dev dependencies are combined.
 
-- removes `KeyError: "color"`;
-- keeps `ProductService.get_price_variation()` semantic and UI-free;
-- keeps `QColor` in the desktop UI layer.
+## 3.5 Add a Windows build script or runbook
 
-## 4.3 Fix nearby StoragePage double-click ID bug
+Preferred target:
 
-Operational analysis found a nearby bug in the same file:
-
-```python
-product_id = self.table.item(row, 7).text()
+```text
+scripts/build_windows.ps1
 ```
 
-Column `7` is `Remaining`, not `ID`. The ID column is set at index `9`.
+If the `scripts/` directory does not exist, Codex may create it.
 
-Update to:
+The first build script should:
 
-```python
-product_id = self.table.item(row, 9).text()
+1. run from repository root or check that it is in repository root;
+2. call PyInstaller using module mode;
+3. use `--clean`;
+4. use `--name Markei`;
+5. use `--onedir`;
+6. include bundled database resources;
+7. build from `main.py`.
+
+Initial command shape:
+
+```powershell
+python -m PyInstaller --clean --name Markei --onedir --add-data "app/database;app/database" main.py
 ```
 
-This is approved in the same focused patch because it is in the same file, uses the same table schema, and will likely surface immediately after StoragePage starts rendering correctly.
+Add `--windowed` only after console-mode build is validated.
 
-## 4.4 Make optional brand rendering safe
+The build script may support a `-Windowed` flag or similar, but keep it simple.
 
-Operational analysis also found:
+## 3.6 Add or update operational runbook material
 
-```python
-QTableWidgetItem(product.brand)
+Create or update permanent operational notes under:
+
+```text
+documentation/sketch_notebook/operational/
 ```
 
-`Product.brand` is optional. If the current code passes `None` to `QTableWidgetItem`, PySide conversion may fail or warn.
+Suggested file if absent:
 
-Patch this in `StoragePage.load_products()` to use a string fallback:
-
-```python
-QTableWidgetItem(product.brand or "—")
+```text
+documentation/sketch_notebook/operational/PACKAGING_WINDOWS.md
 ```
 
-or equivalent.
+This runbook should include:
 
-This is approved because it is a minimal StoragePage UI-safety fix and may reduce remaining Qt conversion issues.
+- source validation commands;
+- PyInstaller install command;
+- diagnostic console build command;
+- windowed build command after validation;
+- expected output path `dist/Markei/Markei.exe`;
+- external-machine validation checklist;
+- warning that users must keep the entire `dist/Markei/` folder together for `onedir` builds;
+- note that a polished installer is a later milestone.
 
 ---
 
-# 5. Do Not Do
+# 4. Do Not Do
 
 Codex must not:
 
-1. Add `QColor` imports to `app/core/services.py`.
-2. Add a `"color"` key to `ProductService.get_price_variation()`.
-3. Move price variation calculations into `StoragePage` beyond presentation-color mapping.
-4. Change repository/database/model code for this runtime patch.
-5. Introduce a broad UI architecture refactor.
+1. Start with PyInstaller `--onefile`.
+2. Add cloud sync, accounts, analytics, scraping, barcode services, or remote APIs.
+3. Move the project to a web/API architecture.
+4. Replace SQLite.
+5. Change the full UI navigation in this operational packaging patch unless explicitly directed by F_DSN_STAGE and scope is approved.
 6. Modify methodology files.
+7. Treat `app/database/market.sqlite` inside the bundle as the final user-data strategy.
+8. Delete user data during normal startup.
 
 ---
 
-# 6. Required Inspection Before Patch
+# 5. Required Inspection Before Patch
 
-Before editing, Codex should search for these patterns:
+Inspect:
 
 ```text
-variation["color"]
-setHorizontalHeaderLabels([
-QTableWidgetItem(product.brand)
-self.table.item(row, 7)
+main.py
+app/__main__.py
+app/main.py
+app/core/config.py
+app/core/database.py
+app/core/repository.py
+app/database/schema.sql
+app/database/seed.sql
+requirements.txt
 ```
 
-If equivalent `variation["color"]` usage appears outside StoragePage, report it before expanding scope.
+Search for direct assumptions about:
 
-If equivalent nested header lists appear in other pages, report them. Patch only if they are clearly the same table-label bug and within desktop UI pages.
+```text
+app/database/market.sqlite
+DATABASE_PATH
+DATABASE_DIR
+SCHEMA_PATH
+SEED_PATH
+Path(__file__)
+sys._MEIPASS
+```
+
+Report any discovered path assumptions before finalizing the patch.
 
 ---
 
-# 7. Required Validation Commands
+# 6. Validation Commands
 
-After patching, run:
+After patching, run from repository root:
 
-```bash
+```powershell
 python -m compileall app
 ```
 
-Then run a service smoke test:
+Then source runtime validation:
 
-```bash
-python - <<'PY'
-from app.core.services import ProductService
-
-service = ProductService()
-products = service.get_products()
-print("products", len(products))
-if products:
-    print(service.get_price_variation(products[0]))
-service.close()
-PY
-```
-
-Then run the app:
-
-```bash
+```powershell
 python main.py
 ```
 
-If the local execution convention uses module mode, also try:
+Alternative source command:
 
-```bash
-python -m app.main
+```powershell
+python -m app
+```
+
+Database validation:
+
+```powershell
+python - <<'PY'
+from app.core import database
+print("database", database.DATABASE_PATH)
+print("schema", database.SCHEMA_PATH)
+print("seed", database.SEED_PATH)
+connection = database.connect()
+print("connected")
+connection.close()
+PY
+```
+
+Build dependency validation:
+
+```powershell
+python -m pip show pyinstaller
+```
+
+If missing:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+```
+
+First diagnostic build:
+
+```powershell
+python -m PyInstaller --clean --name Markei --onedir --add-data "app/database;app/database" main.py
+```
+
+Run packaged app:
+
+```powershell
+.\dist\Markei\Markei.exe
+```
+
+If a build script is added, also validate:
+
+```powershell
+.\scripts\build_windows.ps1
 ```
 
 ---
 
-# 8. Expected Results
+# 7. Manual Validation Checklist
 
-Expected after patch:
+Codex should report what it could and could not validate.
 
-1. `python -m compileall app` succeeds.
-2. Service smoke test prints a dictionary with `delta`, `percentage`, and `text`.
-3. StoragePage no longer raises `KeyError: "color"`.
-4. The Shiboken nested-list warning disappears if it came from `setHorizontalHeaderLabels()`.
-5. MainWindow opens far enough to show Register, Storage, Shortage, Market, History, and Settings tabs.
+Manual user-data test:
 
-If a new traceback appears, Codex must report it exactly and avoid speculative fixes beyond this patch scope.
+1. Launch source app.
+2. Confirm database path points to user app data or approved dev/user data path.
+3. Add one purchase.
+4. Close app.
+5. Reopen app.
+6. Confirm data persists.
+7. Build `onedir` executable.
+8. Launch `dist/Markei/Markei.exe`.
+9. Add one purchase in packaged app.
+10. Close packaged app.
+11. Reopen packaged app.
+12. Confirm data persists.
+13. Confirm the app does not require Python to be manually invoked by the user.
+
+If GUI validation cannot be completed in the current environment, Codex must say so clearly and provide the exact command outputs it did obtain.
 
 ---
 
-# 9. Expected Codex Report
+# 8. Expected Codex Report
 
 Codex must report:
 
 1. files changed;
-2. exact StoragePage changes made;
-3. whether `ProductService` remained UI-free;
-4. whether nested header labels were fixed;
-5. whether `variation["color"]` remains anywhere;
-6. whether the double-click ID column was corrected;
-7. validation commands run;
-8. command outputs;
-9. remaining risks.
+2. database path strategy chosen;
+3. where `schema.sql` and `seed.sql` are read from;
+4. where `market.sqlite` is created;
+5. whether destructive initialization was avoided during normal startup;
+6. whether `requirements-dev.txt` was created/updated;
+7. whether `scripts/build_windows.ps1` was created;
+8. operational runbook files created/updated;
+9. validation commands run;
+10. command outputs;
+11. whether `dist/Markei/Markei.exe` was produced;
+12. remaining risks.
