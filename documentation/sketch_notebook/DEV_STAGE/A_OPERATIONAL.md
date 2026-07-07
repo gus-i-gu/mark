@@ -41,7 +41,6 @@ Next operational step:
 restore `Repository` as a module-scope class, move persistence methods into it, fix `cursor_execute`, and validate imports before running the UI.
 
 The attached CS & Coding methodology emphasizes that debugging should expose architectural reasoning and that knowledge should precede modification, which fits this diagnosis: first identify the broken layer boundary, then patch.
-=======
 # [O] Session [001] | 09:44_07_07_2026 | Markei
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -675,6 +674,4 @@ Then continue with the repository import-error patch only after Main Chat synthe
 ## File updated in this continuation
 
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
-
->>>>>>> 4b8fcc6c539762428e3dfa866791723fc524a956
 

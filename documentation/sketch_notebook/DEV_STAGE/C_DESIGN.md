@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # DEV_TRACK — C_DESIGN
 
 ## 2026-07-07 — Design Evaluation: ProductService Repository Boundary
@@ -182,7 +181,6 @@ Design decision staged for Main Chat synthesis.
 Permanent notebook files were not modified.
 
 Implementation is not performed in this Design Chat pass.
-=======
 # [D] Session 001 | 09:45_07_07_2026 | Markei
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -553,4 +551,3 @@ File updated:
 Commit scope:
 
 - This file only.
->>>>>>> 5fe23b36740828837438852e4bdd7ee24e4739bf
