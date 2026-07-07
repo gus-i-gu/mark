@@ -10,8 +10,6 @@ VERSION = "0.1.0"
 
 DATABASE_NAME = "market.sqlite"
 
-DATABASE_DIR_NAME = "app/database"
-
 SCHEMA_NAME = "schema.sql"
 
 SEED_NAME = "seed.sql"

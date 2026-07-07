@@ -58,3 +58,37 @@ PySide6 / Shiboken
     -> Python-to-C++ type conversion
     -> warning may be separate from Python exception
 ```
+
+```text
+Developer-run project
+    -> Python interpreter
+    -> virtual environment
+    -> requirements.txt
+    -> terminal command
+    -> repository-relative paths
+
+User-run application
+    -> executable
+    -> installer or portable folder
+    -> app data folder
+    -> visible interface
+    -> persistent user data
+
+Packaging
+    -> dependencies
+    -> bundled resources
+    -> executable
+    -> release artifact
+
+Local database
+    -> SQLite database file
+    -> user data ownership
+    -> app data folder
+    -> backup/export later
+
+Runtime path contract
+    -> source-tree paths
+    -> frozen application paths
+    -> bundled resources
+    -> user-writable data paths
+```

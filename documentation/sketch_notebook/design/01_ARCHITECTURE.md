@@ -51,3 +51,23 @@ text color, or background color.
 PySide6/Shiboken warnings are UI binding signals unless evidence shows Qt
 objects leaking into core layers. They should not be treated as architectural
 proof by themselves.
+
+## Packaging Resource Boundary
+
+Core dependency direction remains:
+
+```text
+UI -> ProductService -> Repository -> database.py -> SQLite
+```
+
+Installed builds must separate bundled application resources from
+user-writable runtime data.
+
+`schema.sql` and `seed.sql` are application resources.
+
+`market.sqlite` is user data.
+
+User-facing navigation may simplify internal concepts without renaming internal
+modules immediately. Storage, Shortage, and Market are domain/status
+interpretations. In the simplified UI they may be presented as Inventory
+sections or filters: In stock, Ending soon, and Buy again.

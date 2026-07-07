@@ -74,3 +74,36 @@ presentation metadata: `color`.
 
 The error teaches the difference between domain/business data and UI
 presentation data.
+
+## From developer-run script to user-run desktop application
+
+Markers:
+
+- &&& Script vs Application
+- &&& Executable
+- &&& Installer
+- &&& User-Facing Interface
+- &&& Developer Interface
+- &&& Release Artifact
+- &&& User Data Ownership
+- %%% Dependency
+- %%% Packaging
+- %%% Frozen Python Application
+- &%% Local Database
+- &%% App Data Folder
+- &%% Packaged Runtime
+- &%% Runtime Path Contract
+
+Core explanation:
+
+A developer-run Markei assumes a Python environment, a repository folder,
+installed packages, and terminal knowledge.
+
+A user-run Markei should launch like a normal desktop app, hide Python startup
+details, and store user data in a stable user-owned location.
+
+Project connection:
+
+Markei already has a PySide6 interface, but it still needs packaging-safe
+runtime paths and user-data handling before it can be trusted as an installable
+desktop application.

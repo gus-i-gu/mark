@@ -35,13 +35,15 @@ Database Manager
 SQLite
 """
 
+import os
+
 import sqlite3
+
+import sys
 
 from pathlib import Path
 
 from .config import (
-
-    DATABASE_DIR_NAME,
 
     DATABASE_NAME,
 
@@ -58,34 +60,47 @@ from .config import (
 #
 ###########################################################
 
-# app/core/
+def resource_base() -> Path:
+    """
+    Return the base directory for bundled application resources.
+    """
 
-APP_DIR = Path(__file__).resolve().parent
+    if getattr(sys, "frozen", False):
 
+        return Path(
 
-# markei/
+            getattr(sys, "_MEIPASS", Path(sys.executable).parent)
 
-PROJECT_DIR = APP_DIR.parent.parent
+        )
 
-
-# markei/database/
-
-DATABASE_DIR = PROJECT_DIR / DATABASE_DIR_NAME
-
-
-# markei/database/market.sqlite
-
-DATABASE_PATH = DATABASE_DIR / DATABASE_NAME
+    return Path(__file__).resolve().parents[2]
 
 
-# markei/database/schema.sql
+def user_data_dir() -> Path:
+    """
+    Return Markei's user-writable data directory.
+    """
 
-SCHEMA_PATH = DATABASE_DIR / SCHEMA_NAME
+    local_app_data = os.environ.get("LOCALAPPDATA")
+
+    if local_app_data:
+
+        return Path(local_app_data) / "Markei"
+
+    return Path.home() / "AppData" / "Local" / "Markei"
 
 
-# markei/database/seed.sql
+RESOURCE_DATABASE_DIR = resource_base() / "app" / "database"
 
-SEED_PATH = DATABASE_DIR / SEED_NAME
+USER_DATABASE_DIR = user_data_dir()
+
+DATABASE_DIR = USER_DATABASE_DIR
+
+DATABASE_PATH = USER_DATABASE_DIR / DATABASE_NAME
+
+SCHEMA_PATH = RESOURCE_DATABASE_DIR / SCHEMA_NAME
+
+SEED_PATH = RESOURCE_DATABASE_DIR / SEED_NAME
 
 
 ###########################################################
@@ -169,9 +184,13 @@ def database_exists() -> bool:
 #
 ###########################################################
 
-def initialize() -> None:
+def initialize(
+
+    recreate: bool = False,
+
+) -> None:
     """
-    Create a fresh database.
+    Create the user database from bundled resources.
 
     Steps
 
@@ -192,7 +211,7 @@ def initialize() -> None:
     # Create directory
     #######################################################
 
-    DATABASE_DIR.mkdir(
+    USER_DATABASE_DIR.mkdir(
 
         parents=True,
 
@@ -202,10 +221,14 @@ def initialize() -> None:
 
 
     #######################################################
-    # Recreate database
+    # Preserve existing user data unless explicitly reset
     #######################################################
 
     if DATABASE_PATH.exists():
+
+        if not recreate:
+
+            return
 
         DATABASE_PATH.unlink()
 
@@ -376,7 +399,11 @@ def reset() -> None:
     and rebuild it from schema.sql.
     """
 
-    initialize()
+    initialize(
+
+        recreate=True,
+
+    )
 
 
 ###########################################################
@@ -387,7 +414,11 @@ def reset() -> None:
 
 if __name__ == "__main__":
 
-    initialize()
+    initialize(
+
+        recreate=True,
+
+    )
 
     print(
 

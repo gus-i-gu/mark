@@ -180,3 +180,101 @@ The binding layer used by PySide6 to convert between Python and Qt/C++ values.
 ## type conversion
 
 Changing or adapting a value from one runtime representation to another.
+
+## script
+
+A file run directly by a developer or command, often assuming a source checkout.
+
+## application
+
+A user-facing program with a stable launch path and persistent behavior.
+
+## entry point
+
+The file or module used to start the app, such as `main.py`.
+
+## executable
+
+A launchable program file, such as `Markei.exe`.
+
+## installer
+
+A tool that places an application on a user's system. Installer polish is later
+than the first `onedir` build.
+
+## dependency
+
+Software the project needs in order to run or build.
+
+## runtime dependency
+
+A dependency needed by users when the app runs.
+
+## development dependency
+
+A dependency needed by developers to build, test, or package the app.
+
+## packaging
+
+Preparing the app and its resources so it can run outside the source checkout.
+
+## release artifact
+
+The output given to testers or users, such as a zipped `dist/Markei` folder.
+
+## frozen Python application
+
+A Python application bundled so users do not manually install Python packages.
+
+## local database
+
+A database stored on the user's machine.
+
+## SQLite database file
+
+The single-file database used by Markei for local persistence.
+
+## app data folder
+
+A user-specific folder for persistent app data. For Markei, this contains the
+live `market.sqlite` database.
+
+## user data
+
+Information owned by the user, including their saved products and purchases.
+
+## program files
+
+Installed or bundled application files, distinct from user data.
+
+## resource file
+
+A file shipped with the app, such as `schema.sql` or `seed.sql`.
+
+## bundled resource
+
+A resource included inside the packaged app folder.
+
+## runtime path
+
+The actual filesystem location used while the app is running.
+
+## path assumption
+
+Code expecting files to exist at a specific location.
+
+## user-facing interface
+
+The visible app surface a non-developer uses.
+
+## developer interface
+
+Commands, source paths, and tooling used by developers.
+
+## build artifact
+
+A generated output from the build process.
+
+## portable app folder
+
+A folder containing an executable and support files that must stay together.

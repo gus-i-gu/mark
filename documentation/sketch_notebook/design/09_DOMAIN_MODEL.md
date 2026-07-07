@@ -34,3 +34,13 @@ Presentation meaning:
 The first belongs to `ProductService`.
 
 The second belongs to `StoragePage` or another UI-side presentation component.
+
+## Local User Data Boundary
+
+`market.sqlite` is not a bundled program resource.
+
+It is user-owned application data.
+
+The database schema and seed files define how the first database is created.
+After creation, the live database belongs to the user and should not be
+destructively recreated during normal startup.
