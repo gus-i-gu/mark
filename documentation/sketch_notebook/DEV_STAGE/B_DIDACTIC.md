@@ -1,4 +1,4 @@
-# [A] Session 002 | 10:44_07_07_2026 | Markei
+# [A] Session 003 | 10:44_07_07_2026 | Markei
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROLE
@@ -8,21 +8,24 @@ Didactic Chat.
 
 Responsibility: learning, glossary candidates, concept mapping, and KANBAN suggestions.
 
-This stage captures the didactic interpretation of the active runtime failure:
+This stage explains the concepts needed to understand turning Markei from a developer-run Python app into a user-run application.
+
+Focus:
 
 ```text
-KeyError: "color"
+script vs application
+executable
+installer
+dependency
+packaging
+local database
+app data folder
+user-facing interface vs developer interface
 ```
 
-Context:
+This is staged material only. Main Chat must synthesize before any permanent didactic, glossary, KANBAN, design, operational, or application update.
 
-```text
-StoragePage initialization fails because some code expects a dictionary entry named "color" and that entry is not present.
-```
-
-This is staged material only. Main Chat must synthesize before any permanent didactic, glossary, KANBAN, design, or application update.
-
-No application code is modified by this report.
+No application source code is modified by this report.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 BOOTSTRAP NOTES
@@ -46,683 +49,881 @@ Routing constraint observed:
 - Didactic Chat does not modify methodology files.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. DIDACTIC OBSERVATIONS
+1. PREVIOUS CONCEPTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 1.1 The failure is conceptually about an expectation mismatch
+Markei currently exists primarily as a development-time Python project.
 
-`KeyError: "color"` means Python attempted to access the key `"color"` in a mapping object, usually a dictionary, but that key was not present at runtime.
-
-In Markei terms, some part of `StoragePage` initialization is receiving or building structured data for display and expects each item to include a `color` field.
-
-The educational value is that the error exposes a contract mismatch:
+That means the human developer runs it from the repository, usually with a command such as:
 
 ```text
-consumer expectation: item["color"] exists
-actual runtime data: item does not contain "color"
+python -m app
 ```
 
-This is not necessarily a database failure by itself.
+or another Python entry command defined by the project.
 
-It is a failure at the boundary where one part of the program expects a data shape that another part did not provide.
-
-## 1.2 A Python dictionary is a key-value structure, not a guaranteed schema
-
-A dictionary can hold arbitrary key-value pairs:
-
-```python
-item = {
-    "product_name": "Rice",
-    "price": 10.50,
-}
-```
-
-Accessing a present key works:
-
-```python
-item["price"]
-```
-
-Accessing a missing key fails:
-
-```python
-item["color"]
-```
-
-The program fails because normal dictionary indexing is strict: it assumes the key must exist.
-
-That strictness is useful when missing data should be treated as a real bug.
-
-It is risky when the data shape is uncertain, optional, or produced by another layer that does not promise the requested key.
-
-## 1.3 `KeyError` is Python's signal for missing mapping keys
-
-`KeyError` belongs to the family of runtime exceptions.
-
-It means:
+In that mode, the development environment provides many things implicitly:
 
 ```text
-The program was syntactically valid.
-The module imports may have succeeded.
-Execution reached a dictionary-like lookup.
-The requested key was absent.
+Python interpreter
+installed packages
+project folder structure
+source files
+relative paths
+terminal output
+local database path
 ```
 
-For Markei, that narrows the learning diagnosis:
+A normal user should not need to know those things.
+
+The learning transition is:
 
 ```text
-The current failure is not primarily about Python being unable to find a file or import a name.
-It is about a runtime data structure not matching the consumer's expectation.
+developer opens repository and runs Python
+↓
+user opens an installed program
 ```
 
-This makes it different from the previous `ImportError` session.
+This does not only require a visual interface. Markei already has a PySide6 user interface.
 
-The previous error happened before the application could assemble the expected object graph.
-
-This error happens after enough execution has occurred for `StoragePage` initialization to request structured data.
-
-## 1.4 UI initialization turns data contracts into visible failures
-
-A page constructor usually performs a sequence like:
-
-```text
-create widgets
-request data
-format rows/cards
-apply display styling
-attach widgets to layout
-show page
-```
-
-If one row/card construction expects `"color"`, the page cannot finish initialization when the key is missing.
-
-The page failure teaches that UI code is often the first visible place where upstream data-shape assumptions break.
-
-The visible crash may happen in the UI, but the cause can be a mismatch between:
-
-```text
-what the UI expects
-what the service returns
-what the repository retrieves
-what the domain model represents
-```
-
-## 1.5 Presentation data is different from business data
-
-In Markei, business data describes the supermarket/product domain:
-
-```text
-product name
-brand
-quantity
-price
-purchase date
-expected next purchase
-average duration days
-reorder threshold
-stock/shortage/market status
-```
-
-Presentation data describes how the UI displays that business data:
-
-```text
-text color
-background color
-badge color
-icon
-row emphasis
-visual warning style
-```
-
-The key name `"color"` strongly suggests presentation data.
-
-The didactic point is not to decide the architecture.
-
-The didactic point is to recognize that the failure sits at the border between domain meaning and visual representation.
-
-## 1.6 Business semantics and visual semantics are separate concepts
-
-A product may have a business status such as:
-
-```text
-stored
-near threshold
-expected ended
-```
-
-A UI may represent those statuses with colors.
-
-Those are related, but they are not the same concept.
-
-Example:
-
-```text
-business fact: product is near reorder threshold
-presentation choice: show row in yellow
-```
-
-The business layer should speak in domain language.
-
-The UI layer should speak in display language.
-
-When a UI expects `"color"`, it may be asking for display language.
-
-When a service returns `"status"`, it may be returning domain language.
-
-The `KeyError` can therefore teach the difference between semantic status and visual rendering.
-
-## 1.7 Software contracts can be implicit even without formal interfaces
-
-A contract is an agreement about what one part of the program provides and what another part may rely on.
-
-In Python, many contracts are implicit.
-
-For example, if `StoragePage` uses:
-
-```python
-row["color"]
-```
-
-then `StoragePage` implicitly requires every row to have a `"color"` key.
-
-If the data provider returns:
-
-```python
-{
-    "product_name": "Rice",
-    "price_variation": "increase",
-}
-```
-
-then the provider is not fulfilling that implicit UI contract.
-
-The error is Python enforcing the fact that the implicit contract was not met.
-
-## 1.8 Interface expectations are local, but failures are systemic
-
-The exact line that raises `KeyError` may be small.
-
-Conceptually, the failure involves several possible expectations:
-
-```text
-StoragePage expects visual metadata.
-ProductService may expose product/business data.
-Repository may expose raw persistence data.
-The UI may translate product state into visual style.
-```
-
-The learning point is that a single exception can reveal a larger interface mismatch.
-
-A traceback tells where the program stopped.
-
-It does not automatically tell which layer owns the missing concept.
-
-## 1.9 Defensive programming is about choosing how strict a boundary should be
-
-There are several conceptual strategies for missing keys:
-
-```python
-item["color"]
-```
-
-Strict access.
-
-Use when missing `"color"` means the program is invalid and should fail loudly.
-
-```python
-item.get("color")
-```
-
-Optional access.
-
-Use when `"color"` may be absent and the program can continue.
-
-```python
-item.get("color", default_color)
-```
-
-Fallback access.
-
-Use when a safe default exists.
-
-Didactically, the question is not "which patch should we apply?"
-
-The lesson is that defensive programming is not only syntax.
-
-It is a design choice about whether missing data should:
-
-```text
-crash early
-fall back safely
-be normalized before reaching the UI
-be rejected at a boundary
-```
-
-## 1.10 Stack traces are execution maps
-
-A stack trace should be read from the most general call path toward the exact failing line.
-
-For this failure, the important questions are:
-
-```text
-Which constructor or method starts StoragePage initialization?
-Which service method returns the data used by StoragePage?
-Which data item lacks "color"?
-Which line attempts row["color"] or equivalent?
-```
-
-The stack trace identifies the execution chain.
-
-The exception type identifies the kind of failure.
-
-The exception message identifies the missing key.
-
-Together:
-
-```text
-KeyError + "color" + StoragePage initialization
-```
-
-means:
-
-```text
-during UI setup, a mapping lookup expected display metadata that was absent
-```
-
-## 1.11 Runtime debugging observes actual data, not intended data
-
-A design may intend that every item has a color.
-
-A service may intend to return display-ready rows.
-
-A UI may intend to receive a complete dictionary.
-
-Runtime debugging asks what actually happened.
-
-For this error, the learning inspection target is the concrete object received by the failing UI line.
-
-The central debugging question is:
-
-```text
-What keys are actually present in the dictionary at the moment StoragePage asks for "color"?
-```
-
-That question belongs to runtime debugging, not abstract design.
-
-## 1.12 The Shiboken warning should be learned separately unless evidence connects it
-
-The terminal also reports:
-
-```text
-Shiboken::Conversions::_pythonToCppCopy:
-Cannot copy-convert (...) list to C++.
-```
-
-Didactically, this illustrates that one terminal session can contain multiple signals.
-
-A Python exception with a traceback is usually the primary stop point when it crashes the program.
-
-A Qt/Shiboken conversion warning may indicate a separate UI binding issue, especially when Python values are being passed into Qt/PySide C++ APIs.
-
-The learning rule is:
-
-```text
-Do not merge two symptoms into one cause without evidence from the execution path.
-```
-
-For this didactic report, `KeyError: "color"` remains the active learning sample.
-
-The Shiboken warning is a secondary concept candidate about Python-to-Qt type conversion.
+It requires changing the way the software is delivered, started, configured, and allowed to store its data.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. PROMOTED CONCEPTS
+2. CURRENT LECTURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## &&& Foundational Computer Science concepts
+This lesson introduces exactly five concept groups.
 
-### &&& Mapping / associative array
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+&&& Script vs Application
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-A mapping stores values by keys rather than by numeric position.
+A script is usually a file or module executed directly by a developer.
 
-In Markei, a row displayed by `StoragePage` may be represented as a mapping:
+It assumes a development context.
 
-```text
-"product_name" → "Rice"
-"price" → 10.50
-"status" → "stored"
-```
-
-The `KeyError: "color"` appears when the UI asks the mapping for a key that is not present.
-
-### &&& Data contract
-
-A data contract defines the shape and meaning of data crossing a boundary.
-
-In this case:
+For example, when Markei is run as a Python project, the developer knows:
 
 ```text
-StoragePage expects: product row includes "color"
-provider supplies: product row without "color"
+where the repository is
+which command to type
+which Python version is installed
+which virtual environment is active
+where errors appear
+how to inspect files
 ```
 
-The crash teaches that modules communicate through expectations, even when those expectations are not written in a formal interface.
+An application is a program prepared to be used as a product.
 
-### &&& Separation of concerns
+It assumes a user context.
 
-Separation of concerns means each part of the program should own a distinct responsibility.
-
-In Markei:
+A user-run Markei should allow the user to do something like:
 
 ```text
-business data explains supermarket/product facts
-presentation data explains how the UI displays those facts
+open Markei from the Start Menu or desktop
+enter supermarket purchases
+view Storage / Shortage / Market / History
+close the program
+open it again later with data preserved
 ```
 
-The key `"color"` is a useful teaching example because it likely belongs to presentation concerns, while price variation or storage status belongs to business/domain concerns.
+The conceptual difference is not only file size or interface polish.
 
-### &&& Boundary
+It is responsibility.
 
-A boundary is the line where one part of the system communicates with another.
+A script depends on the developer's knowledge to start and diagnose it.
 
-The current error occurs at a boundary between data production and UI consumption.
+An application carries more of those responsibilities inside its delivery structure.
 
-The didactic question is:
+In Markei terms:
 
 ```text
-What does StoragePage have the right to assume about the objects it receives?
+dev-run script mindset:
+    "I know the command, path, environment, and database location."
+
+user-run application mindset:
+    "The installed app knows how to start and where to store its data."
 ```
 
-### &&& Interface expectation
+Required concepts:
 
-An interface expectation is what a caller assumes it can do with an object.
+```text
+program execution
+entry point
+runtime environment
+```
 
-If the UI writes `item["color"]`, it expects the object to behave like a dictionary containing a `"color"` key.
+Related concepts:
 
-The exception proves that expectation was not satisfied at runtime.
+```text
+main module
+terminal
+application lifecycle
+```
 
-## &&% Python language concepts
-
-### &&% Dictionary
-
-A dictionary is Python's common mapping type.
-
-It stores key-value pairs and supports direct key lookup.
-
-In this session, `"color"` is the missing dictionary key.
-
-### &&% Key
-
-A key is the identifier used to retrieve a value from a dictionary.
-
-The key in this failure is:
+Python example:
 
 ```python
-"color"
+# Developer-facing execution idea
+# The developer knows this module must be run.
+python -m app
 ```
 
-### &&% KeyError
-
-`KeyError` is raised when code requests a missing key from a dictionary-like object.
-
-Conceptual reading:
+Application example:
 
 ```text
-Python understood the code.
-The object existed.
-The requested key did not.
+The user clicks Markei.exe.
+The app starts without the user knowing the Python command.
 ```
 
-### &&% Direct dictionary access
+Next concept:
 
-Direct access uses square brackets:
+```text
+Executable and installer
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+&&& Executable and Installer
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An executable is a file that the operating system can launch as a program.
+
+On Windows, this is commonly an `.exe` file.
+
+For Markei, an executable would be the thing the user opens instead of typing a Python command.
+
+Conceptually:
+
+```text
+source project:
+    app/main.py
+    app/ui/main_window.py
+    app/services.py
+    app/repository.py
+    requirements
+
+packaged executable:
+    Markei.exe
+```
+
+The executable hides the developer-facing startup details.
+
+It does not mean the program stops being written in Python.
+
+It means the Python program has been bundled into a launchable form.
+
+An installer is different.
+
+An installer is a delivery program that places the application on the user's machine.
+
+It may:
+
+```text
+copy the executable into Program Files or another install location
+create Start Menu shortcuts
+create a desktop shortcut
+prepare app data folders
+record uninstall information
+include required runtime files
+```
+
+The executable starts the app.
+
+The installer installs the app.
+
+They are related, but not the same thing.
+
+In Markei terms:
+
+```text
+Markei.exe:
+    the program the user runs
+
+Markei Setup.exe:
+    the program that installs Markei.exe and related files
+```
+
+A developer can often test the executable without an installer.
+
+A normal user usually expects an installer or a simple downloadable app bundle.
+
+Required concepts:
+
+```text
+operating system launch
+file association
+installation location
+shortcut
+```
+
+Related concepts:
+
+```text
+PyInstaller
+Nuitka
+Inno Setup
+MSIX
+Windows app distribution
+```
+
+Python example:
+
+```text
+A packaging tool can take the Python entry point and produce a launchable executable.
+```
+
+Application example:
+
+```text
+User installs Markei.
+User opens Markei from Start Menu.
+User never types python -m app.
+```
+
+Next concept:
+
+```text
+dependencies and packaging
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+%%% Dependency and Packaging
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A dependency is something Markei needs in order to run but does not fully define itself.
+
+For Markei, dependencies include external libraries such as:
+
+```text
+PySide6
+sqlite3 behavior from Python standard library
+possibly packaging/runtime support files
+```
+
+Some dependencies are part of Python's standard library.
+
+Some dependencies must be installed separately.
+
+During development, dependencies are usually handled through commands like:
+
+```text
+pip install PySide6
+```
+
+or through a dependency file.
+
+A user should not need to run those commands.
+
+Packaging is the process of collecting the application and its runtime requirements into a deliverable form.
+
+For a Python desktop app, packaging usually needs to answer:
+
+```text
+Which Python files are included?
+Which external libraries are included?
+Which images, schemas, or resources are included?
+What is the app entry point?
+Where should the app read/write user data?
+How should the operating system launch it?
+```
+
+In Markei, packaging is not the same as architecture.
+
+Architecture answers:
+
+```text
+What are RegisterPage, ProductService, Repository, and the database responsible for?
+```
+
+Packaging answers:
+
+```text
+How do all required files and dependencies travel to the user's computer in runnable form?
+```
+
+This distinction matters because an app can be architecturally correct and still fail after packaging if the packaged version cannot find:
+
+```text
+PySide6 plugins
+schema.sql
+icons
+relative resource paths
+the expected database location
+```
+
+Required concepts:
+
+```text
+runtime requirement
+module import
+resource inclusion
+build artifact
+```
+
+Related concepts:
+
+```text
+requirements.txt
+pyproject.toml
+virtual environment
+build process
+frozen application
+```
+
+Python example:
 
 ```python
-item["color"]
+from PySide6.QtWidgets import QApplication
 ```
 
-It is strict.
+That import works only if PySide6 is available in the runtime environment.
 
-It raises `KeyError` when the key is absent.
+Application example:
 
-### &&% Safe dictionary access
+```text
+In dev mode, PySide6 exists because the developer installed it.
+In packaged mode, PySide6 must be bundled or otherwise provided.
+```
 
-Safe access commonly uses `.get()`:
+Next concept:
+
+```text
+local database and app data folder
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+&%% Local Database and App Data Folder
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A local database is a database stored on the user's own machine rather than on a remote server.
+
+Markei uses SQLite, which fits this model well.
+
+Conceptually, SQLite means:
+
+```text
+one local database file
+no separate database server
+application reads and writes through sqlite3
+```
+
+During development, Markei may use a database path like:
+
+```text
+database/market.sqlite
+```
+
+inside the repository.
+
+That is acceptable for development.
+
+It is not ideal for an installed user application.
+
+An installed app should usually not write user data into the installation folder.
+
+Reasons:
+
+```text
+installed program folders may be read-only
+updates may replace application files
+uninstalling may remove program files
+users need their data preserved separately from the executable
+multiple users on the same computer may need separate data
+```
+
+An app data folder is a user-specific folder where an application stores user data and configuration.
+
+On Windows, this is commonly somewhere under the user's AppData area.
+
+Conceptually:
+
+```text
+installation folder:
+    contains program files
+
+app data folder:
+    contains user-created data and settings
+```
+
+For Markei:
+
+```text
+program files:
+    Markei.exe
+    bundled Python/runtime files
+    bundled UI resources
+
+app data:
+    market.sqlite
+    settings
+    logs if needed
+```
+
+This is one of the most important differences between a dev-run app and a user-run app.
+
+In dev mode, repository-relative paths feel natural.
+
+In user mode, data paths must be stable, user-owned, and independent from the install location.
+
+Required concepts:
+
+```text
+persistence
+file path
+user profile
+read/write permission
+```
+
+Related concepts:
+
+```text
+SQLite
+schema initialization
+migration
+configuration
+backup
+```
+
+Python example:
 
 ```python
-item.get("color")
+from pathlib import Path
+
+app_data = Path.home() / "AppData" / "Local" / "Markei"
+database_path = app_data / "market.sqlite"
 ```
 
-or:
+This is only a conceptual example, not a patch instruction.
 
-```python
-item.get("color", default_value)
+Application example:
+
+```text
+The user updates Markei.
+The executable may change.
+The user's market.sqlite should remain preserved.
 ```
 
-This avoids `KeyError`, but it also changes the meaning of missing data.
+Next concept:
 
-The missing key becomes tolerated rather than rejected.
+```text
+user-facing interface vs developer interface
+```
 
-### &&% Exception
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+&&& User-Facing Interface vs Developer Interface
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-An exception is Python's way of interrupting normal execution when something invalid occurs.
+A user-facing interface is the part of the program intended for normal use.
 
-Here, execution is interrupted because the program asks for data that the object does not contain.
+For Markei, this is the PySide6 window and its pages:
 
-### &&% Runtime
+```text
+Register
+Storage
+Shortage
+Market
+History
+Settings
+```
 
-Runtime is when the program is actually executing.
-
-The `KeyError` was not detected merely by reading the file.
-
-It appeared when `StoragePage` initialized and reached the missing-key lookup.
-
-### &&% Stack trace
-
-A stack trace is the printed call chain that shows how execution reached the exception.
-
-For this session, it should be read as the path from application startup to `StoragePage` construction to the exact missing `"color"` lookup.
-
-## &%% Markei project concepts
-
-### &%% StoragePage initialization
-
-`StoragePage` is the UI page whose setup currently exposes the failure.
-
-The teaching point is that page construction can depend on both business data and presentation formatting.
-
-### &%% Product row data
-
-A product row/card shown in Storage likely contains product information prepared for display.
-
-The row may include domain fields, derived status fields, and possibly visual metadata.
-
-The error shows that at least one expected display-related field is absent.
-
-### &%% Presentation metadata
-
-Presentation metadata is data used only to render the UI.
+A developer interface is the set of tools and surfaces developers use to run, inspect, debug, and maintain the program.
 
 Examples:
 
 ```text
-color
-badge color
-row highlight
-icon name
-font emphasis
+terminal commands
+stack traces
+source files
+repository folders
+Git commits
+Python virtual environments
+manual database inspection
 ```
 
-`"color"` is a candidate presentation-metadata field.
+Both interfaces are real.
 
-### &%% Business data
+They serve different people and different purposes.
 
-Business data is data that belongs to the Markei domain itself.
+In development, the terminal is useful.
 
-Examples:
+In user operation, the terminal should not be required.
+
+In development, a stack trace is useful.
+
+In user operation, an error message should be understandable, limited, and recoverable when possible.
+
+In development, the developer may know that the database is in `database/market.sqlite`.
+
+In user operation, the app should know where the database is and should create or initialize it when needed.
+
+In Markei terms:
 
 ```text
-product name
-purchase price
-price variation
-expected next purchase
-reorder threshold
-storage status
+developer interface:
+    python -m app
+    traceback
+    repository tree
+    manual DB reset
+
+user-facing interface:
+    click app icon
+    fill Register form
+    view product lists
+    change Settings
 ```
 
-The current failure teaches that business data and presentation metadata should not be confused conceptually.
+A polished application does not remove the developer interface.
 
-### &%% Service-to-UI contract
+It separates it from the user-facing interface.
 
-If `StoragePage` receives data from `ProductService`, then the service-to-UI contract defines what fields the UI may expect.
+The developer still needs logs, tests, commands, and debugging tools.
 
-The `KeyError` suggests the service-to-UI contract is either undocumented, unstable, or not being fulfilled.
+The user needs predictable buttons, forms, messages, and preserved data.
 
-### &%% Price variation semantics
-
-Price variation semantics describe the meaning of price movement:
+Required concepts:
 
 ```text
-increased
-decreased
-unchanged
-unknown
+human interface
+abstraction boundary
+error visibility
+workflow
 ```
 
-This is project/domain meaning.
-
-A color that represents price movement is a UI representation of that meaning, not the meaning itself.
-
-### %%% PySide6 / Qt / Shiboken
-
-PySide6 connects Python code to Qt, which is implemented in C++.
-
-Shiboken is part of that binding layer.
-
-A Shiboken conversion warning can teach that not every Python object can automatically be converted into every Qt/C++ type.
-
-This is separate from `KeyError` unless the traceback or execution chain proves they are linked.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. GLOSSARY ADDITIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Candidate glossary entries for permanent didactic material:
-
-- `dictionary`: A Python mapping object that stores values under keys.
-- `key`: The lookup identifier used to retrieve a value from a dictionary.
-- `value`: The data stored under a key in a dictionary.
-- `missing key`: A key requested by code but absent from the dictionary.
-- `KeyError`: Python exception raised when a missing key is accessed through strict dictionary lookup.
-- `direct lookup`: Dictionary access with square brackets, such as `item["color"]`.
-- `safe lookup`: Dictionary access through methods such as `.get()` that can tolerate absence.
-- `default value`: A fallback value used when expected data is missing.
-- `exception`: A runtime signal that interrupts normal execution when an invalid situation occurs.
-- `runtime`: The phase when the program is actually executing.
-- `stack trace`: The printed execution chain that shows where an exception occurred.
-- `mapping`: A structure that associates keys with values.
-- `data contract`: An agreement about what shape and fields data must have across a boundary.
-- `implicit contract`: A contract enforced by code expectations rather than by a formal declaration.
-- `interface expectation`: What one module assumes another module or object provides.
-- `boundary`: The conceptual line between two layers or modules.
-- `presentation data`: Data used to render or style the UI.
-- `business data`: Data that represents project/domain facts and rules.
-- `presentation metadata`: Display-only information attached to data for UI use.
-- `price variation`: Domain meaning describing how a price changed across purchases.
-- `defensive programming`: Programming choices that handle missing, invalid, or unexpected data deliberately.
-- `fail fast`: Design choice where invalid data causes an immediate error rather than silent fallback.
-- `fallback`: A safe substitute used when expected data is absent.
-- `Shiboken`: The binding technology used by PySide to connect Python objects with Qt/C++ APIs.
-- `type conversion`: Transforming a value from one expected representation/type to another.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. SUGGESTED KANBAN ADDITIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## Potential `&&&` Computer Science Fundamentals
-
-- Mapping / associative array
-- Data contract
-- Interface expectation
-- Boundary between producer and consumer
-- Separation of concerns
-- Presentation data vs business data
-- Defensive programming
-- Fail-fast behavior vs fallback behavior
-- Runtime debugging
-- Interpreting stack traces
-
-## Potential `&&%` Python Language
-
-- Python dictionary
-- Dictionary key
-- Dictionary value
-- Missing key
-- `KeyError`
-- Strict dictionary lookup with `[]`
-- Optional dictionary lookup with `.get()`
-- Default values
-- Runtime exception
-- Reading exception messages
-
-## Potential `&%%` Markei Project Concepts
-
-- `StoragePage` initialization
-- UI data row/card structure
-- Product display data
-- Service-to-UI data contract
-- Business status vs UI color
-- Price variation semantics vs presentation color
-- Presentation metadata
-- Layer boundary between service and UI
-- Runtime data-shape inspection
-
-## Potential `%%%` External Libraries / Frameworks / Dependencies
-
-- PySide6 UI initialization
-- Qt object/value expectations
-- Shiboken Python-to-C++ conversion
-- Qt warning vs Python exception distinction
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DIDACTIC CONCLUSION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The current failure is a compact learning sample for how real programs depend on data shape agreements.
-
-`KeyError: "color"` teaches that a dictionary lookup is not only a Python operation.
-
-In Markei, it also reveals an expectation about what kind of object `StoragePage` receives during initialization.
-
-The central learning distinction is:
+Related concepts:
 
 ```text
-business meaning: product state, price variation, storage condition
-presentation meaning: color, highlight, visual label
+UX
+logging
+configuration screen
+settings page
+support diagnostics
 ```
 
-The error should be used to teach dictionaries, `KeyError`, runtime exceptions, stack traces, implicit contracts, interface expectations, and the separation between business data and presentation metadata.
+Python example:
 
-It should not be used by Didactic Chat to redesign the application or prescribe a patch.
+```text
+Developer sees: ImportError, KeyError, traceback, logs.
+User sees: "Markei could not open your database. Try restarting or contact support."
+```
+
+Application example:
+
+```text
+The same internal failure may need a technical trace for the developer and a simple explanation for the user.
+```
+
+Next concept:
+
+```text
+release workflow
+```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MAIN CHAT SYNTHESIS REQUEST
+3. APP PROBLEMATICS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Main Chat should decide whether to promote the following into permanent didactic material:
+## 3.1 The current shift is from development execution to product distribution
 
-1. A KANBAN entry for Python dictionaries and `KeyError`.
-2. A KANBAN entry for software/data contracts between modules.
-3. A glossary cluster for dictionary, key, value, missing key, `KeyError`, and stack trace.
-4. A didactic note distinguishing business data from presentation data in Markei.
-5. A didactic note on reading runtime exceptions as evidence of interface expectation mismatches.
-6. A small concept entry for PySide6/Shiboken warnings as secondary runtime signals, only after Operational or Main confirms the warning's role in the current failure.
+The educational center of this topic is not merely:
+
+```text
+How do we make an .exe?
+```
+
+The deeper question is:
+
+```text
+What assumptions does Markei currently borrow from the developer environment?
+```
+
+A user-run application must reduce those assumptions.
+
+Markei currently depends conceptually on several development-time assumptions:
+
+```text
+The user/developer can run Python.
+The correct dependencies are installed.
+The app is launched from a known project structure.
+The database path is reachable.
+The terminal is available for errors.
+The repository layout is present.
+```
+
+A packaged application should instead define:
+
+```text
+A clear executable entry point.
+A reliable dependency bundle.
+A stable app data location.
+A startup path independent from the repository.
+A user-facing failure strategy.
+An installation/update story.
+```
+
+## 3.2 The local database becomes user data
+
+During development, the SQLite database can feel like a project artifact.
+
+For a real user, it becomes personal app data.
+
+This changes its meaning.
+
+Development database:
+
+```text
+Can be deleted and recreated during testing.
+Can live near the source code.
+Can be inspected manually.
+Can contain seed data.
+```
+
+User database:
+
+```text
+Contains the user's real purchase history.
+Must survive app restarts.
+Should survive app updates.
+Should not be casually overwritten.
+Should live in a user data folder.
+```
+
+This is a didactic turning point for Markei.
+
+The same file type, `market.sqlite`, changes category depending on context:
+
+```text
+inside repository during dev:
+    development artifact
+
+inside app data folder after installation:
+    user-owned persistent data
+```
+
+## 3.3 Packaging can expose hidden path assumptions
+
+A Python app often works in development because the current working directory and repository layout are familiar.
+
+Packaging can break that illusion.
+
+For example, code that assumes:
+
+```text
+schema.sql is next to this file
+market.sqlite lives under ./database/
+icons are available through a relative path
+```
+
+may work from VS Code but fail inside a bundled executable.
+
+This does not mean the app logic is wrong.
+
+It means the runtime environment changed.
+
+Didactically, this teaches that paths are part of an application's execution contract.
+
+## 3.4 The Settings page becomes more important in a user-run app
+
+In developer mode, configuration can be edited manually or changed in code.
+
+In user mode, configuration needs a user-facing surface.
+
+For Markei, the Settings page is therefore not cosmetic.
+
+It is the proper place for user-adjustable behavior such as:
+
+```text
+default reorder threshold
+possibly database backup/export later
+possibly display preferences later
+```
+
+The user should not need to edit Python files or database rows to adjust normal behavior.
+
+## 3.5 Installer decisions are design decisions, not just tooling decisions
+
+Choosing an installer or packaging tool is operational.
+
+But the consequences are architectural and didactic.
+
+The chosen delivery method affects:
+
+```text
+where files are installed
+where data is stored
+how updates happen
+how dependencies are bundled
+how users launch the app
+how errors are reported
+```
+
+Therefore, `executable`, `installer`, and `packaging` are not isolated vocabulary words.
+
+They describe the boundary between a programming project and a usable application.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-UNCERTAINTIES
+4. TEMPORARY CONCEPT CANDIDATES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- This report explains the active error from the didactic perspective only.
-- This report does not inspect, redesign, or modify application code.
-- This report does not decide which layer should own colors or price-variation presentation.
-- That ownership decision belongs to Design/Main synthesis.
-- This report does not treat the Shiboken warning as the primary failure without operational evidence.
+## && Release artifact
+
+A release artifact is a generated file or bundle intended for distribution.
+
+For Markei, possible release artifacts include:
+
+```text
+Markei.exe
+Markei installer
+portable Markei folder
+versioned release zip
+```
+
+This concept may later belong to Operational or Didactic permanent knowledge depending on Main synthesis.
+
+## && User data ownership
+
+User data ownership means the data created through normal app use belongs to the user and should not be treated like disposable development material.
+
+For Markei, this applies strongly to:
+
+```text
+market.sqlite
+purchase history
+product duration calculations
+settings
+```
+
+This concept may later connect to design decisions about database location, backups, and migrations.
+
+## && Frozen Python application
+
+A frozen Python application is a Python program bundled so that it can run without the user manually installing Python packages.
+
+The app is still logically Python-based, but it is delivered in a form closer to a normal desktop program.
+
+This concept may later connect to packaging tools such as PyInstaller or Nuitka.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. KNOWLEDGE REGISTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## New staged concepts from this lesson
+
+### &&& Script vs Application
+
+A script relies on developer context to run. An application is prepared for normal user operation.
+
+### &&& Executable
+
+A launchable program file that the operating system can start directly, such as `Markei.exe` on Windows.
+
+### &&& Installer
+
+A delivery program that places the application and related files onto the user's machine.
+
+### %%% Dependency
+
+A runtime requirement that Markei needs in order to execute, such as PySide6.
+
+### %%% Packaging
+
+The process of collecting code, dependencies, runtime files, and resources into a distributable form.
+
+### &%% Local Database
+
+A database stored on the user's machine, represented in Markei by SQLite.
+
+### &%% App Data Folder
+
+A user-specific folder for persistent data and settings separate from the installation folder.
+
+### &&& User-Facing Interface
+
+The interface intended for normal users, such as Markei's PySide6 pages.
+
+### &&& Developer Interface
+
+The interface used by developers to run, inspect, debug, and maintain the app, such as terminal commands and stack traces.
+
+## Concept grouping note
+
+The lesson formally introduced five lecture groups to preserve didactic structure:
+
+```text
+1. Script vs Application
+2. Executable and Installer
+3. Dependency and Packaging
+4. Local Database and App Data Folder
+5. User-Facing Interface vs Developer Interface
+```
+
+The requested focus terms are all included inside those five groups.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ARCHITECTURAL SPINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Oldest unresolved didactic dependency for this topic:
+
+```text
+Markei needs a clear distinction between project files, bundled application files, and user-owned data files.
+```
+
+Until this distinction is understood, packaging discussions may collapse into a misleading question:
+
+```text
+How do we make an exe?
+```
+
+The better learning sequence is:
+
+```text
+1. Understand what currently depends on the development environment.
+2. Separate launch concerns from installation concerns.
+3. Separate dependencies from source code.
+4. Separate program files from user data.
+5. Only then choose packaging and installer tools.
+```
+
+Next suggested lesson:
+
+```text
+Release workflow: build, test, package, install, update, and verify user data preservation.
+```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. DIDACTIC CONCLUSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Turning Markei into a user-run application means changing the execution contract.
+
+The development contract is:
+
+```text
+A developer with Python, dependencies, repository access, and terminal knowledge can run the app.
+```
+
+The user contract should become:
+
+```text
+A user can install/open Markei, use its visible interface, and keep their purchase data safely between sessions and updates.
+```
+
+The main conceptual movement is therefore:
+
+```text
+from command-based execution
+    to application launch
+
+from source-folder assumptions
+    to packaged runtime assumptions
+
+from repository database
+    to user-owned app data
+
+from developer diagnostics
+    to user-facing behavior
+```
+
+This lesson does not prescribe a packaging tool or implementation patch.
+
+It prepares the concepts needed for Main Chat, Operational Chat, Design Chat, and Codex to later discuss packaging without confusing development convenience with user application behavior.
