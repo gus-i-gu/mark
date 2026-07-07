@@ -368,7 +368,7 @@ Stage material may be useful, but it is not authoritative.
 
 Each stable knowledge object should have one canonical home.
 
-Duplicate canonical truth creates drift.
+Duplicate canonical truth creates drift, and need to be refactored.
 
 ## Rule 4 — Derived knowledge cannot create truth
 
