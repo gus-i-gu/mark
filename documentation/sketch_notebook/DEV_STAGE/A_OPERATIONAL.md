@@ -395,7 +395,298 @@ REMAINING UNCERTAINTIES
 FILE UPDATED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SESSION CONTINUATION | LOCAL MERGE RECOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Local state reported by user
+
+```text
+git status
+
+On branch main
+Your branch and 'origin/main' have diverged,
+and have 1 and 2 different commits each, respectively.
+
+You have unmerged paths.
+
+Unmerged paths:
+        both added:      documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+        both added:      documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+
+no changes added to commit
+```
+
+## Operational diagnosis
+
+The local repository is currently in the middle of a merge conflict.
+
+Both local `main` and remote `origin/main` independently added the same DEV_STAGE files:
+
+- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
+- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
+
+This is a `both added` conflict, not a normal line-level edit conflict.
+
+Operational meaning:
+
+- Git does not know whether to keep the local version, the remote version, or a manually combined version.
+- No new operational source-code work should happen until this merge is resolved.
+- The local branch has one commit not present on remote.
+- The remote branch has two commits not present locally.
+- The local working tree must be cleaned before further patching or source commits.
+
+## Important authority boundary
+
+Operational Chat may stage/write only:
+
+```text
+documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+```
+
+Operational Chat must not resolve or rewrite `C_DESIGN.md` semantically.
+
+For `C_DESIGN.md`, the safe operational instruction is to preserve both versions or defer semantic resolution to Design/Main Chat.
+
+## Recommended recovery path
+
+Preferred path: resolve the merge manually, preserve both stage-file contributions, then create a merge commit.
+
+Do not use `git push --force`.
+
+Do not delete either side blindly.
+
+Do not continue repository implementation work until `git status` is clean.
+
+## Step-by-step commands
+
+### 1. Inspect the conflicted files
+
+```bash
+git status
+
+git diff -- documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+
+git diff -- documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+### 2. Open both conflicted files in VS Code
+
+```bash
+code documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+code documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+Each conflicted file will likely contain conflict markers:
+
+```text
+<<<<<<< HEAD
+local version
+=======
+remote version
+>>>>>>> origin/main
+```
+
+### 3. Resolve `A_OPERATIONAL.md`
+
+For `A_OPERATIONAL.md`, keep both operational entries sequentially.
+
+Recommended order:
+
+1. Keep the local operational content first if it was created earlier locally.
+2. Keep the remote operational content after it if it was created later remotely.
+3. Remove all conflict markers:
+
+```text
+<<<<<<< HEAD
+=======
+>>>>>>> origin/main
+```
+
+4. Ensure the final file is valid Markdown and reads as consecutive operational notes.
+
+If unsure which side is local or remote, inspect with:
+
+```bash
+git show :2:documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+
+git show :3:documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+```
+
+In an unmerged file:
+
+- `:2:` is usually `ours` / local `HEAD`.
+- `:3:` is usually `theirs` / incoming remote side.
+
+### 4. Resolve `C_DESIGN.md` conservatively
+
+Because this is outside Operational Chat semantic authority, do not rewrite its design content.
+
+Recommended safe options:
+
+Option A — preserve both versions sequentially:
+
+```bash
+git show :2:documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md > C_DESIGN.local.tmp
+
+git show :3:documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md > C_DESIGN.remote.tmp
+```
+
+Then manually combine them into:
+
+```text
+documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+with clear separators such as:
+
+```text
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCAL DESIGN STAGE VERSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REMOTE DESIGN STAGE VERSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+...
+```
+
+Option B — stop and ask Main/Design Chat before resolving `C_DESIGN.md`.
+
+Use Option B if the two design versions contradict each other or appear to represent different design decisions.
+
+### 5. Mark conflicts as resolved
+
+After editing both files and removing all conflict markers:
+
+```bash
+git add documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+
+git add documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+### 6. Verify there are no remaining conflict markers
+
+```bash
+git diff --check
+
+git status
+```
+
+Optional direct marker search in PowerShell:
+
+```powershell
+Select-String -Path documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md, documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md -Pattern '<<<<<<<|=======|>>>>>>>'
+```
+
+If this prints anything, conflict markers remain and must be removed before committing.
+
+### 7. Complete the merge commit
+
+```bash
+git commit
+```
+
+Use the default merge message, or:
+
+```bash
+git commit -m "Merge remote DEV_STAGE updates"
+```
+
+### 8. Push after the merge commit succeeds
+
+```bash
+git push origin main
+```
+
+### 9. Confirm clean state
+
+```bash
+git status
+```
+
+Expected final result:
+
+```text
+On branch main
+Your branch is up to date with 'origin/main'.
+nothing to commit, working tree clean
+```
+
+## Alternative recovery path if the merge should be abandoned
+
+If the current merge attempt is too confused and no manual conflict work should be kept:
+
+```bash
+git merge --abort
+```
+
+Then inspect the branch situation again:
+
+```bash
+git status
+
+git log --oneline --decorate --graph --all -n 10
+```
+
+Then retry integration explicitly:
+
+```bash
+git pull --no-rebase origin main
+```
+
+This will likely recreate the same conflicts, but from a cleaner merge state.
+
+## Commands not recommended here
+
+Avoid:
+
+```bash
+git push --force
+```
+
+because it may overwrite the remote functional-stage commits.
+
+Avoid:
+
+```bash
+git reset --hard origin/main
+```
+
+unless the local-only commit is known to be disposable.
+
+Avoid:
+
+```bash
+git checkout --ours documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+or:
+
+```bash
+git checkout --theirs documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+```
+
+unless Main/Design Chat explicitly decides which side should win.
+
+## Validation after recovery
+
+After the merge is resolved and pushed, run:
+
+```bash
+git log --oneline --decorate --graph --all -n 10
+
+git status
+```
+
+Then continue with the repository import-error patch only after Main Chat synthesis.
+
+## File updated in this continuation
+
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 
-No other files were modified.
->>>>>>> 5fe23b36740828837438852e4bdd7ee24e4739bf
+>>>>>>> 4b8fcc6c539762428e3dfa866791723fc524a956
+
