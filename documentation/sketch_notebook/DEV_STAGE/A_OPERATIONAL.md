@@ -6,7 +6,7 @@ ROLE
 
 Operational Chat.
 
-Scope: runtime execution, immediate debugging diagnosis, repair sequencing, file involvement, implementation risk assessment.
+Scope: execution, packaging investigation, validation commands, deployment risks, Windows runtime concerns.
 
 Write authority for this session:
 
@@ -35,7 +35,7 @@ Read successfully:
 
 Operational authority confirmed:
 
-- Functional Operational Chat may inspect application source files when required for debugging.
+- Functional Operational Chat may inspect application source files when required.
 - Functional Operational Chat may write only this assigned stage file.
 - Application source files are not to be edited by this chat.
 
@@ -43,54 +43,23 @@ Operational authority confirmed:
 TASK INVESTIGATED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Previous failure reported as already repaired:
+Investigate how to package the current PySide6 Markei app into a simple executable/installable form for non-developer users.
 
-```text
-ImportError: cannot import name 'Repository' from 'app.core.repository'
-```
+Requested focus:
 
-Current failure reported by user:
-
-```text
-KeyError: "color"
-```
-
-occurring while opening `StoragePage`.
-
-Additional terminal warning reported:
-
-```text
-Shiboken::Conversions::_pythonToCppCopy:
-Cannot copy-convert (...) list to C++.
-```
-
-Investigation focus:
-
-- exact traceback
-- runtime execution path
-- UI initialization sequence
-- object ownership
-- service/repository interactions
-- whether `KeyError: "color"` is primary
-- whether the Shiboken warning is independent
+- current run command
+- Python/PySide6 dependencies
+- database file handling
+- app startup path
+- executable packaging options
+- validation commands
+- risks for Windows users
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SOURCE FILES INSPECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Application/runtime files:
-
-- `app/main.py`
-- `app/desktop/main_window.py`
-- `app/desktop/ui/pages/storage_page.py`
-- `app/desktop/ui/pages/shortage_page.py`
-- `app/desktop/ui/pages/market_page.py`
-- `app/core/services.py`
-- `app/core/repository.py`
-- `app/core/database.py`
-- `app/core/models.py`
-
-Notebook/methodology files:
+Notebook/methodology:
 
 - `AGENTS.md`
 - `documentation/sketch_notebook/INDEX.md`
@@ -101,123 +70,138 @@ Notebook/methodology files:
 - `documentation/sketch_notebook/methodology/FLUX.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CURRENT REPOSITORY STATE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Application/package-relevant files:
 
-## 1. Repository ImportError appears repaired
+- `requirements.txt`
+- `main.py`
+- `app/__main__.py`
+- `app/main.py`
+- `app/desktop/main_window.py`
+- `app/core/config.py`
+- `app/core/database.py`
+- `app/core/repository.py`
+- `app/database/schema.sql`
+- `app/database/seed.sql`
 
-`app/core/repository.py` currently defines a module-level class:
+External packaging references inspected:
 
-```python
-class Repository(RepositoryContract):
-```
-
-The class initializes a SQLite connection and cursor:
-
-```python
-def __init__(self):
-    self.connection = connect()
-    self.cursor = self.connection.cursor()
-```
-
-It also provides working repository helpers:
-
-```python
-def cursor_execute(self, sql, parameters=()):
-    return self.cursor.execute(sql, parameters)
-```
-
-Therefore, the previous failure where `ProductService` could not import `Repository` is no longer the visible blocker in the inspected repository state.
-
-## 2. ProductService still owns repository access
-
-`app/core/services.py` imports and instantiates `Repository`:
-
-```python
-from .repository import Repository
-
-class ProductService(ServiceContract):
-    def __init__(self):
-        self.repository = Repository()
-```
-
-The UI does not call repository methods directly. It goes through `ProductService`.
-
-## 3. StoragePage constructs its own service
-
-`StoragePage.__init__` does the following:
-
-```python
-super().__init__()
-self.main_window = main_window
-self.service = ProductService()
-self.build_ui()
-self.load_products()
-```
-
-This means opening/constructing `StoragePage` immediately:
-
-1. creates a Qt widget;
-2. stores the passed `MainWindow` reference;
-3. creates a `ProductService`;
-4. creates a `Repository` through the service;
-5. builds the table UI;
-6. immediately loads products from the database.
+- PyInstaller usage documentation, version shown as `6.21.0`.
+- Qt for Python deployment documentation for PyInstaller.
+- Qt for Python deployment documentation for `pyside6-deploy`.
+- Qt for Python deployment documentation for Nuitka.
+- Nuitka user manual.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXACT TRACEBACK STATUS
+CURRENT RUN COMMAND
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The exact local traceback text was not available through GitHub inspection. Only the reported terminal failure was provided:
+The repository currently exposes two normal development entry points.
 
-```text
-KeyError: "color"
-```
+## 1. Root script
 
-Based on the current repository state, the expected runtime traceback chain is:
+`main.py` imports `main` from `app.main` and calls it under the standard guard:
 
-```text
-python -m app.main
-  app/main.py
+```python
+from app.main import main
+
+if __name__ == "__main__":
     main()
-      window = MainWindow()
-
-  app/desktop/main_window.py
-    MainWindow.__init__()
-      self.storage_page = StoragePage(self)
-
-  app/desktop/ui/pages/storage_page.py
-    StoragePage.__init__()
-      self.build_ui()
-      self.load_products()
-
-  app/desktop/ui/pages/storage_page.py
-    StoragePage.load_products()
-      variation = self.service.get_price_variation(product)
-      item = QTableWidgetItem(variation["text"])
-      item.setForeground(variation["color"])
-
-KeyError: "color"
 ```
 
-The failing line is operationally identified as:
+Development command:
+
+```powershell
+python main.py
+```
+
+## 2. Package execution
+
+`app/__main__.py` states that Markei can be run with:
+
+```powershell
+python -m app
+```
+
+It imports `main` from `app.main` and calls it under the standard guard.
+
+## Operational recommendation
+
+Use the root `main.py` as the first packaging entry point.
+
+Reason:
+
+- PyInstaller expects a concrete script path naturally.
+- `main.py` is already a thin wrapper around `app.main.main()`.
+- The application imports remain package-qualified through `app.*`.
+- The generated executable name can be controlled independently with `--name Markei`.
+
+Recommended first build entry:
+
+```powershell
+python -m PyInstaller --name Markei --windowed --onedir main.py
+```
+
+Use `--onedir` first, not `--onefile`.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PYTHON / PYSIDE6 DEPENDENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current `requirements.txt` contains only:
+
+```text
+PySide6
+```
+
+No packaging dependency is currently listed.
+
+## Development dependency needed for packaging
+
+For a PyInstaller packaging path, add/install at build time:
+
+```powershell
+python -m pip install pyinstaller
+```
+
+Possible future `requirements-dev.txt`:
+
+```text
+pyinstaller
+```
+
+## Optional future dependency
+
+For robust user-writable database placement, consider:
+
+```text
+platformdirs
+```
+
+Reason:
+
+- Markei should not write the live SQLite database inside the frozen application bundle.
+- On Windows, installed program directories may be read-only for normal users.
+- A user-data path is safer than a project-relative path after packaging.
+
+Possible target path pattern:
+
+```text
+%LOCALAPPDATA%/Markei/market.sqlite
+```
+
+or, if `platformdirs` is adopted:
 
 ```python
-item.setForeground(
-    variation["color"]
-)
+user_data_dir("Markei", "Markei")
 ```
 
-inside `StoragePage.load_products()`.
+This is a future implementation note, not a change performed in this session.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RUNTIME EXECUTION CHAIN
+APPLICATION STARTUP PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Application bootstrap
-
-`app/main.py`:
+`app/main.py` creates the Qt application:
 
 ```python
 app = QApplication(sys.argv)
@@ -226,625 +210,758 @@ window.show()
 sys.exit(app.exec())
 ```
 
-## MainWindow initialization
+It imports `MainWindow` from:
 
-`MainWindow.__init__` creates the tab widget, then constructs page objects in this order:
+```python
+from app.desktop.main_window import MainWindow
+```
 
-1. `RegisterPage()`
-2. `StoragePage(self)`
-3. `ShortagePage(self)`
-4. `MarketPage(self)`
-5. `HistoryPage()`
-6. `SettingsPage()`
+It also contains a fallback for direct execution:
 
-The Storage failure happens before the Storage tab is added with `addTab`, because `StoragePage(self)` must finish construction first.
+```python
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+```
 
-## StoragePage initialization
+## Packaging implication
 
-`StoragePage.__init__` performs both UI construction and data loading synchronously.
+The normal packaged path should avoid relying on direct execution of `app/main.py`.
 
-Execution path:
+Preferred packaging entry:
 
 ```text
-MainWindow.__init__
-↓
-StoragePage.__init__
-↓
-ProductService.__init__
-↓
-Repository.__init__
-↓
-StoragePage.build_ui
-↓
-StoragePage.load_products
-↓
-ProductService.get_storage_products
-↓
-Repository.get_products
-↓
-Repository.row_to_product
-↓
-ProductService.product_status
-↓
-StoragePage row rendering
-↓
-ProductService.get_price_variation
-↓
-StoragePage expects variation["color"]
-↓
-KeyError: "color"
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PRIMARY FAILURE DIAGNOSIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## Primary failure
-
-`KeyError: "color"` is the primary Python exception blocking StoragePage initialization.
-
-`StoragePage.load_products()` assumes `ProductService.get_price_variation(product)` returns a dictionary containing:
-
-```python
-"text"
-"color"
-```
-
-but `ProductService.get_price_variation()` currently returns only:
-
-```python
-"delta"
-"percentage"
-"text"
-```
-
-This is true in both branches:
-
-### No price history branch
-
-```python
-return {
-    "delta": None,
-    "percentage": None,
-    "text": "—",
-}
-```
-
-### Price history branch
-
-```python
-return {
-    "delta": delta,
-    "percentage": percentage,
-    "text": text,
-}
-```
-
-No branch returns `"color"`.
-
-Therefore the first product rendered in StoragePage can trigger:
-
-```python
-variation["color"]
-```
-
-and fail immediately.
-
-## Operational classification
-
-This is an interface mismatch between service return shape and UI consumption.
-
-It is not primarily:
-
-- a repository import failure;
-- a SQLite connection failure;
-- a product-status classification failure;
-- a row-mapping failure;
-- a Qt object ownership failure.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SHIBOKEN WARNING DIAGNOSIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## Warning source
-
-The Shiboken warning is most likely caused by this call in `StoragePage.build_ui()`:
-
-```python
-self.table.setHorizontalHeaderLabels([
-    [
-        "Product",
-        "Brand",
-        "Quantity",
-        "Price",
-        "Δ Price",
-        "Cycle",
-        "Next Purchase",
-        "Remaining",
-        "Status",
-        "ID",
-    ]
-])
-```
-
-`setHorizontalHeaderLabels()` expects a flat list of strings.
-
-Current StoragePage passes a list containing another list:
-
-```python
-[["Product", "Brand", ...]]
-```
-
-That nested list forces PySide/Shiboken to convert a Python `list` where it expects string-like entries for a C++ string list, producing a conversion warning.
-
-## Independence from KeyError
-
-The Shiboken warning is operationally independent from `KeyError: "color"`.
-
-Reason:
-
-- Shiboken warning occurs during `StoragePage.build_ui()` while configuring table headers.
-- `KeyError: "color"` occurs later during `StoragePage.load_products()` while rendering price variation cells.
-
-The warning may appear first in terminal output, but it is not the direct cause of the Python `KeyError`.
-
-## Why ShortagePage and MarketPage matter
-
-`ShortagePage` and `MarketPage` use a flat header-label list, so they do not show the same nested-list header bug.
-
-StoragePage is the outlier.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-UI INITIALIZATION SEQUENCE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Current sequence:
-
-```text
-QApplication created
-↓
-MainWindow created
-↓
-QTabWidget created
-↓
-RegisterPage created
-↓
-StoragePage created
-    ↓
-    ProductService created
-        ↓
-        Repository created
-            ↓
-            SQLite connection opened
-    ↓
-    StoragePage.build_ui()
-        ↓
-        QTableWidget created
-        setColumnCount(10)
-        setHorizontalHeaderLabels([[...]])
-        Shiboken warning likely emitted here
-    ↓
-    StoragePage.load_products()
-        ↓
-        service.get_storage_products()
-        repository.get_products()
-        product_status filtering
-        per-row rendering
-        service.get_price_variation(product)
-        variation["color"]
-        KeyError raised here
-↓
-MainWindow initialization aborts
-↓
-window.show() is never reached or does not complete normally
-```
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OBJECT OWNERSHIP OBSERVATIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## Qt widget ownership
-
-`StoragePage.__init__` receives `main_window`, but calls:
-
-```python
-super().__init__()
+main.py
 ```
 
 not:
 
-```python
-super().__init__(main_window)
+```text
+app/main.py
 ```
 
-Therefore the Python constructor stores the main window manually:
+Reason:
 
-```python
-self.main_window = main_window
-```
-
-but does not initially set the Qt parent through the QWidget constructor.
-
-After construction, `MainWindow` stores the page as:
-
-```python
-self.storage_page = StoragePage(self)
-```
-
-and later passes it into:
-
-```python
-self.tabs.addTab(self.storage_page, "Storage")
-```
-
-The Python attribute keeps the object alive; `QTabWidget.addTab` should also take widget ownership in Qt terms once reached.
-
-## Operational relevance
-
-Object ownership does not appear to be the cause of the current failure.
-
-The StoragePage constructor aborts before page insertion becomes the central operational issue.
-
-## Service/repository ownership
-
-Each inventory page creates its own `ProductService`:
-
-- `StoragePage` creates one service.
-- `ShortagePage` creates one service.
-- `MarketPage` creates one service.
-
-Each `ProductService` creates its own `Repository`.
-Each `Repository` opens its own SQLite connection.
-
-This is not the immediate cause of `KeyError: "color"`, but it is an implementation risk because several long-lived Qt pages may hold separate database connections for the full window lifetime.
+- `main.py` starts at repository root during analysis.
+- Package imports remain stable.
+- The `app` package is treated as a package, not as a loose script directory.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SERVICE / REPOSITORY INTERACTIONS
+DATABASE FILE HANDLING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Storage data path
+This is the main packaging risk.
 
-`StoragePage.load_products()` calls:
-
-```python
-products = self.service.get_storage_products()
-```
-
-`ProductService.get_storage_products()` calls:
+Current constants in `app/core/config.py`:
 
 ```python
-return [
-    product
-    for product in self.repository.get_products()
-    if self.product_status(product) == "storage"
-]
+DATABASE_NAME = "market.sqlite"
+DATABASE_DIR_NAME = "app/database"
+SCHEMA_NAME = "schema.sql"
+SEED_NAME = "seed.sql"
 ```
 
-`Repository.get_products()` runs:
-
-```sql
-SELECT *
-FROM products
-ORDER BY product_name
-```
-
-and maps each SQLite row through:
+Current path resolution in `app/core/database.py`:
 
 ```python
-self.row_to_product(row)
+APP_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = APP_DIR.parent.parent
+DATABASE_DIR = PROJECT_DIR / DATABASE_DIR_NAME
+DATABASE_PATH = DATABASE_DIR / DATABASE_NAME
+SCHEMA_PATH = DATABASE_DIR / SCHEMA_NAME
+SEED_PATH = DATABASE_DIR / SEED_NAME
 ```
 
-The repository/data path appears coherent enough to reach UI row rendering.
-
-## Price variation data path
-
-`StoragePage.load_products()` then calls:
+Current connection behavior:
 
 ```python
-variation = self.service.get_price_variation(product)
+if not database_exists():
+    initialize()
 ```
 
-The service returns a dictionary containing price variation values and display text, but no color.
+Current initialization behavior:
 
-The UI assumes color exists.
+```python
+DATABASE_DIR.mkdir(parents=True, exist_ok=True)
+if DATABASE_PATH.exists():
+    DATABASE_PATH.unlink()
+connection = sqlite3.connect(DATABASE_PATH)
+```
 
-Therefore, the service/repository read path is not the failing point; the UI/service presentation contract is the failing point.
+The schema and seed are read from:
+
+```text
+app/database/schema.sql
+app/database/seed.sql
+```
+
+## Why this is fragile after packaging
+
+In a normal source checkout, `PROJECT_DIR` resolves to the repository root.
+
+After PyInstaller freezing, `__file__` no longer behaves like a normal source-tree anchor. The resolved path may point inside the generated bundle or temporary extraction area, depending on build mode.
+
+That makes the current database strategy risky because Markei currently tries to keep writable data under:
+
+```text
+app/database/market.sqlite
+```
+
+This is acceptable for development, but not ideal for end users.
+
+## Critical operational distinction
+
+The packaged application needs two different database-related locations:
+
+1. bundled read-only resources
+2. user-writable runtime data
+
+Bundled resources:
+
+```text
+schema.sql
+seed.sql
+```
+
+User-writable runtime file:
+
+```text
+market.sqlite
+```
+
+These should not be treated as the same directory after packaging.
+
+## Recommended future design
+
+Keep schema and seed as packaged resources, but create/copy the live database into a user-writable directory.
+
+Suggested runtime behavior:
+
+```text
+On startup:
+1. Resolve user data directory for Markei.
+2. Ensure that directory exists.
+3. If market.sqlite is missing there, initialize it from bundled schema.sql and optional seed.sql.
+4. Connect to the user-data database, not the bundled application folder.
+```
+
+Suggested Windows user-data target:
+
+```text
+%LOCALAPPDATA%\Markei\market.sqlite
+```
+
+Potential package resource target:
+
+```text
+app/database/schema.sql
+app/database/seed.sql
+```
+
+## Minimal packaging workaround before refactor
+
+For first build experiments only, include the database folder as PyInstaller data:
+
+```powershell
+python -m PyInstaller `
+  --name Markei `
+  --windowed `
+  --onedir `
+  --add-data "app/database;app/database" `
+  main.py
+```
+
+This may allow `schema.sql` and `seed.sql` to be present in the bundle.
+
+However, it does not fully solve the live SQLite write-location problem.
+
+Do not treat this workaround as the final installable-user solution.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXACT FILES INVOLVED
+EXECUTABLE PACKAGING OPTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Directly involved in Python exception
+## Option A — PyInstaller `onedir`
 
-1. `app/desktop/ui/pages/storage_page.py`
+Recommended first option.
 
-   Uses:
+Command:
 
-   ```python
-   variation["color"]
-   ```
-
-   but does not guarantee that the key exists.
-
-2. `app/core/services.py`
-
-   `get_price_variation()` returns dictionaries without a `"color"` key.
-
-## Directly involved in Shiboken warning
-
-1. `app/desktop/ui/pages/storage_page.py`
-
-   Passes nested header labels to `setHorizontalHeaderLabels()`.
-
-## Involved in execution chain but not primary failure
-
-1. `app/main.py`
-
-   Creates `QApplication` and `MainWindow`.
-
-2. `app/desktop/main_window.py`
-
-   Constructs `StoragePage(self)` during `MainWindow.__init__`.
-
-3. `app/core/repository.py`
-
-   Provides `Repository`, now present and importable.
-
-4. `app/core/database.py`
-
-   Provides SQLite connection and `sqlite3.Row` row factory.
-
-5. `app/core/models.py`
-
-   Defines the `Product` object consumed by the service and UI.
-
-## Related copied-risk files
-
-1. `app/desktop/ui/pages/shortage_page.py`
-2. `app/desktop/ui/pages/market_page.py`
-
-They contain similar table/rendering patterns, but their header labels are flat and their status color code does not use `get_price_variation()`.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MINIMAL OPERATIONAL REPAIR PLAN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-No source files were modified in this session.
-
-Recommended minimal repair for Codex/Main materialization:
-
-## 1. Fix StoragePage header labels
-
-In `app/desktop/ui/pages/storage_page.py`, change the nested list:
-
-```python
-self.table.setHorizontalHeaderLabels([
-    [
-        "Product",
-        ...,
-        "ID",
-    ]
-])
+```powershell
+python -m PyInstaller --name Markei --windowed --onedir --add-data "app/database;app/database" main.py
 ```
 
-to a flat list:
+Expected output:
 
-```python
-self.table.setHorizontalHeaderLabels([
-    "Product",
-    "Brand",
-    "Quantity",
-    "Price",
-    "Δ Price",
-    "Cycle",
-    "Next Purchase",
-    "Remaining",
-    "Status",
-    "ID",
-])
+```text
+dist/Markei/Markei.exe
+```
+
+Operational advantages:
+
+- Simplest PyInstaller path.
+- Easier to inspect missing files.
+- Easier to debug Qt plugin and DLL issues.
+- Better first packaging target for PySide6 desktop apps.
+- User can receive a zipped `dist/Markei/` folder.
+
+Operational disadvantages:
+
+- Distribution is a folder, not a single file.
+- User must not move only `Markei.exe` away from its support files.
+- A later installer should place the full folder correctly.
+
+## Option B — PyInstaller `onefile`
+
+Command:
+
+```powershell
+python -m PyInstaller --name Markei --windowed --onefile --add-data "app/database;app/database" main.py
+```
+
+Advantages:
+
+- Produces one executable file in `dist/`.
+- Simpler-looking artifact for non-developer users.
+
+Risks:
+
+- Startup can be slower because files are extracted at launch.
+- Runtime paths are more complicated.
+- A writable SQLite database must not live only inside the extracted temporary bundle.
+- Debugging hidden import, Qt plugin, and resource-path issues is harder.
+
+Operational recommendation:
+
+Do not start with `onefile`.
+
+Validate `onedir` first.
+
+Move to `onefile` only after database path handling is refactored to a stable user-data directory.
+
+## Option C — `pyside6-deploy`
+
+Qt for Python provides `pyside6-deploy` as a deployment tool.
+
+Potential command shape:
+
+```powershell
+pyside6-deploy main.py
+```
+
+Advantages:
+
+- Comes from the Qt for Python ecosystem.
+- Intended specifically for PySide applications.
+
+Risks for current Markei:
+
+- The current database handling still needs separation between packaged resources and user-writable data.
+- Project-specific control may be less explicit than a PyInstaller spec file.
+- PyInstaller remains the more common first diagnostic packaging path for small Python desktop apps.
+
+Operational recommendation:
+
+Consider later, but do not use as the first packaging path.
+
+## Option D — Nuitka
+
+Nuitka can compile Python applications and has Qt/PySide deployment support.
+
+Potential command shape:
+
+```powershell
+python -m nuitka --standalone --enable-plugin=pyside6 --windows-console-mode=disable main.py
+```
+
+Advantages:
+
+- Strong alternative for compiled Python distribution.
+- Can produce standalone builds.
+
+Risks for current Markei:
+
+- More complex first setup.
+- Slower iteration than PyInstaller.
+- Database path problem remains unchanged.
+
+Operational recommendation:
+
+Keep Nuitka as a later alternative if PyInstaller produces unacceptable size, startup, or antivirus friction.
+
+## Option E — Installer wrapper after PyInstaller
+
+After `onedir` works, package the `dist/Markei/` folder with an installer tool.
+
+Possible Windows installer directions:
+
+- Inno Setup
+- NSIS
+- WiX Toolset
+- MSIX packaging
+
+Operational recommendation:
+
+First milestone should not be a polished installer.
+
+First milestone should be:
+
+```text
+A zipped dist/Markei folder that launches on another Windows machine.
+```
+
+Then add an installer after runtime behavior is stable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RECOMMENDED PACKAGING SEQUENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## Phase 1 — Confirm source runtime
+
+From repository root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python main.py
+```
+
+Alternative source command:
+
+```powershell
+python -m app
 ```
 
 Expected result:
 
-- remove Shiboken conversion warning;
-- keep table column count unchanged at 10.
+- Qt window opens.
+- Tabs are visible.
+- Register/Storage/Shortage/Market/History/Settings initialization does not crash.
+- Database initializes if missing.
 
-## 2. Fix price variation color contract minimally
+## Phase 2 — Install packaging dependency
 
-Preferred minimal operational repair:
-
-- Keep `ProductService.get_price_variation()` free of Qt/PySide objects.
-- Change `StoragePage.load_products()` so it does not require `variation["color"]`.
-- Derive the `QColor` locally in the UI from `variation["delta"]` or use a default color when no price history exists.
-
-Example operational intent, not a final architecture design:
-
-```python
-variation = self.service.get_price_variation(product)
-item = QTableWidgetItem(variation["text"])
-
-if variation["delta"] is None:
-    color = QColor(150, 150, 150)
-elif variation["delta"] > 0:
-    color = QColor(230, 126, 34)
-elif variation["delta"] < 0:
-    color = QColor(46, 204, 113)
-else:
-    color = QColor(150, 150, 150)
-
-item.setForeground(color)
+```powershell
+python -m pip install pyinstaller
+python -m PyInstaller --version
 ```
 
-This avoids importing `QColor` into the service layer.
+## Phase 3 — First diagnostic build with console enabled
 
-Alternative minimal repair:
+Use console first, even though final app should be windowed.
 
-- Make `StoragePage` use:
-
-```python
-variation.get("color", QColor(150, 150, 150))
+```powershell
+python -m PyInstaller --name Markei --onedir --add-data "app/database;app/database" main.py
 ```
-
-This is smaller but less complete, because it hides the missing return-shape mismatch rather than explicitly deciding color from price delta.
-
-## 3. Validate StoragePage boot
-
-After source repair, run:
-
-```bash
-python -m compileall app
-```
-
-Then run:
-
-```bash
-python -m app.main
-```
-
-Expected result:
-
-- no `KeyError: "color"`;
-- no Shiboken list conversion warning from StoragePage headers;
-- MainWindow opens with Register, Storage, Shortage, Market, History, Settings tabs.
-
-## 4. Optional smoke test for the service return shape
 
 Run:
 
-```bash
-python - <<'PY'
-from app.core.services import ProductService
-
-service = ProductService()
-products = service.get_products()
-print("products", len(products))
-if products:
-    print(service.get_price_variation(products[0]))
-service.close()
-PY
+```powershell
+.\dist\Markei\Markei.exe
 ```
 
-Expected output shape:
+Reason:
+
+- Console output helps expose missing imports, missing files, schema path errors, and Qt plugin failures.
+
+## Phase 4 — Windowed build
+
+After console build works:
+
+```powershell
+python -m PyInstaller --name Markei --windowed --onedir --add-data "app/database;app/database" main.py
+```
+
+Run:
+
+```powershell
+.\dist\Markei\Markei.exe
+```
+
+## Phase 5 — Clean rebuild
+
+```powershell
+Remove-Item -Recurse -Force build, dist, Markei.spec
+python -m PyInstaller --clean --name Markei --windowed --onedir --add-data "app/database;app/database" main.py
+```
+
+## Phase 6 — External-machine validation
+
+Copy the entire folder:
 
 ```text
-{"delta": ..., "percentage": ..., "text": ...}
+dist/Markei/
 ```
 
-StoragePage should no longer require a `"color"` key if the preferred UI-local color repair is used.
+to another Windows user profile or another Windows machine.
+
+Run:
+
+```powershell
+.\Markei.exe
+```
+
+Expected result:
+
+- App opens without Python installed separately.
+- App can create/open the SQLite database.
+- App can register a product/purchase.
+- App can close and reopen with data still present.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IMPLEMENTATION RISKS
+VALIDATION COMMANDS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 1. Adding QColor to ProductService would blur layers
+## Environment validation
 
-A quick patch could add `"color": QColor(...)` inside `ProductService.get_price_variation()`.
-
-Operational risk:
-
-- `app/core/services.py` would depend on PySide6/Qt GUI objects.
-- This would make business/service code UI-framework-dependent.
-- It may complicate later non-desktop use.
-
-Minimal safer direction: keep colors in UI rendering code.
-
-## 2. Using `variation.get("color")` hides the mismatch
-
-A very small UI patch can prevent the crash:
-
-```python
-variation.get("color", QColor(150, 150, 150))
+```powershell
+python --version
+python -m pip --version
+python -m pip show PySide6
+python -m pip show shiboken6
+python -m pip show pyinstaller
 ```
 
-Operational risk:
+## Source validation
 
-- It prevents the exception but leaves the UI/service mismatch implicit.
-- It may mask future return-shape mistakes.
-
-## 3. StoragePage currently loads data during construction
-
-Because `StoragePage.__init__` calls `load_products()` immediately, any data-rendering failure aborts `MainWindow.__init__`.
-
-Operational risk:
-
-- one page rendering failure prevents the entire app window from opening.
-
-No architecture redesign is recommended in this report, but this explains why the failure appears while opening the page/window.
-
-## 4. Multiple page-owned services create multiple database connections
-
-Storage, Shortage, and Market each create their own `ProductService`, and therefore each opens a `Repository` / SQLite connection.
-
-Operational risk:
-
-- connections may remain open for the page lifetime;
-- database reset/reinitialization can fail if a connection remains open;
-- future refresh flows may produce locking symptoms.
-
-This is not the current `KeyError` cause.
-
-## 5. Double-click product ID bug remains nearby
-
-`StoragePage` sets the ID column at index 9:
-
-```python
-self.table.setItem(row, 9, id_item)
+```powershell
+python main.py
+python -m app
 ```
 
-but `edit_selected_product()` reads:
+## Database validation before packaging
 
-```python
-product_id = self.table.item(row, 7).text()
+```powershell
+python -m app.core.database
 ```
 
-Column 7 is `Remaining`, not `ID`.
+Expected source-tree effect:
 
-Operational risk:
-
-- after StoragePage opens, double-click editing may fetch the wrong product ID.
-
-This is not part of the current crash, but it is in the same file and likely to surface after the page renders.
-
-## 6. Brand may be None
-
-`StoragePage` constructs:
-
-```python
-QTableWidgetItem(product.brand)
+```text
+app/database/market.sqlite
 ```
 
-`Product.brand` is optional.
+exists after initialization.
 
-Operational risk:
+## Build validation
 
-- if `brand` is `None`, PySide may reject or mishandle the value depending on binding conversion.
+```powershell
+python -m PyInstaller --clean --name Markei --onedir --add-data "app/database;app/database" main.py
+```
 
-This is not the reported `KeyError`, but it is another possible UI conversion issue.
+Then:
+
+```powershell
+Test-Path .\dist\Markei\Markei.exe
+Get-ChildItem .\dist\Markei
+.\dist\Markei\Markei.exe
+```
+
+## Runtime persistence validation
+
+Manual test:
+
+1. Open packaged app.
+2. Add one product/purchase through Register.
+3. Close the app.
+4. Reopen the app.
+5. Confirm the data remains visible.
+
+This test is essential because Markei is a data app, not just a window app.
+
+## Missing-resource validation
+
+Temporarily rename/remove the source-tree `app/database/market.sqlite`, rebuild, and run the packaged app.
+
+Expected result:
+
+- If the database does not exist, packaged app should still be able to initialize from schema.
+
+Current risk:
+
+- With current path logic, this may fail or create the database inside the bundle layout rather than a safe user-data directory.
+
+## Debug build command
+
+If the windowed build silently fails:
+
+```powershell
+python -m PyInstaller --clean --name Markei --onedir --add-data "app/database;app/database" main.py
+.\dist\Markei\Markei.exe
+```
+
+Avoid `--windowed` while debugging so tracebacks remain visible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WINDOWS USER RISKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 1. Moving only the `.exe`
+
+For `onedir`, the user must keep the whole folder together.
+
+Bad:
+
+```text
+Move only Markei.exe to Desktop.
+```
+
+Good:
+
+```text
+Move or install the whole Markei folder.
+```
+
+## 2. Writable database location
+
+If the app is installed under:
+
+```text
+C:\Program Files\Markei\
+```
+
+normal users may not be allowed to write there.
+
+Therefore the live SQLite database should eventually move to:
+
+```text
+%LOCALAPPDATA%\Markei\market.sqlite
+```
+
+or equivalent.
+
+## 3. Antivirus / SmartScreen warnings
+
+Unsigned executables downloaded from the internet may trigger Windows SmartScreen or antivirus warnings.
+
+This is common for small independent apps.
+
+Mitigation later:
+
+- code signing certificate;
+- stable installer;
+- version metadata;
+- avoid suspicious compression tools;
+- distribute through a trusted channel.
+
+## 4. Onefile temporary extraction
+
+`--onefile` extracts bundled contents at runtime.
+
+Risks:
+
+- slower startup;
+- temporary-directory interference;
+- resource path surprises;
+- unsafe assumption that writable data can live near bundled files.
+
+## 5. Hidden crash when using `--windowed`
+
+`--windowed` hides the console.
+
+If the app crashes during startup, the user may see nothing.
+
+Mitigation:
+
+- validate first with console enabled;
+- add GUI error reporting later;
+- add logging to a user-data log file later.
+
+## 6. Qt platform plugin failures
+
+PySide6 apps depend on Qt plugins and DLLs.
+
+Common symptom:
+
+```text
+Could not load the Qt platform plugin "windows"
+```
+
+Mitigation:
+
+- start with PyInstaller `onedir`;
+- inspect collected files;
+- ensure build is performed inside the intended virtual environment;
+- avoid mixing global PySide6/Shiboken installs with venv installs.
+
+## 7. Python version compatibility
+
+The local project context previously observed Python `3.14.6` on Windows.
+
+Packaging tools and binary GUI libraries are sensitive to Python version support.
+
+Operational recommendation:
+
+- validate PySide6 and PyInstaller with the exact local Python version;
+- if packaging fails due to wheel/tool support, use the newest broadly-supported stable Python version available for PySide6/PyInstaller at build time;
+- do not assume that a source app running under one Python version guarantees a frozen app will build cleanly under the same version.
+
+## 8. SQLite file locks
+
+Markei has previously encountered database lock/permission behavior during database reinitialization.
+
+The current `initialize()` function deletes the existing SQLite file before rebuilding:
+
+```python
+if DATABASE_PATH.exists():
+    DATABASE_PATH.unlink()
+```
+
+Risks:
+
+- failure if the DB is open;
+- data loss if reset is triggered unintentionally;
+- permission failure under installed directories.
+
+Installer/runtime behavior should not routinely call destructive reset.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MINIMAL PATCH PLAN FOR MAIN SYNTHESIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This Operational Chat did not patch application files.
+
+Suggested Main/Codex materialization plan:
+
+## Patch 1 — Separate bundled resources from user data
+
+Target:
+
+```text
+app/core/database.py
+app/core/config.py
+```
+
+Intent:
+
+- Keep `schema.sql` and `seed.sql` as packaged resources.
+- Move live `market.sqlite` to a user-writable directory.
+- Avoid writing under the frozen bundle.
+
+Possible new conceptual paths:
+
+```text
+RESOURCE_DATABASE_DIR = bundled app/database directory
+USER_DATABASE_DIR = user data directory
+DATABASE_PATH = USER_DATABASE_DIR / market.sqlite
+SCHEMA_PATH = RESOURCE_DATABASE_DIR / schema.sql
+SEED_PATH = RESOURCE_DATABASE_DIR / seed.sql
+```
+
+## Patch 2 — Add frozen-resource path helper
+
+Target:
+
+```text
+app/core/paths.py
+```
+
+or inside existing database/config layer if avoiding a new file.
+
+Intent:
+
+- Resolve normal source-tree paths during development.
+- Resolve PyInstaller `_MEIPASS` or bundle-relative paths when frozen.
+
+Possible behavior:
+
+```python
+if getattr(sys, "frozen", False):
+    resource_base = Path(sys._MEIPASS)
+else:
+    resource_base = project_root
+```
+
+## Patch 3 — Add packaging dependency path
+
+Target:
+
+```text
+requirements-dev.txt
+```
+
+Possible content:
+
+```text
+pyinstaller
+```
+
+Optional later:
+
+```text
+platformdirs
+```
+
+## Patch 4 — Add packaging script or documented command
+
+Possible target:
+
+```text
+scripts/build_windows.ps1
+```
+
+or notebook operational runbook after Main synthesis.
+
+Initial command:
+
+```powershell
+python -m PyInstaller --clean --name Markei --windowed --onedir --add-data "app/database;app/database" main.py
+```
+
+## Patch 5 — Add basic runtime logging before final windowed distribution
+
+Target:
+
+```text
+app/main.py
+```
+
+Intent:
+
+- Capture startup exceptions to a user-data log file.
+- Reduce silent failure under `--windowed`.
+
+This can wait until basic packaging works.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OPERATIONAL CONCLUSION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-`KeyError: "color"` is the primary runtime failure currently blocking StoragePage data rendering.
+Markei is close to being packageable as a simple Windows desktop app, but not yet ready for a reliable non-developer installer.
 
-The immediate cause is:
+The current best first packaging target is:
 
-```text
-StoragePage expects ProductService.get_price_variation() to return variation["color"], but ProductService never returns a "color" key.
+```powershell
+python -m PyInstaller --name Markei --windowed --onedir --add-data "app/database;app/database" main.py
 ```
 
-The Shiboken warning is independent and most likely caused by StoragePage passing a nested list to `QTableWidget.setHorizontalHeaderLabels()`.
+The current best first user-facing artifact is:
 
-Minimal repair should target only:
+```text
+A zipped dist/Markei folder.
+```
 
-1. `app/desktop/ui/pages/storage_page.py` header-label list shape;
-2. `app/desktop/ui/pages/storage_page.py` price-variation color handling, preferably deriving `QColor` in the UI from service-provided numeric delta;
-3. optionally the same file's ID-column double-click index after the crash is fixed.
+The main blocker before calling it installable is database path handling.
 
-No application source modifications were performed by this Operational Chat.
+The live SQLite file should move out of the application/package directory and into a user-writable Markei data directory.
+
+Until that is done, `onedir` may work as a local experiment, but it should not be trusted as a durable Windows install for non-developer users.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FILE UPDATED
+NEXT RECOMMENDED ACTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
+Ask Main Chat to synthesize this report into `D_OPS_STAGE.md` for Codex materialization.
+
+Primary implementation target:
+
+```text
+Make database path handling packaging-safe before producing the first Windows executable.
+```
+
+Suggested Codex task after Main synthesis:
+
+```text
+Refactor Markei database startup so schema/seed are read as bundled resources while market.sqlite is created in a user-writable app data directory, then add a Windows PyInstaller build command/runbook and validate source + packaged startup.
+```
