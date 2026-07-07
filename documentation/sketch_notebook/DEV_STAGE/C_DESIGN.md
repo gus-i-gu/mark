@@ -1,4 +1,4 @@
-# [D] Session 002 | 10:45_07_07_2026 | Markei
+# [D] Session 003 | 11:12_07_07_2026 | Markei
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ROLE
@@ -6,9 +6,13 @@ ROLE
 
 Design Chat
 
-Responsibility: architecture, domain boundaries, responsibility allocation, abstractions, and long-term maintainability.
+Responsibility: product/interface design, architecture, responsibility boundaries, user-facing simplification, and long-term structural coherence.
 
-This pass evaluates only architectural responsibilities after the Repository repair. It does not edit application code.
+This pass evaluates the product/interface design needed for a simplified user-facing Markei version.
+
+No application source code was edited.
+No permanent notebook files were edited.
+Only this assigned Design staging file was updated.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 BOOTSTRAP STATUS
@@ -24,90 +28,690 @@ Read successfully:
 - documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md
 - documentation/sketch_notebook/methodology/FLUX.md
 - documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+- app/main.py
+- app/desktop/main_window.py
+- app/desktop/ui/pages/register_page.py
+- app/desktop/ui/pages/storage_page.py
+- app/desktop/ui/pages/settings_page.py
+- app/core/services.py
+- app/core/config.py
+- app/core/database.py
 
 Relevant methodology constraints:
 
-- Functional Design Chat may write only `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`.
-- Functional Design Chat must not edit application source code.
-- Design Chat observes architecture, domain modeling, separation of responsibilities, and structural consistency.
+- Design Chat writes only `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`.
+- Design Chat does not edit application source code.
+- Design Chat does not edit permanent notebook folders.
+- Design Chat stages architectural and product-interface reasoning for Main Chat synthesis.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROBLEM ANALYSED
+TASK ANALYSED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Reported current failure:
+Evaluate the product/interface design needed for a simplified user-facing Markei version.
 
-    StoragePage initialization fails with:
+Focus areas:
 
-        KeyError: "color"
-
-Reported context:
-
-- Repository repair has already moved the application beyond the previous persistence adapter failure.
-- The current failure happens during StoragePage initialization.
-- The question is whether the service layer should provide UI metadata such as colors, and whether Qt objects such as QColor belong inside ProductService.
-
-This Design Chat pass evaluates architecture only. It does not propose a code patch except where necessary to explain layer ownership.
+1. first-user flow;
+2. whether tabs should remain or be simplified;
+3. essential MVP pages for users;
+4. installable desktop app boundaries;
+5. settings/database responsibility;
+6. what should stay local-only.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. ARCHITECTURAL OBSERVATIONS
+1. CURRENT PRODUCT SHAPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Observation 1 — The failure moved upward in the dependency chain.
+The current desktop UI exposes six top-level tabs:
 
-The previous architectural concern was whether ProductService could correctly depend on a concrete Repository adapter. The current reported failure occurs during StoragePage initialization, which places the symptom in the UI/presentation area rather than in the persistence repair itself.
+- Register
+- Storage
+- Shortage
+- Market
+- History
+- Settings
 
-Architectural implication:
+Current structural observations:
 
-    Repository repair exposed the next boundary problem.
+1. `RegisterPage` is explicitly documented as the only writable page.
+2. `StoragePage`, `ShortagePage`, and `MarketPage` are inventory interpretation pages.
+3. `HistoryPage` is a read-only record surface.
+4. `SettingsPage` currently exists as a placeholder.
+5. `MainWindow` owns navigation through a `QTabWidget` and directly creates all pages.
+6. `ProductService` is the business/application service exposed to the UI.
+7. `database.py` owns SQLite database creation, connection configuration, and schema initialization.
+8. `config.py` currently owns project constants such as app name, version, database name, database directory, date format, and default reorder threshold.
 
-The system now appears to be failing not because persistence cannot be imported, but because the UI expects a presentation field named `color` that is not present in the data object it receives.
+Design implication:
 
-Observation 2 — `KeyError: "color"` indicates a contract mismatch.
+    The internal architecture is already organized around clear domain surfaces,
+    but the user-facing navigation is heavier than the simplified MVP requires.
 
-A missing `color` key means one layer expects the returned product/status structure to contain presentation metadata.
-
-There are two possible architectural interpretations:
-
-1. ProductService promised a UI-ready dictionary containing `color`, but failed to provide it.
-2. StoragePage invented an expectation that ProductService should provide `color`, even though ProductService owns business semantics rather than visual rendering.
-
-The second interpretation is architecturally preferable because it preserves layer separation.
-
-Observation 3 — Price variation has two meanings.
-
-Price variation can mean:
-
-- domain semantics: price increased, decreased, stayed stable, has no previous comparison, or is affected by promotion logic;
-- presentation styling: green/red/gray/yellow, QColor objects, table brushes, labels, or icons.
-
-These are not the same responsibility.
-
-The domain meaning may belong to the business layer.
-The color representation belongs to the UI layer.
-
-Observation 4 — QColor is a Qt presentation object.
-
-QColor is not a domain value. It is part of the PySide6/Qt presentation framework.
-
-If ProductService imports, constructs, stores, or returns QColor, then the service layer becomes coupled to the UI framework. That would make the service less testable, less reusable, and less clearly separated from presentation concerns.
-
-Observation 5 — Shiboken warning is not itself an architectural diagnosis.
-
-A Shiboken warning usually belongs to the Python/Qt binding runtime boundary. By itself, it does not prove an application architecture violation.
-
-However, if Qt objects are being created, passed, retained, or transformed outside the UI layer, the warning may become supporting evidence that presentation objects are leaking into non-presentation code.
-
-Therefore:
-
-    Shiboken warning alone: runtime/UI binding concern.
-    Shiboken warning plus service-owned QColor: architectural boundary smell.
+The six current tabs are useful for development because each tab corresponds to a project concept. For first users, however, the same division risks making the app feel like a database tool rather than a small domestic assistant for remembering what exists, what is ending, and what should be bought again.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. BOUNDARY OWNERSHIP
+2. FIRST-USER FLOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Canonical dependency direction remains:
+Recommended first-user flow:
+
+    Open app
+    ↓
+    Local database check
+    ↓
+    If no database exists: create local database automatically
+    ↓
+    Show simple empty state
+    ↓
+    Guide user to register first purchase
+    ↓
+    Save receipt line
+    ↓
+    Refresh inventory summary
+    ↓
+    Show what Markei can infer after first data exists
+
+The first launch should not begin with all app concepts exposed equally.
+
+The user should first understand one sentence:
+
+    Markei helps you manually register supermarket purchases and remember what is probably still at home, ending soon, or ready to buy again.
+
+First-run experience should prioritize confidence over completeness.
+
+Minimum first-user flow states:
+
+1. Empty database state
+
+    Message:
+
+        No products registered yet.
+        Start by adding one item from your latest supermarket receipt.
+
+    Primary action:
+
+        Add first product
+
+2. First product registration
+
+    Required visible fields should be reduced to the minimum necessary:
+
+    - Product name
+    - Brand, optional
+    - Quantity
+    - Unit
+    - Price
+    - Purchase date
+
+    Advanced fields such as category, store ID, notes, promotion details, internal product ID, and calculated fields should not dominate the first-user screen.
+
+3. First save confirmation
+
+    After the first item is saved, Markei should immediately answer:
+
+    - what was saved;
+    - where it now appears;
+    - what the app still cannot infer until more purchases exist.
+
+4. First learning loop
+
+    Because duration prediction requires repeated purchases, the UI should communicate this gently:
+
+        Markei will estimate product cycles after you register the same product more than once.
+
+This avoids promising prediction before the data exists.
+
+Design decision candidate:
+
+    First use should be Register-first, not dashboard-first.
+
+Reason:
+
+    Markei has no useful dashboard until at least one product exists.
+    The first successful registration is the activation moment of the application.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SHOULD TABS REMAIN?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decision candidate:
+
+    Keep tabs internally for now, but simplify the user-facing navigation.
+
+Current six-tab layout is structurally understandable for development, but too exposed for a simplified user-facing MVP.
+
+Problem with current top-level tabs:
+
+- Storage, Shortage, and Market are not truly separate workflows.
+- They are three filtered interpretations of inventory state.
+- First users must learn app vocabulary before seeing value.
+- The tab row suggests that all pages are equally important.
+- Settings appears as a full peer to core workflows even though it should be secondary.
+
+Recommended simplified navigation:
+
+    1. Add Purchase
+    2. Inventory
+    3. Shopping List
+    4. History
+    5. Settings
+
+Even better for the earliest MVP:
+
+    1. Add
+    2. Home
+    3. History
+    4. Settings
+
+Where:
+
+- Home contains inventory summary, ending soon, and buy again sections.
+- Add is the receipt-entry workflow.
+- History is read-only past purchases.
+- Settings is secondary.
+
+Alternative if preserving current concepts with less cognitive weight:
+
+    Top-level:
+
+    - Register
+    - Products
+    - History
+    - Settings
+
+    Inside Products:
+
+    - In stock
+    - Ending soon
+    - Buy again
+
+This keeps the domain distinction without making the user navigate six separate tabs.
+
+Recommended MVP direction:
+
+    Merge Storage, Shortage, and Market into one user-facing inventory/shopping surface.
+
+The terms can remain internally:
+
+- Storage = safe / still available
+- Shortage = ending soon
+- Market = expected ended / buy again
+
+But the user-facing labels should be simpler:
+
+- In stock
+- Ending soon
+- Buy again
+
+Design decision candidate:
+
+    Do not remove the architectural concepts.
+    Reduce their navigation exposure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ESSENTIAL MVP USER PAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Essential MVP pages for simplified users:
+
+1. Add Purchase / Register
+
+Purpose:
+
+    Let the user manually enter one purchased product from a receipt.
+
+Responsibilities:
+
+- create or update product record;
+- create purchase record;
+- trigger recalculation;
+- refresh visible summaries;
+- show success/failure feedback.
+
+User-facing simplification:
+
+- Rename `Register` to `Add Purchase` or `Add`.
+- Hide internal IDs unless needed.
+- Make category/store/notes optional or advanced.
+- Keep the manual receipt-entry promise clear.
+
+2. Home / Inventory
+
+Purpose:
+
+    Show what the user probably has and what needs attention.
+
+Responsibilities:
+
+- show products in stock;
+- show products ending soon;
+- show products expected to be depleted;
+- let the user select a product and edit it;
+- provide a refresh action only if necessary.
+
+User-facing simplification:
+
+- One page with sections or filters is preferable to three separate tabs.
+- The app should answer: "What do I have?" and "What should I buy?" without requiring the user to understand Storage/Shortage/Market as technical categories.
+
+3. Shopping List / Buy Again
+
+Purpose:
+
+    Show products Markei believes should be bought again.
+
+This can either be:
+
+- its own page, if buying again is the main user action;
+- a section inside Home/Inventory, if keeping the MVP very small.
+
+Recommendation:
+
+    For the smallest MVP, make Buy Again a section/filter inside Inventory.
+    Later, promote it to a dedicated Shopping List page if it becomes the central workflow.
+
+4. History
+
+Purpose:
+
+    Preserve trust by showing what was registered.
+
+Responsibilities:
+
+- show purchase records;
+- allow inspection of past prices and dates;
+- support debugging of user mistakes;
+- support future product-cycle understanding.
+
+MVP status:
+
+    History is important, but it can be visually secondary.
+
+Reason:
+
+    Users need to trust a local manual-data app. If something looks wrong in Inventory, History is how they verify whether they entered the receipt correctly.
+
+5. Settings
+
+Purpose:
+
+    Control app-level preferences and local data management.
+
+MVP status:
+
+    Essential, but minimal.
+
+Settings should not be a complex administration console.
+
+Minimum settings:
+
+- default reorder threshold in days;
+- database location display;
+- backup/export local data;
+- restore/import local data, later if needed;
+- reset database, protected by strong confirmation;
+- app version/about.
+
+Non-essential for first MVP:
+
+- account settings;
+- cloud sync;
+- remote login;
+- barcode integrations;
+- scraping;
+- multi-user sharing;
+- store account integrations;
+- remote analytics.
+
+Recommended first MVP page set:
+
+    Add Purchase
+    Inventory
+    History
+    Settings
+
+Recommended future page set:
+
+    Home
+    Add Purchase
+    Shopping List
+    Products
+    History
+    Settings
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. INSTALLABLE DESKTOP APP BOUNDARIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Markei should remain an installable local desktop app for the simplified user-facing version.
+
+User-facing boundary:
+
+    The app lives on the user's computer.
+    The user's supermarket data lives on the user's computer.
+    The app does not require an account or internet connection for MVP use.
+
+Installer responsibilities:
+
+- install application files;
+- ensure the app can start from a normal desktop shortcut/menu entry;
+- create or locate the local application data directory;
+- initialize the local SQLite database if missing;
+- avoid requiring the user to run Python commands;
+- avoid requiring the user to inspect repository files;
+- avoid exposing schema/database implementation during normal use.
+
+The installed app should not feel like a development checkout.
+
+Developer-facing structure may include:
+
+- source files;
+- schema files;
+- seed files;
+- repository modules;
+- service modules;
+- notebook files.
+
+User-facing installation should expose:
+
+- the app launcher;
+- maybe a local data folder through Settings;
+- maybe export/backup files chosen by the user.
+
+Design boundary:
+
+    The user should not need to know that Markei uses SQLite.
+    But the user should be able to know where their local data is and how to back it up.
+
+Packaging implication:
+
+    Hard-coded development-relative database paths should eventually become install-safe application-data paths.
+
+The current configuration points the database directory through project configuration. This is acceptable during development, but installed builds should not depend on the app being run from a repository-shaped folder.
+
+Recommended design distinction:
+
+- Development database path: repository-local, useful for debugging.
+- Installed database path: user-local application data directory.
+- Settings page: displays the active data location in human terms.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. SETTINGS AND DATABASE RESPONSIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Settings responsibilities:
+
+- expose user preferences;
+- show local data information;
+- provide safe user-controlled maintenance actions;
+- protect dangerous actions with confirmation;
+- avoid exposing low-level database operations.
+
+Database responsibilities:
+
+- create database directory;
+- create SQLite database;
+- execute schema;
+- configure SQLite connections;
+- provide connections to Repository;
+- avoid business calculations;
+- avoid UI decisions;
+- avoid user-facing settings logic.
+
+Repository responsibilities:
+
+- execute SQL;
+- store and retrieve product/purchase records;
+- reconstruct domain objects;
+- hide SQL details from ProductService.
+
+ProductService responsibilities:
+
+- register purchases;
+- apply business rules;
+- calculate product summaries;
+- expose application-level operations to UI;
+- remain independent from UI widgets and SQLite details.
+
+Settings page should not directly manipulate database internals.
+
+Acceptable Settings actions:
+
+1. Change default reorder threshold
+
+    This is a user preference.
+    It affects product status calculations.
+    It should be stored persistently, but not hard-coded forever in config if the user can change it.
+
+2. Show data location
+
+    This improves trust and local-only transparency.
+
+3. Export backup
+
+    This should copy/export the local database or export user-readable data.
+    The user controls the destination.
+
+4. Restore backup
+
+    This is useful later, but should be protected because it can replace current data.
+
+5. Reset database
+
+    This is dangerous and should require explicit confirmation.
+    It should not be presented casually.
+
+Unacceptable Settings responsibilities:
+
+- editing tables directly;
+- running arbitrary SQL;
+- showing schema internals as normal UI;
+- bypassing ProductService/Repository for normal product operations;
+- making the user manage database initialization manually.
+
+Design decision candidate:
+
+    Settings owns user preferences and safe data-management commands.
+    database.py owns database lifecycle mechanics.
+    ProductService owns business meaning.
+    Repository owns persistence operations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WHAT SHOULD STAY LOCAL-ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For the simplified MVP, the following should stay local-only:
+
+1. Product list
+
+Includes product names, brands, quantities, units, current prices, notes, and product identifiers.
+
+2. Purchase history
+
+Includes receipt-line entries, dates, prices, stores if used, promotions, and quantities.
+
+3. Prediction data
+
+Includes average duration, expected next purchase, remaining days, shortage status, and market/buy-again status.
+
+4. User settings
+
+Includes reorder threshold, interface preferences, and local data choices.
+
+5. Database file
+
+The SQLite database should remain on the user's machine.
+
+6. Backups and exports
+
+Backups should be created only when the user explicitly chooses to export them.
+
+7. App analytics
+
+No analytics are needed for MVP.
+
+8. Accounts and identity
+
+No user account is needed for MVP.
+
+9. Store integrations
+
+No supermarket login, scraping, barcode service, or remote price API should be required for MVP.
+
+10. Network access
+
+The app should be usable offline.
+
+Design decision candidate:
+
+    Markei MVP should be local-first and offline-capable.
+    Any future cloud or sync feature must be optional and explicitly user-controlled.
+
+Reason:
+
+    The app's value comes from manual household purchase memory, not from online services.
+    Requiring accounts, sync, scraping, or remote integrations would increase complexity before the core habit is proven.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. SIMPLIFIED USER-FACING INFORMATION ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Recommended simplified IA for MVP:
+
+    Add Purchase
+        manual receipt entry
+        success feedback
+        edit current product when needed
+
+    Inventory
+        all products
+        filters/sections:
+            In stock
+            Ending soon
+            Buy again
+        double-click or action to edit product
+
+    History
+        purchase records
+        price/date audit trail
+        support trust and correction
+
+    Settings
+        reorder threshold
+        data location
+        backup/export
+        reset database with confirmation
+        app version
+
+Optional Home version:
+
+    Home
+        summary cards:
+            In stock count
+            Ending soon count
+            Buy again count
+        quick action:
+            Add purchase
+        list preview:
+            Buy again / Ending soon
+
+    Add Purchase
+    Inventory
+    History
+    Settings
+
+Recommendation:
+
+    Use the four-page MVP first.
+    Add Home only if the Inventory page becomes too dense or if first-launch guidance needs a landing surface.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. NAMING RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current technical names:
+
+- Register
+- Storage
+- Shortage
+- Market
+- History
+- Settings
+
+Recommended user-facing names:
+
+- Add Purchase
+- Inventory
+- Ending Soon
+- Buy Again
+- History
+- Settings
+
+Recommended structural simplification:
+
+- `Register` becomes `Add Purchase`.
+- `Storage` becomes `Inventory` or an `In stock` filter inside Inventory.
+- `Shortage` becomes `Ending soon`.
+- `Market` becomes `Buy again` or `Shopping list`.
+- `History` remains `History`.
+- `Settings` remains `Settings`, but secondary.
+
+Design decision candidate:
+
+    User-facing vocabulary should describe household action, not internal classification.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. MVP DESIGN CONCLUSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conclusion 1 — First-user flow should be Add-first.
+
+The app has no meaningful prediction before user data exists. The first success moment is registering a purchase.
+
+Conclusion 2 — Tabs may remain technically, but should be simplified visually.
+
+A `QTabWidget` can remain as a practical MVP navigation mechanism, but six equally weighted tabs should not be the final simplified product shape.
+
+Conclusion 3 — Storage, Shortage, and Market should become sections or filters.
+
+They are interpretations of product status, not separate user workflows.
+
+Conclusion 4 — Essential MVP pages are Add Purchase, Inventory, History, and Settings.
+
+Shopping List / Buy Again can initially be a section inside Inventory, then promoted later if it becomes central.
+
+Conclusion 5 — Installed desktop app should hide development machinery.
+
+The user should launch Markei like a normal app, not run Python or manage project folders.
+
+Conclusion 6 — Settings should manage user preferences and safe local data actions.
+
+Settings should not become a database editor.
+
+Conclusion 7 — Database lifecycle belongs to database.py and persistence operations belong to Repository.
+
+Settings can request safe operations, but should not own SQLite mechanics.
+
+Conclusion 8 — MVP should stay local-only.
+
+No accounts, cloud sync, remote services, scraping, barcode APIs, or analytics are required for the simplified MVP.
+
+Conclusion 9 — Prediction should be explained as learned from repeated purchases.
+
+The UI should not overpromise on first use.
+
+Conclusion 10 — The simplified product should feel like a household memory tool, not a database UI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MAIN CHAT SYNTHESIS REQUEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Main Chat should synthesize this design-stage report into materialization instructions only if it decides the UI should be simplified now.
+
+Recommended synthesis direction:
+
+1. Preserve the current architecture boundaries:
 
     UI
     ↓
@@ -117,275 +721,41 @@ Canonical dependency direction remains:
     ↓
     database.py / SQLite
 
-Layer ownership for this problem:
+2. Rename user-facing concepts without necessarily renaming internal modules immediately.
 
-1. Repository
+3. Reduce top-level navigation from six tabs toward four user-facing surfaces:
 
-Owns:
+    Add Purchase
+    Inventory
+    History
+    Settings
 
-- persisted products;
-- persisted purchases;
-- persisted prices;
-- raw historical purchase data;
-- SQL and row reconstruction.
+4. Treat Storage, Shortage, and Market as inventory status filters or sections.
 
-Does not own:
+5. Keep local SQLite as the MVP persistence mechanism.
 
-- price variation meaning;
-- shortage/market interpretation;
-- UI colors;
-- QColor;
-- table styling.
+6. Move installed-app database location planning into a future packaging/design task.
 
-2. ProductService
+7. Keep Settings minimal:
 
-Owns:
+    - reorder threshold;
+    - data location;
+    - backup/export;
+    - reset with confirmation;
+    - version/about.
 
-- business interpretation of purchase history;
-- product availability status;
-- price variation semantics;
-- domain labels or enum-like semantic states such as `price_up`, `price_down`, `price_same`, `no_previous_price`;
-- calculations needed to decide what a product means in the application domain.
-
-Does not own:
-
-- PySide6 objects;
-- QColor;
-- table item styling;
-- visual palettes;
-- UI widget concerns;
-- final presentation colors.
-
-3. StoragePage
-
-Owns:
-
-- rendering storage data;
-- translating domain status into visible UI representation;
-- choosing table colors, labels, icons, or text formatting;
-- handling absent optional presentation fields defensively if UI metadata is used internally.
-
-Does not own:
-
-- domain calculations for price variation;
-- purchase interval calculation;
-- expected depletion logic;
-- persistence queries;
-- direct SQL access.
-
-4. Presentation adapter / UI mapper, if introduced later
-
-May own:
-
-- mapping domain semantic states to UI metadata;
-- converting `price_down` into green text;
-- converting `price_up` into red text;
-- converting shortage status into warning style;
-- constructing QColor or other Qt presentation values.
-
-This can live inside the UI layer without burdening StoragePage directly, but it must still remain presentation-side, not service-side.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. DESIGN DECISION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Decision 1 — Price variation semantics belong to the service/domain side.
-
-ProductService may expose semantic information such as:
-
-    price_status = "increased"
-    price_status = "decreased"
-    price_status = "same"
-    price_status = "unknown"
-
-or equivalent non-UI domain values.
-
-This is acceptable because price comparison is business meaning, not visual rendering.
-
-Decision 2 — Presentation colors belong to the UI side.
-
-Color is not domain meaning. Color is a chosen representation of meaning.
-
-The UI may decide:
-
-    increased -> red
-    decreased -> green
-    same -> neutral
-    unknown -> muted
-
-But ProductService should not decide that mapping.
-
-Decision 3 — ProductService should not expose UI metadata.
-
-ProductService should not expose fields whose purpose is directly visual, such as:
-
-- `color`
-- `background_color`
-- `text_color`
-- `brush`
-- `qcolor`
-- `display_role`
-- `font_weight`
-
-If ProductService returns dictionaries, those dictionaries should describe domain/application facts, not Qt presentation objects.
-
-Decision 4 — QColor does not belong inside the service layer.
-
-QColor belongs to PySide6/Qt presentation code.
-
-ProductService should remain independent of Qt imports. A service layer that imports QColor would violate the intended architecture by making business logic depend on a GUI framework.
-
-Decision 5 — StoragePage currently appears to violate the boundary if it expects ProductService to provide `color`.
-
-If StoragePage currently reads something equivalent to:
-
-    product_data["color"]
-
-from service output, then StoragePage is depending on service output as if it were UI-ready presentation data.
-
-That is an architectural boundary smell.
-
-The correct expectation is:
-
-    StoragePage receives semantic state.
-    StoragePage or a UI-side mapper converts semantic state into presentation style.
-
-Decision 6 — The Shiboken warning is secondary.
-
-The Shiboken warning should not be treated as the primary design problem unless evidence shows Qt objects leaking into ProductService or domain structures.
-
-The primary design problem is the unclear service-to-UI contract around `color`.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. RECOMMENDED ARCHITECTURAL REPAIR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Recommended repair direction:
-
-    Replace UI metadata crossing the service boundary with semantic domain state crossing the service boundary.
-
-The repaired architecture should be:
-
-    ProductService
-        returns domain/application semantics:
-        - product data
-        - storage status
-        - price variation status
-        - dates / quantities / calculated values
-
-    StoragePage or UI mapper
-        translates semantics into presentation:
-        - QColor
-        - text color
-        - background color
-        - icons
-        - labels
-        - table item decoration
-
-Minimal architectural correction:
-
-1. Do not add QColor to ProductService.
-2. Do not make ProductService return `color` as a required field.
-3. Do let ProductService return a stable semantic field for price variation if the UI needs one.
-4. Do map that semantic field to QColor inside the UI layer.
-5. Do make StoragePage stop assuming that service data contains presentation keys.
-
-Acceptable service fields:
-
-    price_variation
-    price_trend
-    price_status
-    stock_status
-    days_until_expected_end
-    expected_next_purchase
-
-Unacceptable service fields:
-
-    color
-    qcolor
-    text_brush
-    background_brush
-    qt_display_role
-
-Possible UI-side abstraction:
-
-    StoragePresentationMapper
-
-This mapper would be a presentation concern, not a domain/service concern. It may be introduced later if StoragePage becomes too large, but the key design rule is that it remains on the UI side of the boundary.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. LONG-TERM IMPLICATIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Implication 1 — Service independence remains preserved.
-
-Keeping QColor out of ProductService keeps the service usable from:
-
-- PySide6 UI;
-- tests;
-- future CLI tools;
-- future API layer;
-- future alternate UI.
-
-Implication 2 — UI styling remains flexible.
-
-If colors belong to StoragePage or a UI mapper, the project can later change themes, accessibility contrast, dark mode, icons, or visual language without touching business logic.
-
-Implication 3 — Domain semantics become testable.
-
-A test can assert:
-
-    price_status == "decreased"
-
-without needing a QApplication, QColor, QBrush, or Shiboken-managed Qt object.
-
-Implication 4 — Avoids presentation-driven service contracts.
-
-If ProductService starts returning `color`, later pages may request `icon`, `font`, `tooltip`, `css`, or table-specific formatting from the service. That would gradually turn the service into a view-model factory instead of a business/application service.
-
-Implication 5 — A UI mapper may become useful later.
-
-As the UI grows, repeated mappings such as:
-
-    domain status -> color
-    domain status -> label
-    domain status -> tooltip
-
-may justify a dedicated presentation mapper. This should be considered a UI architecture refinement, not a service-layer expansion.
-
-Implication 6 — The current bug should not trigger a service-layer workaround.
-
-The tempting fix is to add `color` into the service response. Architecturally, that would solve the immediate KeyError by weakening the boundary.
-
-Preferred repair:
-
-    make the service contract semantic;
-    make the UI responsible for presentation.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MAIN CHAT SYNTHESIS REQUEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Main Chat should synthesize this design decision with Operational evidence before materialization.
-
-Recommended synthesis direction:
-
-1. Treat `KeyError: "color"` as a UI/service contract mismatch.
-2. Preserve ProductService as business/application layer.
-3. Keep price variation semantics in ProductService.
-4. Keep presentation colors and QColor in the UI layer.
-5. Do not patch the service by adding QColor or visual metadata.
-6. Repair StoragePage so it maps semantic service output into presentation locally or through a UI-side mapper.
-7. Treat Shiboken warning as secondary unless Operational evidence proves Qt objects are leaking across the service boundary.
+8. Keep all supermarket/product/purchase data local-only for MVP.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 STAGING RESULT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-File updated:
+Design evaluation staged successfully.
 
-- documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+Writable file used:
 
-Commit scope:
+    documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
 
-- This file only.
+No source files changed.
+No permanent notebook files changed.
+No methodology files changed.
