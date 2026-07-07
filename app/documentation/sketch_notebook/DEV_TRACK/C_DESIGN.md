@@ -1,66 +1,183 @@
-4. DEV_TRACK/03_DESIGN.md update
+# DEV_TRACK — C_DESIGN
 
-I could not update DEV_TRACK/03_DESIGN.md directly because the requested notebook paths returned 404 in GitHub. I checked these likely paths and they were not found:
+## 2026-07-07 — Design Evaluation: ProductService Repository Boundary
 
-documentation/sketch_notebook/01_ARCHITECTURE.md
-documentation/sketch_notebook/03_DECISIONS.md
-documentation/sketch_notebook/DEV_TRACK/03_DESIGN.md
-DEV_TRACK/03_DESIGN.md
-documentation/DEV_TRACK/03_DESIGN.md
+### Scope
 
-Use this staged update:
+Design Chat evaluated whether `app/core/services.py` should depend on:
 
-## Design Note — Repository Boundary and ProductService Dependency
+- a concrete `Repository` class;
+- module-level repository functions;
+- or another persistence abstraction.
 
-### Context
+Only this DEV_TRACK staging file was updated. Permanent notebook files were not modified.
 
-`app/core/services.py` imports `Repository` from `app.core.repository` and instantiates it inside `ProductService`.
+### Methodological context read
 
-Current runtime failure:
+Available and read:
+
+- `app/documentation/sketch_notebook/methodology/CHAT_BEHAVIOUR.md`
+- `app/documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md`
+- `app/documentation/sketch_notebook/methodology/PROMOTION_RULES.md`
+
+Observed repository state:
+
+- `PROMOTION_RULES.md` currently exists but is empty.
+- `METHOD_FOUNDATIONS.md` was not found at the requested path or under the discovered `app/documentation/sketch_notebook/methodology/` prefix.
+- `FLUX.md` was not found at the requested path or under the discovered `app/documentation/sketch_notebook/methodology/` prefix.
+
+### Orientation files
+
+The requested endpoint file was not found at:
+
+- `documentation/sketch_notebook/03_DECISIONS.md`
+- `app/documentation/sketch_notebook/03_DECISIONS.md`
+
+The optional design/domain files were also not found at the discovered notebook prefix:
+
+- `app/documentation/sketch_notebook/01_ARCHITECTURE.md`
+- `app/documentation/sketch_notebook/05_DOMAIN_MODEL.md`
+
+Therefore this design evaluation is based on the available methodology files and current code contracts.
+
+### Architectural diagnosis
+
+`app/core/services.py` already declares a layered architecture:
 
 ```text
-ImportError: cannot import name 'Repository' from 'app.core.repository'
-Architectural evaluation
-
-The intended architecture remains layered:
-
 UI
 → ProductService
 → Repository
 → SQLite
+```
 
-ProductService should coordinate workflows and business rules. It must not execute SQL, know SQLite details, or manipulate cursors.
+The service layer is explicitly described as the business orchestration layer. It coordinates repository operations, enforces business rules, registers receipts, maintains product lifecycle state, recalculates product summaries, and exposes application services to the UI.
 
-The repository layer should own persistence operations and SQL mapping.
+The same file explicitly says that the service layer must not:
 
-Decision
+- execute SQL;
+- know SQLite;
+- manipulate database cursors.
 
-A concrete Repository class should exist.
+This means `services.py` should not import and coordinate low-level persistence functions directly if doing so would expose database mechanics to the service layer.
 
-services.py should not be converted to direct function imports from repository.py.
+`app/core/contracts.py` reinforces the same boundary:
 
-The correct design is:
+- `RepositoryContract` is the lowest persistence layer and contains SQL only.
+- `ServiceContract` is the business layer, has no SQL, and coordinates repository operations.
 
-keep database helper functions module-level if useful;
-define class Repository(RepositoryContract) in app/core/repository.py;
-move persistence operations into that class;
-let ProductService depend on the repository object;
-optionally later inject RepositoryContract into ProductService.__init__.
-Reason
+Therefore the intended architecture is object-oriented service orchestration over a persistence abstraction.
 
-The current services.py already follows the intended object-based repository architecture.
+### Evaluation of dependency options
 
-The defect is structural drift in repository.py: repository methods exist in form, but no exported Repository class currently owns them.
+#### Option 1 — `services.py` imports a concrete `Repository` class
 
-Minimal design patch
-Inspect app/core/repository.py.
-Restore or create class Repository(RepositoryContract).
-Move product and purchase persistence methods into the class.
-Keep connect, close, and reset as module-level helpers.
-Ensure from .repository import Repository succeeds.
-Do not move SQL into services.py.
-Status
+This matches the current implementation intent.
 
-Design decision staged.
+`ProductService.__init__()` currently does:
 
-Implementation belongs to Operational Chat / Codex.
+```python
+self.repository = Repository()
+```
+
+and the service methods call repository object methods such as:
+
+- `get_products()`
+- `get_product()`
+- `get_purchases()`
+- `create_product()`
+- `update_product()`
+- `insert_purchase()`
+- `delete_product()`
+- `delete_purchase()`
+
+This is coherent with `RepositoryContract`, which defines repository behavior as object methods.
+
+#### Option 2 — `services.py` imports repository functions
+
+This is not the preferred design.
+
+Function imports would flatten the boundary between the service layer and persistence module. It would also move the code away from the existing `RepositoryContract` / `ServiceContract` model.
+
+Repository helper functions may exist internally inside `repository.py`, especially for connection setup, reset, and database initialization. However, application persistence operations should remain behind a repository object.
+
+#### Option 3 — `services.py` imports another abstraction
+
+Long-term, the cleanest abstraction is not necessarily the concrete class itself, but a repository interface/contract.
+
+Recommended future direction:
+
+```python
+class ProductService(ServiceContract):
+    def __init__(self, repository: RepositoryContract | None = None):
+        self.repository = repository or Repository()
+```
+
+This would preserve the simple default runtime behavior while allowing tests or future persistence implementations to inject another repository object.
+
+However, this is a refinement, not the minimal fix required for the current ImportError.
+
+### ImportError classification
+
+The ImportError reflects an implementation bug, not an architectural inconsistency.
+
+Current `services.py` imports:
+
+```python
+from .repository import Repository
+```
+
+and instantiates:
+
+```python
+self.repository = Repository()
+```
+
+That is architecturally consistent with the service/repository boundary.
+
+The inconsistency is in `app/core/repository.py`:
+
+- the file begins with database helper functions;
+- no module-scope `class Repository` is visible;
+- repository-style methods such as `create_product` appear nested under `if __name__ == "__main__":`;
+- therefore the module does not export the name `Repository` that `services.py` imports.
+
+So the failure is best classified as repository implementation drift or structural corruption of the repository module.
+
+### Design decision proposal
+
+Adopt the following design decision for Main Chat synthesis:
+
+`services.py` should depend on a repository object, preferably through `RepositoryContract`, with `Repository` as the default concrete SQLite implementation.
+
+Do not convert `services.py` to direct module-level persistence-function imports.
+
+The canonical dependency direction should remain:
+
+```text
+ProductService
+→ RepositoryContract-compatible repository object
+→ SQLite repository implementation
+→ sqlite3/database helpers
+```
+
+### Required repository changes
+
+Implementation should be handled by Operational Chat / Codex, but the required structural changes are:
+
+1. Restore or create a module-scope `class Repository(RepositoryContract)` in `app/core/repository.py`.
+2. Add the missing top-level imports required by that module, including `sqlite3`, model types, config/database helpers, and `RepositoryContract` as needed.
+3. Keep database lifecycle helpers such as `connect`, `close`, and `reset` as module-level helpers if useful.
+4. Move persistence methods out of the `if __name__ == "__main__":` block and into the `Repository` class.
+5. Ensure `Repository` owns connection/cursor state or otherwise clearly owns persistence access.
+6. Ensure methods expected by `ProductService` and `RepositoryContract` exist on the class.
+7. Add/restore lower-level helper methods used by the repository implementation, such as `cursor_execute`, `commit`, `row_to_product`, and `row_to_purchase` if they are required by the existing method bodies.
+8. Validate that `from .repository import Repository` succeeds before running the UI.
+
+### Status
+
+Design decision staged for Main Chat synthesis.
+
+Permanent notebook files were not modified.
+
+Implementation is not performed in this Design Chat pass.
