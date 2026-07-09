@@ -2,71 +2,90 @@
 
 ## 1. Scope
 
-Design staging for the Product View feature in Markei. The feature adds a reusable product detail panel, initially displayed in the lower portion of RegisterPage after a product row is double-clicked from Storage, Shortage, Market, or another inventory table.
+Design staging for Cycle 02: History UI page and Settings page. This cycle extends the existing Markei layer boundaries by adding service-prepared History grouping/read models and a Settings surface for store editing, page sorting configuration, and History time-reference configuration.
 
 ## 2. Accepted Facts
 
-- Product View must show product identity: product name, brand, and ID.
-- Product View must show summary values: average price and average consumption/expiration timing.
-- Product View must show store rows: store name, store ID, store address, and latest price.
-- Product View must show last purchases: date, price, quantity, and expiring date.
-- `average_duration_days` means purchase-to-purchase rhythm.
-- `average_shelf_life_days` means purchase-to-expiration rhythm.
-- `expected_next_purchase` belongs to purchase rhythm prediction.
-- `expected_expiration_date` belongs to shelf-life prediction or latest known expiration state.
-- Store address belongs to Store, not Product or Purchase.
-- Expiring date belongs to Purchase because it describes a specific bought batch.
-- Product may cache calculated product-level summaries, but must not absorb purchase-specific history.
-- Product View should be a separate reusable detail panel embedded in RegisterPage for this milestone.
+- History page must show purchases ordered sequentially.
+- History page must group/trench purchases by month and week.
+- Default month boundary is the first Wednesday of the month.
+- Default week boundary is every Wednesday.
+- History page must include Total rows showing cumulative product values for a store under a timeframe.
+- Repository retrieves purchase/time/store data.
+- Service groups purchases into history periods.
+- UI renders grouped history sections and total rows.
+- Settings persists configuration and editing preferences.
+- Time-reference configuration affects History grouping/bucketing rules.
+- Cycle 01 established that UI renders, ProductService owns meaning/read-model assembly, and Repository owns SQL/retrieval/mapping.
 
-## 3. Requirements for Main Synthesis
+## 3. Responsibility Map
 
-- Preserve the current layer boundary: UI renders, service coordinates meaning, repository persists and maps, schema stores facts.
-- Add a service-owned derived read model for Product View data.
-- Keep Product View rendering separate from RegisterPage form logic.
-- Route double-click selection through product ID, not visible name/brand text.
-- Let MainWindow coordinate navigation from inventory pages to RegisterPage.
-- Let RegisterPage host and refresh the reusable ProductDetailPanel.
-- Ensure UI does not calculate averages, latest prices, shelf life, product status, or predictions.
-- Ensure repository does not decide business meaning for summaries.
-- Ensure ProductService assembles Product, Purchase, and Store data into the Product View read model.
+- Schema/storage owns persisted purchases, stores, settings/config values, and relationships.
+- Repository owns SQL retrieval, store persistence, settings persistence, and row/model mapping.
+- Service owns History grouping, period construction, total-row meaning, sorting interpretation, and settings-mediated configuration use.
+- History page owns rendering of service-prepared History sections, purchase rows, and total rows.
+- Settings page owns the configuration surface but should host focused editor components rather than accumulating all editing logic directly.
+- Store editor component owns store edit UI behavior; Repository/Service still own persistence and validation flow.
+- MainWindow owns page/tab construction and should consume page sorting configuration.
+- Product/Purchase/Store retain Cycle 01 ownership: Purchase owns receipt facts, Store owns address, Product owns cached product summaries.
 
-## 4. Risks / Open Questions
+## 4. Requirements for Main Synthesis
 
-- Decide whether Store address is one `address TEXT` field for MVP or structured address fields.
-- Decide whether purchase `expiring_date` is mandatory or optional.
-- Decide whether `expected_expiration_date` is cached on Product or only derived for the detail view.
-- Decide whether average price remains derived or becomes cached later.
-- Confirm the exact UI event API between inventory tables, MainWindow, RegisterPage, and ProductDetailPanel.
-- Risk: RegisterPage may drift into owning product-detail calculations if the panel is not separated.
-- Risk: Product may become overloaded if purchase-specific history is copied into Product fields.
+- Define a service-prepared History read model rather than letting UI group raw purchases.
+- Keep week/month bucketing in service, not repository and not UI.
+- Let repository retrieve ordered purchase/store/time data without deciding period semantics.
+- Represent Total rows as service read-model rows or section summaries, not UI-only calculations.
+- Persist History time-reference settings through a settings/config path.
+- Ensure Settings time-reference configuration drives History grouping defaults.
+- Ensure page sorting configuration affects MainWindow/tab/page construction, not individual page internals.
+- Ensure Settings hosts store editing while store persistence remains service/repository-owned.
+- Preserve Product View boundary pattern: UI renders prepared data; service owns meaning; repository owns retrieval/mapping.
 
-## 5. Recommended Materialization Targets
+## 5. Continuity from Cycle 01
+
+- Store address persistence/display already exists from Cycle 01.
+- Store address editing was deferred and can now be continued through Settings or a Store editor hosted by Settings.
+- ProductDetailPanel remains reusable/read-only and should not be affected by History or Settings implementation.
+- Average price remains derived; History totals may use purchase values but should not create new Product cached fields.
+- Purchase expiration and Product shelf-life rhythm remain separate from History purchase grouping unless explicitly surfaced.
+- Cycle 02 extends boundaries by adding configuration ownership, not by moving calculations into UI.
+
+## 6. Risks / Open Questions
+
+- Confirm whether Settings directly owns store editing or hosts a reusable StoreEditor component; design preference: host component.
+- Confirm exact persisted shape for time-reference config: weekday enum/name, month boundary rule, and week boundary rule.
+- Confirm whether History total rows are per store, per product, per period, or nested combinations of those.
+- Confirm whether purchases are displayed globally or filtered by store/product/page controls.
+- Risk: UI may drift into grouping purchases if History page receives raw purchase rows only.
+- Risk: repository may drift into business grouping if SQL encodes first-Wednesday/week-boundary semantics.
+- Risk: Settings may become an unbounded page if store editing, sorting, and time rules are not separated into components.
+
+## 7. Recommended Materialization Targets
 
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
-- `documentation/sketch_notebook/design/09_DESIGN_STATE.md`
-- `documentation/sketch_notebook/design/01_ARCHITECTURE.md`
-- `documentation/sketch_notebook/design/14_MODEL_OVERVIEW.md`
-- `documentation/sketch_notebook/design/03_DECISION_LOG.md`
 - `app/database/schema.sql`
 - `app/core/models.py`
 - `app/core/contracts.py`
 - `app/core/repository.py`
 - `app/core/services.py`
-- `app/ui/main_window.py`
-- `app/ui/pages/register_page.py`
-- `app/ui/widgets/product_detail_panel.py`
-- Inventory table page files for Storage, Shortage, Market, and later History.
+- `app/desktop/ui/main_window.py`
+- `app/desktop/ui/pages/history_page.py`
+- `app/desktop/ui/pages/settings_page.py`
+- `app/desktop/ui/widgets/store_editor.py`
+- `app/desktop/ui/widgets/history_section.py`
+- `app/desktop/ui/widgets/history_table.py`
+- `app/desktop/ui/widgets/settings_time_reference.py`
+- `app/desktop/ui/widgets/page_sorting_editor.py`
 
-## 6. Handoff Summary
+## 8. Handoff Summary
 
-- Treat Product View as a reusable detail panel, not RegisterPage business logic.
-- Product owns identity, editable metadata, inventory state, and cached product-level summaries.
-- Purchase owns immutable receipt facts, including expiring date.
-- Store owns store identity and address.
-- ProductService owns Product View read-model assembly.
-- Repository owns SQL retrieval and row mapping only.
-- MainWindow owns cross-page navigation.
-- RegisterPage owns placement of the lower detail panel.
-- Inventory tables must emit product ID on double-click.
-- Keep purchase rhythm and shelf-life rhythm separate throughout schema, models, services, and UI.
+- Build History around a service-owned read model.
+- Service owns month/week grouping and Total row semantics.
+- Repository retrieves purchase/store/time data but does not decide period meaning.
+- UI renders grouped sections and total rows from prepared data.
+- Settings owns configuration surface and persists time-reference/page-sorting preferences through service/repository flow.
+- Settings should host a Store editor component to continue Cycle 01 deferred store address editing.
+- MainWindow should consume page sorting configuration when constructing or ordering pages/tabs.
+- Keep Cycle 01 Product View boundaries intact.
+- Avoid caching History totals or average price on Product unless a future design explicitly promotes that need.
+- Treat this file as functional staging only; permanent design memory should wait for Codex evidence absorption.
