@@ -1,117 +1,414 @@
 # CHAT_PROTOCOL.md
 
-> Version: 0.1 (Draft)
-> Status: Canonical Specification
+> Version: 0.2
+> Status: Draft
 > Persistence Class: Canonical
+> Knowledge Class: Methodological
 > Authority: Main Chat
-> Scope: Conversational Communication Patterns
+> Scope: Conversational communication patterns and documentation protocols
 
 ---
 
 # 1. Purpose
 
-The Chat Protocol defines the conversational patterns through which each
-specialized conversation communicates.
+`CHAT_PROTOCOL.md` defines how each conversational role communicates project knowledge.
 
-Whereas CHAT_BEHAVIOUR defines how each conversation naturally approaches and
-reasons about the project, CHAT_PROTOCOL specifies how that reasoning is
-typically expressed.
+Whereas:
 
-Protocols are intentionally less stable than behavioural principles.
+* `METHOD_FOUNDATIONS.md` defines the philosophy of the Sketch Notebook Method;
+* `FLUX.md` defines information routing and responsibilities;
+* `PROMOTION_RULES.md` defines semantic promotion of knowledge;
 
-As the methodology matures, conversational structures may evolve while the
-underlying behavioural perspectives remain unchanged.
+`CHAT_PROTOCOL.md` defines **the structure through which each role expresses that knowledge**.
+
+The protocol exists to produce consistent documentation independently of the current conversation.
 
 ---
 
 # 2. General Principles
 
-Every protocol should favor clarity over completeness.
+Protocols define communication style.
 
-Responses should naturally reflect the perspective of their conversation.
+They do not define knowledge ownership.
 
-Protocols define communication style rather than knowledge ownership.
+They do not define routing.
 
-Whenever experimentation suggests more effective communication patterns,
-protocols may evolve without requiring modifications to the behavioural model.
+They do not define semantic promotion.
+
+Every role should communicate according to its own perspective while preserving consistency between sessions.
+
+Whenever a protocol becomes insufficient, it should evolve rather than forcing ad hoc writing styles.
 
 ---
 
 # 3. Main Chat
 
-The Main Chat prioritizes synthesis.
+Main Chat communicates through synthesis.
 
-Its protocol should naturally organize discussions, summarize progress,
-coordinate specialized conversations and improve overall coherence.
+Typical characteristics include:
 
-The exact response structure is intentionally left open for future refinement.
+* integration of multiple perspectives;
+* conflict resolution;
+* milestone orchestration;
+* methodological refinement;
+* architectural consistency checking;
+* preparation of Codex materialization.
 
----
-
-# 4. Design Chat
-
-The Design Chat prioritizes architectural discussion.
-
-Responses should naturally resemble technical design reviews, emphasizing
-structure, responsibilities, trade-offs and long-term maintainability.
-
-Specific formatting remains intentionally unspecified.
+Its structure intentionally remains flexible.
 
 ---
 
-# 5. Operational Chat
+# 4. Operational Chat
 
-The Operational Chat prioritizes execution.
+Operational Chat communicates through execution.
 
-Responses should naturally resemble collaboration between software developers,
-favoring practical guidance, reproducible procedures, commands and expected
-results.
+Typical characteristics include:
 
-Concrete formatting shall evolve through experimentation.
+* implementation diagnosis;
+* dependency identification;
+* execution planning;
+* reproducible validation;
+* risk identification;
+* operational evidence.
+
+Operational reports should resemble technical implementation reviews.
+
+---
+
+# 5. Design Chat
+
+Design Chat communicates through architecture.
+
+Typical characteristics include:
+
+* responsibility analysis;
+* domain ownership;
+* relationship design;
+* UI responsibility;
+* long-term maintainability;
+* implementation boundaries.
+
+Design reports should resemble architectural design reviews.
 
 ---
 
 # 6. Didactic Chat
 
-The Didactic Chat follows the most structured communication protocol currently
-defined by the methodology.
+The Didactic Chat follows the most structured protocol in the Sketch Notebook Method.
 
-Whenever appropriate, explanations should be organized through the KANBAN
-structure previously established by the project.
+Its purpose is not only to explain concepts.
 
-Current conventions include:
+Its purpose is to construct persistent project knowledge while simultaneously supporting developer learning.
 
-- Progressive concept construction.
-- Contextual learning from project development.
-- Explicit concept categorization.
-- Cross references between related concepts.
-- Practical examples whenever possible.
-- Gradual expansion rather than exhaustive exposition.
-
-Current concept markers include:
-
-&&&
-    Foundational Computer Science concepts.
-
-&&%
-    Language-specific concepts.
-
-&%%
-    Project implementation concepts.
-
-%%%
-    External libraries, frameworks and dependencies.
-
-The exact KANBAN layout may evolve while preserving these underlying principles.
+The Didactic Chat therefore maintains three complementary documentation layers.
 
 ---
 
-# 7. Evolution
+## Layer 1 — Canonical Concepts
 
-The Chat Protocol intentionally remains lightweight.
+Canonical concepts are stored in:
 
-Communication patterns are expected to mature through continuous project
-development.
+```text
+documentation/sketch_notebook/didactics/02_KANBAN.md
+```
 
-Only stable and repeatedly validated conventions should become permanent parts
-of this specification.
+Each concept shall follow the same structure.
+
+---
+
+### Concept Header
+
+```text
+[KANBAN][NUMBER]
+
+Concept Name
+```
+
+Example:
+
+```text
+&&&03
+
+Referential Integrity
+```
+
+---
+
+### Mandatory Sections
+
+Every canonical concept shall contain:
+
+#### Description
+
+A learner-oriented explanation written in natural language.
+
+#### Formal Definition
+
+A precise and reusable definition.
+
+This section should be suitable for later glossary derivation.
+
+#### Practical Example
+
+A technology-independent example.
+
+Its purpose is understanding rather than implementation.
+
+#### Language Implementation
+
+How the concept appears in the implementation language.
+
+For Markei this normally means Python.
+
+#### Project Implementation
+
+How the concept appears inside Markei.
+
+Concrete files, tables, services or UI pages may be referenced.
+
+#### Required Concepts
+
+Previously required concepts.
+
+#### Related Concepts
+
+Connected concepts that are not strict prerequisites.
+
+#### Status
+
+Learning maturity.
+
+Possible values:
+
+```text
+Green
+Yellow
+Red
+```
+
+#### Source
+
+The implementation event, discussion, bug, milestone or architectural decision that motivated the lesson.
+
+---
+
+## KANBAN Numbering
+
+Each marker owns an independent sequence.
+
+Example:
+
+```text
+&&&01
+&&&02
+&&&03
+
+&&%01
+&&%02
+
+&%%01
+&%%02
+
+%%%01
+%%%02
+```
+
+Numbers are never reused.
+
+---
+
+## Layer 2 — Persistent Derivative
+
+Persistent terminology is stored in:
+
+```text
+documentation/sketch_notebook/didactics/07_GLOSSARY.md
+```
+
+The glossary is derived from canonical concepts.
+
+It should never introduce independent truth.
+
+Every glossary entry should include:
+
+```text
+KANBAN ID
+
+Type
+
+Definition
+
+Project Usage
+
+Related Concepts
+```
+
+Example:
+
+```text
+Repository Pattern
+
+KANBAN ID
+&&&02
+
+Type
+Foundational Computer Science
+
+Definition
+...
+
+Project Usage
+...
+
+Related Concepts
+...
+```
+
+If a glossary term does not correspond to a KANBAN concept, the entry shall explicitly indicate:
+
+```text
+KANBAN ID
+
+None
+```
+
+and classify itself as:
+
+```text
+Methodological abstraction
+
+Project abstraction
+
+Derived terminology
+```
+
+---
+
+## Layer 3 — Concept Map
+
+The Concept Map is stored in:
+
+```text
+documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
+```
+
+Unlike the glossary, the Concept Map is intentionally ephemeral.
+
+It acts as the current learning checkpoint for:
+
+* the developer;
+* future Didactic Chats;
+* Main Chat;
+* Codex.
+
+Its objective is to minimize bootstrap cost while exposing the current learning state.
+
+The Concept Map should therefore summarize rather than explain.
+
+---
+
+### Recommended Sections
+
+#### Current Milestone
+
+Which implementation milestone is currently being studied.
+
+---
+
+#### Stable Concepts
+
+Concepts considered understood.
+
+Only KANBAN IDs should be listed.
+
+---
+
+#### Active Concepts
+
+Concepts currently being reinforced.
+
+---
+
+#### Unstable Concepts
+
+Concepts requiring further explanation.
+
+---
+
+#### Next Concepts
+
+Immediate recommended learning progression.
+
+---
+
+#### Dependency Spine
+
+Concept dependency tree.
+
+Example:
+
+```text
+&&&02
+↓
+
+&%%01
+↓
+
+&%%04
+```
+
+---
+
+#### Project Learning Spine
+
+Current implementation topic that is driving concept introduction.
+
+Example:
+
+```text
+Stores
+↓
+
+Purchases
+↓
+
+Referential Integrity
+↓
+
+History
+```
+
+---
+
+#### Session Delta
+
+Small summary describing what changed during the latest learning cycle.
+
+---
+
+## Bootstrap Constraint
+
+The Concept Map is the preferred bootstrap surface for future Didactic Chats.
+
+Before reading the complete KANBAN register or glossary, the Didactic Chat should inspect the Concept Map.
+
+Only if additional context is required should it consult:
+
+* `02_KANBAN.md`;
+* `07_GLOSSARY.md`.
+
+This minimizes repeated token usage while preserving continuity.
+
+---
+
+# 7. Protocol Evolution
+
+Protocols are expected to mature throughout project development.
+
+Stable conventions should eventually become canonical.
+
+Experimental conventions should remain lightweight until validated through repeated use.
+
+The goal of the Chat Protocol is not to standardize wording.
+
+Its goal is to standardize communication structure while preserving the natural reasoning style of each conversational role.
