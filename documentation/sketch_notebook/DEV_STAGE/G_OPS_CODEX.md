@@ -1,28 +1,32 @@
-# Codex Report — Operational Cycle 02
+# Codex Report — Operational Cycle 03
 
 ## Source Stage Files Read
 
+- `AGENTS.md`
+- `documentation/sketch_notebook/INDEX.md`
+- `documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md`
+- `documentation/sketch_notebook/methodology/FLUX.md`
+- `documentation/sketch_notebook/methodology/PROMOTION_RULES.md`
+- `documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md`
+- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
+- `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
+- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
 ## Files Changed
 
-- `app/database/schema.sql`: added `settings` key/value table.
-- `app/database/seed.sql`: seeded default History/settings values and store address field.
-- `app/core/database.py`: added idempotent settings-table migration and default settings insertion.
-- `app/core/repository.py`: added History row retrieval, store create/update, and settings read/write persistence.
-- `app/core/services.py`: added Settings APIs, store save orchestration, History read-model assembly, first-Wednesday operational months, Wednesday week bucketing, date-drift parsing, and aggregate summaries.
-- `app/desktop/main_window.py`: wired History and Settings pages to MainWindow and refresh flow.
-- `app/desktop/ui/pages/history_page.py`: replaced placeholder with grouped read-only History tree.
-- `app/desktop/ui/pages/settings_page.py`: replaced placeholder with History configuration and store create/update UI.
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: populated this report.
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: populated didactic report.
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: populated design report.
+- `app/core/services.py`: added Lists read model and embedded History analytics read model.
+- `app/desktop/main_window.py`: replaced public Storage/Shortage/Market tabs with Lists.
+- `app/desktop/ui/pages/history_page.py`: embedded read-only analytics controls/table.
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: updated this report.
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: updated didactic evidence report.
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: updated design evidence report.
 
 ## Files Created
 
-- None.
+- `app/desktop/ui/pages/lists_page.py`: unified Lists page with internal views.
 
 ## Files Deleted
 
@@ -32,87 +36,70 @@
 
 - `python -m compileall app`
 - `python -m app.core.database`
-- `python -c "... PRAGMA table_info(settings) ..."`
-- `python -c "... ProductService ... get_history_view ... get_product_view ..."`
-- isolated temp-`LOCALAPPDATA` service workflow for boundary dates, store create/update, settings persistence, and aggregates
-- `python -m app.main`
-- `Get-CimInstance Win32_Process ...`
-- `Stop-Process -Id 3216,24840,18468,22380`
-- `git diff --check`
+- `python -c "... get_lists_view(view) ..."`
+- `python -c "... product_status(product), get_price_variation(product) ..."`
+- `python -c "... get_history_view() ..."`
+- `python -c "... get_history_analytics_view(**frame) ..."`
+- `python -c "... import MainWindow ..."`
+- `python -c "... import ListsPage, HistoryPage ..."`
+- `$env:QT_QPA_PLATFORM='offscreen'; python -c "... QApplication; MainWindow(); tab labels ..."`
+- `rg "... old page references ..." app/desktop/main_window.py app/desktop/ui/pages/lists_page.py app/desktop/ui/pages/history_page.py app/core/services.py`
 
 ## Validation Results
 
-- `python -m compileall app`: passed.
-- `python -m app.core.database`: passed; existing user database opened/migrated without destructive reset.
-- `PRAGMA table_info(settings)`: returned `key`, `value`.
-- Existing user database settings: contained `history.week_boundary=wednesday`, `history.month_boundary_rule=first_wednesday`, and default `pages.order`.
-- Existing user database History service read: returned 1 month section and 0 unparsed purchase dates.
-- Product View regression check: `get_product_view()` returned expected Cycle 01 keys.
-- Inventory regression check: `product_status()` returned normally for existing product.
-- `python -m app.main`: launched Qt event loop without traceback; timed out because the GUI stayed open and spawned processes were stopped.
+- Compile check passed.
+- Database smoke opened existing DB at `C:\Users\gusrm\AppData\Local\Markei\market.sqlite`; DB existed and no schema reset occurred.
+- Lists smoke: `all=16`, `in-house=13`, `shortage=2`, `to-buy=1`, `in-house + shortage=15`, `shortage + to-buy=3`.
+- Status/price smoke returned status and global price variation for first five products.
+- History read-model smoke returned `months=1`, `unparsed=0`.
+- Analytics smoke returned:
+  - all frame: `parsed=19`, `unparsed=0`, `excluded=0`, `total=289.74`, `avg gap=0.4444444444444444`, `products=16`.
+  - July frame: same as all frame for current data.
+  - July plus store `2`: `parsed=1`, `unparsed=0`, `excluded=18`, `total=9.49`, `avg gap=None`, `products=1`.
+- Offscreen startup probe returned top-level tabs `['Register', 'Lists', 'History', 'Settings']`.
+- Qt emitted a font-directory warning during offscreen probe, but no traceback.
 
-## Migration Evidence
+## Implementation Evidence
 
-- New installs get `settings` from `schema.sql` and default seed data.
-- Existing databases get `settings` through `CREATE TABLE IF NOT EXISTS`.
-- Defaults are inserted with `INSERT OR IGNORE`, preserving existing user choices.
-
-## History Grouping Evidence
-
-Isolated temp database boundary test:
-
-- `30/06/2026` grouped into `Operational June 2026` with period `03/06/2026 - 30/06/2026`.
-- `01/07/2026` started `Operational July 2026`.
-- `08/07/2026` started a new Wednesday week.
-- Week sections produced `24/06/2026 - 30/06/2026`, `01/07/2026 - 07/07/2026`, and `08/07/2026 - 14/07/2026`.
-
-## Settings Persistence Evidence
-
-- Service read/write persisted `history.week_boundary`, `history.month_boundary_rule`, and `pages.order`.
-- Settings survived readback from the same SQLite-backed service workflow.
-
-## Store Editing Evidence
-
-- Isolated workflow created a store and then updated the same store name/address through service/repository.
-- Settings UI exposes create/update fields for store name, city, state, and address.
-- RegisterPage was not given store-management controls.
-
-## Aggregate / Total Semantics Implemented
-
-- Monetary totals use stored purchase `total_price`.
-- Average unit price uses mean over `unit_price`.
-- Quantity totals are grouped by compatible `unit`.
-- Store totals are grouped by store label for each section summary.
+- Lists uses `ProductService.get_lists_view(view_key)` with required view keys and a shared 10-column row shape.
+- Lists default view is all products; internal views map old meanings to `in-house`, `shortage`, and `to-buy`.
+- Lists displays Price and delta price from global Product summary values.
+- Double-click in Lists fetches product by ID and calls `MainWindow.edit_product(product)`.
+- `open_storage()`, `open_shortage()`, and `open_market()` now select Lists with `in-house`, `shortage`, and `to-buy`.
+- Public tabs are Register, Lists, History, Settings; `pages.order` is not consumed.
+- History grouped Month -> Week rendering remains in `HistoryPage.load_history()`.
+- Embedded analytics has date inputs, optional store selector, apply button, summary label, and product analytics table.
+- Analytics reports unparsed rows separately from date/store excluded rows.
+- Register and Settings source files were not modified; Register remains purchase-entry-only and Settings remains store-management surface.
+- No schema changes were introduced.
 
 ## Instructions Completed
 
-- Functional History page built.
-- Functional Settings page built.
-- SQLite-backed settings support added.
-- Month -> Week grouping implemented.
-- First-Wednesday operational month default implemented.
-- Wednesday week boundary default implemented.
-- Total/aggregate rows implemented as service-prepared data.
-- Store create/update implemented in Settings.
-- Store editing kept out of RegisterPage.
-- Cycle 01 Product View, purchase rhythm, shelf-life rhythm, and inventory behavior checked.
+- Service-level Lists read model.
+- Unified Lists page.
+- MainWindow tab remodel.
+- Compatibility navigation helpers.
+- Global latest/delta price display in Lists.
+- Service-level History analytics read model.
+- Embedded read-only History analytics UI.
+- Validation and evidence reporting.
 
 ## Instructions Skipped
 
-- Store deletion was skipped as explicitly deferred unless referential behavior is guaranteed.
-- Full interactive page sorting UI was deferred; `pages.order` persistence exists, but MainWindow does not yet reorder tabs from it.
+- Manual interactive UI checks were not performed beyond offscreen startup/tab verification.
+- `python -m app.main` was not left running because it enters the Qt event loop; offscreen MainWindow instantiation was used to verify startup/tabs without hanging.
 
-## Failures / Blockers
+## Failures Or Blockers
 
-- No blocking implementation failure.
-- Manual UI interaction was not fully performed inside the terminal session; startup was verified by launching the Qt event loop without traceback.
+- No implementation blocker found.
 
 ## Unresolved Operational Risks
 
-- `pages.order` is persisted but not consumed by MainWindow.
-- Existing data with unsupported date formats is reported through `unparsed_rows` but not repaired.
+- Worktree already contained unrelated generated `__pycache__` changes and zip-file drift before this task; compile validation added more generated bytecode noise. These should not be staged.
+- Analytics date inputs currently treat an invalid date like an omitted boundary because service parsing returns `None`.
+- Full manual QA remains required for receipt save, Lists double-click in every view, History analytics frame interaction, Settings store save, and Product View behavior.
 
-## Suggested Follow-Up
+## Suggested Functional Follow-Up
 
-- Decide whether Cycle 03 should consume `pages.order` in MainWindow.
-- Add manual UI QA for History rendering and Settings store editing in the running desktop app.
+- Operational Chat should classify manual QA results after human interaction testing.
+- Consider a later validation task to automate basic Qt widget smoke checks without entering the full app event loop.

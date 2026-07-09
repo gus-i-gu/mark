@@ -1095,6 +1095,336 @@ class ProductService(ServiceContract):
 
     #######################################################
 
+    def get_lists_view(
+
+        self,
+
+        view_key: str = "all",
+
+    ) -> dict:
+        """
+        Return the unified Lists read model.
+        """
+
+        available_views = [
+
+            "all",
+
+            "in-house",
+
+            "shortage",
+
+            "to-buy",
+
+            "in-house + shortage",
+
+            "shortage + to-buy",
+
+        ]
+
+        normalized_view = (
+
+            view_key
+
+            if view_key in available_views
+
+            else "all"
+
+        )
+
+        all_rows = [
+
+            self.list_row_model(product)
+
+            for product in self.repository.get_products()
+
+        ]
+
+        status_filters = {
+
+            "all": {"in-house", "shortage", "to-buy"},
+
+            "in-house": {"in-house"},
+
+            "shortage": {"shortage"},
+
+            "to-buy": {"to-buy"},
+
+            "in-house + shortage": {"in-house", "shortage"},
+
+            "shortage + to-buy": {"shortage", "to-buy"},
+
+        }
+
+        rows = [
+
+            row
+
+            for row in all_rows
+
+            if row["status"] in status_filters[normalized_view]
+
+        ]
+
+        return {
+
+            "view_key": normalized_view,
+
+            "default_view_key": "all",
+
+            "available_views": available_views,
+
+            "rows": rows,
+
+            "all_rows": all_rows,
+
+        }
+
+
+    #######################################################
+
+    def list_row_model(
+
+        self,
+
+        product: Product,
+
+    ) -> dict:
+        """
+        Convert a Product into a platform-neutral Lists row.
+        """
+
+        status = self.product_status(product)
+
+        status_key = self.list_status_key(status)
+
+        price_variation = self.get_price_variation(product)
+
+        remaining_days = self.days_until_restock(product)
+
+        return {
+
+            "product_id": product.id,
+
+            "product_name": product.product_name,
+
+            "brand": product.brand,
+
+            "current_quantity": product.current_quantity,
+
+            "unit": product.unit,
+
+            "quantity_label": self.quantity_label(product),
+
+            "latest_price": product.current_unit_price,
+
+            "previous_price": product.previous_unit_price,
+
+            "delta_price": price_variation["delta"],
+
+            "delta_price_percent": price_variation["percentage"],
+
+            "delta_price_label": price_variation["text"],
+
+            "delta_price_direction": self.price_delta_direction(
+
+                price_variation["delta"]
+
+            ),
+
+            "average_duration_days": product.average_duration_days,
+
+            "cycle_label": self.cycle_label(product.average_duration_days),
+
+            "expected_next_purchase": product.expected_next_purchase,
+
+            "next_purchase_label": self.date_label(
+
+                product.expected_next_purchase
+
+            ),
+
+            "remaining_days": remaining_days,
+
+            "remaining_label": self.remaining_label(remaining_days),
+
+            "status": status_key,
+
+            "status_label": self.status_label(status_key),
+
+            "price_label": self.money_label(product.current_unit_price),
+
+        }
+
+
+    #######################################################
+
+    def list_status_key(
+
+        self,
+
+        status: str,
+
+    ) -> str:
+        """
+        Map legacy inventory status names to Lists status keys.
+        """
+
+        return {
+
+            "storage": "in-house",
+
+            "shortage": "shortage",
+
+            "market": "to-buy",
+
+        }.get(status, "in-house")
+
+
+    #######################################################
+
+    def status_label(
+
+        self,
+
+        status: str,
+
+    ) -> str:
+        return {
+
+            "in-house": "In-house",
+
+            "shortage": "Shortage",
+
+            "to-buy": "To buy",
+
+        }.get(status, "Unknown")
+
+
+    #######################################################
+
+    def quantity_label(
+
+        self,
+
+        product: Product,
+
+    ) -> str:
+        return f"{product.current_quantity:g} {product.unit}"
+
+
+    #######################################################
+
+    def money_label(
+
+        self,
+
+        value,
+
+    ) -> str:
+        if value is None:
+
+            return "—"
+
+        return f"$ {value:.2f}"
+
+
+    #######################################################
+
+    def cycle_label(
+
+        self,
+
+        days,
+
+    ) -> str:
+        if days is None:
+
+            return "—"
+
+        if days == 1:
+
+            return "1 day"
+
+        return f"{days} days"
+
+
+    #######################################################
+
+    def date_label(
+
+        self,
+
+        value,
+
+    ) -> str:
+        if value is None:
+
+            return "—"
+
+        parsed = self.parse_purchase_date(value)
+
+        if parsed is None:
+
+            return value
+
+        return self.format_date_value(parsed)
+
+
+    #######################################################
+
+    def remaining_label(
+
+        self,
+
+        days,
+
+    ) -> str:
+        if days is None:
+
+            return "—"
+
+        if days > 1:
+
+            return f"{days} days"
+
+        if days == 1:
+
+            return "Tomorrow"
+
+        if days == 0:
+
+            return "Today"
+
+        return f"{abs(days)} days overdue"
+
+
+    #######################################################
+
+    def price_delta_direction(
+
+        self,
+
+        delta,
+
+    ) -> str:
+        if delta is None:
+
+            return "unavailable"
+
+        if delta > 0:
+
+            return "up"
+
+        if delta < 0:
+
+            return "down"
+
+        return "equal"
+
+
+    #######################################################
+
     def get_dashboard(
 
         self,
@@ -1407,6 +1737,412 @@ class ProductService(ServiceContract):
             "unparsed_rows": unparsed_rows,
 
         }
+
+
+    #######################################################
+
+    def get_history_analytics_view(
+
+        self,
+
+        start_date: str | None = None,
+
+        end_date: str | None = None,
+
+        store_id: int | None = None,
+
+    ) -> dict:
+        """
+        Return embedded History analytics for a date/store frame.
+        """
+
+        frame_start = self.parse_purchase_date(start_date)
+
+        frame_end = self.parse_purchase_date(end_date)
+
+        products = {
+
+            product.id: product
+
+            for product in self.repository.get_products()
+
+        }
+
+        stores = {
+
+            store.id: store
+
+            for store in self.repository.get_stores()
+
+        }
+
+        parsed_rows = []
+
+        unparsed_rows = []
+
+        excluded_rows = []
+
+        for row in self.repository.get_history_purchase_rows():
+
+            parsed_date = self.parse_purchase_date(
+
+                row.get("purchase_date")
+
+            )
+
+            if parsed_date is None:
+
+                diagnostic = dict(row)
+
+                diagnostic["reason"] = "unparsed_purchase_date"
+
+                unparsed_rows.append(diagnostic)
+
+                continue
+
+            row["parsed_purchase_date"] = parsed_date
+
+            exclusion_reason = self.analytics_exclusion_reason(
+
+                row,
+
+                frame_start,
+
+                frame_end,
+
+                store_id,
+
+            )
+
+            if exclusion_reason is not None:
+
+                diagnostic = dict(row)
+
+                diagnostic["reason"] = exclusion_reason
+
+                excluded_rows.append(diagnostic)
+
+                continue
+
+            parsed_rows.append(row)
+
+        parsed_rows.sort(
+
+            key=lambda row: (
+
+                row["parsed_purchase_date"],
+
+                row.get("purchase_id") or 0,
+
+            )
+
+        )
+
+        total_spent = sum(
+
+            row.get("total_price") or 0.0
+
+            for row in parsed_rows
+
+        )
+
+        frame_average = self.average_purchase_timelapse(
+
+            parsed_rows
+
+        )
+
+        product_groups = {}
+
+        for row in parsed_rows:
+
+            product_id = row.get("product_id")
+
+            group = product_groups.setdefault(
+
+                product_id,
+
+                {
+
+                    "product_id": product_id,
+
+                    "product_name": row.get("product_name"),
+
+                    "brand": row.get("brand"),
+
+                    "total_spent": 0.0,
+
+                    "purchase_count": 0,
+
+                },
+
+            )
+
+            group["purchase_count"] += 1
+
+            group["total_spent"] += row.get("total_price") or 0.0
+
+        rows = []
+
+        for product_id, group in product_groups.items():
+
+            product = products.get(product_id)
+
+            product_cycle = (
+
+                product.average_duration_days
+
+                if product is not None
+
+                else None
+
+            )
+
+            difference = self.cycle_difference(
+
+                product_cycle,
+
+                frame_average,
+
+            )
+
+            rows.append({
+
+                "product_id": group["product_id"],
+
+                "product_name": group["product_name"],
+
+                "brand": group["brand"],
+
+                "total_spent": group["total_spent"],
+
+                "total_spent_label": self.money_label(
+
+                    group["total_spent"]
+
+                ),
+
+                "expenditure_percentage": (
+
+                    (
+
+                        group["total_spent"]
+
+                        /
+
+                        total_spent
+
+                    ) * 100
+
+                    if total_spent > 0
+
+                    else None
+
+                ),
+
+                "purchase_count": group["purchase_count"],
+
+                "average_duration_days": product_cycle,
+
+                "frame_average_timelapse_days": frame_average,
+
+                "cycle_difference_days": difference,
+
+                "cycle_comparison": self.cycle_comparison_label(
+
+                    product_cycle,
+
+                    frame_average,
+
+                ),
+
+                "insufficient_data_reason": (
+
+                    None
+
+                    if product_cycle is not None and frame_average is not None
+
+                    else "missing_product_cycle_or_frame_average"
+
+                ),
+
+            })
+
+        rows.sort(
+
+            key=lambda row: row["total_spent"],
+
+            reverse=True,
+
+        )
+
+        selected_store = stores.get(store_id)
+
+        return {
+
+            "frame": {
+
+                "start_date": start_date,
+
+                "end_date": end_date,
+
+                "store_id": store_id,
+
+                "store_name": (
+
+                    selected_store.name
+
+                    if selected_store is not None
+
+                    else "All stores"
+
+                ),
+
+            },
+
+            "parsed_purchase_count": len(parsed_rows),
+
+            "unparsed_row_count": len(unparsed_rows),
+
+            "excluded_row_count": len(excluded_rows),
+
+            "unparsed_or_excluded_count": (
+
+                len(unparsed_rows) + len(excluded_rows)
+
+            ),
+
+            "total_spent": total_spent,
+
+            "frame_average_timelapse_days": frame_average,
+
+            "insufficient_data_reason": (
+
+                None
+
+                if frame_average is not None
+
+                else "fewer_than_two_parsed_purchases"
+
+            ),
+
+            "products": rows,
+
+            "rows": rows,
+
+            "unparsed_rows": unparsed_rows,
+
+            "excluded_rows": excluded_rows,
+
+            "unparsed_or_excluded_rows": (
+
+                unparsed_rows + excluded_rows
+
+            ),
+
+        }
+
+
+    #######################################################
+
+    def analytics_exclusion_reason(
+
+        self,
+
+        row: dict,
+
+        start_date,
+
+        end_date,
+
+        store_id: int | None,
+
+    ) -> str | None:
+        purchase_date = row["parsed_purchase_date"]
+
+        if start_date is not None and purchase_date < start_date:
+
+            return "outside_frame"
+
+        if end_date is not None and purchase_date > end_date:
+
+            return "outside_frame"
+
+        if store_id is not None and row.get("store_id") != store_id:
+
+            return "store_filter_mismatch"
+
+        return None
+
+
+    #######################################################
+
+    def average_purchase_timelapse(
+
+        self,
+
+        rows: list[dict],
+
+    ) -> float | None:
+        if len(rows) < 2:
+
+            return None
+
+        gaps = []
+
+        for index in range(len(rows) - 1):
+
+            current_date = rows[index]["parsed_purchase_date"]
+
+            next_date = rows[index + 1]["parsed_purchase_date"]
+
+            gaps.append((next_date - current_date).days)
+
+        return sum(gaps) / len(gaps)
+
+
+    #######################################################
+
+    def cycle_difference(
+
+        self,
+
+        product_cycle,
+
+        frame_average,
+
+    ) -> float | None:
+        if product_cycle is None or frame_average is None:
+
+            return None
+
+        return product_cycle - frame_average
+
+
+    #######################################################
+
+    def cycle_comparison_label(
+
+        self,
+
+        product_cycle,
+
+        frame_average,
+
+    ) -> str:
+        if product_cycle is None or frame_average is None:
+
+            return "unknown"
+
+        if product_cycle < frame_average:
+
+            return "faster"
+
+        if product_cycle > frame_average:
+
+            return "slower"
+
+        return "equal"
 
 
     #######################################################

@@ -1,88 +1,113 @@
-# Codex Report — Didactic Cycle 02
+# Codex Report — Didactic Cycle 03
 
-## Source Stage Files
+## Source Stage Files Read
 
+- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
+- `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
+- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
 ## Coding Concepts Exposed
 
-- Time bucketing by business boundaries.
-- Grouping as a read-model structure distinct from sorting.
-- Aggregate rows as derived data.
-- Durable configuration state in SQLite.
-- Store editing through service/repository orchestration.
-- PySide6 editable forms and read-only tree rendering.
+- Raw data versus derived display/read-model values.
+- Date/store filtering frame before analytics aggregation.
+- Aggregation, totals, percentages, and comparative metrics.
+- Baseline definition for frame average purchase timelapse.
+- Status classification versus UI view filtering.
+- Nullable derived values for missing price, cycle, or frame average data.
+- Platform-neutral service read-model shapes.
+- PySide6 composition for unified views and embedded analytics.
 
 ## Concept Candidates By Marker
 
-- `&&&` Time Bucketing
-- `&&&` Aggregation and Totals
-- `&&&` Grouping Versus Sorting
-- `&&&` Configuration State
-- `&&&` Simple Key/Value Table
-- `&&%` Date/Datetime Boundary Handling
-- `&%%` History Read Model
-- `&%%` Settings-Owned Preferences
-- `&%%` Store Editing Workflow
-- `&%%` History Grouping Service Responsibility
-- `%%%` SQLite Settings Persistence
-- `%%%` PySide6 Editable Form Composition
+- `&&&`: Percentage as Derived Aggregate; Temporal / Spatial Filtering Frame; Comparative Metric; Baseline Definition; Status Classification Versus UI Filtering; Mobile Readiness Without Rewrite.
+- `&&%`: Platform-neutral read-model shape; Nullable derived display values; UI view state; Date/datetime boundary handling.
+- `&%%`: History Analytics Read Model; Unified Lists Page With Internal Views; Product Status Classification Versus UI Filtering; Latest Value / Delta Calculation; Service Contract Stability; Product Cycle Versus Shelf-Life; Mobile readiness through service/read-model contracts.
+- `%%%`: PySide6 widget composition for embedded analytics; PySide6 unified page view controls; SQLite read queries versus cached columns.
 
-## Existing Cycle 01 Concepts Reused
+## Existing Concepts Reinforced
 
-- Raw Data Versus Derived Data: purchase rows are raw history; History sections/totals are derived.
-- Naming as Data Contract: row keys use explicit meanings such as `purchase_date`, `total_price`, and `average_unit_price`.
-- Repository Result Shape: repository returns explicit raw row facts for service interpretation.
-- Service-Owned Calculation Responsibility: History grouping and totals are not calculated in UI.
-- SQLite Schema Evolution and PRAGMA: settings migration follows the same idempotent migration path.
-- PySide6 Widget Composition: History and Settings pages compose focused controls without moving business logic into widgets.
+- Raw Data Versus Derived Data: purchase/product rows remain raw inputs; Lists rows and analytics rows are derived service read models.
+- Aggregation and Totals: analytics calculates selected-frame total spent and product totals before percentages.
+- Service-Owned Calculation Responsibility: ProductService owns status, latest/delta, frame totals, percentages, average timelapse, and cycle comparison.
+- Date/Datetime Boundary Handling: service parses date boundaries and excludes rows outside the selected frame.
+- PySide6 Widget Composition: Lists and embedded analytics render service-prepared values without direct SQL.
 
-## Grouping Versus Sorting Evidence
+## Lists Read-Model Consolidation Evidence
 
-- Purchases are sorted chronologically by parsed purchase date and ID.
-- Grouping then assigns those sorted rows into operational month and week sections.
-- Sorting order does not define the period membership.
+- Former Storage/Shortage/Market public meanings are now one Lists service read model plus internal views.
+- Hybrid all-products view returns every product with a Status field.
+- All internal views use the same 10-column row shape.
+- Status is represented by `in-house`, `shortage`, or `to-buy` plus display label.
+- Price and delta price are supplied by ProductService from global Product summary fields.
+- Lists UI does not call repository or recalculate status, remaining days, latest price, or delta price.
 
-## Time Bucketing Evidence
+## History Analytics Pipeline Evidence
 
-- First Wednesday defines operational month start.
-- Purchases before the first Wednesday are assigned to the previous operational month.
-- Wednesday starts the operational week.
-- Service tests confirmed Tuesday/Wednesday/Thursday boundary behavior around `07/07/2026`, `08/07/2026`, and `09/07/2026`.
+```text
+raw history rows
+→ parsed date/store frame
+→ total and interval aggregates
+→ percentage and cycle comparison metrics
+→ ProductService read model
+→ embedded History UI presentation
+```
 
-## Aggregation And Total-Row Evidence
+- Date/store frame selection is collected in HistoryPage controls.
+- Frame semantics are interpreted by ProductService.
+- Total spent is sum of stored `total_price` for parsed rows inside frame.
+- Product percentage is product total divided by selected-frame total.
+- Average purchase timelapse is average gap between parsed purchases ordered by date.
+- Product cycle comparison uses `average_duration_days - frame_average_timelapse_days`.
+- Unparsed rows are excluded and counted separately; date/store exclusions are reported separately.
 
-- Monetary total is a sum of stored `total_price`.
-- Average unit price is a mean over `unit_price`.
-- Quantity totals are grouped by unit, not collapsed across incompatible units.
-- Store totals are grouped by store label.
+## Latest / Delta Price Evidence
 
-## Simple Key/Value Table Note
+- Lists read model exposes latest price from `current_unit_price`.
+- Delta fields come from `get_price_variation(product)`.
+- Values are global per product and not scoped to History date/store filters.
+- Missing previous price returns nullable delta values and display `—`.
 
-A simple key/value settings table stores each setting as a named key plus a text value. It is useful when settings are small, independent, and may grow over time. Example: `history.week_boundary = wednesday`. It avoids creating many columns before the settings model is stable. Its tradeoff is that values need parsing and validation in service code.
+## Product Cycle Versus Shelf-Life Evidence
 
-## Settings / Configuration State Evidence
+- Analytics uses `average_duration_days` as product cycle.
+- No shelf-life fields are used for History analytics comparison.
+- Existing shelf-life fields were not modified.
 
-- `settings.key` identifies the setting.
-- `settings.value` stores the persisted text value.
-- Default values are inserted without overwriting user choices.
-- Settings changes affect later History interpretation through service reads.
+## Service vs Repository vs UI Responsibility Evidence
 
-## Service Vs Repository Vs UI Responsibility Evidence
+- Repository still owns SQL retrieval and row mapping.
+- ProductService owns read-model assembly and all business/analytics meanings.
+- ListsPage owns view selection, table rendering, refresh, and double-click routing.
+- HistoryPage owns date/store controls, summary/table rendering, and apply events.
+- UI code does not define analytics percentages, average timelapse, or comparison labels.
 
-- Repository persists and retrieves settings, stores, and joined purchase/store rows.
-- Service interprets settings, date boundaries, grouping, and aggregate meaning.
-- History UI renders the service read model.
-- Settings UI exposes editable controls and delegates persistence to service.
+## Mobile-Readiness Boundary Evidence
 
-## Didactic Risks Or Confusions Remaining
+- New service methods return plain dictionaries/lists with primitive values and labels.
+- Lists and analytics semantics are not tied to PySide6 widgets.
+- No mobile UI, API rewrite, backend rewrite, auth, sync, or mobile database work was added.
 
-- Page sorting persistence exists, but page sorting behavior is not implemented; this distinction should be explicit in later teaching.
-- Operational month names are based on the first-Wednesday start date, which differs from plain calendar-month grouping.
+## Concepts Deferred / Not Ready For Canon
 
-## Suggested [A] Follow-Up
+- Detachable analytics widget lifecycle.
+- Store/frame-scoped price delta.
+- Configurable comparison tolerance.
+- Active `pages.order` consumption.
+- Mobile implementation architecture.
+- API/backend rewrite.
+- Persisted analytics cache.
+- Physical deletion of old Storage/Shortage/Market page files.
 
-- Consider KANBAN entries for Time Bucketing, Aggregation and Totals, and Configuration State.
-- Consider a glossary derivative for simple key/value settings tables.
+## Didactic Risks Or Remaining Confusions
+
+- Invalid date text currently falls back to an omitted boundary.
+- Frame average timelapse can be less than one day when many same-day purchases exist; teaching should distinguish row interval average from daily shopping habit.
+- Store-filtered analytics may show many excluded rows; Didactic Chat may need to explain filtered frame membership versus unparsed data.
+
+## Suggested Didactic Chat Follow-Up
+
+- Classify Cycle 03 read-model consolidation into the KANBAN concepts staged in `B_DIDACTIC.md`.
+- Teach the difference between product unit price, product total spent, frame total spent, and product expenditure percentage.

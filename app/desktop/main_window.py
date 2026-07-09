@@ -8,9 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.desktop.ui.pages.register_page import RegisterPage
-from app.desktop.ui.pages.storage_page import StoragePage
-from app.desktop.ui.pages.shortage_page import ShortagePage
-from app.desktop.ui.pages.market_page import MarketPage
+from app.desktop.ui.pages.lists_page import ListsPage
 from app.desktop.ui.pages.history_page import HistoryPage
 from app.desktop.ui.pages.settings_page import SettingsPage
 
@@ -35,15 +33,7 @@ class MainWindow(QMainWindow):
 
         self.register_page = RegisterPage()
 
-        self.storage_page = StoragePage(
-            self
-        )
-
-        self.shortage_page = ShortagePage(
-            self
-        )
-
-        self.market_page = MarketPage(
+        self.lists_page = ListsPage(
             self
         )
 
@@ -57,12 +47,6 @@ class MainWindow(QMainWindow):
 
         self.register_page.main_window = self
 
-        self.storage_page.main_window = self
-
-        self.shortage_page.main_window = self
-
-        self.market_page.main_window = self
-
         ####################################################
         # Add tabs
         ####################################################
@@ -73,18 +57,8 @@ class MainWindow(QMainWindow):
         )
 
         self.tabs.addTab(
-            self.storage_page,
-            "Storage",
-        )
-
-        self.tabs.addTab(
-            self.shortage_page,
-            "Shortage",
-        )
-
-        self.tabs.addTab(
-            self.market_page,
-            "Market",
+            self.lists_page,
+            "Lists",
         )
 
         self.tabs.addTab(
@@ -122,29 +96,41 @@ class MainWindow(QMainWindow):
 
     def open_storage(self):
         """
-        Open Storage tab.
+        Open Lists tab with the in-house view.
         """
 
+        self.lists_page.set_view(
+            "in-house"
+        )
+
         self.tabs.setCurrentWidget(
-            self.storage_page
+            self.lists_page
         )
 
     def open_shortage(self):
         """
-        Open Shortage tab.
+        Open Lists tab with the shortage view.
         """
 
+        self.lists_page.set_view(
+            "shortage"
+        )
+
         self.tabs.setCurrentWidget(
-            self.shortage_page
+            self.lists_page
         )
 
     def open_market(self):
         """
-        Open Market tab.
+        Open Lists tab with the to-buy view.
         """
 
+        self.lists_page.set_view(
+            "to-buy"
+        )
+
         self.tabs.setCurrentWidget(
-            self.market_page
+            self.lists_page
         )
 
     ####################################################
@@ -179,10 +165,6 @@ class MainWindow(QMainWindow):
         Refresh every inventory page.
         """
 
-        self.storage_page.load_products()
-
-        self.shortage_page.load_products()
-
-        self.market_page.load_products()
+        self.lists_page.load_products()
 
         self.history_page.load_history()

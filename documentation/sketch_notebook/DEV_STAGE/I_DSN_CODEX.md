@@ -1,87 +1,132 @@
-# Codex Report — Design Cycle 02
+# Codex Report — Design Cycle 03
 
-## Source Stage Files
+## Source Stage Files Read
 
+- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
+- `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
+- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
 ## Architectural Decisions Materialized
 
-- History uses a service-prepared read model.
-- Repository retrieves purchase/store/settings data without deciding period semantics.
-- Service owns first-Wednesday month grouping, Wednesday week grouping, aggregate meaning, settings interpretation, and read-model assembly.
-- History page renders grouped sections, purchase rows, and total rows.
-- Settings page owns History configuration and store editing surfaces.
-- Store create/update lives in Settings, not RegisterPage.
-- Settings persistence uses SQLite key/value storage.
-- Cycle 01 Product View boundaries remain intact.
+- Cycle 03 extends the existing Desktop UI -> ProductService -> Repository -> SQLite boundary.
+- Public inventory navigation is now one Lists page.
+- Former Storage/Shortage/Market meanings are internal Lists views.
+- History analytics starts embedded in HistoryPage.
+- ProductService owns Lists classification/read-model assembly and History analytics derivation.
+- Repository and schema were not expanded for cached analytics fields.
+- Register remains purchase-entry-only; Settings remains store-management surface.
+- `pages.order` remains inert for MainWindow tab ordering.
 
 ## Files Changed Or Created For Design Reasons
 
-- `app/database/schema.sql`: settings persistence shape.
-- `app/database/seed.sql`: default settings seed values.
-- `app/core/database.py`: idempotent settings migration.
-- `app/core/repository.py`: SQL ownership for settings, stores, and raw History rows.
-- `app/core/services.py`: History and Settings meaning layer.
-- `app/desktop/main_window.py`: page wiring and refresh.
-- `app/desktop/ui/pages/history_page.py`: read-only History renderer.
-- `app/desktop/ui/pages/settings_page.py`: configuration and store editing page.
+- `app/core/services.py`: service-owned Lists and analytics read models.
+- `app/desktop/ui/pages/lists_page.py`: new public Lists rendering surface.
+- `app/desktop/main_window.py`: static public tab remodel and compatibility navigation.
+- `app/desktop/ui/pages/history_page.py`: embedded analytics controls/table.
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: operational evidence.
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: didactic evidence.
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: this design evidence.
 
 ## Responsibility Boundaries Preserved
 
-- History page rendering versus service grouping: preserved.
-- Repository retrieval versus service period semantics: preserved.
-- Settings configuration surface versus History calculation: preserved.
-- Store editing in Settings rather than RegisterPage: preserved.
-- Total/aggregate rows as service read-model data: preserved.
-- Product View and ProductDetailPanel unaffected: preserved.
-- Purchase rhythm and shelf-life rhythm unaffected: preserved, with safer date parsing.
+- Schema/storage: unchanged; no analytics cache or list-specific persisted fields.
+- Repository: unchanged; still retrieves raw/supporting rows and does not define analytics semantics.
+- ProductService: owns status, list rows, latest/delta meaning, frame interpretation, totals, percentages, average timelapse, and cycle comparison.
+- ListsPage: owns view selection, table rendering, refresh, and double-click routing.
+- HistoryPage: owns controls/rendering and passes frame selections to ProductService.
+- MainWindow: owns tab mounting, refresh orchestration, and compatibility navigation helpers.
+- Register and Settings responsibilities were not expanded.
 
 ## Boundary Drift
 
-- No intentional boundary drift.
-- `pages.order` persistence was added, but MainWindow consumption was deferred to avoid expanding scope.
+- No direct SQL was added to UI.
+- No schema changes were introduced.
+- No mobile implementation or API rewrite was introduced.
+- Minor risk: HistoryPage formats analytics summary/table labels after receiving semantic values; calculations remain service-owned.
+- Minor risk: invalid date boundaries parse as `None`, making invalid text behave like no boundary.
 
-## History Read-Model Evidence
+## ListsPage Architecture Evidence
 
-- Read model includes operational month sections.
-- Each month contains week sections.
-- Week sections contain ordered purchase rows.
-- Sections include period labels, period boundaries, and summaries.
-- Summaries include monetary total, average unit price, per-unit quantity totals, and store totals.
+- `ListsPage` is the only new public inventory page.
+- It exposes required internal views through a combo box.
+- It renders one standardized 10-column table for all views.
+- It calls only `ProductService.get_lists_view(view_key)` and `ProductService.get_product(product_id)`.
+- Double-click delegates selected product editing to MainWindow.
 
-## Settings Persistence / Configuration Evidence
+## Lists Read-Model Evidence
 
-- `settings` table stores `key TEXT PRIMARY KEY` and `value TEXT NOT NULL`.
-- Default keys: `history.week_boundary`, `history.month_boundary_rule`, and `pages.order`.
-- Service reads settings before assembling History.
-- Settings page writes settings through service/repository.
+- `get_lists_view(view_key="all")` accepts `all`, `in-house`, `shortage`, `to-buy`, `in-house + shortage`, and `shortage + to-buy`.
+- `list_row_model(product)` assembles identity, brand, quantity, latest price, delta price, cycle, next purchase, remaining days, status, and display labels.
+- Legacy service methods `get_storage_products()`, `get_shortage_products()`, and `get_market_products()` were preserved.
 
-## Store Editing Placement Evidence
+## MainWindow Navigation / Remodel Evidence
 
-- Settings page exposes store ID, name, city, state, and address controls.
-- Store create/update uses ProductService and Repository.
-- RegisterPage was not modified for store-management controls.
+- Public tabs now instantiate and mount Register, Lists, History, Settings.
+- Offscreen startup probe returned `['Register', 'Lists', 'History', 'Settings']`.
+- `open_storage()` routes to Lists `in-house`.
+- `open_shortage()` routes to Lists `shortage`.
+- `open_market()` routes to Lists `to-buy`.
+- `refresh_pages()` refreshes Lists and History.
+- `pages.order` is not consumed.
 
-## Aggregate / Total-Row Design Evidence
+## Latest / Delta Price Boundary Evidence
 
-- Monetary total is explicitly tied to purchase `total_price`.
-- Average unit price is computed as mean, not sum.
-- Quantities are aggregated by unit.
-- Total rows are rendered by History from service-prepared summaries.
+- Latest price is read from Product summary `current_unit_price`.
+- Delta price is derived through service `get_price_variation(product)`.
+- UI only renders returned labels and color direction.
+- No store/frame scoped delta behavior was added.
 
-## Deferred Decisions
+## History Analytics Read-Model Evidence
 
-- Store deletion deferred because purchase references require explicit referential behavior design.
-- Full interactive page sorting UI and MainWindow tab reordering deferred; only persistence support exists.
+- `get_history_analytics_view(start_date=None, end_date=None, store_id=None)` returns frame, parsed/unparsed/excluded counts, total spent, frame average timelapse, product rows, and diagnostics.
+- Product rows include product ID/name/brand, total spent, expenditure percentage, purchase count, product cycle, frame average, cycle difference, comparison label, and insufficient-data reason.
+- Frame average is unknown when fewer than two parsed purchases exist.
+
+## Embedded History Analytics UI Evidence
+
+- HistoryPage now contains embedded analytics controls under the existing grouped history tree.
+- Controls: start date text, end date text, optional store selector, Apply button.
+- Display: summary label plus read-only product analytics table.
+- Existing Month -> Week History tree remains in the same page.
+- No detachable window/widget lifecycle was added.
+
+## Persistence / Schema Decision Evidence
+
+- No database schema files were modified.
+- No Product model fields were added for latest price, delta price, percentage, frame average, or cycle comparison.
+- Analytics values are read-time service derivations.
+
+## Mobile-Readiness Boundary Evidence
+
+- New service methods expose platform-neutral dictionaries.
+- UI-specific code is limited to PySide6 rendering and event handling.
+- Business meanings are available outside desktop widgets for future adapters.
+- No mobile UI/backend implementation was attempted.
+
+## Deferred Design Items
+
+- Detachable History analytics.
+- Active `pages.order` tab ordering.
+- Store editing through Register.
+- Store deletion.
+- Mobile implementation.
+- API/backend rewrite.
+- Cloud sync.
+- Persisted analytics cache.
+- Store/frame-scoped latest or delta price.
+- Configurable comparison tolerance.
+- Deletion of old Storage/Shortage/Market page files.
 
 ## Open Design Questions
 
-- Should `pages.order` drive tab order in MainWindow in a later cycle?
-- Should History expose filters by store/product/date after grouping stabilizes?
+- Should invalid analytics date input surface an explicit UI validation error instead of acting as an omitted boundary?
+- Should same-day purchase intervals be handled specially in average timelapse display?
+- Should old page files be retired in a later cleanup cycle once Lists has manual QA evidence?
 
-## Suggested [D] Follow-Up
+## Suggested Design Chat Follow-Up
 
-- Absorb Cycle 02 as evidence for the History read-model boundary.
-- Decide the next design step for page sorting consumption and safe store deletion behavior.
+- Absorb Cycle 03 as evidence for unified read-model boundaries.
+- Decide whether date input validation belongs in HistoryPage, ProductService, or a shared UI validation helper in a later cycle.
