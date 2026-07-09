@@ -2,132 +2,131 @@
 
 ## 1. Scope
 
-This stage gives Codex the operational implementation instructions for the Markei Product View refactor. It materializes source/schema changes and validation evidence only. It does not promote permanent domain memory and does not edit methodology files.
+This stage gives Codex the operational implementation instructions for Cycle 02: History UI page and Settings page. It materializes source/schema/config/UI changes and validation evidence only. It does not promote permanent domain memory and does not edit methodology files.
 
 ## 2. Source Inputs
 
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
-- Human correction from Main Chat: use uniform `expiration_date`; store address is plain `TEXT`; expiration date is optional but always displayed; average price is derived; migration should be stress-tested.
+- Main Chat synthesis for Cycle 02.
 
 ## 3. Accepted Operational Decisions
 
-- Preserve `average_duration_days` as purchase-to-purchase rhythm.
-- Preserve `expected_next_purchase` as prediction from purchase rhythm.
-- Add `average_shelf_life_days` separately as purchase-to-expiration rhythm.
-- Use uniform field name `expiration_date`.
-- Add purchase-level `expiration_date` as nullable text.
-- Add store-level `address` as nullable text.
-- Product-level `expected_expiration_date` may be added as nullable cached/summary field for future collective product-market analysis, but current end-user Product View must primarily display purchase-level expiration data.
-- Average price must be derived from collected purchase prices, not cached on Product for this milestone.
-- Existing cached product price fields and purchase price fields remain as they are.
-- Migration is required; do not rely on destructive reset as the default path.
+- History shows purchases in chronological sequential order inside grouped sections.
+- History grouping is nested Month -> Week.
+- The default week boundary is Wednesday; a purchase on Wednesday starts a new operational week.
+- The default operational month starts at the first Wednesday of the calendar month.
+- Purchases before the first Wednesday belong to the previous operational month.
+- Repository retrieves purchase, store, time, and settings data.
+- Service owns time bucketing, History period construction, total/aggregate row semantics, and History read-model assembly.
+- UI renders service-prepared History sections, rows, and aggregate rows.
+- Settings owns store editing and configuration surfaces so RegisterPage is not polluted with store-management responsibilities.
+- Store editing belongs in Settings for this milestone.
+- Settings persistence should use SQLite and the existing idempotent migration path.
+- Use a simple key/value settings table for MVP unless repository inspection shows an existing better settings mechanism.
+- Page sorting persistence may be added, but full page sorting UI implementation may be deferred if it risks scope expansion.
+- Product View, purchase rhythm, shelf-life rhythm, receipt registration, and inventory classification must not regress.
 
 ## 4. Implementation Targets
 
 Inspect and update only as needed:
 
 - `app/database/schema.sql`
+- `app/database/seed.sql`
 - `app/core/database.py`
+- `app/core/config.py`
 - `app/core/models.py`
 - `app/core/contracts.py`
 - `app/core/repository.py`
 - `app/core/services.py`
 - `app/desktop/main_window.py`
-- `app/desktop/ui/pages/register_page.py`
-- `app/desktop/ui/pages/storage_page.py`
-- `app/desktop/ui/pages/shortage_page.py`
-- `app/desktop/ui/pages/market_page.py`
-- Create `app/desktop/ui/widgets/product_detail_panel.py` if no equivalent widget exists.
+- `app/desktop/ui/pages/history_page.py`
+- `app/desktop/ui/pages/settings_page.py`
+- `app/desktop/ui/pages/register_page.py` only if refresh wiring requires it
+- create focused widgets only if useful, for example store editor or history table components under the current `app/desktop/ui/widgets/` path.
 
+Do not use older `app/desktop/ui/main_window.py` path unless repository inspection proves it exists.
 Do not edit permanent domain folders in this pass.
 Do not edit methodology files.
 Do not create new Sketch Notebook files outside the named G/H/I report files.
 
 ## 5. Database and Migration Requirements
 
-Implement an idempotent migration path in `app/core/database.py` or the existing database-management layer.
+If persistent settings are not already present, add a settings table through schema and migration.
 
-The migration must preserve existing user data and must be safe to run multiple times.
-
-At minimum, ensure these nullable columns exist:
+Preferred MVP shape:
 
 ```sql
-purchases.expiration_date TEXT
-products.average_shelf_life_days INTEGER
-products.expected_expiration_date TEXT
-stores.address TEXT
+settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+)
 ```
 
-Recommended mechanism:
+Required default settings should support at least:
 
-- Inspect current columns with `PRAGMA table_info(<table>)`.
-- Run `ALTER TABLE ... ADD COLUMN ...` only when the column is missing.
-- Call the migration from the normal connection/initialization path so existing local databases are upgraded.
-- Keep destructive `reset()` behavior explicit only.
+- history week boundary weekday = Wednesday
+- history month boundary rule = first Wednesday
+- page order value if page sorting persistence is implemented
 
-## 6. Model Requirements
+Migration must be idempotent and preserve existing user data.
+Use the existing PRAGMA-based pattern from Cycle 01.
 
-Update dataclasses and row mappers so the new fields are represented without breaking existing records:
+Store address already exists; do not add duplicate store-address fields.
 
-- `Purchase.expiration_date: Optional[str]`
-- `Store.address: Optional[str]`
-- `Product.average_shelf_life_days: Optional[int]`
-- `Product.expected_expiration_date: Optional[str]`
+## 6. History Requirements
 
-Use defaults compatible with existing code paths.
+Implement or extend service behavior so History data is returned as a read model.
 
-## 7. Repository Requirements
+The read model should include:
 
-Update SQL insert/select/update/mappers for new fields.
+- operational month sections
+- week sections inside each operational month
+- ordered purchase rows
+- aggregate/summary rows or section totals
+- store identity for rows and totals
+- period labels and period boundaries
 
-Repository may retrieve raw rows and joined view data, but must not decide business meaning.
+Repository may return ordered raw purchase/store rows, but must not own first-Wednesday or weekly-Wednesday business semantics.
 
-Add repository helpers only if needed for Product View, for example:
+## 7. Aggregation Requirements
 
-- product purchase history with store fields
-- average unit price for a product
-- latest store price rows for a product
+Do not reduce the History aggregate model to only one generic `SUM` without preserving room for other aggregate meanings.
 
-Use explicit names in returned dictionaries or dataclasses. Avoid vague keys like `date` when the meaning is `purchase_date` or `expiration_date`.
+For this milestone:
 
-## 8. Service Requirements
+- monetary total should use the stored purchase `total_price` when available.
+- quantity totals may be grouped only when units are compatible; otherwise they should be omitted or displayed per unit group.
+- average-like values should use mean/average where the meaning is average price or average unit value, not sum.
+- Codex should choose a minimal clear aggregate set and report any skipped aggregate types.
 
-ProductService owns calculations and Product View read-model assembly.
+The visible Total row must at minimum make clear which monetary total it represents for a store/timeframe.
 
-Implement or extend service behavior so:
+## 8. Settings Requirements
 
-- `calculate_average_duration` remains purchase-to-purchase.
-- A separate shelf-life calculation computes average days between `purchase_date` and `expiration_date` for purchases that have expiration data.
-- Product summary update writes `average_shelf_life_days` and, if implemented, `expected_expiration_date` without changing `average_duration_days` semantics.
-- Product View data includes product identity, derived average price, shelf-life summary, store/latest-price rows, and last purchases.
-- Product View data handles missing expiration dates gracefully.
+Settings page should include:
 
-## 9. UI Requirements
+- store editing area for store name, city, state, and address
+- time-reference configuration for History grouping defaults
+- page sorting configuration persistence if safe, with full interactive page-sorting UI allowed to be deferred
 
-RegisterPage should host a lower Product View panel.
+Store editing should support creating and updating stores.
+Do not implement store deletion unless referential behavior is explicitly safe and reported.
 
-Preferred implementation:
+Settings changes should refresh History immediately when practical; persisted settings must survive restart.
 
-- Create reusable `ProductDetailPanel` under `app/desktop/ui/widgets/`.
-- RegisterPage creates and places the panel below the existing form/buttons/status area.
-- RegisterPage calls the panel refresh/load method from `load_product(product)`.
-- Existing double-click navigation through MainWindow should remain intact.
-- Product View must always display the expiration-date column, even when values are empty/placeholder.
+## 9. Date and Time Requirements
 
-Display requirements:
+Use the configured project date format where possible.
 
-```text
-[Product Name], [Product Brand], [ID]
-[Average Price] [Average Shelf-Life / Expiration Timing] | [Stores] [StoreID] [Store address] - [Latest Price]
-Last Purchases:
-[Purchase Date] | [Price] | [Quantity] | [Expiration Date]
-```
+History grouping must handle or report date-format drift. If existing seed/user data contains ISO-like dates while the configured date format is `%d/%m/%Y`, implement safe parsing or report records that cannot be parsed.
+
+Validation must include known dates around Wednesday boundaries.
 
 ## 10. Validation Requirements
 
-Run and report results for available commands, adapting to the local environment:
+Run and report available commands, adapting to the local environment:
 
 ```bash
 python -m compileall app
@@ -135,23 +134,32 @@ python -m app.core.database
 python -m app.main
 ```
 
-Also inspect or report migration evidence, such as:
+Also run or report schema inspection for settings migration, for example:
 
 ```sql
-PRAGMA table_info(purchases);
-PRAGMA table_info(products);
-PRAGMA table_info(stores);
+PRAGMA table_info(settings);
 ```
 
-Manual validation checklist to report:
+Validation should include service-level checks for:
 
-- Existing database is migrated without destructive reset.
-- A product can be registered without `expiration_date`.
-- A product can be registered with `expiration_date` if UI support is implemented.
-- Double-clicking an inventory row opens Register and loads the product.
-- Lower Product View renders identity, average price, store/address/latest price, last purchases, and expiration date column.
-- Products with missing expiration dates do not crash.
-- Storage/Shortage/Market classification remains driven by `expected_next_purchase`.
+- dates before the first Wednesday of a month
+- dates on the first Wednesday
+- dates after the first Wednesday
+- Tuesday/Wednesday/Thursday week boundary behavior
+- store/timeframe monetary totals
+- average/mean aggregate behavior if implemented
+- store create/update through service/repository
+- settings persistence read/write
+- History refresh after settings changes if implemented
+- Product View and inventory logic not regressed
+
+Manual UI validation to report:
+
+- History tab opens and renders grouped sections.
+- Settings tab opens and exposes store editing and time-reference configuration.
+- Creating/updating a store works or skipped reason is reported.
+- History totals are visible and understandable.
+- App startup has no traceback.
 
 ## 11. Codex Report Requirement
 
@@ -164,6 +172,10 @@ After materialization, write `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODE
 - Commands run
 - Validation results
 - Migration evidence
+- History grouping evidence
+- Settings persistence evidence
+- Store editing evidence
+- Aggregate/total semantics implemented
 - Instructions completed
 - Instructions skipped
 - Failures/blockers
