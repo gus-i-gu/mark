@@ -1,11 +1,11 @@
 # METHOD_FOUNDATIONS.md
 
-> Version: 0.3
+> Version: 0.5
 > Status: Draft
 > Persistence Class: Canonical
 > Knowledge Class: Methodological
 > Authority: Main Chat
-> Scope: Ontology and foundational principles of the Sketch Notebook Method
+> Scope: Ontology, foundational principles, semantic responsibilities, recovery economy, and system roles of the Sketch Notebook Method
 
 ---
 
@@ -22,13 +22,14 @@ The method treats the repository not only as a place for source code, but also a
 
 The Sketch Notebook stores the project knowledge required to:
 
-* understand the system;
-* continue interrupted work;
-* reproduce reasoning;
-* validate implementation;
-* preserve learning;
-* detect drift;
-* evolve the software without losing context.
+- understand the system;
+- continue interrupted work;
+- reproduce reasoning;
+- validate implementation;
+- preserve learning;
+- detect drift;
+- evolve the software without losing context;
+- recover project state without requiring one conversation to remember everything.
 
 The goal is not to make every chat remember everything.
 
@@ -73,7 +74,7 @@ This means methodology files function as both:
 1. human-readable specifications;
 2. context boot documents for AI-assisted work.
 
-The method therefore contains a metalinguistic component: it defines the language, responsibilities, knowledge states, routing rules, and communication patterns through which the system speaks about itself.
+The method therefore contains a metalinguistic component: it defines the language, responsibilities, knowledge states, routing rules, recovery rules, and communication patterns through which the system speaks about itself.
 
 A chat does not merely read the methodology as background information.
 
@@ -91,24 +92,24 @@ If a document consistently starts answering more than one fundamental question, 
 
 Current methodological responsibilities:
 
-| File                    | Primary semantic responsibility                                        |
-| ----------------------- | ---------------------------------------------------------------------- |
-| `METHOD_FOUNDATIONS.md` | What the Sketch Notebook Method is                                     |
-| `FLUX.md`               | How information is routed, staged, written, materialized, and reported |
-| `PROMOTION_RULES.md`    | How knowledge changes semantic state                                   |
-| `CHAT_PROTOCOL.md`      | How each conversational role communicates and structures output        |
-| `CHAT_BEHAVIOUR.md`     | How each conversational role reasons from its perspective              |
-| `METHOD_GLOSSARY.md`    | What methodology-specific terms mean                                   |
+| File | Primary semantic responsibility |
+| --- | --- |
+| `METHOD_FOUNDATIONS.md` | What the Sketch Notebook Method is |
+| `FLUX.md` | How information is routed, staged, written, materialized, recovered, renamed, and controlled for recovery economy |
+| `PROMOTION_RULES.md` | How knowledge changes semantic state and how reconciliation constrains duplicate semantic ownership |
+| `CHAT_PROTOCOL.md` | How each conversational role communicates and structures output |
+| `CHAT_BEHAVIOUR.md` | How each conversational role reasons from its perspective |
+| `METHOD_GLOSSARY.md` | What methodology-specific terms mean |
 
 The same object may appear in several files, but each file describes it from only one responsibility.
 
 Example:
 
-* `METHOD_FOUNDATIONS.md` defines Domain Checkpoint as a foundational concept.
-* `FLUX.md` defines which checkpoint file each role reads or writes.
-* `PROMOTION_RULES.md` defines whether checkpoint content is derived, canonical, or observational.
-* `CHAT_PROTOCOL.md` defines how a chat should format checkpoint-relevant content.
-* `METHOD_GLOSSARY.md` defines the term in consultative form.
+- `METHOD_FOUNDATIONS.md` defines Domain Checkpoint as a foundational concept.
+- `FLUX.md` defines which checkpoint file each role reads or writes.
+- `PROMOTION_RULES.md` defines whether checkpoint content is derived, canonical, observational, or reconciled.
+- `CHAT_PROTOCOL.md` defines how a chat should format checkpoint-relevant content.
+- `METHOD_GLOSSARY.md` defines the term in consultative form.
 
 This prevents duplication, drift, and contradictory instructions.
 
@@ -136,7 +137,7 @@ CHAT_PROTOCOL
 
 It may be consulted when a role’s reasoning perspective is unclear, when a new role is added, or when the conversational model itself is being revised.
 
-It does not need to be re-expanded into every ordinary boot if its principles are already stable and represented through protocol and flux.
+`METHOD_GLOSSARY.md` may be consulted when methodology vocabulary is unclear.
 
 The boot order exists to load context in this sequence:
 
@@ -202,15 +203,16 @@ Debugging validates architecture and concept understanding.
 
 The method separates:
 
-* knowledge construction;
-* recovery;
-* staging;
-* synthesis;
-* promotion;
-* materialization;
-* validation;
-* persistence;
-* reconciliation.
+- knowledge construction;
+- recovery;
+- staging;
+- synthesis;
+- promotion;
+- materialization;
+- validation;
+- persistence;
+- reconciliation;
+- recovery economy.
 
 Each layer should remain distinct.
 
@@ -236,6 +238,16 @@ The human developer is not outside the method.
 
 The human developer is the supervising intelligence that decides whether the method is serving the project.
 
+## 6.7 Semantic Responsibility Over Length
+
+A file should be evaluated by how well it performs its semantic responsibility, not by how much information it contains.
+
+Length alone is not drift.
+
+A file becomes unhealthy when its size, shape, or content prevents it from fulfilling its assigned role.
+
+This principle supports Recovery-Economy, but concrete read-window rules belong to `FLUX.md`.
+
 ---
 
 # 7. Knowledge Domains
@@ -244,9 +256,9 @@ The Sketch Notebook organizes persistent memory into knowledge domains.
 
 The current functional domains are:
 
-* operational;
-* didactic;
-* design.
+- operational;
+- didactic;
+- design.
 
 Each domain represents a different kind of project truth.
 
@@ -256,12 +268,12 @@ The operational domain observes the project as execution.
 
 It asks:
 
-* what should be done now;
-* what was attempted;
-* what failed;
-* what commands are relevant;
-* what validation is required;
-* what work remains.
+- what should be done now;
+- what was attempted;
+- what failed;
+- what commands are relevant;
+- what validation is required;
+- what work remains.
 
 Operational knowledge includes actions, TODOs, validation procedures, track records, run notes, implementation risks, and execution state.
 
@@ -271,12 +283,12 @@ The didactic domain observes the project as learning.
 
 It asks:
 
-* what concept appeared;
-* what should be understood;
-* what belongs in the KANBAN;
-* what is stable knowledge;
-* what is still unstable;
-* how implementation becomes reusable understanding.
+- what concept appeared;
+- what should be understood;
+- what belongs in the KANBAN;
+- what is stable knowledge;
+- what is still unstable;
+- how implementation becomes reusable understanding.
 
 Didactic knowledge includes KANBAN concepts, glossary entries, concept maps, learning progress, required concepts, and project-based examples.
 
@@ -286,17 +298,17 @@ The design domain observes the project as architecture.
 
 It asks:
 
-* what responsibility belongs where;
-* which relationship owns which fact;
-* what structure is intended;
-* which decisions are stable;
-* what should the project become.
+- what responsibility belongs where;
+- which relationship owns which fact;
+- what structure is intended;
+- which decisions are stable;
+- what should the project become.
 
 Design knowledge includes domain models, decisions, responsibility boundaries, architectural states, UI responsibility, deferred design questions, and design rationale.
 
 ## 7.4 Main Coordination
 
-Main Chat is not a separate knowledge domain in the same sense.
+Main Chat is not a functional knowledge domain in the same sense.
 
 Main Chat coordinates the whole system.
 
@@ -312,12 +324,12 @@ Every permanent knowledge domain should expose the same semantic capabilities.
 
 The exact filenames may differ, but each domain should support four knowledge roles:
 
-| Role                  | Purpose                                       | Stability                         |
-| --------------------- | --------------------------------------------- | --------------------------------- |
-| Canonical Knowledge   | Defines accepted truth within the domain      | Stable                            |
-| Derived Knowledge     | Reorganizes or summarizes canonical knowledge | Revisable                         |
-| Domain Checkpoint     | Provides fast current-state recovery          | Frequently refreshed              |
-| Observational History | Records what happened over time               | Append-only or nearly append-only |
+| Role | Purpose | Stability |
+| --- | --- | --- |
+| Canonical Knowledge | Defines accepted truth within the domain | Stable |
+| Derived Knowledge | Reorganizes or summarizes canonical knowledge | Revisable |
+| Domain Checkpoint | Provides fast current-state recovery | Frequently refreshed |
+| Observational History | Records what happened over time | Append-only or nearly append-only |
 
 This is the Domain Symmetry Principle.
 
@@ -329,10 +341,10 @@ A single file should not permanently carry incompatible semantic roles if doing 
 
 For example:
 
-* a canonical file should be free to improve definitions;
-* an observational file should preserve historical sequence;
-* a checkpoint should be easy to rewrite;
-* a derived file should not introduce independent truth.
+- a canonical file should be free to improve definitions;
+- an observational file should preserve historical sequence;
+- a checkpoint should be easy to rewrite;
+- a derived file should not introduce independent truth.
 
 When one file tries to perform all of these roles, the domain becomes difficult to maintain.
 
@@ -350,20 +362,20 @@ It exposes the current operational state of canonical, derived, and observationa
 
 A checkpoint should answer:
 
-* where the domain currently stands;
-* what changed recently;
-* what is stable;
-* what is active;
-* what is unresolved;
-* what should be read next if deeper context is required.
+- where the domain currently stands;
+- what changed recently;
+- what is stable;
+- what is active;
+- what is unresolved;
+- what should be read next if deeper context is required.
 
 Current checkpoint examples include:
 
-| Domain      | Checkpoint                            |
-| ----------- | ------------------------------------- |
-| Didactic    | `didactics/08_CONCEPT_MAP.md`         |
+| Domain | Checkpoint |
+| --- | --- |
+| Didactic | `didactics/08_CONCEPT_MAP.md` |
 | Operational | `operational/10_OPERATIONAL_STATE.md` |
-| Design      | `design/09_DESIGN_STATE.md`           |
+| Design | `design/09_DESIGN_STATE.md` |
 
 Exact checkpoint filenames are routed by `FLUX.md`.
 
@@ -371,13 +383,45 @@ The foundational principle is that every domain should provide a low-token recov
 
 ---
 
-# 10. Hierarchical Recovery Principle
+# 10. Main-Root Continuity
+
+The Sketch Notebook may contain Main-owned continuity files directly under the notebook root.
+
+These files are not functional domain files.
+
+They are not methodology files.
+
+They are not ordinary DEV_STAGE files.
+
+They support global orientation, session closure, and next-session recovery.
+
+Current Main-root continuity roles include:
+
+| Role | Meaning |
+| --- | --- |
+| Global State Canon-Checkpoint | Accepted current global state and fast recovery surface |
+| Global Observational History | Append-oriented global session and reconciliation record |
+| Forward Checkpoint | Refreshable next-session agenda and recovery frame |
+
+Main-root continuity is a disjunct flux protocol: it coordinates Main-level continuity without replacing domain-memory ownership.
+
+Main-root files may summarize global truth, but they must not duplicate full operational, didactic, or design canon.
+
+Concrete filenames and write authority are defined by `FLUX.md`.
+
+Semantic constraints are defined by `PROMOTION_RULES.md`.
+
+---
+
+# 11. Hierarchical Recovery Principle
 
 Every role shall recover project state using the least expensive knowledge source capable of answering the current task.
 
 The preferred recovery order is:
 
 ```text
+Main-root continuity file, when global orientation is required
+↓
 Domain Checkpoint
 ↓
 Canonical Knowledge
@@ -399,11 +443,12 @@ A chat should not inspect the repository before consulting the notebook when the
 
 Repository inspection remains necessary when:
 
-* implementation truth is uncertain;
-* notebook drift is suspected;
-* source files are the direct subject of the task;
-* materialization must be validated;
-* the checkpoint or canonical files are insufficient.
+- implementation truth is uncertain;
+- notebook drift is suspected;
+- source files are the direct subject of the task;
+- materialization must be validated;
+- the checkpoint or canonical files are insufficient;
+- methodology routing itself is under review.
 
 The hierarchy is not a prohibition.
 
@@ -411,7 +456,7 @@ It is a cost discipline.
 
 ---
 
-# 11. Knowledge Classes
+# 12. Knowledge Classes
 
 The Sketch Notebook distinguishes several classes of knowledge.
 
@@ -419,7 +464,7 @@ Detailed transition rules belong to `PROMOTION_RULES.md`.
 
 This section defines the foundational ontology.
 
-## 11.1 Transient Knowledge
+## 12.1 Transient Knowledge
 
 Transient knowledge lives in conversation.
 
@@ -427,7 +472,7 @@ It includes raw ideas, questions, doubts, hypotheses, plans, explanations, and e
 
 It is not project memory until captured or materialized.
 
-## 11.2 Staged Knowledge
+## 12.2 Staged Knowledge
 
 Staged knowledge is temporarily held for review, synthesis, or materialization.
 
@@ -435,7 +480,7 @@ It is useful but not canonical.
 
 Stage files exist to prevent useful reasoning from disappearing while preserving the integrity of permanent memory.
 
-## 11.3 Canonical Knowledge
+## 12.3 Canonical Knowledge
 
 Canonical knowledge defines accepted truth within a domain.
 
@@ -443,13 +488,13 @@ Canonical knowledge should be stable, validated, and owned by the appropriate do
 
 Examples include:
 
-* methodology principles;
-* KANBAN concept entries;
-* architectural decisions;
-* operational guides;
-* domain models.
+- methodology principles;
+- KANBAN concept entries;
+- architectural decisions;
+- operational guides;
+- domain models.
 
-## 11.4 Derived Knowledge
+## 12.4 Derived Knowledge
 
 Derived knowledge reorganizes, summarizes, indexes, or maps canonical knowledge.
 
@@ -457,13 +502,13 @@ It does not introduce independent truth.
 
 Examples include:
 
-* glossary entries;
-* concept maps;
-* project state summaries;
-* domain checkpoints;
-* overviews.
+- glossary entries;
+- concept maps;
+- project state summaries;
+- domain checkpoints;
+- overviews.
 
-## 11.5 Observational Knowledge
+## 12.5 Observational Knowledge
 
 Observational knowledge records what happened.
 
@@ -473,13 +518,13 @@ It does not define current truth by itself.
 
 Examples include:
 
-* session logs;
-* operational track records;
-* learning logs;
-* decision logs;
-* Codex reports.
+- session logs;
+- operational track records;
+- learning logs;
+- decision logs;
+- Codex reports.
 
-## 11.6 Materialized Knowledge
+## 12.6 Materialized Knowledge
 
 Materialized knowledge is knowledge that has been physically applied to repository files, source code, notebook files, or other persistent artifacts.
 
@@ -489,9 +534,17 @@ A file may be changed without the change being conceptually correct.
 
 Therefore materialized changes still require validation and reconciliation.
 
+## 12.7 Reconciled Knowledge
+
+Reconciled knowledge has been checked against relevant project-memory layers.
+
+It may confirm that no change is needed, detect drift, or produce a correction, refresh, regeneration, or refinement.
+
+Reconciliation protects the system from duplicate semantic ownership and contradiction.
+
 ---
 
-# 12. Promotion and Materialization
+# 13. Promotion and Materialization
 
 Promotion and materialization are different operations.
 
@@ -517,21 +570,22 @@ Routing and materialization authority belong to `FLUX.md`.
 
 ---
 
-# 13. Continuous Reconciliation Principle
+# 14. Continuous Reconciliation Principle
 
 Project knowledge continuously evolves.
 
 Therefore, the Sketch Notebook must be periodically reconciled against:
 
-* source code;
-* functional stage reports;
-* Main synthesis;
-* Codex materialization reports;
-* domain checkpoints;
-* canonical domain files;
-* derived domain files;
-* observational records;
-* human direction.
+- source code;
+- functional stage reports;
+- Main synthesis;
+- Codex materialization reports;
+- domain checkpoints;
+- canonical domain files;
+- derived domain files;
+- observational records;
+- Main-root continuity files;
+- human direction.
 
 This is the Continuous Reconciliation Principle.
 
@@ -550,22 +604,135 @@ Does observational history explain how the current state emerged?
 Does source code agree with notebook memory?
 Did materialization match the Main-approved instruction?
 Did human direction override or revise prior knowledge?
+Does any file duplicate semantic authority owned elsewhere?
 ```
 
 Reconciliation may produce:
 
-* checkpoint refresh;
-* canonical correction;
-* derived regeneration;
-* observational note;
-* new TODO;
-* design revision;
-* didactic update;
-* methodology refinement.
+- checkpoint refresh;
+- canonical correction;
+- derived regeneration;
+- observational note;
+- new TODO;
+- design revision;
+- didactic update;
+- methodology refinement;
+- duplicate ownership pruning;
+- structural gap report.
 
 ---
 
-# 14. Role Appropriateness Principle
+# 15. Reconciliation Dimensions
+
+Reconciliation has two major dimensions.
+
+## 15.1 Vertical Reconciliation
+
+Vertical reconciliation checks coherence across semantic layers and time.
+
+Typical chain:
+
+```text
+observational evidence
+↓
+canonical / derived updates
+↓
+checkpoint refresh
+↓
+global project state
+```
+
+It asks whether each layer has the correct semantic maturity.
+
+Observational evidence should not become canon without interpretation.
+
+Derived files should not create truth.
+
+Checkpoints should not become registers.
+
+Global state should not replace domain ownership.
+
+## 15.2 Horizontal Reconciliation
+
+Horizontal reconciliation checks coherence across domains and perspectives.
+
+Typical chain:
+
+```text
+Operational ↔ Didactic ↔ Design ↔ Main
+```
+
+It asks whether each domain speaks from its own responsibility.
+
+The same event may appear in multiple domains only when each domain interprets it from its own perspective.
+
+This is perspectival repetition, not duplicate semantic ownership.
+
+Duplicate semantic data appears when two files or domains attempt to own the same meaning at the same authority level.
+
+Duplicate semantic data should be resolved through the reconciliation rules in `PROMOTION_RULES.md`.
+
+---
+
+# 16. Recovery-Economy Principle
+
+Recovery-Economy is the discipline that keeps project recovery cost from growing in proportion to notebook age.
+
+The purpose is not to minimize information.
+
+The purpose is to preserve enough information while ensuring each file still performs its semantic responsibility.
+
+A file is not degraded merely because it is long.
+
+A file is degraded when its length, structure, or content prevents it from performing its assigned role.
+
+Recovery-Economy depends on:
+
+- semantic responsibility over length;
+- compact checkpoints;
+- append-oriented observational records;
+- searchable canonical files;
+- derived files that reorganize instead of duplicate;
+- read-window discipline for large files;
+- Landline Marks when late recovery needs stable anchors.
+
+Concrete thresholds, read-window procedure, and Landline Mark rules belong to `FLUX.md`.
+
+---
+
+# 17. File Operation Ontology
+
+Different file classes have different preferred operations.
+
+Foundationally:
+
+| File class | Preferred operation |
+| --- | --- |
+| Checkpoint | Refresh |
+| Canonical | Reconcile |
+| Derived | Extend / Reconcile |
+| Observational | Append |
+| Main-root current state | Refresh |
+| Main-root session log | Append |
+| Main-root forward checkpoint | Refresh |
+| Stage file | Replace / supersede |
+| Codex report | Replace per materialization cycle |
+
+This table is ontological.
+
+The exact operational contract is defined by `FLUX.md`.
+
+The purpose is to prevent file roles from silently collapsing into each other.
+
+A checkpoint that becomes a long historical log has lost its checkpoint function.
+
+A derived file that duplicates canon has lost its derived function.
+
+An observational file rewritten as current truth has lost its historical function.
+
+---
+
+# 18. Role Appropriateness Principle
 
 Each actor should perform the work most aligned with its strengths.
 
@@ -581,10 +748,10 @@ No actor should routinely perform work better suited to another actor.
 
 This principle explains why:
 
-* Codex should report what happened rather than decide what it means;
-* Functional Chats should classify domain evidence rather than leave all documentation to Main;
-* Main should synthesize and reconcile rather than rewrite every domain file;
-* the human should review and redirect rather than be hidden from the process.
+- Codex should report what happened rather than decide what it means;
+- Functional Chats should classify domain evidence rather than leave all documentation to Main;
+- Main should synthesize and reconcile rather than rewrite every domain file;
+- the human should review and redirect rather than be hidden from the process.
 
 Role appropriateness prevents overload.
 
@@ -592,11 +759,11 @@ It also improves documentation quality.
 
 ---
 
-# 15. Conversational System
+# 19. Conversational System
 
 The method uses specialized conversational roles.
 
-## 15.1 Main Chat
+## 19.1 Main Chat
 
 Main Chat observes the project as a whole.
 
@@ -604,9 +771,9 @@ It asks:
 
 > Where is the project, and where should it go next?
 
-Main Chat reasons in terms of milestones, synchronization, consistency, contradiction, and coordination.
+Main Chat reasons in terms of milestones, synchronization, consistency, contradiction, coordination, Main-root continuity, and next-session recovery.
 
-## 15.2 Operational Chat
+## 19.2 Operational Chat
 
 Operational Chat observes the project as execution.
 
@@ -616,7 +783,7 @@ It asks:
 
 Operational Chat reasons in terms of commands, implementation, validation, risks, failures, and immediate next actions.
 
-## 15.3 Didactic Chat
+## 19.3 Didactic Chat
 
 Didactic Chat observes the project as learning.
 
@@ -626,7 +793,7 @@ It asks:
 
 Didactic Chat reasons in terms of concepts, dependencies, examples, KANBANs, glossary entries, concept maps, and learning progression.
 
-## 15.4 Design Chat
+## 19.4 Design Chat
 
 Design Chat observes the project as architecture.
 
@@ -636,7 +803,7 @@ It asks:
 
 Design Chat reasons in terms of structure, responsibility, relationships, boundaries, domain models, UI responsibility, and long-term coherence.
 
-## 15.5 Codex
+## 19.5 Codex
 
 Codex is not a conversational perspective in the same way.
 
@@ -650,33 +817,33 @@ Codex should not independently promote knowledge.
 
 ---
 
-# 16. Software Components
+# 20. Software Components
 
-## 16.1 ChatGPT
+## 20.1 ChatGPT
 
 ChatGPT conversations provide reasoning, planning, explanation, diagnosis, synthesis, and domain memory maintenance.
 
 ChatGPT constructs and organizes knowledge.
 
-## 16.2 Codex CLI
+## 20.2 Codex CLI
 
 Codex CLI is the materialization agent.
 
 It edits files, applies patch instructions, runs commands, validates changes when instructed, and reports materialization evidence.
 
-## 16.3 GitHub
+## 20.3 GitHub
 
 GitHub is the shared persistence and synchronization layer.
 
 It stores source code, notebook files, commit history, and remote project state.
 
-## 16.4 VS Code
+## 20.4 VS Code
 
 VS Code is the local human inspection and development surface.
 
 It is used for reading diffs, reviewing edits, running commands, and supervising changes before or after persistence.
 
-## 16.5 Human Developer
+## 20.5 Human Developer
 
 The human developer provides judgment, intention, acceptance, rejection, correction, and strategic direction.
 
@@ -684,7 +851,29 @@ The method is AI-assisted, not AI-sovereign.
 
 ---
 
-# 17. Conceptual Lifecycle
+# 21. Methodology Refinement Sprints
+
+A Methodology Refinement Sprint is an explicit, human-supervised work period focused on changing the Sketch Notebook Method itself.
+
+It is not an ordinary implementation feature cycle.
+
+It may revise:
+
+- methodology files;
+- `INDEX.md`;
+- Main-root continuity files;
+- temporary methodology sprint files;
+- staged methodology-lab material.
+
+Methodology refinement must remain explicit because methodology files are operating context for future chats.
+
+A methodology sprint may use provisional communication surfaces, but provisional files are not canonical methodology by themselves.
+
+They must be absorbed, promoted, converted into an approved route, deleted, or left temporary with an explicit expiry condition according to `FLUX.md`.
+
+---
+
+# 22. Conceptual Lifecycle
 
 The general lifecycle is:
 
@@ -709,13 +898,15 @@ Codex report
 ↓
 Functional domain-memory update
 ↓
+Checkpoint refresh
+↓
 Main reconciliation
+↓
+Main-root continuity update
 ↓
 Human verification
 ↓
 Git/GitHub persistence
-↓
-Checkpoint refresh
 ↓
 Next session recovery
 ```
@@ -736,7 +927,19 @@ The human developer supervises meaning.
 
 ---
 
-# 18. Core Vocabulary
+# 23. Boundary Stability
+
+The method distinguishes implementation stability from boundary stability.
+
+A system is boundary-stable when its responsibilities, ownership, and architectural boundaries have stabilized, even if implementation details still need refinement.
+
+This distinction prevents premature claims that an implementation is fully stable when only its structure has stabilized.
+
+Reports should prefer `boundary-stable` when architecture has stabilized but implementation still has risks, deferred decisions, or validation gaps.
+
+---
+
+# 24. Core Vocabulary
 
 ## Sketch Notebook
 
@@ -752,6 +955,10 @@ A permanent project-memory area responsible for one kind of project truth.
 
 Examples include operational, didactic, and design domains.
 
+## Main-Root Continuity
+
+Main-owned global continuity memory used for current-state recovery, session history, and next-session preparation.
+
 ## Domain Checkpoint
 
 A low-token, ephemeral derived document that summarizes the current state of one domain for fast recovery.
@@ -762,7 +969,7 @@ A specialized chat responsible for one domain perspective: operational, didactic
 
 ## Main Chat
 
-The coordinating chat responsible for synthesis, global continuity, drift detection, and materialization preparation.
+The coordinating chat responsible for synthesis, global continuity, drift detection, reconciliation, and materialization preparation.
 
 ## Stage
 
@@ -778,7 +985,15 @@ The physical act of converting staged or synthesized knowledge into repository c
 
 ## Reconciliation
 
-The act of comparing checkpoints, canonical knowledge, derived knowledge, observational records, repository state, and human direction to detect and resolve drift.
+The act of comparing checkpoints, canonical knowledge, derived knowledge, observational records, repository state, Main-root continuity, and human direction to detect and resolve drift.
+
+## Recovery-Economy
+
+The discipline of preserving knowledge while keeping recovery cost proportional to semantic complexity rather than repository age.
+
+## Landline Mark
+
+A stable recovery marker used by large files to let future chats reconnect to relevant late sections without rereading the entire file.
 
 ## Persistence
 
@@ -786,7 +1001,27 @@ The act of recording project state through repository files and Git/GitHub histo
 
 ---
 
-# 19. Closing Principle
+# 25. Relationship With Other Methodology Files
+
+`METHOD_FOUNDATIONS.md` defines the ontology of the method.
+
+It should remain stable, conceptual, and foundational.
+
+`FLUX.md` defines operational routing, write authority, concrete file paths, read-window behavior, Landline Marks, and methodology sprint handling.
+
+`PROMOTION_RULES.md` defines semantic transitions, promotion integrity, reconciliation constraints, and duplicate semantic ownership rules.
+
+`CHAT_PROTOCOL.md` defines communication structures and report formats.
+
+`CHAT_BEHAVIOUR.md` defines role perspectives and reasoning posture.
+
+`METHOD_GLOSSARY.md` defines vocabulary in consultative form.
+
+If a future update would make `METHOD_FOUNDATIONS.md` duplicate one of these files, the update should be redirected to the owning methodology file.
+
+---
+
+# 26. Closing Principle
 
 The Sketch Notebook Method exists to make AI-assisted development continuous, inspectable, teachable, and recoverable.
 
@@ -797,6 +1032,10 @@ It gives uncertainty a place to be staged.
 It does not attempt to eliminate drift.
 
 It gives drift a process for detection and reconciliation.
+
+It does not attempt to eliminate growth.
+
+It gives growth a recovery economy.
 
 It does not ask chats to remember the project.
 
