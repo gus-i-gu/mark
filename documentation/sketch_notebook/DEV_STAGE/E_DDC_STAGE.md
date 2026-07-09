@@ -2,75 +2,103 @@
 
 ## 1. Scope
 
-This stage gives Codex didactic reporting instructions for the Product View refactor. The permanent didactic domain files are left for [A] after Codex reports are available.
+This stage gives Codex didactic reporting instructions for Cycle 02: History UI page and Settings page. Codex must preserve learning evidence for [A] but must not promote permanent didactic memory in this pass.
 
 ## 2. Source Inputs
 
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
-- Main synthesis: purchase rhythm and shelf-life rhythm remain separate.
-- Human correction: use uniform `expiration_date`; include PRAGMA as a future didactic concept.
+- Main Chat synthesis for Cycle 02.
 
 ## 3. Didactic Invariants
 
-- Same technical type does not imply same domain meaning.
-- `average_duration_days` is purchase-to-purchase rhythm.
-- `average_shelf_life_days` is purchase-to-expiration rhythm.
-- `expected_next_purchase` belongs to purchase rhythm.
-- `expected_expiration_date` is a product-level cached summary field for future market/product analysis.
-- Current end-user display primarily depends on purchase-level `expiration_date`.
-- `expiration_date` on Purchase is raw historical/batch data.
-- `average_shelf_life_days` is calculated data.
-- Average price is derived from collected purchase prices for this milestone.
-- Product View is a display contract and should not own business calculation.
+Codex should preserve these learning distinctions in its H report:
 
-## 4. Concepts to Report for [A]
+- Grouping is not sorting.
+- Time bucketing assigns records to periods according to boundary rules.
+- Total rows are derived aggregate data, not raw purchase facts.
+- Settings configuration is durable application state that changes later interpretation.
+- A simple key/value settings table is a persistence pattern, not a business domain table.
+- Repository result shape should expose clear purchase/time/store facts.
+- Service owns grouping, bucketing, aggregate meaning, and History read-model assembly.
+- UI renders grouped data and editable settings forms.
+- Store editing in Settings continues Cycle 01 deferred store-address editing.
+- Product View and History are both read-model examples, but with different display responsibilities.
+
+## 4. Concepts Codex Should Report for [A]
 
 Report these in `H_DDC_CODEX.md` as didactic evidence/candidates:
 
-- `&&&` Semantic field distinction
-- `&&&` Raw data versus derived data
-- `&&&` Naming as data contract
-- `&&&` Cached summary field
-- `&%%` Product summary state in Markei
-- `&%%` Purchase rhythm versus shelf-life rhythm
-- `&%%` Product View read model
-- `&%%` Service-owned calculation responsibility
-- `&%%` Repository result shape
-- `&&%` Dataclass field evolution
-- `&&%` Optional values / nullable fields in Python models
-- `%%%` SQLite schema evolution
-- `%%%` SQLite PRAGMA
-- `%%%` PySide6 widget composition, if UI widget work is performed
+- `&&&` Time Bucketing
+- `&&&` Aggregation and Totals
+- `&&&` Grouping Versus Sorting
+- `&&&` Configuration State
+- `&&&` Simple Key/Value Table
+- `&&%` Date/Datetime Boundary Handling
+- `&%%` History Read Model
+- `&%%` Settings-Owned Preferences
+- `&%%` Store Editing Workflow
+- `&%%` History Grouping Service Responsibility
+- `%%%` SQLite Settings Persistence
+- `%%%` PySide6 Editable Form Composition
 
-## 5. PRAGMA Note for H_DDC_CODEX.md
+Also report how these reuse Cycle 01 concepts:
 
-If migration uses `PRAGMA table_info`, include a brief learner-facing note:
+- Raw Data Versus Derived Data
+- Naming as Data Contract
+- Repository Result Shape
+- Service-Owned Calculation Responsibility
+- SQLite Schema Evolution
+- SQLite PRAGMA
+- PySide6 Widget Composition
 
-- PRAGMA is a SQLite command family for database metadata and settings.
-- `PRAGMA table_info(table_name)` returns information about a table's columns.
-- Here it checks whether migration columns already exist before `ALTER TABLE` runs.
+## 5. Simple Key/Value Table Didactic Requirement
 
-[A] will later decide whether this becomes a `%%%` KANBAN concept.
+Because the developer requested clarification, `H_DDC_CODEX.md` must include a brief learner-facing note on a simple key/value settings table.
 
-## 6. H_DDC_CODEX.md Report Shape
+Explain:
+
+- It stores each setting as a named key plus a text value.
+- It is useful when settings are small, independent, and may grow over time.
+- Example: `history.week_boundary = wednesday`.
+- It avoids creating many columns before the settings model is stable.
+- Its tradeoff is that values need parsing/validation in service code.
+
+[A] will later decide whether this becomes a canonical KANBAN concept or a glossary derivative.
+
+## 6. Aggregation Didactic Requirement
+
+Codex should report clearly which aggregate meanings were implemented.
+
+The H report should distinguish:
+
+- sum/total for monetary purchase totals
+- mean/average for average price or unit values
+- quantity aggregation only when units are compatible
+
+This matters because not every History value should be reduced with a single `SUM` rule.
+
+## 7. H_DDC_CODEX.md Report Shape
 
 After materialization, write `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md` with:
 
 - Source stage files
 - Coding concepts exposed
 - Concept candidates by marker
-- Naming / semantic distinctions preserved
-- Raw data vs derived data evidence
+- Existing Cycle 01 concepts reused
+- Grouping versus sorting evidence
+- Time bucketing evidence
+- Aggregation and total-row evidence
+- Simple key/value table note
+- Settings/configuration state evidence
 - Service vs repository vs UI responsibility evidence
-- PRAGMA note
 - Didactic risks or confusions remaining
 - Suggested [A] follow-up
 
 Keep the report compact. Do not reproduce long code.
 
-## 7. Didactic Domain Absorption Later
+## 8. Didactic Domain Absorption Later
 
 Later [A] may absorb this report into:
 
@@ -78,3 +106,5 @@ Later [A] may absorb this report into:
 - `documentation/sketch_notebook/didactics/07_GLOSSARY.md`
 - `documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md`
 - `documentation/sketch_notebook/didactics/13_LECTURE_REGISTER.md`
+
+Codex should not edit those permanent didactic files in this pass.
