@@ -1,186 +1,165 @@
-# Materialization Stage — Didactic
+# DEV_STAGE/E_DDC_STAGE.md
 
-## 1. Scope
+> Status: Active Main materialization stage
+> Authority: Main Chat
+> Persistence class: Materialization stage material
+> Scope: Cycle 04 didactic evidence capture for Settings boundary correction
 
-This stage gives Codex didactic reporting instructions for Cycle 03: Lists remodel, embedded History analytics, latest/delta price expansion, and mobile-readiness preparation.
+---
 
-Codex must preserve learning evidence for Didactic Chat in `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md` after materialization.
+# Cycle 04 Didactic Materialization Stage
 
-Codex must not promote or edit permanent didactic memory in this pass.
+## 1. Purpose
 
-## 2. Source Inputs
+This stage gives Codex didactic reporting instructions for Cycle 04 Settings stabilization.
 
-Codex must read:
+Codex must preserve learning evidence for Didactic Chat in:
+
+```text
+documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
+```
+
+Codex must not edit permanent didactic files during this pass.
+
+## 2. Required Bootstrap and Source Inputs
+
+Read first:
 
 - `documentation/sketch_notebook/INDEX.md`
+- `documentation/sketch_notebook/00_PROJECT_STATE.md`
+- `documentation/sketch_notebook/06_SESSION_SCHEME.md`
+
+Then read:
+
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
-The didactic source of truth for this pass is staged learning evidence, not permanent didactic promotion.
+Use `documentation/sketch_notebook/` as the active notebook root.
 
 ## 3. Didactic Invariants
 
 Codex should preserve and report these distinctions:
 
-- raw purchase/product/store rows are not the same as derived display values
-- a filtering frame determines which rows participate in analytics
-- date range plus optional store filter is the Cycle 03 analytics frame
-- aggregates such as totals and averages precede percentages and comparisons
-- percentage is a derived aggregate: product total divided by selected-frame total
-- comparative metric requires an explicit baseline
-- Cycle 03 baseline is the average interval between all parsed purchases in the selected date/store frame, ordered by date
-- Product cycle means `average_duration_days`, not shelf-life or expiration
-- Lists internal views are UI view/filter states over shared read-model data
-- Product status classification belongs to service logic, not UI widgets
-- latest price and delta price are global per-product read-model/display values in Cycle 03
-- mobile readiness means stable service/read-model boundaries, not a mobile rewrite
+- Settings values are configuration state, not the calculations themselves.
+- SettingsPage edits preferences; services interpret preferences.
+- Defaults are fallback contracts.
+- Validation is separate from UI rendering.
+- Enumerated choices should use stable semantic values, not only display labels.
+- Time reference must be treated as a behavioral anchor, not as a vague label.
+- Week/month grouping is time bucketing.
+- Mobile readiness means stable contracts and boundaries, not mobile implementation.
+- Placeholder fields are not working capabilities.
 
 ## 4. Concepts Codex Should Report for Didactic Chat
 
 Report these as implementation evidence or concept candidates in `H_DDC_CODEX.md`.
 
-### Foundational CS concepts (`&&&`)
+Foundational concepts:
 
-- Raw Data Versus Derived Data
-- Percentage as Derived Aggregate
-- Temporal / Spatial Filtering Frame
-- Aggregation and Totals
-- Comparative Metric
-- Baseline Definition
-- Grouping / Filtering Versus Data Ownership
-- Status Classification Versus UI Filtering
-- Mobile Readiness Without Rewrite
+- Configuration State.
+- Default Value as Fallback Contract.
+- Validation Boundary.
+- Time Reference as Behavioral Anchor.
+- Time Bucketing.
+- Mobile Readiness Without Rewrite.
+- Adapter Boundary.
+- Capability Versus Placeholder.
 
-### Python / language concepts (`&&%`)
+Language / implementation concepts:
 
-- Platform-neutral read-model shape
-- Nullable derived display values
-- UI view state
-- Date/datetime boundary handling
+- Enumerated Choice Values.
+- Date/Datetime Boundary Handling.
+- UI View State versus persisted Settings state.
+- Platform-neutral settings/read-model shape.
 
-### Markei implementation concepts (`&%%`)
+Markei-specific concepts:
 
-- History Analytics Read Model
-- Unified Lists Page With Internal Views
-- Product Status Classification Versus UI Filtering
-- Latest Value / Delta Calculation
-- Service Contract Stability
-- Product Cycle Versus Shelf-Life
-- Mobile readiness through service/read-model contracts
-
-### Dependency / tool concepts (`%%%`)
-
-- PySide6 widget composition for embedded analytics
-- PySide6 unified page view controls
-- SQLite read queries versus cached columns
-- SQLite aggregation/read support for analytics where used
+- Settings-Owned Preferences.
+- History Grouping Service Responsibility.
+- Service Contract Stability.
+- ProductService-owned settings interpretation.
+- Repository-owned settings persistence.
 
 ## 5. Learning Evidence Codex Should Capture
 
-Codex should report compact evidence for these learning claims:
+### Settings boundary evidence
 
-### Read-model consolidation
+Report where each responsibility ended up:
 
-Show how Cycle 03 moved Markei from separate page-specific display logic toward service-prepared read models for Lists and History analytics.
+- SettingsPage UI controls.
+- ProductService validation and interpretation.
+- Repository persistence.
+- SQLite key/value storage.
+- HistoryPage/ListPage rendering only.
 
-### Raw-to-derived analytics pipeline
-
-Report how implementation follows or deviates from this pipeline:
-
-```text
-raw data
-→ filtered frame
-→ aggregate
-→ derived metric
-→ read model
-→ UI presentation
-```
-
-### Lists learning evidence
+### Defaults and validation evidence
 
 Report:
 
-- how former Storage/Shortage/Market meanings became Lists internal views
-- how the hybrid all-products view works
-- whether all list views share one row shape
-- how Status is represented
-- how Price and Δ Price are supplied
-- whether UI code recalculates any service-owned meanings
+- what default values were introduced or preserved;
+- how invalid values are handled;
+- whether validation happens outside UI-only controls;
+- how existing persisted values are preserved.
 
-### History analytics learning evidence
+### Time reference evidence
 
 Report:
 
-- where date/store frame selection is collected
-- where frame semantics are interpreted
-- how total spent is calculated
-- how expenditure percentage is calculated
-- how average purchase timelapse is calculated
-- how product cycle comparison is calculated
-- how unparsed/excluded rows are handled
+- whether `time_reference.day_boundary_time` was persisted;
+- whether it is validated as `HH:MM`;
+- whether any current behavior consumes it;
+- if not consumed, why the data model does not yet support material effect.
 
-### Mobile-readiness learning evidence
+### Time bucketing evidence
 
-Report how implementation supports future portability through:
+Report:
 
-- stable service method(s)
-- plain read-model values
-- separation from PySide6 widget details
-- repository/service/UI boundary preservation
+- how seven-day week boundary support works;
+- how month boundary mode works;
+- where History grouping consumes these settings.
 
-Do not report this as mobile implementation.
+### Mobile-readiness evidence
+
+Report only boundary preparation:
+
+- stable semantic values;
+- service-level interpretation;
+- UI-label versus stored-value separation;
+- no mobile implementation performed.
 
 ## 6. Concepts Not Ready for Canon
 
-Codex should explicitly report that these remain deferred or unstable if they appear during implementation:
+Codex should report these as deferred or unstable if they appear:
 
-- detachable analytics widget lifecycle
-- store/frame-scoped price delta
-- configurable comparison tolerance
-- active `pages.order` consumption
-- mobile implementation architecture
-- API/backend rewrite
-- persisted analytics cache
-- physical deletion of old Storage/Shortage/Market page files
+- mobile UI implementation;
+- platform-specific mobile framework choices;
+- active external service integration;
+- receipt recognition;
+- store deletion behavior;
+- active `pages.order` tab ordering;
+- permanent KANBAN promotion.
 
-## 7. Didactic Risks to Report
+## 7. H_DDC_CODEX.md Report Shape
 
-Codex should identify whether implementation introduced or avoided these confusions:
-
-- raw unit price versus total spent versus expenditure percentage
-- product cycle versus shelf-life
-- baseline average timelapse ambiguity
-- UI view grouping/filtering versus persistence
-- derived display field versus cached database field
-- mobile preparation versus mobile rewrite
-- treating History analytics as only a widget rather than a read-model pipeline
-
-## 8. H_DDC_CODEX.md Report Shape
-
-After materialization, write:
-
-`documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
-
-Keep it compact and evidence-oriented.
+After materialization, write `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`.
 
 Required sections:
 
-1. Source stage files read
-2. Coding concepts exposed
-3. Concept candidates by marker
-4. Existing concepts reinforced
-5. Lists read-model consolidation evidence
-6. History analytics pipeline evidence
-7. Latest/delta price evidence
-8. Product cycle versus shelf-life evidence
-9. Service vs Repository vs UI responsibility evidence
-10. Mobile-readiness boundary evidence
-11. Concepts deferred / not ready for canon
-12. Didactic risks or remaining confusions
-13. Suggested Didactic Chat follow-up
+1. Source stage files read.
+2. Coding concepts exposed.
+3. Concept candidates by marker.
+4. Existing concepts reinforced.
+5. Settings boundary evidence.
+6. Defaults and validation evidence.
+7. Time reference evidence.
+8. Time bucketing evidence.
+9. Service vs Repository vs UI responsibility evidence.
+10. Mobile-readiness boundary evidence.
+11. Concepts deferred / not ready for canon.
+12. Didactic risks or remaining confusions.
+13. Suggested Didactic Chat follow-up.
 
-Do not reproduce long code.
-Do not edit permanent didactic files.
+Keep the report compact and evidence-oriented. Do not reproduce long code. Do not edit permanent didactic files.
