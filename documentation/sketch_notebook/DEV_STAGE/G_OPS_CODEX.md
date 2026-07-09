@@ -1,6 +1,6 @@
-# Codex Report — Operational
+# Codex Report — Operational Cycle 02
 
-## Source Stage Files
+## Source Stage Files Read
 
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
@@ -8,20 +8,21 @@
 
 ## Files Changed
 
-- `app/database/schema.sql`: added nullable `purchases.expiration_date`, `products.average_shelf_life_days`, `products.expected_expiration_date`, and `stores.address`.
-- `app/core/database.py`: added idempotent PRAGMA-driven migration and changed module execution to initialize/migrate without destructive recreation.
-- `app/core/models.py`: added new optional fields to `Purchase`, `Product`, and `Store`.
-- `app/core/contracts.py`: added new calculated/product and purchase contract fields.
-- `app/core/repository.py`: added SQL insert/update/mapping support and Product View read helpers.
-- `app/core/services.py`: added shelf-life calculation, product expiration summary calculation, and Product View read-model assembly.
-- `app/desktop/ui/pages/register_page.py`: added optional expiration-date input and embedded Product View panel loading.
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: populated this operational report.
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: populated didactic evidence report.
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: populated design evidence report.
+- `app/database/schema.sql`: added `settings` key/value table.
+- `app/database/seed.sql`: seeded default History/settings values and store address field.
+- `app/core/database.py`: added idempotent settings-table migration and default settings insertion.
+- `app/core/repository.py`: added History row retrieval, store create/update, and settings read/write persistence.
+- `app/core/services.py`: added Settings APIs, store save orchestration, History read-model assembly, first-Wednesday operational months, Wednesday week bucketing, date-drift parsing, and aggregate summaries.
+- `app/desktop/main_window.py`: wired History and Settings pages to MainWindow and refresh flow.
+- `app/desktop/ui/pages/history_page.py`: replaced placeholder with grouped read-only History tree.
+- `app/desktop/ui/pages/settings_page.py`: replaced placeholder with History configuration and store create/update UI.
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: populated this report.
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: populated didactic report.
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: populated design report.
 
 ## Files Created
 
-- `app/desktop/ui/widgets/product_detail_panel.py`: reusable read-only Product View panel.
+- None.
 
 ## Files Deleted
 
@@ -31,63 +32,87 @@
 
 - `python -m compileall app`
 - `python -m app.core.database`
-- `python -c "... PRAGMA table_info(...) ..."`
-- `python -c "... ProductService ... get_product_view ..."`
+- `python -c "... PRAGMA table_info(settings) ..."`
+- `python -c "... ProductService ... get_history_view ... get_product_view ..."`
+- isolated temp-`LOCALAPPDATA` service workflow for boundary dates, store create/update, settings persistence, and aggregates
 - `python -m app.main`
-- `Stop-Process -Id 26064,14340`
-- isolated temp-`LOCALAPPDATA` registration workflow using `ProductService`
+- `Get-CimInstance Win32_Process ...`
+- `Stop-Process -Id 3216,24840,18468,22380`
 - `git diff --check`
 
 ## Validation Results
 
 - `python -m compileall app`: passed.
-- `python -m app.core.database`: passed; reported existing database path and existence without destructive reset.
-- `python -m app.main`: launched GUI processes and timed out because the Qt event loop stayed open; no import/startup traceback appeared. The spawned processes were stopped.
-- Product View service read on migrated user database: passed; returned product identity, derived average price, store/latest price row, last purchase row, and `expiration_date: None` for existing purchase data.
-- Isolated write workflow: passed. Registered one receipt without `expiration_date` and one with `expiration_date`; purchase rhythm stayed 10 days, `expected_next_purchase` was `21/07/2026`, shelf-life average was 10 days, `expected_expiration_date` was `21/07/2026`, and average price was derived as 11.0.
-- `git diff --check`: no whitespace errors; Git emitted line-ending normalization warnings only.
+- `python -m app.core.database`: passed; existing user database opened/migrated without destructive reset.
+- `PRAGMA table_info(settings)`: returned `key`, `value`.
+- Existing user database settings: contained `history.week_boundary=wednesday`, `history.month_boundary_rule=first_wednesday`, and default `pages.order`.
+- Existing user database History service read: returned 1 month section and 0 unparsed purchase dates.
+- Product View regression check: `get_product_view()` returned expected Cycle 01 keys.
+- Inventory regression check: `product_status()` returned normally for existing product.
+- `python -m app.main`: launched Qt event loop without traceback; timed out because the GUI stayed open and spawned processes were stopped.
 
 ## Migration Evidence
 
-Existing user database PRAGMA output after normal connection:
+- New installs get `settings` from `schema.sql` and default seed data.
+- Existing databases get `settings` through `CREATE TABLE IF NOT EXISTS`.
+- Defaults are inserted with `INSERT OR IGNORE`, preserving existing user choices.
 
-- `purchases`: includes `expiration_date`.
-- `products`: includes `average_shelf_life_days` and `expected_expiration_date`.
-- `stores`: includes `address`.
+## History Grouping Evidence
 
-Migration is idempotent through `PRAGMA table_info(table)` inspection and `ALTER TABLE ... ADD COLUMN ...` only when missing.
+Isolated temp database boundary test:
+
+- `30/06/2026` grouped into `Operational June 2026` with period `03/06/2026 - 30/06/2026`.
+- `01/07/2026` started `Operational July 2026`.
+- `08/07/2026` started a new Wednesday week.
+- Week sections produced `24/06/2026 - 30/06/2026`, `01/07/2026 - 07/07/2026`, and `08/07/2026 - 14/07/2026`.
+
+## Settings Persistence Evidence
+
+- Service read/write persisted `history.week_boundary`, `history.month_boundary_rule`, and `pages.order`.
+- Settings survived readback from the same SQLite-backed service workflow.
+
+## Store Editing Evidence
+
+- Isolated workflow created a store and then updated the same store name/address through service/repository.
+- Settings UI exposes create/update fields for store name, city, state, and address.
+- RegisterPage was not given store-management controls.
+
+## Aggregate / Total Semantics Implemented
+
+- Monetary totals use stored purchase `total_price`.
+- Average unit price uses mean over `unit_price`.
+- Quantity totals are grouped by compatible `unit`.
+- Store totals are grouped by store label for each section summary.
 
 ## Instructions Completed
 
-- Preserved `average_duration_days` as purchase-to-purchase rhythm.
-- Preserved `expected_next_purchase` as purchase-rhythm prediction.
-- Added separate `average_shelf_life_days` purchase-to-expiration calculation.
-- Added optional purchase `expiration_date`.
-- Added nullable product `expected_expiration_date`.
-- Added nullable store `address`.
-- Kept average price derived from purchases for Product View.
-- Kept Product View read-only.
-- Kept repository responsible for persistence and SQL row shape.
-- Kept service responsible for calculations and Product View read-model assembly.
-- Kept UI responsible for rendering prepared data.
-- Added reusable lower Product View panel to RegisterPage.
-- Preserved inventory page classification by `expected_next_purchase`.
+- Functional History page built.
+- Functional Settings page built.
+- SQLite-backed settings support added.
+- Month -> Week grouping implemented.
+- First-Wednesday operational month default implemented.
+- Wednesday week boundary default implemented.
+- Total/aggregate rows implemented as service-prepared data.
+- Store create/update implemented in Settings.
+- Store editing kept out of RegisterPage.
+- Cycle 01 Product View, purchase rhythm, shelf-life rhythm, and inventory behavior checked.
 
 ## Instructions Skipped
 
-- No permanent domain folder updates were performed, per staging boundary.
-- No methodology files were modified.
+- Store deletion was skipped as explicitly deferred unless referential behavior is guaranteed.
+- Full interactive page sorting UI was deferred; `pages.order` persistence exists, but MainWindow does not yet reorder tabs from it.
 
-## Failures Or Blockers
+## Failures / Blockers
 
-- Full interactive manual UI validation was not completed inside the terminal session; `python -m app.main` entered the expected GUI event loop and was stopped after startup.
+- No blocking implementation failure.
+- Manual UI interaction was not fully performed inside the terminal session; startup was verified by launching the Qt event loop without traceback.
 
 ## Unresolved Operational Risks
 
-- Existing historical records may use mixed date formats if older seed data was recalculated manually; shelf-life calculation expects the same configured date format as purchase rhythm.
-- Store address has persistence and display support, but no store-editing UI was added in this milestone.
+- `pages.order` is persisted but not consumed by MainWindow.
+- Existing data with unsupported date formats is reported through `unparsed_rows` but not repaired.
 
-## Suggested Functional Follow-Up
+## Suggested Follow-Up
 
-- Manually verify the desktop UI by double-clicking Storage/Shortage/Market rows and inspecting the Register lower Product View panel.
-- Decide whether store address editing belongs in a later store-management milestone.
+- Decide whether Cycle 03 should consume `pages.order` in MainWindow.
+- Add manual UI QA for History rendering and Settings store editing in the running desktop app.

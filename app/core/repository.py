@@ -400,6 +400,37 @@ class Repository(RepositoryContract):
         )
         return self.cursor.fetchone()[0]
 
+    def get_history_purchase_rows(self) -> list[dict]:
+        self.cursor_execute(
+            """
+            SELECT
+                p.id AS purchase_id,
+                p.product_id AS product_id,
+                pr.product_name AS product_name,
+                pr.brand AS brand,
+                p.store_id AS store_id,
+                s.name AS store_name,
+                s.city AS store_city,
+                s.state AS store_state,
+                s.address AS store_address,
+                p.purchase_date AS purchase_date,
+                p.quantity AS quantity,
+                p.unit AS unit,
+                p.unit_price AS unit_price,
+                p.total_price AS total_price,
+                p.promotion AS promotion,
+                p.expiration_date AS expiration_date,
+                p.notes AS notes
+            FROM purchases p
+            LEFT JOIN products pr
+                ON pr.id = p.product_id
+            LEFT JOIN stores s
+                ON s.id = p.store_id
+            ORDER BY p.id ASC
+            """
+        )
+        return [dict(row) for row in self.cursor.fetchall()]
+
     #######################################################
     # Categories
     #######################################################
@@ -460,6 +491,50 @@ class Repository(RepositoryContract):
         )
         return [self.row_to_store(row) for row in self.cursor.fetchall()]
 
+    def create_store(self, store: Store) -> Store:
+        self.cursor_execute(
+            """
+            INSERT INTO stores (
+                name,
+                city,
+                state,
+                address
+            )
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                store.name,
+                store.city,
+                store.state,
+                store.address,
+            ),
+        )
+        store.id = self.cursor.lastrowid
+        self.commit()
+        return store
+
+    def update_store(self, store: Store) -> Store:
+        self.cursor_execute(
+            """
+            UPDATE stores
+            SET
+                name = ?,
+                city = ?,
+                state = ?,
+                address = ?
+            WHERE id = ?
+            """,
+            (
+                store.name,
+                store.city,
+                store.state,
+                store.address,
+                store.id,
+            ),
+        )
+        self.commit()
+        return store
+
     def get_store(self, store_id: int) -> Store | None:
         self.cursor_execute(
             """
@@ -500,6 +575,51 @@ class Repository(RepositoryContract):
             """
         )
         return self.cursor.fetchone()[0]
+
+    #######################################################
+    # Settings
+    #######################################################
+
+    def get_setting(self, key: str, default: str | None = None) -> str | None:
+        self.cursor_execute(
+            """
+            SELECT value
+            FROM settings
+            WHERE key = ?
+            """,
+            (key,),
+        )
+        row = self.cursor.fetchone()
+
+        if row is None:
+            return default
+
+        return row["value"]
+
+    def set_setting(self, key: str, value: str) -> None:
+        self.cursor_execute(
+            """
+            INSERT INTO settings (key, value)
+            VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value = excluded.value
+            """,
+            (key, value),
+        )
+        self.commit()
+
+    def get_settings(self) -> dict[str, str]:
+        self.cursor_execute(
+            """
+            SELECT key, value
+            FROM settings
+            ORDER BY key
+            """
+        )
+        return {
+            row["key"]: row["value"]
+            for row in self.cursor.fetchall()
+        }
 
     #######################################################
     # Row mappers

@@ -373,6 +373,52 @@ def ensure_column(
     )
 
 
+def ensure_settings_table(
+
+    connection: sqlite3.Connection,
+
+) -> None:
+    """
+    Create the key/value settings table when missing.
+    """
+
+    connection.execute(
+
+        """
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+        """
+
+    )
+
+
+def ensure_default_setting(
+
+    connection: sqlite3.Connection,
+
+    key: str,
+
+    value: str,
+
+) -> None:
+    """
+    Insert a default setting without overwriting user choices.
+    """
+
+    connection.execute(
+
+        """
+        INSERT OR IGNORE INTO settings (key, value)
+        VALUES (?, ?)
+        """,
+
+        (key, value),
+
+    )
+
+
 def migrate(
 
     connection: sqlite3.Connection,
@@ -427,6 +473,42 @@ def migrate(
         "address",
 
         "TEXT",
+
+    )
+
+    ensure_settings_table(
+
+        connection
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "history.week_boundary",
+
+        "wednesday",
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "history.month_boundary_rule",
+
+        "first_wednesday",
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "pages.order",
+
+        "Register,Storage,Shortage,Market,History,Settings",
 
     )
 

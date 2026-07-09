@@ -28,14 +28,39 @@ INSERT INTO stores
     id,
     name,
     city,
-    state
+    state,
+    address
 )
 VALUES
 (
     1,
     'Muffato',
     'Curitiba',
-    'PR'
+    'PR',
+    ''
+);
+
+-- ==========================
+-- Settings
+-- ==========================
+
+INSERT INTO settings
+(
+    key,
+    value
+)
+VALUES
+(
+    'history.week_boundary',
+    'wednesday'
+),
+(
+    'history.month_boundary_rule',
+    'first_wednesday'
+),
+(
+    'pages.order',
+    'Register,Storage,Shortage,Market,History,Settings'
 );
 
 -- ==========================

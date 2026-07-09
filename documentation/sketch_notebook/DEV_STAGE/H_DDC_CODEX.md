@@ -1,4 +1,4 @@
-# Codex Report — Didactic
+# Codex Report — Didactic Cycle 02
 
 ## Source Stage Files
 
@@ -8,60 +8,81 @@
 
 ## Coding Concepts Exposed
 
-- Schema evolution without destructive reset.
-- Nullable model-field evolution across schema, dataclasses, repository mappers, service calculations, and UI rendering.
-- Separation of raw receipt facts from derived product summaries.
-- Product View read-model assembly as a service responsibility.
-- Read-only widget composition in PySide6.
+- Time bucketing by business boundaries.
+- Grouping as a read-model structure distinct from sorting.
+- Aggregate rows as derived data.
+- Durable configuration state in SQLite.
+- Store editing through service/repository orchestration.
+- PySide6 editable forms and read-only tree rendering.
 
 ## Concept Candidates By Marker
 
-- `&&&` Semantic field distinction: purchase rhythm and shelf-life rhythm use date intervals but mean different things.
-- `&&&` Raw data versus derived data: `Purchase.expiration_date` is raw batch data; `Product.average_shelf_life_days` is calculated.
-- `&&&` Naming as data contract: uniform `expiration_date` naming was used at schema, model, repository, service, and UI boundaries.
-- `&&&` Cached summary field: `expected_expiration_date` is a product summary field, not the source expiration fact.
-- `&%%` Product summary state in Markei: Product now holds purchase rhythm and shelf-life summary separately.
-- `&%%` Purchase rhythm versus shelf-life rhythm: `average_duration_days` remains purchase-to-purchase; `average_shelf_life_days` is purchase-to-expiration.
-- `&%%` Product View read model: ProductService returns explicit identity, price, shelf-life, store, and purchase-history rows.
-- `&%%` Service-owned calculation responsibility: average price, shelf-life, and expected expiration are not calculated in UI.
-- `&%%` Repository result shape: repository returns explicit keys such as `purchase_date`, `expiration_date`, and `latest_unit_price`.
-- `&&%` Dataclass field evolution: `Product`, `Purchase`, and `Store` gained optional fields compatible with existing records.
-- `&&%` Optional values / nullable fields in Python models: missing expiration and address values render as placeholders.
-- `%%%` SQLite schema evolution: migration adds columns only when absent.
-- `%%%` SQLite PRAGMA: `PRAGMA table_info` was used for column metadata inspection.
-- `%%%` PySide6 widget composition: Product View was extracted into `ProductDetailPanel`.
+- `&&&` Time Bucketing
+- `&&&` Aggregation and Totals
+- `&&&` Grouping Versus Sorting
+- `&&&` Configuration State
+- `&&&` Simple Key/Value Table
+- `&&%` Date/Datetime Boundary Handling
+- `&%%` History Read Model
+- `&%%` Settings-Owned Preferences
+- `&%%` Store Editing Workflow
+- `&%%` History Grouping Service Responsibility
+- `%%%` SQLite Settings Persistence
+- `%%%` PySide6 Editable Form Composition
 
-## Naming / Semantic Distinctions Preserved
+## Existing Cycle 01 Concepts Reused
 
-- `average_duration_days` was not repurposed.
-- `expected_next_purchase` remains tied to purchase cadence.
-- `average_shelf_life_days` is distinct from purchase cadence.
-- `expected_expiration_date` is a cached product summary, while `expiration_date` is purchase-level history.
-- Average price is derived from purchases, not cached on Product.
+- Raw Data Versus Derived Data: purchase rows are raw history; History sections/totals are derived.
+- Naming as Data Contract: row keys use explicit meanings such as `purchase_date`, `total_price`, and `average_unit_price`.
+- Repository Result Shape: repository returns explicit raw row facts for service interpretation.
+- Service-Owned Calculation Responsibility: History grouping and totals are not calculated in UI.
+- SQLite Schema Evolution and PRAGMA: settings migration follows the same idempotent migration path.
+- PySide6 Widget Composition: History and Settings pages compose focused controls without moving business logic into widgets.
 
-## Raw Data Vs Derived Data Evidence
+## Grouping Versus Sorting Evidence
 
-- Raw data: `purchases.expiration_date` is inserted with each receipt and may be null.
-- Derived data: `products.average_shelf_life_days` is recalculated from purchase rows that have expiration data.
-- Derived data: `products.expected_expiration_date` is estimated from the latest purchase date plus average shelf-life.
-- Derived display: Product View average price is calculated from purchase unit prices.
+- Purchases are sorted chronologically by parsed purchase date and ID.
+- Grouping then assigns those sorted rows into operational month and week sections.
+- Sorting order does not define the period membership.
 
-## Responsibility Evidence
+## Time Bucketing Evidence
 
-- Repository owns SQL migration-visible shape, insert/update/select, joins, and row mapping.
-- Service owns purchase rhythm, shelf-life, expected expiration, average price retrieval orchestration, and Product View assembly.
-- UI owns form input, panel placement, and read-only rendering.
+- First Wednesday defines operational month start.
+- Purchases before the first Wednesday are assigned to the previous operational month.
+- Wednesday starts the operational week.
+- Service tests confirmed Tuesday/Wednesday/Thursday boundary behavior around `07/07/2026`, `08/07/2026`, and `09/07/2026`.
 
-## PRAGMA Note
+## Aggregation And Total-Row Evidence
 
-PRAGMA is a SQLite command family for database metadata and settings. `PRAGMA table_info(table_name)` returns information about a table's columns. Here it checks whether migration columns already exist before `ALTER TABLE` runs.
+- Monetary total is a sum of stored `total_price`.
+- Average unit price is a mean over `unit_price`.
+- Quantity totals are grouped by unit, not collapsed across incompatible units.
+- Store totals are grouped by store label.
+
+## Simple Key/Value Table Note
+
+A simple key/value settings table stores each setting as a named key plus a text value. It is useful when settings are small, independent, and may grow over time. Example: `history.week_boundary = wednesday`. It avoids creating many columns before the settings model is stable. Its tradeoff is that values need parsing and validation in service code.
+
+## Settings / Configuration State Evidence
+
+- `settings.key` identifies the setting.
+- `settings.value` stores the persisted text value.
+- Default values are inserted without overwriting user choices.
+- Settings changes affect later History interpretation through service reads.
+
+## Service Vs Repository Vs UI Responsibility Evidence
+
+- Repository persists and retrieves settings, stores, and joined purchase/store rows.
+- Service interprets settings, date boundaries, grouping, and aggregate meaning.
+- History UI renders the service read model.
+- Settings UI exposes editable controls and delegates persistence to service.
 
 ## Didactic Risks Or Confusions Remaining
 
-- The same date type appears in multiple places but has different meanings; later learning material should emphasize semantic ownership rather than column type.
-- `expected_expiration_date` may be confused with actual purchase expiration history unless Product-level summary and Purchase-level raw data are taught separately.
+- Page sorting persistence exists, but page sorting behavior is not implemented; this distinction should be explicit in later teaching.
+- Operational month names are based on the first-Wednesday start date, which differs from plain calendar-month grouping.
 
 ## Suggested [A] Follow-Up
 
-- Decide whether SQLite PRAGMA becomes a `%%%` KANBAN concept.
-- Consider didactic material on read models and nullable schema evolution using this Product View milestone as the project example.
+- Consider KANBAN entries for Time Bucketing, Aggregation and Totals, and Configuration State.
+- Consider a glossary derivative for simple key/value settings tables.

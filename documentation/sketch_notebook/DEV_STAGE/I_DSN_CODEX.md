@@ -1,4 +1,4 @@
-# Codex Report — Design
+# Codex Report — Design Cycle 02
 
 ## Source Stage Files
 
@@ -8,61 +8,80 @@
 
 ## Architectural Decisions Materialized
 
-- Product View was implemented as a reusable read-only `ProductDetailPanel`.
-- RegisterPage owns panel placement below the writable receipt form.
-- MainWindow double-click navigation remains unchanged.
-- ProductService owns Product View read-model assembly.
-- Repository owns SQL retrieval, migration-visible persistence shape, and row mapping.
-- Product owns cached summary fields for purchase rhythm and shelf-life summary.
-- Purchase owns optional `expiration_date` as receipt/batch history.
-- Store owns nullable `address`.
-- Average price remains derived from purchases.
+- History uses a service-prepared read model.
+- Repository retrieves purchase/store/settings data without deciding period semantics.
+- Service owns first-Wednesday month grouping, Wednesday week grouping, aggregate meaning, settings interpretation, and read-model assembly.
+- History page renders grouped sections, purchase rows, and total rows.
+- Settings page owns History configuration and store editing surfaces.
+- Store create/update lives in Settings, not RegisterPage.
+- Settings persistence uses SQLite key/value storage.
+- Cycle 01 Product View boundaries remain intact.
 
 ## Files Changed Or Created For Design Reasons
 
-- `app/desktop/ui/widgets/product_detail_panel.py`: isolates read-only Product View rendering.
-- `app/desktop/ui/pages/register_page.py`: composes the panel and passes service-prepared data into it.
-- `app/core/services.py`: centralizes shelf-life calculation and Product View read-model assembly.
-- `app/core/repository.py`: provides explicit SQL read helpers for average price, latest store rows, and last purchase rows.
-- `app/core/models.py`: reflects ownership changes in Product, Purchase, and Store dataclasses.
-- `app/core/database.py` and `app/database/schema.sql`: materialize persistence shape and migration.
+- `app/database/schema.sql`: settings persistence shape.
+- `app/database/seed.sql`: default settings seed values.
+- `app/core/database.py`: idempotent settings migration.
+- `app/core/repository.py`: SQL ownership for settings, stores, and raw History rows.
+- `app/core/services.py`: History and Settings meaning layer.
+- `app/desktop/main_window.py`: page wiring and refresh.
+- `app/desktop/ui/pages/history_page.py`: read-only History renderer.
+- `app/desktop/ui/pages/settings_page.py`: configuration and store editing page.
 
 ## Responsibility Boundaries Preserved
 
-- RegisterPage placement versus business calculation: preserved; RegisterPage collects optional expiration input and loads the panel but does not calculate shelf-life or averages.
-- ProductDetailPanel display versus persistence access: preserved; the widget renders dictionaries and does not open repositories or services.
-- Repository retrieval versus service calculation: preserved; repository returns rows and aggregate price, while ProductService decides read-model assembly and shelf-life meaning.
-- Product summary fields versus Purchase history fields: preserved; `expiration_date` remains purchase-level and `average_shelf_life_days` / `expected_expiration_date` are Product summaries.
-- Derived average price versus cached price fields: preserved; Product View average price comes from purchase rows.
-- Purchase rhythm versus shelf-life rhythm: preserved; purchase classification still uses `expected_next_purchase`.
-- Uniform `expiration_date` naming: preserved across schema, model, repository, service, and UI display.
-- Reusable Product View panel composition: preserved through `ProductDetailPanel`.
+- History page rendering versus service grouping: preserved.
+- Repository retrieval versus service period semantics: preserved.
+- Settings configuration surface versus History calculation: preserved.
+- Store editing in Settings rather than RegisterPage: preserved.
+- Total/aggregate rows as service read-model data: preserved.
+- Product View and ProductDetailPanel unaffected: preserved.
+- Purchase rhythm and shelf-life rhythm unaffected: preserved, with safer date parsing.
 
 ## Boundary Drift
 
-- No architecture boundary drift was intentionally introduced.
-- `RegisterPage` now contains optional receipt expiration input in addition to Product View placement; this matches the staged purchase-level expiration support.
+- No intentional boundary drift.
+- `pages.order` persistence was added, but MainWindow consumption was deferred to avoid expanding scope.
 
-## Product / Purchase / Store Ownership Evidence
+## History Read-Model Evidence
 
-- Product: `average_duration_days`, `expected_next_purchase`, `average_shelf_life_days`, and `expected_expiration_date`.
-- Purchase: `purchase_date`, quantity, unit, unit price, total price, promotion, and optional `expiration_date`.
-- Store: `name`, `city`, `state`, and nullable `address`.
+- Read model includes operational month sections.
+- Each month contains week sections.
+- Week sections contain ordered purchase rows.
+- Sections include period labels, period boundaries, and summaries.
+- Summaries include monetary total, average unit price, per-unit quantity totals, and store totals.
 
-## Product View UI Composition Evidence
+## Settings Persistence / Configuration Evidence
 
-- Product identity line renders name, brand, and ID.
-- Summary line renders derived average price, average shelf-life, and expected expiration.
-- Store table renders store name, store ID, address, latest price, and latest purchase date.
-- Last purchases table always includes the expiration-date column.
-- Missing values render as a placeholder.
+- `settings` table stores `key TEXT PRIMARY KEY` and `value TEXT NOT NULL`.
+- Default keys: `history.week_boundary`, `history.month_boundary_rule`, and `pages.order`.
+- Service reads settings before assembling History.
+- Settings page writes settings through service/repository.
+
+## Store Editing Placement Evidence
+
+- Settings page exposes store ID, name, city, state, and address controls.
+- Store create/update uses ProductService and Repository.
+- RegisterPage was not modified for store-management controls.
+
+## Aggregate / Total-Row Design Evidence
+
+- Monetary total is explicitly tied to purchase `total_price`.
+- Average unit price is computed as mean, not sum.
+- Quantities are aggregated by unit.
+- Total rows are rendered by History from service-prepared summaries.
+
+## Deferred Decisions
+
+- Store deletion deferred because purchase references require explicit referential behavior design.
+- Full interactive page sorting UI and MainWindow tab reordering deferred; only persistence support exists.
 
 ## Open Design Questions
 
-- Store address persistence exists, but store address entry/editing remains outside this milestone.
-- Product-level `expected_expiration_date` exists for future analysis; later design should decide where it becomes user-facing beyond the Product View summary.
+- Should `pages.order` drive tab order in MainWindow in a later cycle?
+- Should History expose filters by store/product/date after grouping stabilizes?
 
 ## Suggested [D] Follow-Up
 
-- Absorb this report into design memory as evidence for the Product View read-model boundary.
-- Decide whether a future store-management screen should own address editing.
+- Absorb Cycle 02 as evidence for the History read-model boundary.
+- Decide the next design step for page sorting consumption and safe store deletion behavior.

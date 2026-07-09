@@ -47,9 +47,13 @@ class MainWindow(QMainWindow):
             self
         )
 
-        self.history_page = HistoryPage()
+        self.history_page = HistoryPage(
+            self
+        )
 
-        self.settings_page = SettingsPage()
+        self.settings_page = SettingsPage(
+            self
+        )
 
         self.register_page.main_window = self
 
@@ -180,3 +184,5 @@ class MainWindow(QMainWindow):
         self.shortage_page.load_products()
 
         self.market_page.load_products()
+
+        self.history_page.load_history()

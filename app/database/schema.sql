@@ -116,6 +116,14 @@ CREATE TABLE stores (
 
 );
 
+CREATE TABLE settings (
+
+    key TEXT PRIMARY KEY,
+
+    value TEXT NOT NULL
+
+);
+
 CREATE TABLE promotions (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT,

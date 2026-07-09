@@ -41,6 +41,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from datetime import timedelta
+import calendar
 
 from .config import (
 
@@ -61,6 +62,8 @@ from .models import (
     Product,
 
     Purchase,
+
+    Store,
 
 )
 
@@ -162,6 +165,140 @@ class ProductService(ServiceContract):
         return self.repository.get_purchases(
 
             product_id
+
+        )
+
+
+    #######################################################
+
+    def get_stores(
+
+        self,
+
+    ) -> list[Store]:
+        """
+        Return every store for Settings editing.
+        """
+
+        return self.repository.get_stores()
+
+
+    #######################################################
+
+    def save_store(
+
+        self,
+
+        store_id: int | None,
+
+        name: str,
+
+        city: str | None = None,
+
+        state: str | None = None,
+
+        address: str | None = None,
+
+    ) -> Store:
+        """
+        Create or update a store.
+        """
+
+        if not name.strip():
+
+            raise ValueError("Store name is required.")
+
+        store = Store(
+
+            id=store_id,
+
+            name=name.strip(),
+
+            city=(city or "").strip() or None,
+
+            state=(state or "").strip() or None,
+
+            address=(address or "").strip() or None,
+
+        )
+
+        if store.id is None:
+
+            return self.repository.create_store(
+
+                store
+
+            )
+
+        if not self.repository.exists_store(
+
+            store.id
+
+        ):
+
+            raise ValueError(
+
+                f"Unknown store '{store.id}'."
+
+            )
+
+        return self.repository.update_store(
+
+            store
+
+        )
+
+
+    #######################################################
+
+    def get_settings(
+
+        self,
+
+    ) -> dict[str, str]:
+        """
+        Return persisted application settings.
+        """
+
+        settings = {
+
+            "history.week_boundary": "wednesday",
+
+            "history.month_boundary_rule": "first_wednesday",
+
+            "pages.order": "Register,Storage,Shortage,Market,History,Settings",
+
+        }
+
+        settings.update(
+
+            self.repository.get_settings()
+
+        )
+
+        return settings
+
+
+    #######################################################
+
+    def set_setting(
+
+        self,
+
+        key: str,
+
+        value: str,
+
+    ) -> None:
+        """
+        Persist one application setting.
+        """
+
+        self.repository.set_setting(
+
+            key,
+
+            value,
 
         )
 
@@ -1077,6 +1214,636 @@ class ProductService(ServiceContract):
 
         }
 
+
+    #######################################################
+
+    def get_history_view(
+
+        self,
+
+    ) -> dict:
+        """
+        Return the grouped History read model.
+        """
+
+        settings = self.get_settings()
+
+        week_boundary = settings.get(
+
+            "history.week_boundary",
+
+            "wednesday",
+
+        )
+
+        rows = []
+
+        unparsed_rows = []
+
+        for row in self.repository.get_history_purchase_rows():
+
+            parsed_date = self.parse_purchase_date(
+
+                row.get("purchase_date")
+
+            )
+
+            if parsed_date is None:
+
+                unparsed_rows.append(row)
+
+                continue
+
+            row["parsed_purchase_date"] = parsed_date
+
+            rows.append(row)
+
+        rows.sort(
+
+            key=lambda row: (
+
+                row["parsed_purchase_date"],
+
+                row.get("purchase_id") or 0,
+
+            )
+
+        )
+
+        month_sections = []
+
+        month_lookup = {}
+
+        for row in rows:
+
+            purchase_date = row["parsed_purchase_date"]
+
+            month_start = self.operational_month_start(
+
+                purchase_date
+
+            )
+
+            week_start = self.week_start(
+
+                purchase_date,
+
+                week_boundary,
+
+            )
+
+            month_key = month_start.isoformat()
+
+            week_key = week_start.isoformat()
+
+            if month_key not in month_lookup:
+
+                month_end = (
+
+                    self.next_operational_month_start(month_start)
+
+                    -
+
+                    timedelta(days=1)
+
+                )
+
+                month_section = {
+
+                    "label": self.operational_month_label(month_start),
+
+                    "period_start": self.format_date_value(month_start),
+
+                    "period_end": self.format_date_value(month_end),
+
+                    "weeks": [],
+
+                    "summary": self.empty_summary(),
+
+                }
+
+                month_lookup[month_key] = {
+
+                    "section": month_section,
+
+                    "weeks": {},
+
+                }
+
+                month_sections.append(month_section)
+
+            month_entry = month_lookup[month_key]
+
+            if week_key not in month_entry["weeks"]:
+
+                week_end = week_start + timedelta(days=6)
+
+                week_section = {
+
+                    "label": self.week_label(week_start, week_end),
+
+                    "period_start": self.format_date_value(week_start),
+
+                    "period_end": self.format_date_value(week_end),
+
+                    "rows": [],
+
+                    "summary": self.empty_summary(),
+
+                }
+
+                month_entry["weeks"][week_key] = week_section
+
+                month_entry["section"]["weeks"].append(
+
+                    week_section
+
+                )
+
+            row_model = self.history_row_model(row)
+
+            week_section = month_entry["weeks"][week_key]
+
+            week_section["rows"].append(row_model)
+
+            self.add_to_summary(
+
+                week_section["summary"],
+
+                row_model,
+
+            )
+
+            self.add_to_summary(
+
+                month_entry["section"]["summary"],
+
+                row_model,
+
+            )
+
+        for month_section in month_sections:
+
+            self.finalize_summary(
+
+                month_section["summary"]
+
+            )
+
+            for week_section in month_section["weeks"]:
+
+                self.finalize_summary(
+
+                    week_section["summary"]
+
+                )
+
+        return {
+
+            "settings": settings,
+
+            "months": month_sections,
+
+            "unparsed_rows": unparsed_rows,
+
+        }
+
+
+    #######################################################
+
+    def parse_purchase_date(
+
+        self,
+
+        value: str | None,
+
+    ):
+        """
+        Parse known project and legacy date formats.
+        """
+
+        if not value:
+
+            return None
+
+        for date_format in (
+
+            DATE_FORMAT,
+
+            "%Y-%m-%d",
+
+        ):
+
+            try:
+
+                return datetime.strptime(
+
+                    value,
+
+                    date_format,
+
+                ).date()
+
+            except ValueError:
+
+                continue
+
+        return None
+
+
+    #######################################################
+
+    def first_wednesday(
+
+        self,
+
+        year: int,
+
+        month: int,
+
+    ):
+        """
+        Return the first Wednesday of a calendar month.
+        """
+
+        current = datetime(
+
+            year,
+
+            month,
+
+            1,
+
+        ).date()
+
+        while current.weekday() != 2:
+
+            current = current + timedelta(days=1)
+
+        return current
+
+
+    #######################################################
+
+    def operational_month_start(
+
+        self,
+
+        value,
+
+    ):
+        """
+        Return the first-Wednesday operational month start.
+        """
+
+        current_start = self.first_wednesday(
+
+            value.year,
+
+            value.month,
+
+        )
+
+        if value >= current_start:
+
+            return current_start
+
+        previous_month = value.month - 1
+
+        previous_year = value.year
+
+        if previous_month == 0:
+
+            previous_month = 12
+
+            previous_year -= 1
+
+        return self.first_wednesday(
+
+            previous_year,
+
+            previous_month,
+
+        )
+
+
+    #######################################################
+
+    def next_operational_month_start(
+
+        self,
+
+        month_start,
+
+    ):
+        """
+        Return the next first-Wednesday operational month start.
+        """
+
+        next_month = month_start.month + 1
+
+        next_year = month_start.year
+
+        if next_month == 13:
+
+            next_month = 1
+
+            next_year += 1
+
+        return self.first_wednesday(
+
+            next_year,
+
+            next_month,
+
+        )
+
+
+    #######################################################
+
+    def week_start(
+
+        self,
+
+        value,
+
+        boundary: str,
+
+    ):
+        """
+        Return the configured operational week start.
+        """
+
+        weekday = self.weekday_number(
+
+            boundary
+
+        )
+
+        offset = (
+
+            value.weekday()
+
+            -
+
+            weekday
+
+        ) % 7
+
+        return value - timedelta(days=offset)
+
+
+    #######################################################
+
+    def weekday_number(
+
+        self,
+
+        name: str,
+
+    ) -> int:
+        """
+        Convert persisted weekday setting into Python weekday number.
+        """
+
+        weekdays = {
+
+            day.lower(): index
+
+            for index, day in enumerate(calendar.day_name)
+
+        }
+
+        return weekdays.get(
+
+            (name or "").lower(),
+
+            2,
+
+        )
+
+
+    #######################################################
+
+    def history_row_model(
+
+        self,
+
+        row: dict,
+
+    ) -> dict:
+        """
+        Convert a repository row into a History row.
+        """
+
+        return {
+
+            "purchase_id": row.get("purchase_id"),
+
+            "purchase_date": row.get("purchase_date"),
+
+            "product_id": row.get("product_id"),
+
+            "product_name": row.get("product_name"),
+
+            "brand": row.get("brand"),
+
+            "store_id": row.get("store_id"),
+
+            "store_name": row.get("store_name"),
+
+            "quantity": row.get("quantity"),
+
+            "unit": row.get("unit"),
+
+            "unit_price": row.get("unit_price"),
+
+            "total_price": row.get("total_price"),
+
+            "expiration_date": row.get("expiration_date"),
+
+        }
+
+
+    #######################################################
+
+    def empty_summary(
+
+        self,
+
+    ) -> dict:
+        """
+        Create an aggregate container with explicit meanings.
+        """
+
+        return {
+
+            "purchase_count": 0,
+
+            "monetary_total": 0.0,
+
+            "unit_price_total": 0.0,
+
+            "unit_price_count": 0,
+
+            "average_unit_price": None,
+
+            "quantity_totals": {},
+
+            "store_totals": {},
+
+        }
+
+
+    #######################################################
+
+    def add_to_summary(
+
+        self,
+
+        summary: dict,
+
+        row: dict,
+
+    ) -> None:
+        """
+        Add one row into explicit aggregate meanings.
+        """
+
+        summary["purchase_count"] += 1
+
+        total_price = row.get("total_price")
+
+        if total_price is not None:
+
+            summary["monetary_total"] += total_price
+
+        unit_price = row.get("unit_price")
+
+        if unit_price is not None:
+
+            summary["unit_price_total"] += unit_price
+
+            summary["unit_price_count"] += 1
+
+        unit = row.get("unit")
+
+        quantity = row.get("quantity")
+
+        if unit and quantity is not None:
+
+            current_quantity = summary["quantity_totals"].get(
+
+                unit,
+
+                0.0,
+
+            )
+
+            summary["quantity_totals"][unit] = (
+
+                current_quantity
+
+                +
+
+                quantity
+
+            )
+
+        store_name = row.get("store_name") or "No store"
+
+        current_store_total = summary["store_totals"].get(
+
+            store_name,
+
+            0.0,
+
+        )
+
+        summary["store_totals"][store_name] = (
+
+            current_store_total
+
+            +
+
+            (total_price or 0.0)
+
+        )
+
+
+    #######################################################
+
+    def finalize_summary(
+
+        self,
+
+        summary: dict,
+
+    ) -> None:
+        """
+        Finalize average values for display.
+        """
+
+        if summary["unit_price_count"] > 0:
+
+            summary["average_unit_price"] = (
+
+                summary["unit_price_total"]
+
+                /
+
+                summary["unit_price_count"]
+
+            )
+
+
+    #######################################################
+
+    def operational_month_label(
+
+        self,
+
+        month_start,
+
+    ) -> str:
+        return (
+
+            f"Operational {month_start.strftime('%B %Y')}"
+
+        )
+
+
+    #######################################################
+
+    def week_label(
+
+        self,
+
+        week_start,
+
+        week_end,
+
+    ) -> str:
+        return (
+
+            f"Week {self.format_date_value(week_start)}"
+
+            f" - {self.format_date_value(week_end)}"
+
+        )
+
+
+    #######################################################
+
+    def format_date_value(
+
+        self,
+
+        value,
+
+    ) -> str:
+        return value.strftime(DATE_FORMAT)
+
     #######################################################
     #
     # CALCULATION SERVICES
@@ -1097,21 +1864,25 @@ class ProductService(ServiceContract):
         between two purchase dates.
         """
 
-        first = datetime.strptime(
+        first = self.parse_purchase_date(
 
-            first_date,
-
-            DATE_FORMAT,
+            first_date
 
         )
 
-        second = datetime.strptime(
+        second = self.parse_purchase_date(
 
-            second_date,
-
-            DATE_FORMAT,
+            second_date
 
         )
+
+        if first is None or second is None:
+
+            raise ValueError(
+
+                "Could not parse purchase date."
+
+            )
 
         return (
 
@@ -1245,13 +2016,15 @@ class ProductService(ServiceContract):
             return None
 
 
-        purchase = datetime.strptime(
+        purchase = self.parse_purchase_date(
 
-            purchase_date,
-
-            DATE_FORMAT,
+            purchase_date
 
         )
+
+        if purchase is None:
+
+            return None
 
 
         expected = purchase + timedelta(
@@ -1287,13 +2060,15 @@ class ProductService(ServiceContract):
 
             return None
 
-        purchase = datetime.strptime(
+        purchase = self.parse_purchase_date(
 
-            purchase_date,
-
-            DATE_FORMAT,
+            purchase_date
 
         )
+
+        if purchase is None:
+
+            return None
 
         expected = purchase + timedelta(
 
@@ -1344,16 +2119,18 @@ class ProductService(ServiceContract):
             return "storage"
 
 
-        expected = datetime.strptime(
+        expected = self.parse_purchase_date(
 
-            product.expected_next_purchase,
-
-            DATE_FORMAT,
+            product.expected_next_purchase
 
         )
 
+        if expected is None:
 
-        today = datetime.today()
+            return "storage"
+
+
+        today = datetime.today().date()
 
 
         threshold = timedelta(
@@ -1401,13 +2178,15 @@ class ProductService(ServiceContract):
             return None
 
 
-        expected = datetime.strptime(
+        expected = self.parse_purchase_date(
 
-            product.expected_next_purchase,
-
-            DATE_FORMAT,
+            product.expected_next_purchase
 
         )
+
+        if expected is None:
+
+            return None
 
 
         return (
@@ -1416,7 +2195,7 @@ class ProductService(ServiceContract):
 
             -
 
-            datetime.today()
+            datetime.today().date()
 
         ).days
 
