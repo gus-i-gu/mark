@@ -1,336 +1,207 @@
-# Materialization Stage — Design
+# DEV_STAGE/F_DSN_STAGE.md
 
-## 1. Scope
+> Status: Active Main materialization stage
+> Authority: Main Chat
+> Persistence class: Materialization stage material
+> Scope: Cycle 04 architectural guardrails for Settings boundary correction
 
-This stage gives Codex architectural guardrails for Cycle 03: Lists remodel, embedded History analytics, latest/delta price expansion, and mobile-readiness preparation.
+---
 
-It translates Design staging and Main synthesis into implementation boundaries. Permanent design domain files remain for later Design Chat absorption after Codex reports.
+# Cycle 04 Design Materialization Stage
 
-Codex must report design evidence into `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md` after materialization.
+## 1. Purpose
 
-## 2. Source Inputs
+This stage gives Codex design guardrails for Cycle 04 Settings stabilization.
 
-Codex must read:
+It translates Design staging and Main synthesis into implementation boundaries. Permanent design files remain for later Design Chat absorption after Codex reports.
+
+Codex must report design evidence into:
+
+```text
+documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+```
+
+Codex must not edit methodology files or permanent design files during this pass.
+
+## 2. Required Bootstrap and Source Inputs
+
+Read first:
 
 - `documentation/sketch_notebook/INDEX.md`
+- `documentation/sketch_notebook/00_PROJECT_STATE.md`
+- `documentation/sketch_notebook/06_SESSION_SCHEME.md`
+
+Then read:
+
 - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
 
+Use `documentation/sketch_notebook/` as the active notebook root.
+
 ## 3. Accepted Design Decisions
 
-- Cycle 03 extends the existing Desktop UI → ProductService → Repository → SQLite boundary.
-- ProductService owns business meaning, read-model assembly, classification, analytics derivation, percentage calculation, cycle comparison, and list row assembly.
-- Repository owns SQL retrieval, persistence support, settings access, and row mapping.
-- UI pages/widgets own rendering, user events, layout, and passing selected controls/view keys to ProductService.
-- UI must not own business calculations.
-- ListsPage becomes the one public inventory/list tab.
-- Former Storage/Shortage/Market meanings become internal Lists views.
-- Old Storage/Shortage/Market page files are retained temporarily unless safe deletion is explicitly justified and reported.
-- History analytics starts embedded in HistoryPage.
-- Detachable analytics lifecycle is deferred.
-- Latest price and delta price are global per product for Lists in Cycle 03.
-- Product cycle for analytics means `average_duration_days`.
-- Purchase rhythm and shelf-life rhythm remain separate.
-- Register remains purchase-entry-only.
-- Store management remains in Settings.
-- `pages.order` remains persisted/inert if present but must not drive MainWindow tab ordering this cycle.
-- Schema changes are avoided unless implementation discovers an unavoidable blocker.
-- Mobile preparation means stable read-model/service boundaries, not mobile implementation.
+- Settings is the user-facing configuration and store-management surface.
+- SettingsPage owns controls, layout, edit events, and loading/saving UI state.
+- SettingsPage must not own History grouping, Lists status, date interpretation, or future mobile semantics.
+- ProductService owns validation and interpretation of behavior-affecting settings.
+- Repository owns low-level persistence of key/value settings.
+- SQLite owns persisted settings and existing application facts.
+- `time_reference.day_boundary_time` is the accepted Cycle 04 key for the operational-day boundary preference.
+- Week boundary and month boundary must use semantic values that can survive UI label changes.
+- Mobile readiness means contract and boundary stabilization, not mobile implementation.
 
 ## 4. Responsibility Map
 
-### Schema / storage owns
+### SettingsPage owns
 
-- raw purchases
-- products
-- stores
-- settings/config values
-- relationships
-- migration-visible persistence shape
-- existing cached product summaries
+- rendering Settings controls;
+- loading service-prepared current settings;
+- collecting user edits;
+- triggering save through service flow;
+- rendering store create/update UI;
+- keeping the store section compact where practical.
 
-Schema/storage should not receive new Cycle 03 analytics fields by default.
-
-### Repository owns
-
-- SQL retrieval
-- persistence operations
-- settings access
-- row-to-model mapping
-- optional supporting retrieval for purchase rows/date/store filters
-- optional latest/previous purchase retrieval if needed
-
-Repository must not define:
-
-- Lists view semantics
-- status classification
-- analytics frame meaning
-- percentage meaning
-- average timelapse meaning
-- cycle comparison meaning
+SettingsPage must not calculate History grouping or Lists status.
 
 ### ProductService owns
 
-- Lists read-model assembly
-- product status classification
-- remaining-days interpretation
-- latest price / delta price meaning for Lists
-- History analytics frame interpretation
-- parsed-row inclusion/exclusion rules
-- frame total spent
-- product expenditure percentage
-- frame average purchase timelapse
-- product cycle comparison
-- missing/insufficient-data semantic states
-- platform-neutral read-model contracts
+- setting validation;
+- default fallback interpretation;
+- History week boundary semantics;
+- History month boundary semantics;
+- operational-day boundary helper for `time_reference.day_boundary_time`;
+- safe fallback when persisted settings are invalid;
+- service-facing settings contract used by UI.
+
+### Repository owns
+
+- reading settings records;
+- writing settings records;
+- preserving existing key/value persistence behavior;
+- row mapping or low-level retrieval support.
+
+Repository must not decide History period semantics.
+
+### SQLite/schema owns
+
+- persisted settings rows;
+- existing products, purchases, stores, and relationships.
+
+Schema changes should be avoided unless implementation discovers a real blocker. Existing user data must be preserved.
+
+### HistoryPage owns
+
+- rendering grouped History output;
+- refreshing after settings changes where current app flow supports it.
+
+HistoryPage must not calculate week/month buckets directly.
 
 ### ListsPage owns
 
-- one public Lists tab
-- internal view selection
-- default all-products hybrid view
-- view control rendering
-- table rendering
-- refresh events
-- double-click event routing to MainWindow/product edit flow
+- rendering service-prepared list rows;
+- refreshing after settings changes where relevant.
 
-ListsPage must not directly query Repository or duplicate ProductService calculations.
-
-### HistoryPage / embedded analytics widget owns
-
-- rendering date range controls
-- rendering optional store selector
-- passing frame controls to ProductService
-- rendering analytics summary and rows
-- rendering empty/insufficient-data states
-
-History UI must not calculate percentages, timelapses, or cycle comparisons.
+ListsPage must not interpret time reference in this pass.
 
 ### MainWindow owns
 
-- public tab mounting
-- navigation helpers
-- refresh orchestration
-- edit-product routing
+- public tab mounting;
+- refresh orchestration;
+- preserving public tabs as Register, Lists, History, Settings.
 
-MainWindow should expose Register / Lists / History / Settings as public tabs in Cycle 03.
+Do not activate `pages.order` tab sorting in this pass.
 
-### Settings owns
+## 5. Settings Contract Guidance
 
-- store create/update surface
-- settings/configuration surfaces
-
-Settings should not calculate History or Lists semantics.
-
-### Register owns
-
-- receipt/purchase entry
-- loading selected product for edit
-
-Register should not become a store-management surface.
-
-## 5. Read Model Contract Guidance
-
-Codex may implement with dictionaries, dataclasses, or existing project conventions. Names may vary, but meanings must remain clear.
-
-### Lists read model
-
-Preferred service surface:
+Preferred semantic settings:
 
 ```text
-get_lists_view(view_key="all", reference_date=None)
+history.week_boundary
+history.month_boundary_mode
+history.month_boundary_weekday
+history.month_boundary_day
+time_reference.day_boundary_time
 ```
 
-Required view keys:
+Required design properties:
 
-```text
-all
-in-house
-shortage
-to-buy
-in-house + shortage
-shortage + to-buy
-```
+- stored values should be stable semantic values, not display labels only;
+- display labels may be localized or changed later without changing stored meaning;
+- invalid persisted values should fall back safely;
+- UI should not duplicate service validation as the only line of defense;
+- service methods should remain usable by a future non-desktop presentation layer.
 
-Required Lists row meanings:
+## 6. Time Reference Boundary
 
-```text
-product_id
-product_name
-brand
-current_quantity
-unit
-latest_price
-previous_price
-delta_price
-delta_price_percent or equivalent
-average_duration_days
-expected_next_purchase
-remaining_days
-status
-status_label
-price_label
-delta_price_label
-remaining_label
-```
+`time_reference.day_boundary_time` means the time at which Markei's operational day rolls over.
 
-The UI may render labels directly, but semantic values should remain available where practical.
+Cycle 04 limit:
 
-### History analytics read model
+- implement persistence and validation;
+- expose a service-owned interpretation helper;
+- apply only where current data supports safe interpretation;
+- do not alter Lists status, purchase rhythm, depletion prediction, or expected next purchase unless existing data already contains reliable time-of-day information.
 
-Preferred service surface:
+If current data only stores dates, report that the design is present but behavior remains mostly future-ready.
 
-```text
-get_history_analytics_view(start_date=None, end_date=None, store_id=None)
-```
-
-Required view meanings:
-
-```text
-frame.start_date
-frame.end_date
-frame.store_id
-frame.store_name or all-stores label
-summary.total_spent
-summary.parsed_purchase_count
-summary.unparsed_or_excluded_count
-summary.average_purchase_timelapse_days
-summary.insufficient_data_reason
-rows
-unparsed_or_excluded_rows or equivalent diagnostics
-```
-
-Required analytics row meanings:
-
-```text
-product_id
-product_name
-brand
-total_spent
-expenditure_percentage
-purchase_count
-average_duration_days
-frame_average_timelapse_days
-cycle_difference_days
-cycle_comparison  # faster / slower / equal / unknown
-insufficient_data_reason
-```
-
-## 6. UI Architecture Guardrails
-
-### ListsPage
-
-- Use one public Lists tab.
-- Default to all-products hybrid view.
-- Support all required internal views.
-- Use the same row shape for every internal view.
-- Do not preserve Storage/Shortage/Market as independent public navigation surfaces.
-- Retain old page files temporarily unless safe deletion is explicitly justified and reported.
-- Avoid direct copy/paste growth from old table implementations if a simple shared renderer is feasible.
-
-### History analytics
-
-- Embed analytics in HistoryPage.
-- A helper widget may be created if it reduces HistoryPage size, but it must remain embedded.
-- Do not implement detachable behavior.
-- Keep existing grouped History rendering intact.
-- Keep analytics read-only.
-
-### MainWindow
-
-- Public tabs for Cycle 03: Register, Lists, History, Settings.
-- Do not consume `pages.order`.
-- Preserve compatibility helpers by routing old open methods to Lists internal views.
-- Preserve product edit flow.
-
-## 7. Persistence / Schema Position
-
-No schema change is expected for Cycle 03.
-
-Do not add persisted fields for:
-
-```text
-latest_price
-delta_price
-expenditure_percentage
-frame_average_timelapse_days
-cycle_comparison
-history analytics cache
-```
-
-Use existing raw purchases, products, stores, settings, and cached product summaries.
-
-If Codex finds an unavoidable schema blocker, it must:
-
-1. keep the migration idempotent;
-2. preserve existing user data;
-3. explain why read-time derivation was insufficient;
-4. report the design consequence in `I_DSN_CODEX.md`.
-
-## 8. Mobile Preparation Boundary
+## 7. Mobile Preparation Boundary
 
 Prepare now:
 
-- stable ProductService methods
-- platform-neutral read-model values
-- shared list row semantics
-- service-owned analytics semantics
-- reduced duplication across former list pages
-- UI independence from calculation logic
-- repository/service boundary preservation
+- typed or type-like settings contracts;
+- semantic values separated from labels;
+- service-owned settings interpretation;
+- validation independent from UI widgets;
+- compact Settings structure;
+- evidence that future presentation layers could reuse service behavior.
 
 Defer:
 
-- Android/mobile implementation
-- API/backend rewrite
-- authentication/account model
-- cloud sync
-- mobile database synchronization
-- replacing PySide6
-- mobile-specific UI framework choices
+- mobile UI;
+- platform-specific mobile choices;
+- server/shared-backend work;
+- cross-device synchronization;
+- receipt recognition;
+- replacement of PySide6.
 
-## 9. Boundary Drift Risks Codex Must Watch
+## 8. Boundary Drift Risks Codex Must Watch
 
 Report any drift in `I_DSN_CODEX.md`.
 
 High-risk drift:
 
-- ListsPage recalculates product status or price delta.
-- HistoryAnalyticsWidget calculates percentages/timelapses/comparisons.
-- Repository becomes owner of frame semantics or product cycle comparison.
-- Product model absorbs frame-dependent analytics fields.
+- SettingsPage calculates History periods.
+- Repository decides week/month semantics.
+- HistoryPage duplicates grouping logic already owned by ProductService.
+- ListsPage starts interpreting time reference directly.
 - MainWindow activates stale `pages.order` values.
 - Register gains store-management controls.
-- Old Storage/Shortage/Market pages remain public navigation surfaces.
-- Mobile preparation expands into mobile rewrite.
-- Schema starts caching analytics without a blocker.
+- Mobile preparation expands into mobile implementation.
+- Settings grows into an unbounded page without compact sections.
 
-## 10. I_DSN_CODEX.md Report Shape
+## 9. I_DSN_CODEX.md Report Shape
 
-After materialization, write:
-
-`documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
-
-Keep the report compact and evidence-oriented.
+After materialization, write `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`.
 
 Required sections:
 
-1. Source stage files read
-2. Architectural decisions materialized
-3. Files changed or created for design reasons
-4. Responsibility boundaries preserved
-5. Boundary drift, if any
-6. ListsPage architecture evidence
-7. Lists read-model evidence
-8. MainWindow navigation/remodel evidence
-9. Latest/delta price boundary evidence
-10. History analytics read-model evidence
-11. Embedded History analytics UI evidence
-12. Persistence/schema decision evidence
-13. Mobile-readiness boundary evidence
-14. Deferred design items
-15. Open design questions
-16. Suggested Design Chat follow-up
+1. Source stage files read.
+2. Architectural decisions materialized.
+3. Files changed or created for design reasons.
+4. Responsibility boundaries preserved.
+5. Boundary drift, if any.
+6. SettingsPage boundary evidence.
+7. ProductService settings interpretation evidence.
+8. Repository persistence boundary evidence.
+9. History grouping boundary evidence.
+10. Time reference boundary evidence.
+11. Persistence/schema decision evidence.
+12. Mobile-readiness boundary evidence.
+13. Deferred design items.
+14. Open design questions.
+15. Suggested Design Chat follow-up.
+
+Keep the report compact and evidence-oriented.
