@@ -143,3 +143,110 @@ Source evidence:
 - No blocking implementation drift recorded.
 - Expected limitation: `pages.order` persistence exists while tab-order behavior is deferred.
 - Expected limitation: unsupported date formats are surfaced through `unparsed_rows` rather than repaired.
+
+## 2026-07-09 — Cycle 03 Lists and History Analytics Codex Evidence Absorption
+
+Source evidence:
+
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
+
+### Operational Observation
+
+- Cycle 03 materialized the unified Lists page and embedded History analytics from Main-approved stage files.
+- Public inventory tabs were remodeled from Storage / Shortage / Market into one Lists tab.
+- Public tabs are now Register / Lists / History / Settings.
+- Former Storage/Shortage/Market meanings are internal Lists views.
+- Lists default view is the hybrid all-products view.
+- Lists exposes `all`, `in-house`, `shortage`, `to-buy`, `in-house + shortage`, and `shortage + to-buy`.
+- Lists uses a shared 10-column row shape including Price and Δ Price.
+- Lists uses global latest price and delta price from product summary/service calculations.
+- History analytics is embedded in HistoryPage with date inputs, optional store selector, apply button, summary label, and product analytics table.
+- ProductService owns Lists read-model assembly and History analytics derivation.
+- Repository/schema boundaries were preserved; no analytics cache or schema change was introduced.
+- Register and Settings source files were not modified; Register remains purchase-entry-only and Settings remains store-management surface.
+- `pages.order` remains inert for MainWindow tab ordering.
+
+### Validated Operational Facts
+
+- `app/core/services.py` was changed to add Lists and History analytics read models.
+- `app/desktop/main_window.py` was changed to mount Register / Lists / History / Settings and preserve compatibility navigation helpers.
+- `app/desktop/ui/pages/history_page.py` was changed to embed read-only analytics controls/table.
+- `app/desktop/ui/pages/lists_page.py` was created as the unified Lists page.
+- No files were deleted.
+- Legacy service methods `get_storage_products()`, `get_shortage_products()`, and `get_market_products()` were preserved.
+- Lists double-click fetches product by ID and calls `MainWindow.edit_product(product)`.
+- History grouped Month -> Week rendering remains in `HistoryPage.load_history()`.
+- Analytics reports unparsed rows separately from date/store excluded rows.
+- Store-filtered analytics returns unknown frame average when fewer than two parsed purchases exist rather than crashing.
+
+### Validation Evidence
+
+- `python -m compileall app`: passed.
+- `python -m app.core.database`: passed; existing DB opened without destructive reset.
+- Lists smoke returned: `all=16`, `in-house=13`, `shortage=2`, `to-buy=1`, `in-house + shortage=15`, `shortage + to-buy=3`.
+- Status/price smoke returned status and global price variation for first five products.
+- History read-model smoke returned `months=1`, `unparsed=0`.
+- Analytics all-frame smoke returned `parsed=19`, `unparsed=0`, `excluded=0`, `total=289.74`, `avg gap=0.4444444444444444`, `products=16`.
+- Analytics July-frame smoke matched all-frame for current data.
+- Analytics July plus store `2` smoke returned `parsed=1`, `unparsed=0`, `excluded=18`, `total=9.49`, `avg gap=None`, `products=1`.
+- Import probes for `MainWindow`, `ListsPage`, and `HistoryPage` passed.
+- Offscreen Qt startup probe returned top-level tabs `['Register', 'Lists', 'History', 'Settings']`.
+- Qt emitted a font-directory warning during offscreen startup, but no traceback occurred.
+- Reference search checked old page references in active files.
+
+### Completed TODO Items
+
+- Unified Lists page implemented.
+- MainWindow public tab remodel implemented.
+- Former Storage/Shortage/Market meanings moved into internal Lists views.
+- Lists shared 10-column display implemented.
+- Global latest/delta price display implemented for Lists.
+- Service-level History analytics read model implemented.
+- Embedded read-only History analytics UI implemented.
+- No schema changes introduced for Cycle 03 analytics or Lists.
+
+### Remaining TODO Items
+
+- Perform full manual UI QA for Register, Lists, History analytics, Settings, and Product View.
+- Validate Lists double-click/edit flow in every internal Lists view.
+- Validate receipt save refreshes Lists and History through real UI interaction.
+- Add explicit invalid analytics date input handling.
+- Review same-day average timelapse semantics and display.
+- Decide later whether old Storage/Shortage/Market page files should be removed.
+- Consider automated Qt smoke tests that instantiate widgets without entering the full app event loop.
+- Validate multi-store analytics totals with richer fixture data.
+- Continue mobile-prep validation by confirming new service read models remain platform-neutral.
+
+### Validation Gaps
+
+- Manual interactive UI checks were not performed beyond offscreen startup/tab verification.
+- `python -m app.main` was not left running because it enters the Qt event loop.
+- Invalid analytics date input currently behaves like an omitted boundary because service parsing returns `None`.
+- Same-day purchases can produce sub-day average timelapse values.
+- Multi-store analytics totals need richer manual validation.
+
+### Operational Risks
+
+- UI interaction regressions may exist until manual QA covers real clicks, edits, receipt saves, and filters.
+- Lists double-click behavior may hide row-index errors not caught by offscreen startup.
+- Invalid analytics dates can silently broaden analytics frames.
+- Same-day frame average timelapse may be mathematically valid but confusing operationally.
+- Retained old page files can confuse future source inspection if not clearly treated as transitional.
+- `pages.order` remains persisted with old public page concepts but is intentionally not consumed.
+- Worktree/generated bytecode and zip-file drift were noted around Codex validation and should not be staged.
+
+### Implementation Drift
+
+- No blocking implementation drift found between Main Cycle 03 decisions and Codex evidence.
+- Expected limitation: manual interactive UI QA remains incomplete.
+- Expected limitation: invalid analytics date handling is not yet explicit.
+- Expected limitation: same-day average timelapse requires review.
+- Expected limitation: old Storage/Shortage/Market page files remain present as transitional files.
+
+### Cross-Domain Awareness
+
+- Didactic evidence confirms Cycle 03 introduced read-model consolidation, derived aggregates, date/store frame filtering, and platform-neutral service read-model concepts.
+- Design evidence confirms boundaries were preserved: UI renders, ProductService owns semantics, Repository/schema were not expanded, and mobile implementation was not attempted.
+- H/I reports do not contradict G_OPS_CODEX; they reinforce the same unresolved risks around invalid date input, same-day timelapse, and old page cleanup.
