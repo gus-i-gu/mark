@@ -1,10 +1,11 @@
 # INDEX.md
 
-> Version: 0.1
+> Version: 0.2
 > Status: Draft
 > Persistence Class: Derived / Navigational
+> Knowledge Class: Navigational
 > Authority: Main Chat
-> Scope: Sketch Notebook navigation and bootstrap routing
+> Scope: Sketch Notebook navigation, bootstrap routing, and project-memory map
 
 ---
 
@@ -12,77 +13,190 @@
 
 `INDEX.md` is the navigation entrypoint for the Sketch Notebook.
 
-Every chat should read this file before exploring the rest of the notebook.
+Every chat, agent, or human reviewer should begin here before exploring the rest of the notebook.
 
-Its purpose is to expose the notebook structure, redirect all agents to the methodology directory, and prevent path drift.
+Its purpose is to expose:
 
-This file is a map, not a source of canonical truth.
+* the canonical notebook root;
+* the methodology boot order;
+* the project-memory structure;
+* the domain checkpoint entry points;
+* the DEV_STAGE routing surface;
+* the relationship between methodology, project memory, and repository implementation.
 
----
+This file is a map.
 
-# 2. Mandatory Bootstrap Route
+It is not the primary source of canonical truth.
 
-Before starting any work cycle, every chat should read the methodology directory.
-
-Required methodology files:
-
-```text
-documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md
-documentation/sketch_notebook/methodology/PROMOTION_RULES.md
-documentation/sketch_notebook/methodology/CHAT_BEHAVIOUR.md
-documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md
-documentation/sketch_notebook/methodology/FLUX.md
-```
-
-Recommended boot order:
-
-```text
-METHOD_FOUNDATIONS
-↓
-PROMOTION_RULES
-↓
-CHAT_BEHAVIOUR
-↓
-CHAT_PROTOCOL
-↓
-FLUX
-```
-
-No chat should begin functional work before loading the methodology context.
+If a rule is needed, consult the methodology file that owns the rule.
 
 ---
 
-# 3. Canonical Notebook Root
+# 2. Canonical Notebook Root
 
-The canonical notebook root is:
+The canonical Sketch Notebook root is:
 
 ```text
 documentation/sketch_notebook/
 ```
 
-Invalid notebook root:
+Invalid notebook roots include:
 
 ```text
 app/documentation/sketch_notebook/
 ```
 
-Any notebook material created under `app/documentation/` should be considered misplaced.
+Sketch Notebook material must not be created under `app/documentation/`, adjacent repositories, misplaced folders, or alternative notebook roots.
 
 ---
 
-# 4. Top-Level Structure
+# 3. Methodological Boot Order
+
+The standard methodology boot order is:
+
+```text
+INDEX
+↓
+METHOD_FOUNDATIONS
+↓
+FLUX
+↓
+PROMOTION_RULES
+↓
+CHAT_PROTOCOL
+```
+
+This order loads:
+
+```text
+Navigation
+↓
+Foundational ontology
+↓
+Routing and authority
+↓
+Knowledge-state semantics
+↓
+Communication structure
+```
+
+`CHAT_BEHAVIOUR.md` remains a stable ontological guide for role perspectives.
+
+It should be consulted when:
+
+* a role’s reasoning perspective is unclear;
+* a new role is introduced;
+* the conversational system itself is being revised;
+* a role behaves inconsistently with its intended perspective.
+
+`METHOD_GLOSSARY.md` should be consulted when methodology vocabulary is unclear.
+
+---
+
+# 4. Methodology Files
+
+Canonical methodology files:
+
+```text
+documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md
+documentation/sketch_notebook/methodology/FLUX.md
+documentation/sketch_notebook/methodology/PROMOTION_RULES.md
+documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md
+documentation/sketch_notebook/methodology/CHAT_BEHAVIOUR.md
+documentation/sketch_notebook/methodology/METHOD_GLOSSARY.md
+```
+
+Responsibilities:
+
+| File                    | Primary responsibility                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `METHOD_FOUNDATIONS.md` | What the Sketch Notebook Method is                                                                  |
+| `FLUX.md`               | How information is routed, staged, written, materialized, reported, recovered, created, and renamed |
+| `PROMOTION_RULES.md`    | How knowledge changes semantic state                                                                |
+| `CHAT_PROTOCOL.md`      | How each role communicates and structures output                                                    |
+| `CHAT_BEHAVIOUR.md`     | How each role reasons from its perspective                                                          |
+| `METHOD_GLOSSARY.md`    | What methodology-specific terms mean                                                                |
+
+Methodology files are protected.
+
+They should be modified only during explicit methodological work under Main Chat and human supervision.
+
+---
+
+# 5. Project-Memory Layers
+
+The Sketch Notebook separates three broad layers.
+
+```text
+Methodology
+    defines the method
+
+Project Memory
+    stores interpreted project knowledge
+
+Repository Implementation
+    stores source code and materialized files
+```
+
+The repository may show what exists.
+
+The notebook should explain what it means.
+
+When possible, project state should be recovered from notebook memory before reading source files.
+
+Repository inspection is used when implementation truth is uncertain, source files are directly relevant, or notebook drift is suspected.
+
+---
+
+# 6. Hierarchical Recovery
+
+The standard recovery order is:
+
+```text
+Domain Checkpoint
+↓
+Canonical Knowledge
+↓
+Derived Knowledge
+↓
+Observational History
+↓
+Repository Inspection
+```
+
+This is a cost discipline.
+
+A role should not consume full canonical registers, historical logs, or source files when the relevant checkpoint already answers the task.
+
+A role may inspect deeper sources when:
+
+* the checkpoint is empty;
+* the checkpoint is stale;
+* the checkpoint is insufficient;
+* notebook drift is suspected;
+* implementation truth is uncertain;
+* source files are the direct subject of the task;
+* materialization must be validated.
+
+---
+
+# 7. Top-Level Structure
 
 ```text
 documentation/sketch_notebook/
 │
 ├── INDEX.md
 │
+├── 00_PROJECT_STATE.md
+├── 05_SESSION_LOG.md
+│
 ├── methodology/
 │   ├── METHOD_FOUNDATIONS.md
+│   ├── FLUX.md
 │   ├── PROMOTION_RULES.md
-│   ├── CHAT_BEHAVIOUR.md
 │   ├── CHAT_PROTOCOL.md
-│   └── FLUX.md
+│   ├── CHAT_BEHAVIOUR.md
+│   └── METHOD_GLOSSARY.md
 │
 ├── DEV_STAGE/
 │   ├── A_OPERATIONAL.md
@@ -90,130 +204,310 @@ documentation/sketch_notebook/
 │   ├── C_DESIGN.md
 │   ├── D_OPS_STAGE.md
 │   ├── E_DDC_STAGE.md
-│   └── F_DSN_STAGE.md
+│   ├── F_DSN_STAGE.md
+│   ├── G_OPS_CODEX.md
+│   ├── H_DDC_CODEX.md
+│   └── I_DSN_CODEX.md
 │
 ├── operational/
+│   ├── 04_TODO.md
+│   ├── 10_OPERATIONAL_STATE.md
+│   ├── 11_OPERATIONAL_RECORD.md
+│   └── 12_OPERATIONAL_MODEL.md
 │
 ├── didactics/
+│   ├── 02_KANBAN.md
+│   ├── 07_GLOSSARY.md
+│   ├── 08_CONCEPT_MAP.md
+│   └── 13_LECTURE_REGISTER.md
 │
 └── design/
+    ├── 01_ARCHITECTURE.md
+    ├── 03_DECISION_LOG.md
+    ├── 09_DESIGN_STATE.md
+    └── 14_MODEL_OVERVIEW.md
 ```
 
 ---
 
-# 5. Directory Roles
+# 8. Global Coordination Files
 
-## methodology/
+## 00_PROJECT_STATE.md
 
-Contains the specifications that define the method itself.
+Global project-state checkpoint.
 
-This directory is protected.
+It should expose the current high-level state of the project.
 
-Only Main Chat may modify methodology files.
+Main Chat owns its coherence.
 
-Codex must not modify methodology files.
+## 05_SESSION_LOG.md
 
-Functional chats must not modify methodology files.
+Global observational session record.
 
-## DEV_STAGE/
+It should preserve session-level drift, reconciliation, accepted direction, and important continuity notes.
 
-Contains temporary staging files.
+Main Chat owns its coherence.
 
-Functional chats write A/B/C.
+---
 
-Main Chat writes D/E/F.
+# 9. Domain Checkpoints
 
-Codex reads D/E/F when materializing changes.
+Low-token domain entry points:
+
+| Domain      | Checkpoint                                                          |
+| ----------- | ------------------------------------------------------------------- |
+| Operational | `documentation/sketch_notebook/operational/10_OPERATIONAL_STATE.md` |
+| Didactic    | `documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md`         |
+| Design      | `documentation/sketch_notebook/design/09_DESIGN_STATE.md`           |
+
+These files should be read before deeper domain files when recovering state.
+
+A checkpoint should summarize current state.
+
+It should not become a canonical register.
+
+It should not become a historical log.
+
+---
+
+# 10. Domain Symmetry Files
+
+Each functional domain exposes four semantic roles:
+
+```text
+Canonical Knowledge
+Derived Knowledge
+Domain Checkpoint
+Observational History
+```
 
 ## operational/
 
-Contains permanent operational knowledge.
-
-Operational Chat may reason about this domain, but permanent updates are materialized only after Main synthesis.
+| Role                            | File                       |
+| ------------------------------- | -------------------------- |
+| Derived operational knowledge   | `04_TODO.md`               |
+| Domain checkpoint               | `10_OPERATIONAL_STATE.md`  |
+| Observational history           | `11_OPERATIONAL_RECORD.md` |
+| Canonical operational knowledge | `12_OPERATIONAL_MODEL.md`  |
 
 ## didactics/
 
-Contains permanent didactic and learning knowledge.
-
-Didactic Chat may reason about this domain, but permanent updates are materialized only after Main synthesis.
+| Role                           | File                     |
+| ------------------------------ | ------------------------ |
+| Canonical didactic knowledge   | `02_KANBAN.md`           |
+| Derived didactic knowledge     | `07_GLOSSARY.md`         |
+| Domain checkpoint              | `08_CONCEPT_MAP.md`      |
+| Observational learning history | `13_LECTURE_REGISTER.md` |
 
 ## design/
 
-Contains permanent architecture, domain, and decision knowledge.
-
-Design Chat may reason about this domain, but permanent updates are materialized only after Main synthesis.
-
----
-
-# 6. Functional Chat Domain Routing
-
-When a functional role is declared, the chat should remain mostly within its domain after methodology boot.
-
-| Role | Primary domain | Stage file | Permanent domain |
-|---|---|---|---|
-| Operational Chat | execution, debugging, commands | `DEV_STAGE/A_OPERATIONAL.md` | `operational/` |
-| Didactic Chat | learning, KANBANs, glossary, concepts | `DEV_STAGE/B_DIDACTIC.md` | `didactics/` |
-| Design Chat | architecture, decisions, domain model | `DEV_STAGE/C_DESIGN.md` | `design/` |
-
-Functional chats may inspect application source files when needed for their task.
-
-They should not edit application source files.
-
-They should not edit permanent notebook files.
-
-They should stage only into their assigned DEV_STAGE file.
+| Role                         | File                   |
+| ---------------------------- | ---------------------- |
+| Canonical design knowledge   | `01_ARCHITECTURE.md`   |
+| Observational design history | `03_DECISION_LOG.md`   |
+| Domain checkpoint            | `09_DESIGN_STATE.md`   |
+| Derived design knowledge     | `14_MODEL_OVERVIEW.md` |
 
 ---
 
-# 7. Main Chat Routing
+# 11. DEV_STAGE Routing
 
-Main Chat reads all functional stage files:
+`DEV_STAGE/` contains three groups.
+
+## Functional stage files
+
+Functional chats write active stage reports:
 
 ```text
-documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
-documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md
-documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+A_OPERATIONAL.md
+B_DIDACTIC.md
+C_DESIGN.md
 ```
 
-Main Chat then prepares materialization stage files:
+## Main materialization stage files
+
+Main Chat writes Codex-ready materialization instructions:
 
 ```text
-documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
-documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
-documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
+D_OPS_STAGE.md
+E_DDC_STAGE.md
+F_DSN_STAGE.md
 ```
 
-These files are the bridge between chat synthesis and Codex materialization.
+## Codex report stage files
+
+Codex writes post-materialization evidence:
+
+```text
+G_OPS_CODEX.md
+H_DDC_CODEX.md
+I_DSN_CODEX.md
+```
+
+Codex reports are evidence.
+
+They are not canonical truth.
 
 ---
 
-# 8. Codex Routing
+# 12. Role Routing Summary
 
-Codex should read:
+| Role             | First recovery surface                     | Active stage                 | Post-Codex report          | Permanent domain      |
+| ---------------- | ------------------------------------------ | ---------------------------- | -------------------------- | --------------------- |
+| Operational Chat | `operational/10_OPERATIONAL_STATE.md`      | `DEV_STAGE/A_OPERATIONAL.md` | `DEV_STAGE/G_OPS_CODEX.md` | `operational/`        |
+| Didactic Chat    | `didactics/08_CONCEPT_MAP.md`              | `DEV_STAGE/B_DIDACTIC.md`    | `DEV_STAGE/H_DDC_CODEX.md` | `didactics/`          |
+| Design Chat      | `design/09_DESIGN_STATE.md`                | `DEV_STAGE/C_DESIGN.md`      | `DEV_STAGE/I_DSN_CODEX.md` | `design/`             |
+| Main Chat        | `00_PROJECT_STATE.md` + domain checkpoints | `DEV_STAGE/D/E/F`            | `DEV_STAGE/G/H/I`          | global coherence      |
+| Codex            | `AGENTS.md` + `INDEX.md` + D/E/F           | materialization only         | `DEV_STAGE/G/H/I`          | no semantic promotion |
+
+---
+
+# 13. Functional Chat Route
+
+Functional chats should follow this route:
+
+```text
+INDEX
+↓
+methodology boot
+↓
+domain checkpoint
+↓
+canonical / derived / observational files only as needed
+↓
+repository inspection only when required
+↓
+assigned A/B/C stage file
+```
+
+After Codex reports exist:
+
+```text
+G/H/I report
+↓
+domain classification
+↓
+domain memory update
+↓
+checkpoint refresh
+```
+
+Functional chats must follow `FLUX.md` for exact write authority.
+
+---
+
+# 14. Main Chat Route
+
+Main Chat should follow this route:
+
+```text
+INDEX
+↓
+methodology boot
+↓
+00_PROJECT_STATE.md
+↓
+domain checkpoints
+↓
+A/B/C functional reports
+↓
+deeper domain files only as needed
+↓
+D/E/F materialization stages
+```
+
+After materialization:
+
+```text
+G/H/I reports
+↓
+domain checkpoints
+↓
+00_PROJECT_STATE.md
+↓
+05_SESSION_LOG.md
+↓
+reconciliation
+```
+
+Main Chat checks global coherence.
+
+---
+
+# 15. Codex Route
+
+Codex should begin from:
 
 ```text
 AGENTS.md
+↓
 documentation/sketch_notebook/INDEX.md
-documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md
-documentation/sketch_notebook/methodology/PROMOTION_RULES.md
-documentation/sketch_notebook/methodology/CHAT_BEHAVIOUR.md
-documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md
-documentation/sketch_notebook/methodology/FLUX.md
+↓
+methodology boot as required
+↓
+D/E/F Main-approved materialization stages
 ```
 
-Codex should materialize only Main-approved instructions from:
+Codex materializes.
+
+Codex reports evidence into:
 
 ```text
-documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
-documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
-documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
+documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
 ```
 
-Codex must not modify `documentation/sketch_notebook/methodology/`.
+Codex should not independently promote knowledge.
+
+Codex should not create or rename Sketch Notebook files unless explicitly authorized by Main Chat under human-supervised methodological revision or explicitly instructed in D/E/F according to `FLUX.md`.
 
 ---
 
-# 9. Navigation Summary
+# 16. File Creation and Rename Guardrail
+
+No chat, Codex task, automated tool, or manual update should create new files directly under:
+
+```text
+documentation/sketch_notebook/
+```
+
+unless explicitly authorized by Main Chat under human-supervised methodological revision.
+
+Files must not be renamed except by Main Chat under human-supervised methodological revision.
+
+File creation and renaming require a coherence check against:
+
+* `INDEX.md`;
+* `FLUX.md`;
+* relevant domain checkpoints;
+* affected prompts;
+* affected materialization instructions;
+* affected references.
+
+This rule prevents data fragmentation, path drift, and data loss during pruning.
+
+---
+
+# 17. Invalid Older Names
+
+Invalid or deprecated names include:
+
+```text
+DEV_TRACK/
+B_DIDACTICS.md
+02_DIDACTICS.md
+10_ACTIONS.md
+11_OPERATIONAL_TRACKRECORD.md
+11_OPERATIONAL_TRACK.md
+app/documentation/sketch_notebook/*
+```
+
+These names may appear in historical context, but they are not canonical.
+
+---
+
+# 18. Navigation Summary
 
 Start here:
 
@@ -221,18 +515,27 @@ Start here:
 documentation/sketch_notebook/INDEX.md
 ```
 
-Then read:
+Then read methodology in this order:
 
 ```text
-documentation/sketch_notebook/methodology/
+METHOD_FOUNDATIONS.md
+FLUX.md
+PROMOTION_RULES.md
+CHAT_PROTOCOL.md
 ```
 
-Then proceed according to role:
+Then recover from the appropriate checkpoint:
 
 ```text
-Operational → DEV_STAGE/A_OPERATIONAL.md → operational/
-Didactic    → DEV_STAGE/B_DIDACTIC.md   → didactics/
-Design      → DEV_STAGE/C_DESIGN.md     → design/
-Main        → A/B/C synthesis           → D/E/F materialization stage
-Codex       → AGENTS.md + D/E/F         → materialization
+operational/10_OPERATIONAL_STATE.md
+didactics/08_CONCEPT_MAP.md
+design/09_DESIGN_STATE.md
 ```
+
+Then inspect deeper domain memory only if needed.
+
+Then inspect repository implementation only if needed.
+
+The goal is not to read everything.
+
+The goal is to recover the project state correctly with the least sufficient context.
