@@ -1,24 +1,41 @@
 # Operational TODO
 
-## Product View Follow-Up
+## Completed In Cycle 02
 
-- Manually verify double-click navigation from Storage into Register Product View.
-- Manually verify double-click navigation from Shortage into Register Product View.
-- Manually verify double-click navigation from Market into Register Product View.
-- Confirm lower Register Product View displays product name, brand, ID, average price, store/latest price, last purchases, and expiration fields.
-- Confirm Register still supports receipt registration with and without optional expiration date.
-- Confirm existing purchase rhythm remains stable after UI usage: `average_duration_days` and `expected_next_purchase` must not be replaced by shelf-life values.
-- Confirm shelf-life rhythm appears separately: `average_shelf_life_days` and `expected_expiration_date`.
-- Verify older purchases without expiration dates render safely with blank/placeholder expiration values.
+- History page implemented and manually validated as functional.
+- Settings page implemented and manually validated as functional.
+- Store editing through Settings implemented.
+- Store editing updates confirmed across pages.
+- Register confirmed operational after Cycle 02.
+- Product View confirmed operational after Cycle 02.
+- Product View regression check completed through service read model.
+- Inventory status regression check completed.
+- History first-Wednesday operational month behavior validated at service level.
+- Wednesday week bucketing validated at service level.
+- SQLite-backed settings persistence validated.
+- Settings table migration validated without destructive reset.
+
+## Remaining TODO
+
+- Investigate store update through Register.
+- Investigate multi-store History totals.
+- Decide whether Cycle 03 should make MainWindow consume persisted `pages.order`.
+- Add/perform deeper manual UI QA for multi-store History rendering.
+- Add/perform deeper manual UI QA for Settings store editing after further changes.
+- Continue checking History behavior with older or manually edited date formats.
+- Keep Product View double-click workflow in regression checks when MainWindow/refresh wiring changes.
 
 ## Validation Gaps
 
-- Full interactive desktop UI validation remains incomplete.
-- GUI startup was validated only to the Qt event loop without traceback.
-- Date-format compatibility should be checked with older seed or manually edited historical data.
+- Terminal validation launched the Qt event loop but did not fully automate UI interaction.
+- Multi-store aggregate semantics need more evidence.
+- Store update through Register has not been verified.
+- `pages.order` persistence is validated, but visible page sorting behavior is deferred.
+- Unsupported historical date formats are reported through `unparsed_rows` but not repaired.
 
 ## Deferred Operational Items
 
-- Store address editing UI is deferred to a later store-management milestone.
-- Decide later whether any automated UI smoke test is worthwhile for PySide6 behavior.
-- Monitor whether Product View read model needs additional regression coverage after further UI changes.
+- Store deletion remains deferred until referential behavior is explicitly designed.
+- Full tab/page sorting behavior from persisted settings remains deferred.
+- Broader History configuration UI remains deferred; current UI exposes implemented defaults.
+- Automated PySide6 interaction testing remains optional future work.
