@@ -1,393 +1,226 @@
 # C_DESIGN.md
 
-> Status: Functional Design Stage
-> Knowledge State: Staged / Reconciled Candidate / Unpromoted
+> Status: Ephemeral Design Retrospective
+> Knowledge State: Staged / Reconciled / Non-canonical
 > Authority: Design Chat [D]
-> Scope: Design-domain recovery, reconciliation report, and initial canonical candidate for `design/01_ARCHITECTURE.md`
-> Branch inspected: `sketch-notebook-recovery`
+> Scope: Main-branch commit retrospective for rebuilding `design/09_DESIGN_STATE.md`
+> Branch examined: `main`
+> Canon conflict target: `design/01_ARCHITECTURE.md`
 
 ---
 
-# 1. Stage Purpose
+# 1. Purpose
 
-This file preserves Design Chat reasoning for Main synthesis. It records the recovered implementation structure, reports reconciliation status against Main staging, and stages the first candidate body for canonical design knowledge.
+This stage records the historical evidence needed to rebuild the Design checkpoint.
 
-This file is not canonical architecture. Canonical design knowledge belongs in:
+It is intentionally temporary. It does not redefine canon, replace the derivative overview, or populate observational history.
 
-```text
-documentation/sketch_notebook/design/01_ARCHITECTURE.md
-```
-
-Physical materialization of that file requires Main-approved routing.
+The checkpoint should represent the current recovery state while preserving the most important lesson from the failed precedent cycle.
 
 ---
 
-# 2. Reconciliation Inputs
+# 2. Retrospective Range
 
-## 2.1 Design functional stage
-
-The Design stage was recovered from direct repository inspection of:
+The useful main-branch range is:
 
 ```text
-app/main.py
-app/core/contracts.py
-app/core/models.py
-app/core/services.py
-app/core/repository.py
-app/core/database.py
-app/database/schema.sql
-app/desktop/main_window.py
-app/desktop/ui/pages/*
-app/desktop/ui/widgets/product_detail_panel.py
+Cycle 04 design closure
+    75ab809  Absorb Cycle 04 into design checkpoint
+    04db2d3  Reconcile Cycle 04 architecture
+    1322c67  Record Cycle 04 design absorption
+    8214288  Update Cycle 04 model overview
+    c84e850  Close Cycle 04 global project state
+    777a30b  Record Cycle 04 session closure
+    bd4b4cd  Prepare post-Cycle 04 recovery scheme
+
+Cycle 05 preparation and failure
+    e9cf0f0  Stage Cycle 05 mobile preparation synthesis
+    a4f7732  Prepare Cycle 05 mobile development planning session
+    c51938b  cycle 5.0 outburst mode
 ```
 
-The recovered evidence supports a stable present-state structural picture.
-
-## 2.2 Main stage
-
-Expected reconciliation input:
-
-```text
-documentation/sketch_notebook/[M]_STAGE/J_MAIN_STAGE.md
-```
-
-Repository result:
-
-```text
-file absent on sketch-notebook-recovery
-```
-
-The path was checked directly and through repository search.
-
-Consequences:
-
-- no Main-stage proposition was available to confirm, reject, or constrain the Design findings;
-- Design Chat must not invent or write `J_MAIN_STAGE.md`;
-- the missing Main-stage counterpart is a structural reconciliation gap;
-- the canonical candidate below is reconciled against implementation evidence and methodology only, not against a Main-authored J synthesis.
-
-This absence must be surfaced to Main Chat before materialization.
+Later Cycle 05 recovery commits show that the repository resumed domain-by-domain reconciliation, but the checkpoint lesson is established by the transition above.
 
 ---
 
-# 3. Methodological Routing Result
+# 3. Cycle 04 Recovered State
 
-`FLUX.md` assigns Design Chat active-stage authority only over:
-
-```text
-documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
-```
-
-It identifies the permanent Design symmetry files as:
+The former main-branch checkpoint described four completed boundary-preserving cycles:
 
 ```text
-Canonical Knowledge      design/01_ARCHITECTURE.md
-Derived Knowledge        design/14_MODEL_OVERVIEW.md
-Domain Checkpoint        design/09_DESIGN_STATE.md
-Observational History    design/03_DECISION_LOG.md
+Cycle 01  Product View
+Cycle 02  History and Settings
+Cycle 03  Lists and History Analytics
+Cycle 04  Settings Stabilization
 ```
 
-During active functional staging, Design Chat must not edit Main stage files or prematurely materialize permanent domain memory. Therefore this pass stages a proposed canonical body here. It does not write `01_ARCHITECTURE.md` directly.
-
----
-
-# 4. Recovered Current Architecture
-
-## 4.1 Runtime dependency direction
+Its stable responsibility model was:
 
 ```text
 Desktop UI
-    → ProductService
-        → Repository
-            → Database Manager
-                → SQLite
+    rendering, controls, navigation, events
+
+ProductService
+    application meaning, validation, grouping,
+    calculations, settings interpretation, projections
+
+Repository
+    SQL, generic persistence, row mapping
+
+SQLite
+    persisted facts, relationships, settings
 ```
 
-Supporting domain representations and declared invariants live in `app/core/models.py` and `app/core/contracts.py`.
+Cycle 04 also left explicit verification risks rather than declaring total completion:
 
-Runtime inversion is incomplete because concrete UI pages construct `ProductService`, and `ProductService` constructs `Repository`.
+- Settings save-feedback behavior;
+- store create/update interaction;
+- dependent-page refresh;
+- first-weekday operational-month period-end correctness;
+- broad desktop regression coverage.
 
-## 4.2 Functional layers
-
-```text
-Desktop bootstrap
-    app/main.py
-
-Desktop composition and coordination
-    app/desktop/main_window.py
-
-Qt presentation
-    app/desktop/ui/pages/*
-    app/desktop/ui/widgets/*
-
-Application facade and business layer
-    app/core/services.py
-
-Persistence facade
-    app/core/repository.py
-
-Persistence lifecycle and compatibility
-    app/core/database.py
-
-Domain representation and declared invariants
-    app/core/models.py
-    app/core/contracts.py
-    app/core/config.py
-
-Bundled persistence definition
-    app/database/schema.sql
-
-External writable state
-    %LOCALAPPDATA%/Markei/market.sqlite
-```
+The checkpoint therefore represented a coherent architectural closure with remaining operational verification.
 
 ---
 
-# 5. Canonical Candidate — Architecture Foundations
+# 4. Failed Precedent Cycle
 
-The following sections are staged as the first proposed content for `design/01_ARCHITECTURE.md`.
+## 4.1 Intended direction
 
-## 5.1 System form
+Cycle 05 initially shifted from post-Cycle-04 verification toward broad mobile preparation.
 
-Markei is a local desktop monolith implemented with Python, PySide6, and SQLite.
+The planning surface expanded to include:
 
-The application is organized as a layered system rather than as independently deployed services. Layer boundaries separate presentation, business coordination, persistence behavior, and database lifecycle while preserving a small deployment unit.
+- product scope;
+- target mobile architecture;
+- persistence and synchronization;
+- backend and API decisions;
+- identity and security;
+- mobile framework selection;
+- typed contracts;
+- migration and coexistence;
+- testing and phased implementation.
 
-## 5.2 Dependency direction
+This was wider than the unresolved verification boundary inherited from Cycle 04.
 
-The accepted dependency-direction candidate is:
+## 4.2 Outburst commit
+
+Between the post-Cycle-04 recovery point and `c51938b`, three commits changed:
 
 ```text
-Desktop presentation
+06_SESSION_SCHEME.md
+DEV_STAGE/A_OPERATIONAL.md
+DEV_STAGE/B_DIDACTIC.md
+DEV_STAGE/C_DESIGN.md
+[M]_STAGE/J_MAIN_STAGE.md
+```
+
+The comparison reports approximately:
+
+```text
+A_OPERATIONAL     1,755 changed lines
+B_DIDACTIC       2,168 changed lines
+C_DESIGN         1,278 changed lines
+J_MAIN_STAGE       666 changed lines
+SESSION_SCHEME     304 changed lines
+```
+
+Compiled `__pycache__` files were also modified in the same range.
+
+The Design stage itself moved from architecture recovery into a large Windows packaging proposal, while the surrounding cycle was still carrying mobile-preparation planning.
+
+## 4.3 Failure classification
+
+The failed precedent cycle is classified as:
+
+```text
+primary failure
+    cycle-scope expansion
+    + simultaneous cross-domain restaging
+    + Main-reference replacement
+    + insufficient reconciliation checkpoints
+
+not established as
+    a failure of the layered Markei architecture itself
+```
+
+The problem was not that packaging or mobile preparation were invalid subjects. The problem was that multiple future directions, domain outputs, and coordination surfaces were rewritten together before the previous cycle's verification debt had been absorbed.
+
+## 4.4 Durable checkpoint lesson
+
+A cycle must not treat broad planning volume as evidence of architectural readiness.
+
+Before a new architecture cycle expands scope, it should establish:
+
+1. the exact inherited verification debt;
+2. the single active milestone;
+3. which statements are current facts versus proposed targets;
+4. which domain owns each unresolved question;
+5. a reconciliation point before Main and all functional stages are replaced;
+6. a checkpoint update after accepted materialization, not before it.
+
+---
+
+# 5. Conflict Against Current Canon
+
+The recovered canon defines the current system as a layered local desktop monolith:
+
+```text
+Desktop Presentation
     ↓
-Application and business services
+ProductService
     ↓
-Persistence adapter
+Repository
     ↓
-Database lifecycle manager
+Database Manager
     ↓
 SQLite
 ```
 
-Higher layers may request behavior from lower layers. Lower persistence layers must not depend on Qt presentation objects.
+The commit retrospective does not contradict this structure.
 
-The desktop UI must not execute SQL or manipulate database cursors.
+It adds historical context relevant to checkpoint state:
 
-The service layer must not contain SQLite statements or depend on Qt widgets.
+- Cycle 04 established useful feature-level boundaries;
+- some Cycle 04 behavior remained operationally unverified;
+- Cycle 05 prematurely widened scope to packaging and mobile architecture;
+- the outburst cycle overloaded staging and reconciliation surfaces;
+- the current recovery cycle intentionally rebuilt architecture from source and reconciled Main evidence before repopulating domain memory.
 
-The repository owns SQLite statements and row-to-model mapping.
-
-The database manager owns database location, initialization, connection configuration, migration, and closure primitives.
-
-## 5.3 Domain records and source relationships
-
-The active domain model contains `Category`, `Store`, `Product`, and `Purchase`.
-
-Persistent relationships are:
-
-```text
-Category 1 ─── * Product
-Product  1 ─── * Purchase
-Store    1 ─── * Purchase, optional
-```
-
-`Purchase` is the historical purchase ledger. A receipt entry creates a Purchase record. Purchase records are not edited as ordinary mutable state; erroneous records may be deleted and dependent summaries recalculated.
-
-`Product` owns editable product identity and metadata while also storing cached current and analytical state derived from Purchase history.
-
-The Product cache remains valid only while one service-owned recalculation path is authoritative for calculated fields.
-
-## 5.4 Product calculated-state invariant
-
-Editable Product state and calculated Product state are distinct responsibilities.
-
-Editable state includes product identity, category, name, brand, unit, minimum quantity, reorder threshold, and notes.
-
-Calculated state includes current quantity, price history, purchase dates, consumption estimates, duration estimates, expected next purchase, shelf-life estimates, expected expiration, and price deltas.
-
-Calculated fields must not be independently authored by desktop pages or arbitrary repository callers. They are produced through the Product recalculation workflow.
-
-## 5.5 Application service responsibility
-
-The current `ProductService` acts as the Markei application facade.
-
-It owns receipt and product workflows, Product-summary recalculation, inventory classification, history grouping and analytics, settings validation and persistence coordination, store administration, and platform-neutral read-model preparation.
-
-This breadth is accepted as the recovered current architecture of the small monolith. It does not establish that one service class must remain permanent.
-
-Future decomposition must preserve workflow, transaction, and calculated-state ownership rather than splitting methods solely by file size.
-
-## 5.6 Repository responsibility
-
-The current Repository is the complete SQLite persistence facade for the monolith.
-
-It owns SQL execution, CRUD and query operations, row-to-domain mapping, one SQLite connection and cursor per Repository instance, and persistence resource closure.
-
-The repository must not own business classification, history grouping, inventory forecasting, or Qt presentation behavior.
-
-Repository and service decomposition are coupled architectural decisions because transaction boundaries and aggregate workflows cross multiple persistence operations.
-
-## 5.7 Database resource boundary
-
-Installed application resources and writable user state are separate:
-
-```text
-Bundled read-only schema
-    application resource directory
-
-Writable user database
-    %LOCALAPPDATA%/Markei/market.sqlite
-```
-
-Application replacement or uninstall must not implicitly redefine the writable database as an installed program resource.
-
-Database initialization and compatibility migration belong to the persistence lifecycle boundary, not to presentation logic.
-
-## 5.8 Desktop composition
-
-`app/main.py` is the desktop bootstrap. It creates the Qt application and the main window.
-
-`MainWindow` is the current desktop shell and informal UI coordinator. It owns page construction, tab composition, navigation, edit routing, and cross-page refresh calls.
-
-Pages own Qt interaction and rendering. They consume application operations and read models rather than database commands.
-
-`ProductDetailPanel` represents the preferred read-only presentation boundary:
-
-```text
-service prepares view data
-    ↓
-widget renders view data
-```
-
-## 5.9 Current composition limitation
-
-Each page currently constructs its own service, repository, and SQLite connection:
-
-```text
-RegisterPage → ProductService → Repository → connection
-ListsPage    → ProductService → Repository → connection
-HistoryPage  → ProductService → Repository → connection
-SettingsPage → ProductService → Repository → connection
-```
-
-This is a recovered implementation property, not a preferred permanent principle.
-
-Application resource ownership and shutdown are consequently distributed among pages. A future composition decision must establish either one shared application facade and explicit composition-root shutdown, or multiple bounded services/repositories with explicit ownership for each connection.
-
-## 5.10 Transaction integrity
-
-Repository mutation methods currently commit autonomously.
-
-Receipt registration therefore performs multiple commits:
-
-```text
-create or update Product
-→ insert Purchase
-→ recalculate and update Product summary
-```
-
-The current workflow is sequentially consistent but not atomic.
-
-This is an implementation limitation, not a canonical target. Workflows that semantically represent one user action should eventually declare whether partial persistence is acceptable or whether all participating mutations must commit or roll back together.
-
-Transaction ownership belongs at the workflow boundary. It cannot be corrected safely by splitting the repository without first defining service-level unit-of-work semantics.
-
-## 5.11 Presentation read models
-
-Services may expose platform-neutral read models so presentation layers do not recreate business calculations.
-
-Qt-specific responsibilities remain in desktop widgets: widget construction, event and signal binding, colors and selection behavior, dialogs, and visual placement.
-
-The current dictionary read models are valid for the MVP. Whether they later become explicit immutable view-model types remains an unresolved refinement rather than a foundational requirement.
+Canon remains authoritative for accepted structure. The retrospective informs milestone state, active tensions, and recovery discipline.
 
 ---
 
-# 6. Excluded From Initial Canon
+# 6. Checkpoint Extraction
 
-## 6.1 Promotions
+`design/09_DESIGN_STATE.md` should contain:
 
-The `promotions` table exists in `schema.sql`, but no active Promotion model, service workflow, or desktop feature was recovered.
+- current recovery milestone;
+- present architectural baseline;
+- completed repopulation state;
+- inherited failed-cycle lesson;
+- active architectural tensions;
+- operational validations still required;
+- unresolved design decisions;
+- next recovery actions;
+- routing to canon and derivative files.
 
-Classification remains open:
+It should not reproduce the complete Cycle 01–04 feature history.
 
-```text
-dormant roadmap structure
-or incomplete feature
-or stale schema
-```
+It should not promote packaging or mobile architecture proposals from the failed cycle.
 
-## 6.2 Persisted page order
-
-`pages.order` is persisted, but current MainWindow tab composition is hard-coded and consolidates Storage, Shortage, and Market into Lists. The setting is persisted but currently inert for desktop composition.
-
-## 6.3 Contract mechanism
-
-`contracts.py` records useful invariants and partial abstract interfaces, but concrete runtime construction does not currently depend on those abstractions.
-
-It remains unclassified as the intended complete dependency-inversion boundary, a partial interface awaiting expansion, or source-adjacent architectural documentation.
+It should not populate `03_DECISION_LOG.md` yet.
 
 ---
 
-# 7. Decisions Requiring Main Reconciliation
-
-Before materializing `design/01_ARCHITECTURE.md`, Main Chat should explicitly accept, revise, or defer these points:
-
-1. Accept the layered local-desktop-monolith description.
-2. Accept Purchase as historical ledger and Product as editable identity plus persisted calculated cache.
-3. Accept ProductService as the recovered current application facade without making its permanence mandatory.
-4. Accept Repository as the recovered monolithic persistence facade.
-5. Classify per-page service ownership as implementation state rather than architectural target.
-6. Classify non-atomic receipt registration as a limitation requiring a later transaction decision.
-7. Confirm MainWindow as the current desktop coordinator.
-8. Decide whether the missing `J_MAIN_STAGE.md` should be created, restored, or intentionally replaced by another Main synthesis surface.
-
----
-
-# 8. Proposed Materialization Target
-
-Upon Main acceptance, the first Design domain materialization should populate:
+# 7. Stage Result
 
 ```text
-documentation/sketch_notebook/design/01_ARCHITECTURE.md
-```
-
-Suggested metadata:
-
-```text
-Status: Draft / Recovered Canon
-Persistence Class: Canonical
-Knowledge Class: Design
-Authority: Design Chat, reconciled by Main Chat
-Scope: Markei dependency direction, responsibility boundaries, domain relationships, persistence boundaries, and desktop composition
-```
-
-The later Design recovery sequence should be:
-
-```text
-01_ARCHITECTURE.md
-    ↓ derive
-14_MODEL_OVERVIEW.md
-    ↓ checkpoint
-09_DESIGN_STATE.md
-    ↓ preserve accepted evolution
-03_DECISION_LOG.md
-```
-
-The observational history file should record the recovery and acceptance event, not duplicate the full canon.
-
----
-
-# 9. Stage Classification
-
-```text
-Implementation evidence: inspected
-C_DESIGN structural report: reconciled and condensed
-J_MAIN_STAGE comparison: blocked by absent file
-Canonical candidate: staged in C_DESIGN
-Canonical domain file: not materialized
-Derived design file: not materialized
-Design checkpoint: not materialized
-Design observational history: not materialized
-Application code changed: no
-Methodology files changed: no
+Canon conflict: compatible
+Historical addition: failed Cycle 05 control pattern
+Canonical change required: no
+Derivative change required: no
+Checkpoint rebuild: ready
+Observational history: remain empty
+Application source changes: none
 ```
