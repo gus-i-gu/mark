@@ -2,193 +2,300 @@
 
 > Domain: Didactic
 > Status: Checkpoint
-> Current Milestone: Cycle 04 — Settings Stabilization
+> Current Milestone: Cycle 05 Sprint 01 — Windows Desktop Installation
 
 ---
 
 ## Current Milestone
 
-Cycle 04 absorbs Settings Stabilization as verified learning evidence:
+Cycle 05 Sprint 01 absorbs verified Windows desktop packaging evidence through this learning transformation:
 
 ```text
-persisted preference
-→ service validation / fallback
-→ interpreted behavior
-→ read model or operational helper
-→ PySide6 presentation
+source application
+→ PyInstaller one-folder frozen runtime
+→ bundled schema resource
+→ per-user writable SQLite state
+→ first-launch initialization and migration
+→ Inno Setup per-user installer configuration
+→ installed-lifecycle validation still pending
 ```
 
-SettingsPage is a presentation/editing adapter. ProductService validates, normalizes, and interprets settings. Repository and SQLite persist generic key/value state.
+The accepted application boundary remains:
+
+```text
+Desktop UI
+→ ProductService
+→ Repository
+→ SQLite
+```
+
+Packaging and installation infrastructure did not move installer concerns into ProductService, Repository, or business behavior.
 
 ## Stable Concepts
 
 - None fully Green yet.
 
+Automated packaging evidence is substantial, but no concept advances to Green without explicit learning validation and the installed lifecycle remains incomplete.
+
 ## Active / Stronger Yellow Concepts
 
-- &&&05 — Time Bucketing
+Existing concepts reinforced by Sprint 01:
+
+- &&&03 — Naming as Data Contract
 - &&&08 — Configuration State
 - &&&15 — Default Value as Fallback Contract
 - &&&16 — Validation Boundary
-- &&&17 — Time Reference as Behavioral Anchor
-- &&%03 — Date/Datetime Boundary Handling
+- &&&18 — Adapter Boundary
+- &&&19 — Capability Versus Placeholder
 - &&%04 — Platform-Neutral Read-Model Shape
-- &&%07 — Enumerated Choice Values
-- &&%08 — UI View State Versus Persisted Settings State
-- &%%04 — Service-Owned Calculation Responsibility
-- &%%06 — Settings-Owned Preferences
-- &%%08 — History Grouping Service Responsibility
 - &%%12 — Service Contract Stability
-- &%%13 — ProductService-Owned Settings Interpretation
-- &%%14 — Repository-Owned Settings Persistence
-- %%%04 — SQLite Settings Persistence
-- %%%05 — PySide6 Editable Form Composition
-- %%%09 — PySide6 Settings Controls as Presentation Adapter
+- %%%01 — SQLite Schema Evolution
+
+Cycle 05 Sprint 01 candidates supported by observed evidence:
+
+- &&&20 — Packaged Application Lifecycle
+- &&&21 — Packaging Versus Installation
+- &&&22 — Resource State Versus User State
+- &&&23 — Build-Time Versus Runtime Dependency
+- &&&24 — Reproducible Build Process
+- &&&25 — Successful Build Versus Validated Release
+- &&&26 — Release Version and Compatibility Contract
+- &&%09 — Frozen Python Execution Context
+- &%%15 — Markei Installed Data Lifecycle
+
+These candidates are checkpointed as Yellow or Red learning objects pending canonical-register materialization and later explicit teaching. They are not Green.
 
 ## Early / Unstable Concepts
 
 - &&&14 — Mobile Readiness Without Rewrite
 - &&&18 — Adapter Boundary
 - &&&19 — Capability Versus Placeholder
+- &&&21 — Packaging Versus Installation, because installation is configured but not compiled or exercised
+- &&&24 — Reproducible Build Process, because one successful controlled build does not establish broad reproducibility
+- &&&25 — Successful Build Versus Validated Release, because the installed release remains unvalidated
+- &&&26 — Release Version and Compatibility Contract, because installed upgrade, uninstall, and reinstall behavior remain unverified
 
-## Verified Cycle 04 Distinctions
-
-```text
-user preference
-is not
-interpreted behavior
-```
-
-SettingsPage edits preferences; ProductService gives them behavioral meaning.
+## Verified Sprint 01 Distinctions
 
 ```text
-strict rejection of invalid user edits
+source execution
 is not
-fallback recovery from corrupt persisted values
+frozen executable execution
 ```
 
-`validate_history_settings_input()` raises for invalid save input. `validated_settings()` replaces invalid persisted values with safe defaults.
+The frozen executable launched successfully without requiring the ordinary repository launch command.
 
 ```text
-display label
+packaging
 is not
-stored semantic value
+installation
 ```
 
-PySide6 combo boxes display human labels while carrying lowercase semantic values such as `monday`, `first_weekday`, and `day_of_month`.
+PyInstaller produced and validated a one-folder runtime. Inno Setup defines installation behavior, but the installer artifact was not compiled because `ISCC.exe` was unavailable.
 
 ```text
-factual purchase date
+successful PyInstaller build
 is not
-derived operational date
+fully validated installed release
 ```
 
-Purchase records remain factual date-only values. `operational_date()` derives an operational date only when given a datetime or an explicit boundary interpretation.
+Build, frozen launch, schema discovery, and first-launch database behavior passed. Start Menu launch, installed upgrade, uninstall, reinstall, SmartScreen, and antivirus behavior remain unverified.
 
 ```text
-operational-day contract readiness
+bundled application resource
 is not
-current material effect on date-only purchase records
+writable user data
 ```
 
-`time_reference.day_boundary_time` is persisted and validated, and `operational_date()` exists, but `get_history_view()` still parses date-only purchases directly. Therefore the boundary time does not currently change History grouping for existing purchase rows.
+The production runtime contains `schema.sql`. The user database lives under `%LOCALAPPDATA%\Markei` and is not bundled into the runtime.
 
 ```text
-mobile preparation
+schema initialization
 is not
-mobile implementation
+sample-data seeding
 ```
 
-Semantic values and service-owned validation can be reused by another adapter, but no mobile framework, synchronization, backend, authentication, or receipt recognition was implemented.
+Production first launch creates an empty business database from `schema.sql` without `seed.sql` or sample business records.
 
-## Explicit Cycle 04 Evidence
+```text
+build-time dependency
+is not
+runtime dependency
+```
 
-- Week boundary supports all seven semantic weekdays.
-- Month boundary supports `first_weekday` or `day_of_month`.
-- Day-of-month is constrained to 1–28.
-- Defaults are centralized in `ProductService.DEFAULT_SETTINGS`.
-- Invalid user edits are rejected before persistence.
-- Invalid persisted values recover through defaults.
-- SQLite migration inserts defaults with `INSERT OR IGNORE`.
-- Existing user choices are not overwritten.
-- Repository remains generic key/value persistence.
-- `history.month_boundary_rule` is compatibility residue, not canonical current configuration.
+PyInstaller participates in artifact production. PySide6 and collected Qt components support the running frozen application.
+
+```text
+application code
+is not
+packaging configuration
+```
+
+Packaging configuration collects the runtime, resources, and metadata without taking ownership of Markei business rules.
+
+```text
+installed application files
+are not
+persistent user data
+```
+
+Replaceable application files remain separate from `%LOCALAPPDATA%\Markei\market.sqlite`.
+
+## Explicit Sprint 01 Evidence
+
+Implemented and validated:
+
+- PyInstaller one-folder runtime.
+- Frozen executable launch.
+- Working-directory-independent `schema.sql` discovery.
+- Schema-only production initialization.
+- Seed-free empty business database.
+- User database under `%LOCALAPPDATA%\Markei`.
+- First receipt workflow without a seeded store.
+- Startup failure logging.
+- Pinned PySide6 and PyInstaller dependencies.
+- Public pages constructed: Register, Lists, History, Settings.
+
+Verified empty first-launch state:
+
+```text
+products: 0
+purchases: 0
+stores: 0
+categories: 0
+settings: 6
+```
+
+Verified production-runtime exclusions:
+
+```text
+seed.sql
+market.sqlite
+SQLite WAL/SHM files
+sample business records
+```
+
+Configured but not validated:
+
+- Inno Setup per-user installer configuration.
+- Application placement and shortcut configuration.
+- Uninstall registration.
+- Upgrade identity and preservation intent.
+
+Primary blocker:
+
+```text
+Inno Setup ISCC.exe unavailable
+```
+
+## Numbering Reconciliation
+
+The Cycle 04 checkpoint referenced identifiers that were not present in the visible canonical `02_KANBAN.md` materialization:
+
+```text
+&&&15 through &&&19
+&&%07 through &&%08
+&%%13 through &%%14
+%%%09
+```
+
+These identifiers remain occupied and must not be reused.
+
+Cycle 05 Sprint 01 candidate numbering therefore continues with:
+
+```text
+&&&20 through &&&26
+&&%09
+&%%15
+```
+
+The canonical register, glossary, and checkpoint must eventually be materialized into the same numbering state. Until then, this discrepancy remains explicit didactic-memory drift rather than permission to renumber concepts.
 
 ## Dependency Spine
 
 ```text
 &&&03 Naming as Data Contract
 ↓
-&&&08 Configuration State
+entrypoint and source-execution reinforcement
 ↓
-&&&15 Default Value as Fallback Contract
-↓
-&&&16 Validation Boundary
-↓
-&&%07 Enumerated Choice Values
-↓
-&%%06 Settings-Owned Preferences
-↓
-&%%13 ProductService-Owned Settings Interpretation
-↓
-&%%14 Repository-Owned Settings Persistence
-↓
-&&&05 Time Bucketing
-↓
-&&%03 Date/Datetime Boundary Handling
-↓
-&%%08 History Grouping Service Responsibility
-↓
-&&&17 Time Reference as Behavioral Anchor
-↓
-&&%04 Platform-Neutral Read-Model Shape
-↓
-&&&18 Adapter Boundary
-↓
-&&&14 Mobile Readiness Without Rewrite
+&&&20 Packaged Application Lifecycle
+├──→ &&&23 Build-Time Versus Runtime Dependency
+│    ↓
+│    &&&24 Reproducible Build Process
+│
+├──→ &&&21 Packaging Versus Installation
+│
+└──→ &&%09 Frozen Python Execution Context
+     ↓
+     &&&22 Resource State Versus User State
+     ↓
+     %%%01 SQLite Schema Evolution
+     ↓
+     &%%15 Markei Installed Data Lifecycle
+     ↓
+     &&&26 Release Version and Compatibility Contract
+     ↓
+     &&&25 Successful Build Versus Validated Release
 ```
 
 ## Project Learning Spine
 
 ```text
-PySide6 labels and controls
+main.py / application entrypoint
 ↓
-semantic setting values
+PyInstaller collection
 ↓
-strict save validation
+one-folder frozen runtime
 ↓
-generic repository persistence
+PySide6 and Qt runtime components
 ↓
-tolerant persisted-value normalization
+working-directory-independent resource lookup
 ↓
-History week/month interpretation
+bundled schema.sql
 ↓
-operational-date helper
+%LOCALAPPDATA%\Markei\market.sqlite
 ↓
-future adapter reuse
+schema-only first launch
+↓
+idempotent migration and settings defaults
+↓
+Inno Setup per-user installer configuration
+↓
+compiled installer and installed-lifecycle validation still pending
 ```
 
 ## Deferred Learning
 
+Sprint 02 or later:
+
 - mobile framework selection;
 - mobile UI implementation;
 - synchronization and shared backend;
-- authentication;
+- authentication and accounts;
+- cross-device persistence;
 - external supermarket/reward integration;
-- receipt or NFC-e recognition;
-- material operational-day effects on Lists status, prediction, or date-only History rows;
-- cleanup or migration policy for legacy `history.month_boundary_rule`;
-- active `pages.order` behavior.
+- receipt or NFC-e recognition.
+
+Release hardening deferred until installer validation:
+
+- production signing;
+- SmartScreen reputation behavior;
+- antivirus false-positive handling beyond observation;
+- automated update channel;
+- formal rollback mechanism;
+- byte-identical deterministic builds.
 
 ## Next Concepts
 
-1. Practice the difference between rejection and fallback.
-2. Trace one setting from UI label to semantic value to persistence to interpreted behavior.
-3. Compare factual dates with derived operational dates.
-4. Test time bucketing at week and month boundaries.
-5. Revisit Adapter Boundary only when a second presentation adapter exists.
-6. Keep mobile implementation deferred until contracts, tests, and persistence strategy mature.
+1. Compile the Inno Setup installer when `ISCC.exe` is available.
+2. Validate Start Menu launch from a clean user profile.
+3. Verify that installed upgrades preserve `%LOCALAPPDATA%\Markei\market.sqlite`.
+4. Verify uninstall preservation and reinstall recovery.
+5. Perform a manual interactive walkthrough of Register, Lists, History, and Settings.
+6. Observe SmartScreen and antivirus behavior without treating reputation as application correctness.
+7. Reconcile `02_KANBAN.md`, `07_GLOSSARY.md`, and `13_LECTURE_REGISTER.md` with this checkpoint while preserving occupied identifiers.
+8. Keep PyInstaller and Inno Setup as tooling evidence rather than automatic standalone canonical concepts.
 
 ## Session Delta
 
-Cycle 04 implementation evidence from commit `c9e9244a5187c32a2812641f05eac8856801a7d4` was reconciled with `H_DDC_CODEX.md`, `G_OPS_CODEX.md`, and `I_DSN_CODEX.md`. Settings concepts advanced conservatively to Yellow; no concept advanced to Green. Operational-day support is recorded as contract-ready but not materially applied to date-only purchase grouping.
+Cycle 05 Sprint 01 moved Markei from developer-run source execution to a validated PyInstaller one-folder frozen runtime with schema-only initialization and external per-user data. Inno Setup installation behavior is configured but remains uncompiled and unvalidated because `ISCC.exe` was unavailable. The learning state now explicitly distinguishes successful packaging from a validated installed release, preserves the application/service/repository/SQLite boundary, and records unresolved numbering drift without reusing identifiers.
