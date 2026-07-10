@@ -125,3 +125,65 @@
 - Settings persistence must not be confused with completed UI behavior when a persisted key is not yet consumed.
 - `pages.order` remains persisted but inert for tab ordering.
 - Mobile preparation currently means platform-neutral service/read-model boundaries, not mobile implementation.
+
+## Desktop Packaging And Release Operational Model
+
+### Source Artifact Versus Generated Artifact
+
+- A packaging specification or installer script is a version-controlled source artifact.
+- A PyInstaller distribution directory and a compiled installer executable are generated artifacts.
+- Configuration materialization does not prove that the generated artifact can be built, installed, upgraded, or removed correctly.
+- Generated release artifacts require separate build and lifecycle evidence.
+
+### Schema-Only Production Initialization
+
+- Production first launch initializes persistence from `schema.sql`.
+- Production packaging must not include `seed.sql`, a prebuilt `market.sqlite`, SQLite WAL/SHM files, or sample business records.
+- Default configuration rows may be initialized while business tables remain empty.
+- An empty first-launch business state is operationally distinct from an uninitialized or broken database.
+
+### External User-Data Preservation
+
+- Installed application files and writable user data are separate operational states.
+- The writable database belongs under `%LOCALAPPDATA%\Markei`, outside the installed runtime directory.
+- Replacing or uninstalling application files must not implicitly delete user data.
+- External placement supports preservation but does not by itself validate upgrade, uninstall, or reinstall behavior.
+- Installed lifecycle preservation requires direct artifact testing.
+
+### Build Success Versus Release Validation
+
+Operational evidence proceeds through distinct states:
+
+```text
+packaging configured
+→ generated artifact built
+→ generated artifact launched
+→ installer compiled
+→ installer installed
+→ installed launch validated
+→ upgrade/uninstall/reinstall lifecycle validated
+→ release acceptance
+```
+
+- A successful PyInstaller build proves only that the frozen runtime artifact was generated.
+- A successful frozen launch proves only that the generated runtime can start under the tested conditions.
+- A configured Inno Setup script is not a compiled or validated installer.
+- Release completion requires evidence from the installed lifecycle, not inference from build success.
+- SmartScreen, antivirus, signing, and rollback remain separate release-hardening concerns.
+
+### Validation Classification Vocabulary
+
+- `implemented`: the behavior or configuration exists.
+- `validated`: direct evidence demonstrates the claimed behavior under stated conditions.
+- `configured but unvalidated`: source configuration exists, but its generated or installed behavior lacks evidence.
+- `blocked`: required validation cannot proceed because a prerequisite is unavailable.
+- `deferred`: intentionally excluded from the current sprint.
+
+### Current Sprint 01 Application
+
+- PyInstaller one-folder runtime: implemented and validated.
+- Schema-only production initialization: implemented and validated.
+- External `%LOCALAPPDATA%\Markei` user data: implemented and runtime-validated.
+- Inno Setup per-user installer: configured but unvalidated.
+- Installer compilation and installed lifecycle: blocked by unavailable `ISCC.exe`.
+- SmartScreen, antivirus, signing, rollback, and automatic update: deferred.
