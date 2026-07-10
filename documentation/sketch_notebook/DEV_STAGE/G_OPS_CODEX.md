@@ -1,4 +1,4 @@
-# Codex Report — Operational Cycle 03
+# Codex Report - Operational Cycle 04 Settings Stabilization
 
 ## Source Stage Files Read
 
@@ -8,6 +8,8 @@
 - `documentation/sketch_notebook/methodology/FLUX.md`
 - `documentation/sketch_notebook/methodology/PROMOTION_RULES.md`
 - `documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md`
+- `documentation/sketch_notebook/00_PROJECT_STATE.md`
+- `documentation/sketch_notebook/06_SESSION_SCHEME.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
 - `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
@@ -17,16 +19,17 @@
 
 ## Files Changed
 
-- `app/core/services.py`: added Lists read model and embedded History analytics read model.
-- `app/desktop/main_window.py`: replaced public Storage/Shortage/Market tabs with Lists.
-- `app/desktop/ui/pages/history_page.py`: embedded read-only analytics controls/table.
+- `app/core/services.py`: added service-owned settings defaults, strict save validation, tolerant persisted fallback validation, week/month boundary interpretation, and `operational_date()`.
+- `app/desktop/ui/pages/settings_page.py`: expanded Settings controls for week boundary, month mode, month weekday, month day, and day-boundary time; removed visible page-order editing from the save path.
+- `app/core/database.py`: added non-destructive defaults for new canonical settings keys.
+- `app/database/seed.sql`: updated fresh-database seed settings to the Cycle 04 keys.
 - `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: updated this report.
 - `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: updated didactic evidence report.
 - `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: updated design evidence report.
 
 ## Files Created
 
-- `app/desktop/ui/pages/lists_page.py`: unified Lists page with internal views.
+- None.
 
 ## Files Deleted
 
@@ -34,72 +37,99 @@
 
 ## Commands Run
 
-- `python -m compileall app`
-- `python -m app.core.database`
-- `python -c "... get_lists_view(view) ..."`
-- `python -c "... product_status(product), get_price_variation(product) ..."`
-- `python -c "... get_history_view() ..."`
-- `python -c "... get_history_analytics_view(**frame) ..."`
-- `python -c "... import MainWindow ..."`
-- `python -c "... import ListsPage, HistoryPage ..."`
-- `$env:QT_QPA_PLATFORM='offscreen'; python -c "... QApplication; MainWindow(); tab labels ..."`
-- `rg "... old page references ..." app/desktop/main_window.py app/desktop/ui/pages/lists_page.py app/desktop/ui/pages/history_page.py app/core/services.py`
+- `python -m compileall app` using the Windows app launcher; passed, but launcher later emitted Python install-manager messages.
+- `C:\Users\gusrm\AppData\Local\Python\bin\python.exe -m compileall app`
+- Temporary-`LOCALAPPDATA` service smoke for settings persistence, invalid persisted fallback, strict invalid save rejection, week/month boundaries, and operational-date helper.
+- Temporary-`LOCALAPPDATA` legacy month-boundary compatibility smoke.
+- Temporary-`LOCALAPPDATA` offscreen Qt smoke for `SettingsPage` controls and public tabs.
+- Temporary-`LOCALAPPDATA` store create/update service regression smoke.
+- `git diff --check`
+- `git restore` for generated `__pycache__` files created by validation.
 
 ## Validation Results
 
-- Compile check passed.
-- Database smoke opened existing DB at `C:\Users\gusrm\AppData\Local\Markei\market.sqlite`; DB existed and no schema reset occurred.
-- Lists smoke: `all=16`, `in-house=13`, `shortage=2`, `to-buy=1`, `in-house + shortage=15`, `shortage + to-buy=3`.
-- Status/price smoke returned status and global price variation for first five products.
-- History read-model smoke returned `months=1`, `unparsed=0`.
-- Analytics smoke returned:
-  - all frame: `parsed=19`, `unparsed=0`, `excluded=0`, `total=289.74`, `avg gap=0.4444444444444444`, `products=16`.
-  - July frame: same as all frame for current data.
-  - July plus store `2`: `parsed=1`, `unparsed=0`, `excluded=18`, `total=9.49`, `avg gap=None`, `products=1`.
-- Offscreen startup probe returned top-level tabs `['Register', 'Lists', 'History', 'Settings']`.
-- Qt emitted a font-directory warning during offscreen probe, but no traceback.
+- Compile passed with the explicit project interpreter.
+- Settings persistence smoke passed on a temporary database.
+- Invalid persisted settings fell back to defaults.
+- Invalid UI-style save for `99:99` time raised `ValueError`.
+- Week boundary smoke passed for Monday and Sunday boundaries.
+- Month boundary smoke passed for `first_weekday` and `day_of_month`.
+- `operational_date()` smoke passed for a `04:30` day boundary.
+- Legacy `history.month_boundary_rule = first_friday` mapped to `history.month_boundary_mode = first_weekday` and `history.month_boundary_weekday = friday` when canonical month keys were absent.
+- Offscreen SettingsPage smoke passed: 7 week choices, 2 month modes, 7 month weekday choices, day spinbox range 1-28.
+- Public tab smoke passed: `['Register', 'Lists', 'History', 'Settings']`.
+- Store create/update service smoke passed on a temporary database.
+- Qt emitted a local PySide font-directory warning during offscreen smoke; no traceback.
+- `git diff --check` reported only line-ending warnings for edited files.
 
-## Implementation Evidence
+## Settings Defaults / Validation Evidence
 
-- Lists uses `ProductService.get_lists_view(view_key)` with required view keys and a shared 10-column row shape.
-- Lists default view is all products; internal views map old meanings to `in-house`, `shortage`, and `to-buy`.
-- Lists displays Price and delta price from global Product summary values.
-- Double-click in Lists fetches product by ID and calls `MainWindow.edit_product(product)`.
-- `open_storage()`, `open_shortage()`, and `open_market()` now select Lists with `in-house`, `shortage`, and `to-buy`.
-- Public tabs are Register, Lists, History, Settings; `pages.order` is not consumed.
-- History grouped Month -> Week rendering remains in `HistoryPage.load_history()`.
-- Embedded analytics has date inputs, optional store selector, apply button, summary label, and product analytics table.
-- Analytics reports unparsed rows separately from date/store excluded rows.
-- Register and Settings source files were not modified; Register remains purchase-entry-only and Settings remains store-management surface.
-- No schema changes were introduced.
+- Defaults are centralized in `ProductService.DEFAULT_SETTINGS`.
+- Strict user-save validation is in `ProductService.validate_history_settings_input()`.
+- Persisted corrupt values are normalized by `ProductService.validated_settings()`.
+- New canonical settings keys are persisted through `ProductService.save_history_settings()`.
+- Repository remains generic key/value persistence.
+
+## Week Boundary Implementation Evidence
+
+- Weekday values are lowercase semantic strings from Monday through Sunday.
+- `SettingsPage` exposes all seven choices.
+- `ProductService.week_start()` consumes the validated `history.week_boundary`.
+
+## Month Boundary Implementation Evidence
+
+- `history.month_boundary_mode` supports `first_weekday` and `day_of_month`.
+- `history.month_boundary_weekday` supports all seven weekday values.
+- `history.month_boundary_day` is constrained to 1-28.
+- `get_history_view()` consumes the normalized month settings when building History month sections.
+
+## Time Reference Implementation Evidence
+
+- `time_reference.day_boundary_time` is persisted and validated as `HH:MM`.
+- `ProductService.operational_date()` derives an operational date from date/datetime inputs and the configured boundary.
+- Current purchase records are date-only, so this setting has no material grouping effect on existing History rows in this pass.
+
+## Store Editor Regression Evidence
+
+- Store create/update service smoke passed.
+- Settings store editor UI code was not structurally changed beyond sharing the expanded Settings page.
+- Store deletion was not added.
+
+## Pages-Order Handling Evidence
+
+- `MainWindow` still mounts static public tabs: Register, Lists, History, Settings.
+- `pages.order` remains persisted but inert.
+- The visible Settings page-order field was removed from the History settings save path.
 
 ## Instructions Completed
 
-- Service-level Lists read model.
-- Unified Lists page.
-- MainWindow tab remodel.
-- Compatibility navigation helpers.
-- Global latest/delta price display in Lists.
-- Service-level History analytics read model.
-- Embedded read-only History analytics UI.
-- Validation and evidence reporting.
+- Settings defaults and validation.
+- Seven-day week boundary selector.
+- Month boundary mode, weekday, and day controls.
+- Day-boundary time setting.
+- Service-owned History week/month grouping interpretation.
+- Non-destructive seed/migration defaults.
+- Store create/update preserved.
+- G/H/I evidence reports.
 
 ## Instructions Skipped
 
-- Manual interactive UI checks were not performed beyond offscreen startup/tab verification.
-- `python -m app.main` was not left running because it enters the Qt event loop; offscreen MainWindow instantiation was used to verify startup/tabs without hanging.
+- Manual interactive Settings UI QA was not performed beyond offscreen widget instantiation.
+- Manual store create/update through the actual UI was not performed; service-level regression was run.
+- Day-boundary time was not applied to date-only purchase grouping because existing purchases do not contain reliable time-of-day data.
 
 ## Failures Or Blockers
 
 - No implementation blocker found.
+- The generic `python` command resolved to the Windows app launcher and lacked `PySide6`; validation was rerun with the explicit project interpreter.
 
 ## Unresolved Operational Risks
 
-- Worktree already contained unrelated generated `__pycache__` changes and zip-file drift before this task; compile validation added more generated bytecode noise. These should not be staged.
-- Analytics date inputs currently treat an invalid date like an omitted boundary because service parsing returns `None`.
-- Full manual QA remains required for receipt save, Lists double-click in every view, History analytics frame interaction, Settings store save, and Product View behavior.
+- Full human UI QA remains needed for Settings save feedback and store editing interaction.
+- Existing old `history.month_boundary_rule` data is not deleted; it is treated as legacy/inert once new canonical keys are present.
+- `pages.order` remains an inert persisted setting.
 
-## Suggested Functional Follow-Up
+## Suggested Follow-Up
 
-- Operational Chat should classify manual QA results after human interaction testing.
-- Consider a later validation task to automate basic Qt widget smoke checks without entering the full app event loop.
+- Operational Chat should classify manual UI QA results after human testing.
+- A later cleanup can decide whether to migrate or remove the legacy `history.month_boundary_rule` key.

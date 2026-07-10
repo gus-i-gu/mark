@@ -55,8 +55,20 @@ VALUES
     'wednesday'
 ),
 (
-    'history.month_boundary_rule',
-    'first_wednesday'
+    'history.month_boundary_mode',
+    'first_weekday'
+),
+(
+    'history.month_boundary_weekday',
+    'wednesday'
+),
+(
+    'history.month_boundary_day',
+    '1'
+),
+(
+    'time_reference.day_boundary_time',
+    '00:00'
 ),
 (
     'pages.order',

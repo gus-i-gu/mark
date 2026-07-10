@@ -97,6 +97,32 @@ class ProductService(ServiceContract):
         • database schema
     """
 
+    WEEKDAYS = tuple(day.lower() for day in calendar.day_name)
+
+    MONTH_BOUNDARY_MODES = (
+
+        "first_weekday",
+
+        "day_of_month",
+
+    )
+
+    DEFAULT_SETTINGS = {
+
+        "history.week_boundary": "wednesday",
+
+        "history.month_boundary_mode": "first_weekday",
+
+        "history.month_boundary_weekday": "wednesday",
+
+        "history.month_boundary_day": "1",
+
+        "time_reference.day_boundary_time": "00:00",
+
+        "pages.order": "Register,Storage,Shortage,Market,History,Settings",
+
+    }
+
     #######################################################
     #
     # INITIALIZATION
@@ -260,23 +286,33 @@ class ProductService(ServiceContract):
         Return persisted application settings.
         """
 
-        settings = {
+        persisted_settings = self.repository.get_settings()
 
-            "history.week_boundary": "wednesday",
-
-            "history.month_boundary_rule": "first_wednesday",
-
-            "pages.order": "Register,Storage,Shortage,Market,History,Settings",
-
-        }
+        settings = dict(self.DEFAULT_SETTINGS)
 
         settings.update(
 
-            self.repository.get_settings()
+            persisted_settings
 
         )
 
-        return settings
+        if (
+
+            "history.month_boundary_rule" in persisted_settings
+
+            and "history.month_boundary_mode" not in persisted_settings
+
+        ):
+
+            self.apply_legacy_month_boundary_rule(
+
+                settings,
+
+                persisted_settings["history.month_boundary_rule"],
+
+            )
+
+        return self.validated_settings(settings)
 
 
     #######################################################
@@ -301,6 +337,322 @@ class ProductService(ServiceContract):
             value,
 
         )
+
+
+    #######################################################
+
+    def save_history_settings(
+
+        self,
+
+        values: dict[str, str],
+
+    ) -> dict[str, str]:
+        """
+        Validate and persist settings that affect History grouping.
+        """
+
+        self.validate_history_settings_input(values)
+
+        settings = self.validated_settings(values)
+
+        for key in (
+
+            "history.week_boundary",
+
+            "history.month_boundary_mode",
+
+            "history.month_boundary_weekday",
+
+            "history.month_boundary_day",
+
+            "time_reference.day_boundary_time",
+
+        ):
+
+            self.repository.set_setting(
+
+                key,
+
+                settings[key],
+
+            )
+
+        return settings
+
+
+    #######################################################
+
+    def validate_history_settings_input(
+
+        self,
+
+        values: dict[str, str],
+
+    ) -> None:
+        """
+        Reject invalid values entered through Settings before save.
+        """
+
+        weekday = (values.get("history.week_boundary") or "").strip().lower()
+
+        if weekday not in self.WEEKDAYS:
+
+            raise ValueError("Week boundary must be a weekday.")
+
+        mode = (
+
+            values.get("history.month_boundary_mode") or ""
+
+        ).strip().lower()
+
+        if mode not in self.MONTH_BOUNDARY_MODES:
+
+            raise ValueError("Month boundary mode is invalid.")
+
+        month_weekday = (
+
+            values.get("history.month_boundary_weekday") or ""
+
+        ).strip().lower()
+
+        if month_weekday not in self.WEEKDAYS:
+
+            raise ValueError("Month boundary weekday must be a weekday.")
+
+        try:
+
+            day = int(values.get("history.month_boundary_day"))
+
+        except (TypeError, ValueError):
+
+            raise ValueError("Month boundary day must be 1-28.") from None
+
+        if not 1 <= day <= 28:
+
+            raise ValueError("Month boundary day must be 1-28.")
+
+        value = (
+
+            values.get("time_reference.day_boundary_time") or ""
+
+        ).strip()
+
+        try:
+
+            datetime.strptime(
+
+                value,
+
+                "%H:%M",
+
+            )
+
+        except ValueError:
+
+            raise ValueError(
+
+                "Day boundary time must use 24-hour HH:MM format."
+
+            ) from None
+
+
+    #######################################################
+
+    def validated_settings(
+
+        self,
+
+        values: dict[str, str],
+
+    ) -> dict[str, str]:
+        """
+        Return settings with safe defaults for invalid persisted values.
+        """
+
+        settings = dict(self.DEFAULT_SETTINGS)
+
+        settings.update(values)
+
+        settings["history.week_boundary"] = self.validate_weekday(
+
+            settings.get("history.week_boundary"),
+
+            self.DEFAULT_SETTINGS["history.week_boundary"],
+
+        )
+
+        settings["history.month_boundary_mode"] = self.validate_month_mode(
+
+            settings.get("history.month_boundary_mode")
+
+        )
+
+        settings["history.month_boundary_weekday"] = self.validate_weekday(
+
+            settings.get("history.month_boundary_weekday"),
+
+            self.DEFAULT_SETTINGS["history.month_boundary_weekday"],
+
+        )
+
+        settings["history.month_boundary_day"] = str(
+
+            self.validate_month_day(
+
+                settings.get("history.month_boundary_day")
+
+            )
+
+        )
+
+        settings["time_reference.day_boundary_time"] = (
+
+            self.validate_day_boundary_time(
+
+                settings.get("time_reference.day_boundary_time")
+
+            )
+
+        )
+
+        return settings
+
+
+    #######################################################
+
+    def apply_legacy_month_boundary_rule(
+
+        self,
+
+        settings: dict[str, str],
+
+        rule: str,
+
+    ) -> None:
+        """
+        Map older month-boundary values onto the Cycle 04 settings.
+        """
+
+        value = (rule or "").strip().lower()
+
+        if value.startswith("first_"):
+
+            weekday = value.removeprefix("first_")
+
+            settings["history.month_boundary_mode"] = "first_weekday"
+
+            settings["history.month_boundary_weekday"] = weekday
+
+
+    #######################################################
+
+    def validate_weekday(
+
+        self,
+
+        value: str | None,
+
+        default: str,
+
+    ) -> str:
+        """
+        Validate a persisted weekday semantic value.
+        """
+
+        normalized = (value or "").strip().lower()
+
+        if normalized in self.WEEKDAYS:
+
+            return normalized
+
+        return default
+
+
+    #######################################################
+
+    def validate_month_mode(
+
+        self,
+
+        value: str | None,
+
+    ) -> str:
+        """
+        Validate the operational month boundary mode.
+        """
+
+        normalized = (value or "").strip().lower()
+
+        if normalized in self.MONTH_BOUNDARY_MODES:
+
+            return normalized
+
+        return self.DEFAULT_SETTINGS["history.month_boundary_mode"]
+
+
+    #######################################################
+
+    def validate_month_day(
+
+        self,
+
+        value: str | int | None,
+
+    ) -> int:
+        """
+        Validate day-of-month settings in the safe 1-28 range.
+        """
+
+        try:
+
+            day = int(value)
+
+        except (TypeError, ValueError):
+
+            return int(self.DEFAULT_SETTINGS["history.month_boundary_day"])
+
+        if 1 <= day <= 28:
+
+            return day
+
+        return int(self.DEFAULT_SETTINGS["history.month_boundary_day"])
+
+
+    #######################################################
+
+    def validate_day_boundary_time(
+
+        self,
+
+        value: str | None,
+
+    ) -> str:
+        """
+        Validate and normalize a 24-hour HH:MM time setting.
+        """
+
+        normalized = (value or "").strip()
+
+        try:
+
+            parsed = datetime.strptime(
+
+                normalized,
+
+                "%H:%M",
+
+            ).time()
+
+        except ValueError:
+
+            return self.DEFAULT_SETTINGS[
+
+                "time_reference.day_boundary_time"
+
+            ]
+
+        return parsed.strftime("%H:%M")
 
 
     #######################################################
@@ -1566,6 +1918,34 @@ class ProductService(ServiceContract):
 
         )
 
+        month_boundary_mode = settings.get(
+
+            "history.month_boundary_mode",
+
+            "first_weekday",
+
+        )
+
+        month_boundary_weekday = settings.get(
+
+            "history.month_boundary_weekday",
+
+            "wednesday",
+
+        )
+
+        month_boundary_day = int(
+
+            settings.get(
+
+                "history.month_boundary_day",
+
+                "1",
+
+            )
+
+        )
+
         rows = []
 
         unparsed_rows = []
@@ -1610,7 +1990,13 @@ class ProductService(ServiceContract):
 
             month_start = self.operational_month_start(
 
-                purchase_date
+                purchase_date,
+
+                month_boundary_mode,
+
+                month_boundary_weekday,
+
+                month_boundary_day,
 
             )
 
@@ -1631,6 +2017,16 @@ class ProductService(ServiceContract):
                 month_end = (
 
                     self.next_operational_month_start(month_start)
+
+                    if month_boundary_mode == "first_weekday"
+
+                    else self.next_day_of_month_start(
+
+                        month_start,
+
+                        month_boundary_day,
+
+                    )
 
                     -
 
@@ -2189,6 +2585,60 @@ class ProductService(ServiceContract):
 
     #######################################################
 
+    def operational_date(
+
+        self,
+
+        value,
+
+        boundary_time: str | None = None,
+
+    ):
+        """
+        Derive the operational date from a date or datetime value.
+        """
+
+        if value is None:
+
+            return None
+
+        if boundary_time is None:
+
+            boundary_time = self.get_settings().get(
+
+                "time_reference.day_boundary_time",
+
+                "00:00",
+
+            )
+
+        boundary = datetime.strptime(
+
+            self.validate_day_boundary_time(boundary_time),
+
+            "%H:%M",
+
+        ).time()
+
+        if isinstance(value, datetime):
+
+            operational = value.date()
+
+            if value.time() < boundary:
+
+                operational = operational - timedelta(days=1)
+
+            return operational
+
+        if hasattr(value, "year") and hasattr(value, "month"):
+
+            return value
+
+        return self.parse_purchase_date(value)
+
+
+    #######################################################
+
     def first_wednesday(
 
         self,
@@ -2227,16 +2677,34 @@ class ProductService(ServiceContract):
 
         value,
 
+        mode: str = "first_weekday",
+
+        weekday: str = "wednesday",
+
+        day: int = 1,
+
     ):
         """
-        Return the first-Wednesday operational month start.
+        Return the configured operational month start.
         """
 
-        current_start = self.first_wednesday(
+        if mode == "day_of_month":
+
+            return self.day_of_month_start(
+
+                value,
+
+                day,
+
+            )
+
+        current_start = self.first_weekday(
 
             value.year,
 
             value.month,
+
+            weekday,
 
         )
 
@@ -2254,11 +2722,13 @@ class ProductService(ServiceContract):
 
             previous_year -= 1
 
-        return self.first_wednesday(
+        return self.first_weekday(
 
             previous_year,
 
             previous_month,
+
+            weekday,
 
         )
 
@@ -2273,7 +2743,7 @@ class ProductService(ServiceContract):
 
     ):
         """
-        Return the next first-Wednesday operational month start.
+        Return the next first-weekday operational month start.
         """
 
         next_month = month_start.month + 1
@@ -2286,13 +2756,139 @@ class ProductService(ServiceContract):
 
             next_year += 1
 
-        return self.first_wednesday(
+        return self.first_weekday(
 
             next_year,
 
             next_month,
 
+            calendar.day_name[month_start.weekday()].lower(),
+
         )
+
+
+    #######################################################
+
+    def first_weekday(
+
+        self,
+
+        year: int,
+
+        month: int,
+
+        weekday: str,
+
+    ):
+        """
+        Return the first configured weekday of a calendar month.
+        """
+
+        current = datetime(
+
+            year,
+
+            month,
+
+            1,
+
+        ).date()
+
+        target = self.weekday_number(weekday)
+
+        while current.weekday() != target:
+
+            current = current + timedelta(days=1)
+
+        return current
+
+
+    #######################################################
+
+    def day_of_month_start(
+
+        self,
+
+        value,
+
+        day: int,
+
+    ):
+        """
+        Return the configured day-of-month operational month start.
+        """
+
+        boundary_day = self.validate_month_day(day)
+
+        current_start = datetime(
+
+            value.year,
+
+            value.month,
+
+            boundary_day,
+
+        ).date()
+
+        if value >= current_start:
+
+            return current_start
+
+        previous_month = value.month - 1
+
+        previous_year = value.year
+
+        if previous_month == 0:
+
+            previous_month = 12
+
+            previous_year -= 1
+
+        return datetime(
+
+            previous_year,
+
+            previous_month,
+
+            boundary_day,
+
+        ).date()
+
+
+    #######################################################
+
+    def next_day_of_month_start(
+
+        self,
+
+        month_start,
+
+        day: int,
+
+    ):
+        """
+        Return the next day-of-month operational month start.
+        """
+
+        next_month = month_start.month + 1
+
+        next_year = month_start.year
+
+        if next_month == 13:
+
+            next_month = 1
+
+            next_year += 1
+
+        return datetime(
+
+            next_year,
+
+            next_month,
+
+            self.validate_month_day(day),
+
+        ).date()
 
 
     #######################################################

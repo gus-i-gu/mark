@@ -1,132 +1,114 @@
-# Codex Report — Design Cycle 03
+# Codex Report - Design Cycle 04 Settings Stabilization
 
 ## Source Stage Files Read
 
+- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
 - `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
-- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
 - `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
 - `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
 ## Architectural Decisions Materialized
 
-- Cycle 03 extends the existing Desktop UI -> ProductService -> Repository -> SQLite boundary.
-- Public inventory navigation is now one Lists page.
-- Former Storage/Shortage/Market meanings are internal Lists views.
-- History analytics starts embedded in HistoryPage.
-- ProductService owns Lists classification/read-model assembly and History analytics derivation.
-- Repository and schema were not expanded for cached analytics fields.
-- Register remains purchase-entry-only; Settings remains store-management surface.
-- `pages.order` remains inert for MainWindow tab ordering.
+- Settings remains the user-facing configuration and store-management surface.
+- SettingsPage owns controls and save events.
+- ProductService owns settings validation, fallback, and behavior-affecting interpretation.
+- Repository remains generic key/value persistence.
+- SQLite schema remains unchanged.
+- `time_reference.day_boundary_time` is the canonical operational-day boundary key.
+- `pages.order` remains inactive for MainWindow tab ordering.
 
 ## Files Changed Or Created For Design Reasons
 
-- `app/core/services.py`: service-owned Lists and analytics read models.
-- `app/desktop/ui/pages/lists_page.py`: new public Lists rendering surface.
-- `app/desktop/main_window.py`: static public tab remodel and compatibility navigation.
-- `app/desktop/ui/pages/history_page.py`: embedded analytics controls/table.
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: operational evidence.
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: didactic evidence.
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: this design evidence.
+- `app/core/services.py`: service-owned settings contract, validators, grouping interpretation, and operational-date helper.
+- `app/desktop/ui/pages/settings_page.py`: presentation controls for semantic settings values.
+- `app/core/database.py`: non-destructive defaults for canonical settings keys.
+- `app/database/seed.sql`: fresh-database defaults for canonical settings keys.
+- No new application files were created.
 
 ## Responsibility Boundaries Preserved
 
-- Schema/storage: unchanged; no analytics cache or list-specific persisted fields.
-- Repository: unchanged; still retrieves raw/supporting rows and does not define analytics semantics.
-- ProductService: owns status, list rows, latest/delta meaning, frame interpretation, totals, percentages, average timelapse, and cycle comparison.
-- ListsPage: owns view selection, table rendering, refresh, and double-click routing.
-- HistoryPage: owns controls/rendering and passes frame selections to ProductService.
-- MainWindow: owns tab mounting, refresh orchestration, and compatibility navigation helpers.
-- Register and Settings responsibilities were not expanded.
+- SettingsPage renders and collects values.
+- ProductService validates, normalizes, and interprets settings.
+- Repository reads/writes setting rows only.
+- SQLite stores persisted facts and key/value settings.
+- HistoryPage renders service-prepared grouped History output.
+- ListsPage was not changed and does not interpret time reference.
+- MainWindow still owns static public tab mounting.
 
-## Boundary Drift
+## Boundary Drift, If Any
 
 - No direct SQL was added to UI.
-- No schema changes were introduced.
-- No mobile implementation or API rewrite was introduced.
-- Minor risk: HistoryPage formats analytics summary/table labels after receiving semantic values; calculations remain service-owned.
-- Minor risk: invalid date boundaries parse as `None`, making invalid text behave like no boundary.
+- Repository was not given date or grouping semantics.
+- HistoryPage did not gain bucket calculations.
+- ListsPage did not gain time-reference behavior.
+- MainWindow did not activate `pages.order`.
+- Minor remaining drift: old persisted `history.month_boundary_rule` can still exist as legacy data.
 
-## ListsPage Architecture Evidence
+## SettingsPage Boundary Evidence
 
-- `ListsPage` is the only new public inventory page.
-- It exposes required internal views through a combo box.
-- It renders one standardized 10-column table for all views.
-- It calls only `ProductService.get_lists_view(view_key)` and `ProductService.get_product(product_id)`.
-- Double-click delegates selected product editing to MainWindow.
+- Weekday and month controls store lowercase semantic values as combo item data.
+- The day-of-month field is a 1-28 spinbox.
+- The day-boundary time field is a masked `HH:MM` input.
+- SettingsPage delegates save validation/persistence to `ProductService.save_history_settings()`.
+- Store create/update UI remains in Settings.
 
-## Lists Read-Model Evidence
+## ProductService Settings Interpretation Evidence
 
-- `get_lists_view(view_key="all")` accepts `all`, `in-house`, `shortage`, `to-buy`, `in-house + shortage`, and `shortage + to-buy`.
-- `list_row_model(product)` assembles identity, brand, quantity, latest price, delta price, cycle, next purchase, remaining days, status, and display labels.
-- Legacy service methods `get_storage_products()`, `get_shortage_products()`, and `get_market_products()` were preserved.
+- `DEFAULT_SETTINGS` defines the service contract.
+- `validate_history_settings_input()` rejects invalid UI-submitted values.
+- `validated_settings()` provides safe fallback for invalid persisted values.
+- `get_history_view()` consumes week/month settings for grouped History.
+- `operational_date()` provides the future-ready operational-day boundary helper.
 
-## MainWindow Navigation / Remodel Evidence
+## Repository Persistence Boundary Evidence
 
-- Public tabs now instantiate and mount Register, Lists, History, Settings.
-- Offscreen startup probe returned `['Register', 'Lists', 'History', 'Settings']`.
-- `open_storage()` routes to Lists `in-house`.
-- `open_shortage()` routes to Lists `shortage`.
-- `open_market()` routes to Lists `to-buy`.
-- `refresh_pages()` refreshes Lists and History.
-- `pages.order` is not consumed.
+- `Repository.get_settings()` and `Repository.set_setting()` remain generic.
+- No Repository method decides weekdays, month modes, month days, or boundary times.
 
-## Latest / Delta Price Boundary Evidence
+## History Grouping Boundary Evidence
 
-- Latest price is read from Product summary `current_unit_price`.
-- Delta price is derived through service `get_price_variation(product)`.
-- UI only renders returned labels and color direction.
-- No store/frame scoped delta behavior was added.
+- Weekly grouping uses `history.week_boundary`.
+- Monthly grouping uses `history.month_boundary_mode`, `history.month_boundary_weekday`, and `history.month_boundary_day`.
+- The grouping implementation remains inside ProductService.
 
-## History Analytics Read-Model Evidence
+## Time Reference Boundary Evidence
 
-- `get_history_analytics_view(start_date=None, end_date=None, store_id=None)` returns frame, parsed/unparsed/excluded counts, total spent, frame average timelapse, product rows, and diagnostics.
-- Product rows include product ID/name/brand, total spent, expenditure percentage, purchase count, product cycle, frame average, cycle difference, comparison label, and insufficient-data reason.
-- Frame average is unknown when fewer than two parsed purchases exist.
-
-## Embedded History Analytics UI Evidence
-
-- HistoryPage now contains embedded analytics controls under the existing grouped history tree.
-- Controls: start date text, end date text, optional store selector, Apply button.
-- Display: summary label plus read-only product analytics table.
-- Existing Month -> Week History tree remains in the same page.
-- No detachable window/widget lifecycle was added.
+- `time_reference.day_boundary_time` is persisted and validated.
+- The helper applies only to date/datetime interpretation.
+- Date-only purchase rows are not reinterpreted in this pass, avoiding unsupported behavior changes.
 
 ## Persistence / Schema Decision Evidence
 
-- No database schema files were modified.
-- No Product model fields were added for latest price, delta price, percentage, frame average, or cycle comparison.
-- Analytics values are read-time service derivations.
+- No schema change was required.
+- Defaults were added through seed and idempotent migration insertion.
+- Existing user settings are not overwritten by migration.
 
 ## Mobile-Readiness Boundary Evidence
 
-- New service methods expose platform-neutral dictionaries.
-- UI-specific code is limited to PySide6 rendering and event handling.
-- Business meanings are available outside desktop widgets for future adapters.
-- No mobile UI/backend implementation was attempted.
+- Semantic settings values are independent of desktop labels.
+- Validation and interpretation are reusable outside PySide6.
+- No mobile UI, backend, sync, or platform decision was introduced.
 
 ## Deferred Design Items
 
-- Detachable History analytics.
-- Active `pages.order` tab ordering.
-- Store editing through Register.
+- Mobile UI.
+- Server/shared backend.
+- Synchronization.
+- Receipt recognition.
 - Store deletion.
-- Mobile implementation.
-- API/backend rewrite.
-- Cloud sync.
-- Persisted analytics cache.
-- Store/frame-scoped latest or delta price.
-- Configurable comparison tolerance.
-- Deletion of old Storage/Shortage/Market page files.
+- Active `pages.order` tab ordering.
+- Operational-date effects on Lists status, purchase rhythm, depletion prediction, or expected next purchase.
+- Cleanup/migration of legacy `history.month_boundary_rule`.
 
 ## Open Design Questions
 
-- Should invalid analytics date input surface an explicit UI validation error instead of acting as an omitted boundary?
-- Should same-day purchase intervals be handled specially in average timelapse display?
-- Should old page files be retired in a later cleanup cycle once Lists has manual QA evidence?
+- Should future purchase records store time-of-day so `time_reference.day_boundary_time` can materially affect grouping?
+- Should legacy settings be migrated forward or left inert after new keys are present?
+- Should Settings eventually split into smaller internal sections if the page grows further?
 
 ## Suggested Design Chat Follow-Up
 
-- Absorb Cycle 03 as evidence for unified read-model boundaries.
-- Decide whether date input validation belongs in HistoryPage, ProductService, or a shared UI validation helper in a later cycle.
+- Absorb Cycle 04 as evidence that Settings is a presentation boundary and ProductService is the settings interpretation boundary.
+- Decide later whether legacy month-boundary settings need a formal migration or removal cycle.

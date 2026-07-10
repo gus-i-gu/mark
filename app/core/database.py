@@ -496,9 +496,39 @@ def migrate(
 
         connection,
 
-        "history.month_boundary_rule",
+        "history.month_boundary_mode",
 
-        "first_wednesday",
+        "first_weekday",
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "history.month_boundary_weekday",
+
+        "wednesday",
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "history.month_boundary_day",
+
+        "1",
+
+    )
+
+    ensure_default_setting(
+
+        connection,
+
+        "time_reference.day_boundary_time",
+
+        "00:00",
 
     )
 

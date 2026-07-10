@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -71,19 +72,61 @@ class SettingsPage(QWidget):
 
         self.week_boundary_input = QComboBox()
 
-        self.week_boundary_input.addItem(
-            "Wednesday",
-            "wednesday",
+        for label, value in self.weekday_options():
+
+            self.week_boundary_input.addItem(
+
+                label,
+
+                value,
+
+            )
+
+        self.month_boundary_mode_input = QComboBox()
+
+        self.month_boundary_mode_input.addItem(
+
+            "First selected weekday",
+
+            "first_weekday",
+
         )
 
-        self.month_boundary_input = QComboBox()
+        self.month_boundary_mode_input.addItem(
 
-        self.month_boundary_input.addItem(
-            "First Wednesday",
-            "first_wednesday",
+            "Day of month",
+
+            "day_of_month",
+
         )
 
-        self.page_order_input = QLineEdit()
+        self.month_boundary_mode_input.currentIndexChanged.connect(
+
+            self.update_month_controls
+
+        )
+
+        self.month_boundary_weekday_input = QComboBox()
+
+        for label, value in self.weekday_options():
+
+            self.month_boundary_weekday_input.addItem(
+
+                label,
+
+                value,
+
+            )
+
+        self.month_boundary_day_input = QSpinBox()
+
+        self.month_boundary_day_input.setRange(1, 28)
+
+        self.time_reference_input = QLineEdit()
+
+        self.time_reference_input.setPlaceholderText("00:00")
+
+        self.time_reference_input.setInputMask("00:00")
 
         self.save_settings_button = QPushButton(
             "Save History Settings"
@@ -99,13 +142,23 @@ class SettingsPage(QWidget):
         )
 
         form.addRow(
-            "Month Boundary",
-            self.month_boundary_input,
+            "Month Boundary Mode",
+            self.month_boundary_mode_input,
         )
 
         form.addRow(
-            "Page Order",
-            self.page_order_input,
+            "Month Boundary Weekday",
+            self.month_boundary_weekday_input,
+        )
+
+        form.addRow(
+            "Month Boundary Day",
+            self.month_boundary_day_input,
+        )
+
+        form.addRow(
+            "Day Boundary Time",
+            self.time_reference_input,
         )
 
         form.addRow(
@@ -187,16 +240,26 @@ class SettingsPage(QWidget):
         )
 
         self.set_combo_value(
-            self.month_boundary_input,
-            settings.get("history.month_boundary_rule"),
+            self.month_boundary_mode_input,
+            settings.get("history.month_boundary_mode"),
         )
 
-        self.page_order_input.setText(
+        self.set_combo_value(
+            self.month_boundary_weekday_input,
             settings.get(
-                "pages.order",
-                "Register,Storage,Shortage,Market,History,Settings",
-            )
+                "history.month_boundary_weekday"
+            ),
         )
+
+        self.month_boundary_day_input.setValue(
+            int(settings.get("history.month_boundary_day", "1"))
+        )
+
+        self.time_reference_input.setText(
+            settings.get("time_reference.day_boundary_time", "00:00")
+        )
+
+        self.update_month_controls()
 
     def load_stores(self):
 
@@ -273,20 +336,37 @@ class SettingsPage(QWidget):
 
     def save_history_settings(self):
 
-        self.service.set_setting(
-            "history.week_boundary",
-            self.week_boundary_input.currentData(),
-        )
+        try:
 
-        self.service.set_setting(
-            "history.month_boundary_rule",
-            self.month_boundary_input.currentData(),
-        )
+            self.service.save_history_settings(
+                {
+                    "history.week_boundary": (
+                        self.week_boundary_input.currentData()
+                    ),
+                    "history.month_boundary_mode": (
+                        self.month_boundary_mode_input.currentData()
+                    ),
+                    "history.month_boundary_weekday": (
+                        self.month_boundary_weekday_input.currentData()
+                    ),
+                    "history.month_boundary_day": str(
+                        self.month_boundary_day_input.value()
+                    ),
+                    "time_reference.day_boundary_time": (
+                        self.time_reference_input.text()
+                    ),
+                }
+            )
 
-        self.service.set_setting(
-            "pages.order",
-            self.page_order_input.text().strip(),
-        )
+        except Exception as error:
+
+            QMessageBox.critical(
+                self,
+                "Settings save failed",
+                str(error),
+            )
+
+            return
 
         self.refresh_dependents()
 
@@ -370,6 +450,34 @@ class SettingsPage(QWidget):
                 combo.setCurrentIndex(index)
 
                 return
+
+    def weekday_options(self):
+
+        return (
+            ("Monday", "monday"),
+            ("Tuesday", "tuesday"),
+            ("Wednesday", "wednesday"),
+            ("Thursday", "thursday"),
+            ("Friday", "friday"),
+            ("Saturday", "saturday"),
+            ("Sunday", "sunday"),
+        )
+
+    def update_month_controls(self):
+
+        mode = self.month_boundary_mode_input.currentData()
+
+        self.month_boundary_weekday_input.setEnabled(
+
+            mode == "first_weekday"
+
+        )
+
+        self.month_boundary_day_input.setEnabled(
+
+            mode == "day_of_month"
+
+        )
 
     def refresh(self):
 
