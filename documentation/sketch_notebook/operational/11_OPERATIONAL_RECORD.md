@@ -159,3 +159,67 @@ Still requiring human interaction proof:
 - Cycle 04 Settings Stabilization is implemented and validated at compile, service, persistence, compatibility, and offscreen-widget levels.
 - Human interactive UI validation remains pending.
 - Mobile readiness improved only through reusable service-owned semantic settings; mobile implementation readiness is not promoted.
+
+## 2026-07-09 — Cycle 05 Sprint 01 Windows Desktop Installation Evidence Absorption
+
+Source evidence:
+
+- Human-provided accepted Cycle 05 Sprint 01 Codex evidence.
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
+
+### Drift Observation
+
+- The GitHub `G_OPS_CODEX.md`, `H_DDC_CODEX.md`, and `I_DSN_CODEX.md` available during absorption still described Cycle 04 rather than Cycle 05 Sprint 01.
+- Current human direction explicitly classified the Sprint 01 evidence as verified.
+- Operational memory was therefore reconciled from the accepted evidence while retaining the stale-report mismatch as drift requiring later Main/Codex correction.
+
+### Implemented
+
+- PyInstaller one-folder runtime.
+- Schema-only, seed-free production initialization.
+- External writable database under `%LOCALAPPDATA%\Markei`.
+- Startup failure logging.
+- Pinned PySide6 and PyInstaller dependencies.
+- Inno Setup per-user installer configuration.
+
+### Validated
+
+- Frozen executable build and launch.
+- Working-directory-independent schema discovery.
+- Empty first-launch business state with six default settings.
+- First receipt without a seeded store.
+- Public page construction for Register, Lists, History, and Settings.
+- Exclusion of seed, database, WAL/SHM, and sample records from the production runtime.
+
+### Configured But Unvalidated
+
+- Compiled installer artifact.
+- Start Menu launch.
+- Installed upgrade preservation.
+- Uninstall preservation.
+- Reinstall recovery.
+
+### Blocked
+
+- Inno Setup compilation and installed lifecycle validation because `ISCC.exe` was unavailable.
+
+### Deferred
+
+- SmartScreen and antivirus behavior.
+- Production signing.
+- Rollback.
+- Automatic updating.
+- Sprint 02 mobile preparation.
+
+### Retained Risks
+
+- Manual interactive UI walkthrough remains incomplete.
+- Older Settings, store-editing, Lists interaction, analytics, date-format, legacy-setting, inert `pages.order`, and transitional-page risks remain open where not directly exercised by Sprint 01 evidence.
+
+### Operational Classification
+
+- The frozen application runtime is implemented and validated.
+- The per-user installer is configured but unvalidated.
+- Sprint 01 must not be described as a fully validated installed release until installer compilation and lifecycle testing pass.
