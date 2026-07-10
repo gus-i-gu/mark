@@ -1,13 +1,13 @@
 # 10_OPERATIONAL_STATE.md
 
-> Version: Recovery checkpoint 0.1
+> Version: Recovery checkpoint 0.2
 > Status: Active operational checkpoint
 > Persistence Class: Checkpoint
 > Knowledge Class: Operational
 > Branch: `sketch-notebook-recovery`
 > Canonical source: `operational/12_OPERATIONAL_MODEL.md`
 > Derived execution source: `operational/04_TODO.md`
-> Historical recovery source: `DEV_STAGE/A_OPERATIONAL_RETROSPECTIVE.md`
+> Historical recovery source: `DEV_STAGE/A_OPERATIONAL.md`
 
 ---
 
@@ -18,7 +18,7 @@ Sketch Notebook recovery cycle
 → Operational canon reconstructed
 → Operational derivative reconstructed
 → Operational checkpoint reconstructed
-→ Observational record still intentionally empty
+→ Operational observational history opened
 ```
 
 The Operational domain has been repopulated far enough to support low-cost future recovery.
@@ -36,7 +36,14 @@ Current permanent files:
     current state, continuity, risks, and next recovery route
 
 11_OPERATIONAL_RECORD.md
-    empty until the repopulation milestone is formally recorded
+    chronological record of the Operational repopulation and later definite events
+```
+
+Current temporary stage:
+
+```text
+DEV_STAGE/A_OPERATIONAL.md
+    active ephemeral Operational evidence; currently holds the bounded Cycle 05 retrospective
 ```
 
 ---
@@ -290,8 +297,9 @@ Use hierarchical recovery:
 1. Read this checkpoint.
 2. Read 04_TODO.md for current execution detail.
 3. Read 12_OPERATIONAL_MODEL.md only when exact rule or rationale is required.
-4. Read DEV_STAGE/A_OPERATIONAL_RETROSPECTIVE.md only for precedent Cycle 05 failure context.
-5. Inspect repository source or main-branch commits only when the above are insufficient or drift is suspected.
+4. Read DEV_STAGE/A_OPERATIONAL.md only for active staged evidence or precedent Cycle 05 failure context.
+5. Read 11_OPERATIONAL_RECORD.md only when chronology or prior reconciliation history is required.
+6. Inspect repository source or main-branch commits only when the above are insufficient or drift is suspected.
 ```
 
 Do not begin with the full main-branch history unless a historical conflict requires it.
@@ -310,10 +318,4 @@ The next Operational checkpoint refresh should occur when one or more of these m
 - installed lifecycle evidence becomes available;
 - Main closes the recovery cycle.
 
-After this checkpoint is accepted, the first Operational observational entry may record:
-
-```text
-Operational domain repopulation completed through canon, derivative, and checkpoint;
-precedent Cycle 05 failure reconstructed from main-branch commits;
-observational history opened only after durable recovery surfaces were restored.
-```
+The Operational repopulation milestone is now eligible for observational recording because canon, derivative, and checkpoint recovery surfaces are all materialized and the temporary staging-name mismatch has been corrected.
