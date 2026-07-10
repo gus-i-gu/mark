@@ -2,136 +2,148 @@
 
 > Domain: Didactic
 > Status: Checkpoint
-> Current Milestone: Cycle 03 — Read-Model Consolidation
+> Current Milestone: Cycle 04 — Settings Stabilization
 
 ---
 
 ## Current Milestone
 
-Markei has moved from Cycle 02 History + Settings into Cycle 03 read-model consolidation. The learning focus is now the repeated pipeline:
+Cycle 04 absorbs Settings Stabilization as verified learning evidence:
 
 ```text
-raw data
-→ filtered frame
-→ aggregate
-→ derived metric
-→ read model
-→ UI presentation
+persisted preference
+→ service validation / fallback
+→ interpreted behavior
+→ read model or operational helper
+→ PySide6 presentation
 ```
 
-Cycle 03 consolidates this pipeline through:
-
-- Lists as one unified page with internal views;
-- embedded History analytics inside `HistoryPage`;
-- latest price and delta price as Lists read-model/display values;
-- product cycle comparison using `average_duration_days` versus frame average purchase timelapse;
-- mobile readiness through service/read-model boundaries rather than rewrite.
+SettingsPage is a presentation/editing adapter. ProductService validates, normalizes, and interprets settings. Repository and SQLite persist generic key/value state.
 
 ## Stable Concepts
 
 - None fully Green yet.
 
-## Active Concepts
+## Active / Stronger Yellow Concepts
 
-- &&&01 — Domain Model Field Semantics
-- &&&02 — Raw Data Versus Derived Data
-- &&&03 — Naming as Data Contract
-- &&&04 — Cached Summary Field
-- &&&06 — Aggregation and Totals
-- &&&07 — Grouping Versus Sorting
-- &&%01 — Optional Values and Nullable Fields
+- &&&05 — Time Bucketing
+- &&&08 — Configuration State
+- &&&15 — Default Value as Fallback Contract
+- &&&16 — Validation Boundary
+- &&&17 — Time Reference as Behavioral Anchor
 - &&%03 — Date/Datetime Boundary Handling
-- &%%01 — Markei Purchase Rhythm Versus Shelf-Life Rhythm
-- &%%03 — Repository Result Shape
-- &%%04 — Service-Owned Calculation Responsibility
-- &%%05 — History Read Model
-- %%%03 — PySide6 Read-Only Widget Composition
-
-## New / Unstable Concepts
-
-- &&&09 — Percentage as Derived Aggregate
-- &&&10 — Filtering Frame
-- &&&11 — Comparative Metric
-- &&&12 — Baseline Definition
-- &&&13 — Status Classification Versus UI Filtering
-- &&&14 — Mobile Readiness Without Rewrite
 - &&%04 — Platform-Neutral Read-Model Shape
-- &&%05 — Nullable Derived Display Values
-- &&%06 — UI View State
-- &%%09 — History Analytics Read Model
-- &%%10 — Unified Lists Page With Internal Views
-- &%%11 — Latest Value / Delta Calculation
+- &&%07 — Enumerated Choice Values
+- &&%08 — UI View State Versus Persisted Settings State
+- &%%04 — Service-Owned Calculation Responsibility
+- &%%06 — Settings-Owned Preferences
+- &%%08 — History Grouping Service Responsibility
 - &%%12 — Service Contract Stability
-- %%%06 — PySide6 Composition for Embedded Analytics
-- %%%07 — PySide6 Unified Page View Controls
-- %%%08 — SQLite Read Queries Versus Cached Columns
+- &%%13 — ProductService-Owned Settings Interpretation
+- &%%14 — Repository-Owned Settings Persistence
+- %%%04 — SQLite Settings Persistence
+- %%%05 — PySide6 Editable Form Composition
+- %%%09 — PySide6 Settings Controls as Presentation Adapter
 
-## Explicit Decisions
+## Early / Unstable Concepts
 
-- Cycle 03 did not introduce schema changes for Lists or History analytics.
-- History analytics starts embedded in `HistoryPage`; detachable analytics remains deferred.
-- Analytics frame means date range plus optional store filter.
-- Frame average purchase timelapse means the average interval between all parsed purchases inside the selected frame, ordered by date.
-- Product cycle means `average_duration_days`, the existing purchase recurrence rhythm.
-- Product cycle is not shelf-life or expiration rhythm.
-- Cycle comparison means product cycle minus frame average purchase timelapse, displayed as faster/slower/equal without configurable tolerance.
-- Latest price and delta price are global per product for Lists in Cycle 03, not scoped to History date/store frames.
-- Lists default view is the hybrid all-products view with a Status column.
-- Lists internal views are `in-house`, `shortage`, `to-buy`, `in-house + shortage`, and `shortage + to-buy`.
-- Register remains purchase-entry-only; Settings remains store-management surface.
-- `pages.order` remains deferred/inert for active tab ordering.
-- Mobile readiness is a boundary lesson, not a mobile implementation decision.
+- &&&14 — Mobile Readiness Without Rewrite
+- &&&18 — Adapter Boundary
+- &&&19 — Capability Versus Placeholder
 
-## Kept Explicitly Unstable
+## Verified Cycle 04 Distinctions
 
-- detachable analytics widget lifecycle;
-- store/frame-scoped price delta;
-- configurable comparison tolerance;
-- active `pages.order` consumption;
-- mobile implementation architecture;
-- API/backend rewrite;
-- persisted analytics cache;
-- physical deletion of old Storage/Shortage/Market page files.
+```text
+user preference
+is not
+interpreted behavior
+```
 
-## Next Concepts
+SettingsPage edits preferences; ProductService gives them behavioral meaning.
 
-1. Filtering frame before analytics calculation.
-2. Product unit price versus product total spent versus frame total spent versus expenditure percentage.
-3. Baseline definition and comparative metrics.
-4. Product cycle versus shelf-life rhythm.
-5. Lists internal views as UI state over one read model.
-6. Status classification versus UI filtering.
-7. Nullable derived display values for missing delta/cycle/frame data.
-8. Platform-neutral service read models as mobile-readiness boundary.
-9. PySide6 composition for embedded analytics and unified page controls.
-10. SQLite read queries versus cached analytics columns.
+```text
+strict rejection of invalid user edits
+is not
+fallback recovery from corrupt persisted values
+```
+
+`validate_history_settings_input()` raises for invalid save input. `validated_settings()` replaces invalid persisted values with safe defaults.
+
+```text
+display label
+is not
+stored semantic value
+```
+
+PySide6 combo boxes display human labels while carrying lowercase semantic values such as `monday`, `first_weekday`, and `day_of_month`.
+
+```text
+factual purchase date
+is not
+derived operational date
+```
+
+Purchase records remain factual date-only values. `operational_date()` derives an operational date only when given a datetime or an explicit boundary interpretation.
+
+```text
+operational-day contract readiness
+is not
+current material effect on date-only purchase records
+```
+
+`time_reference.day_boundary_time` is persisted and validated, and `operational_date()` exists, but `get_history_view()` still parses date-only purchases directly. Therefore the boundary time does not currently change History grouping for existing purchase rows.
+
+```text
+mobile preparation
+is not
+mobile implementation
+```
+
+Semantic values and service-owned validation can be reused by another adapter, but no mobile framework, synchronization, backend, authentication, or receipt recognition was implemented.
+
+## Explicit Cycle 04 Evidence
+
+- Week boundary supports all seven semantic weekdays.
+- Month boundary supports `first_weekday` or `day_of_month`.
+- Day-of-month is constrained to 1–28.
+- Defaults are centralized in `ProductService.DEFAULT_SETTINGS`.
+- Invalid user edits are rejected before persistence.
+- Invalid persisted values recover through defaults.
+- SQLite migration inserts defaults with `INSERT OR IGNORE`.
+- Existing user choices are not overwritten.
+- Repository remains generic key/value persistence.
+- `history.month_boundary_rule` is compatibility residue, not canonical current configuration.
 
 ## Dependency Spine
 
 ```text
-&&&01 Domain Model Field Semantics
-↓
 &&&03 Naming as Data Contract
 ↓
-&&&02 Raw Data Versus Derived Data
+&&&08 Configuration State
 ↓
-&&&06 Aggregation and Totals
+&&&15 Default Value as Fallback Contract
 ↓
-&&&09 Percentage as Derived Aggregate
+&&&16 Validation Boundary
 ↓
-&&&10 Filtering Frame
+&&%07 Enumerated Choice Values
 ↓
-&&&12 Baseline Definition
+&%%06 Settings-Owned Preferences
 ↓
-&&&11 Comparative Metric
+&%%13 ProductService-Owned Settings Interpretation
 ↓
-&%%09 History Analytics Read Model
+&%%14 Repository-Owned Settings Persistence
 ↓
-&%%04 Service-Owned Calculation Responsibility
+&&&05 Time Bucketing
 ↓
-&%%12 Service Contract Stability
+&&%03 Date/Datetime Boundary Handling
+↓
+&%%08 History Grouping Service Responsibility
+↓
+&&&17 Time Reference as Behavioral Anchor
 ↓
 &&%04 Platform-Neutral Read-Model Shape
+↓
+&&&18 Adapter Boundary
 ↓
 &&&14 Mobile Readiness Without Rewrite
 ```
@@ -139,47 +151,44 @@ Cycle 03 consolidates this pipeline through:
 ## Project Learning Spine
 
 ```text
-Raw purchase/product/store rows
+PySide6 labels and controls
 ↓
-Repository explicit result shape
+semantic setting values
 ↓
-ProductService read-model assembly
+strict save validation
 ↓
-Lists unified 10-column row shape
+generic repository persistence
 ↓
-Lists internal views over shared rows
+tolerant persisted-value normalization
 ↓
-Status classification displayed as a column
+History week/month interpretation
 ↓
-Global latest/delta price display values
+operational-date helper
 ↓
-History date/store frame controls
-↓
-Parsed frame rows and excluded/unparsed diagnostics
-↓
-Frame totals and average purchase timelapse
-↓
-Product expenditure percentage and cycle comparison
-↓
-Embedded History analytics rendering
-↓
-Platform-neutral service dictionaries/lists as future adapter boundary
+future adapter reuse
 ```
 
-## Lecture Progression
+## Deferred Learning
 
-1. Raw rows versus derived display/read-model values.
-2. Date/store filtering frame and excluded/unparsed rows.
-3. Aggregation and totals before percentage.
-4. Expenditure percentage as part/whole inside the selected frame.
-5. Baseline definition and frame average purchase timelapse.
-6. Product cycle as `average_duration_days`, not shelf-life.
-7. Comparative metric as cycle minus baseline.
-8. Lists as one page with internal views.
-9. Status classification versus UI filtering.
-10. Latest price and delta price as global per-product read-model values.
-11. Service contracts and platform-neutral read models as mobile readiness without rewrite.
+- mobile framework selection;
+- mobile UI implementation;
+- synchronization and shared backend;
+- authentication;
+- external supermarket/reward integration;
+- receipt or NFC-e recognition;
+- material operational-day effects on Lists status, prediction, or date-only History rows;
+- cleanup or migration policy for legacy `history.month_boundary_rule`;
+- active `pages.order` behavior.
+
+## Next Concepts
+
+1. Practice the difference between rejection and fallback.
+2. Trace one setting from UI label to semantic value to persistence to interpreted behavior.
+3. Compare factual dates with derived operational dates.
+4. Test time bucketing at week and month boundaries.
+5. Revisit Adapter Boundary only when a second presentation adapter exists.
+6. Keep mobile implementation deferred until contracts, tests, and persistence strategy mature.
 
 ## Session Delta
 
-Cycle 03 Codex evidence was absorbed from `H_DDC_CODEX.md`, with `G_OPS_CODEX.md` and `I_DSN_CODEX.md` used for validation and boundary context. The notebook now reflects that Lists and History analytics were implemented as service-owned read models, UI renders prepared values without direct SQL, no schema changes were introduced, and mobile preparation remains a separation/boundary concept rather than a rewrite path.
+Cycle 04 implementation evidence from commit `c9e9244a5187c32a2812641f05eac8856801a7d4` was reconciled with `H_DDC_CODEX.md`, `G_OPS_CODEX.md`, and `I_DSN_CODEX.md`. Settings concepts advanced conservatively to Yellow; no concept advanced to Green. Operational-day support is recorded as contract-ready but not materially applied to date-only purchase grouping.
