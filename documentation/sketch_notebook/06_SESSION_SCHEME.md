@@ -9,127 +9,113 @@
 
 # 1. Next Session Focus
 
-The next session should begin as a recovery/pruning follow-up after a disturbed Cycle 04 attempt.
+Begin with a short post-Cycle 04 verification session before opening another feature cycle.
 
 Primary objective:
 
 ```text
-Recover clean project state after Cycle 04 staging disturbance without assuming a solution.
+Verify the remaining interactive and period-boundary risks without reopening completed Cycle 04 architecture.
 ```
 
-Cycle 04 Sprint 01 feature work should not continue from transient conversation or canvas outputs.
+Recommended sequence:
 
-The next session should first verify repository-backed notebook state, then decide whether to restart Sprint 01, revise prompts, or perform a smaller diagnostic pass.
+1. Human Settings save-feedback QA.
+2. Human store create/update UI QA.
+3. Verify first-weekday operational-month period-end labels.
+4. Confirm dependent-page refresh after Settings save.
+5. Decide whether any defect requires a small corrective materialization pass.
 
----
+Do not begin a broad Cycle 05 feature stage until this verification result is recorded.
 
-# 2. Current Cycle 04 Closure State
+# 2. Current Closure State
 
-Cycle 04 was intentionally stopped before implementation materialization.
-
-Observed disturbance:
-
-- Operational and Didactic domain attempts produced canvas-style responses instead of stable DEV_STAGE repository updates.
-- Design staging had been committed earlier, but Main later chose to prune all A/B/C DEV_STAGE surfaces for consistency.
-- The disturbance may belong to execution/tool/session behavior rather than to the Sketch Notebook semantic method itself.
-- No definitive cause is recorded.
-- No corrective solution is accepted in this checkpoint.
-
-Current DEV_STAGE status:
+Cycle 04 is closed as:
 
 ```text
-A_OPERATIONAL.md -> pruned placeholder
-B_DIDACTIC.md   -> pruned placeholder
-C_DESIGN.md     -> pruned placeholder
+materialized
+validated at service/offscreen level
+reconciled into Operational, Didactic, and Design memory
+globally checkpointed by Main
 ```
 
----
+Current implementation commit lineage includes:
 
-# 3. Achievements To Preserve
+- Cycle 04 materialization: `c9e9244a5187c32a2812641f05eac8856801a7d4`
+- Operational reconciliation through `1491dcabc02cbba7ded947e233da11bea19eaa02`
+- Didactic checkpoint reconciliation: `1e07b48c73708c44fbe8274ef977af1ffae947dc`
+- Design reconciliation through `82142888065a53a3fde5c71c599a63a8debd7177`
+- Main global closure follows these domain commits.
 
-Preserve these achievements from the interrupted Cycle 04 work:
+# 3. Recovery Route
 
-- INDEX-driven bootstrap was reaffirmed as the intended domain-chat entrypoint.
-- Domain prompts were refined to emphasize following `INDEX.md` navigation instead of hard-coding methodology files.
-- Cycle 04 Sprint 01 scope was clarified as Settings boundary correction and integration preparation.
-- A didactic drift concern was identified: Didactic staging may need later audit to distinguish CS/Coding concepts from project-local intuitive concepts.
-- Design concerns were temporarily clarified before pruning: Settings should expose controls, ProductService should interpret boundary semantics, Repository should persist settings, and API/reward fields should remain placeholder-only.
-- The need for a `PROMPT_COLLECTION.md` artifact was identified and scheduled separately.
-
-These are observations and preserved context, not implementation authorization.
-
----
-
-# 4. Flaws / Disturbances To Preserve
-
-Preserve these flaws as recovery warnings:
-
-- Domain-chat staging did not behave consistently across O/A/D.
-- Canvas-style outputs appeared where repository-backed DEV_STAGE staging was expected.
-- The system behavior may have been affected by long-session/context exhaustion, tool routing, account cooldown, or another execution-layer issue.
-- The cause is unknown.
-- The event should not be treated as proof that the Sketch Notebook method itself failed.
-- The event should not be ignored during the next bootstrap.
-- The event should not be solved speculatively inside the checkpoint.
-
----
-
-# 5. Expected Files To Inspect Next
-
-Start with:
+Read only:
 
 ```text
+AGENTS.md
 documentation/sketch_notebook/INDEX.md
 documentation/sketch_notebook/00_PROJECT_STATE.md
-documentation/sketch_notebook/05_SESSION_LOG.md
 documentation/sketch_notebook/06_SESSION_SCHEME.md
 ```
 
-Then inspect the pruned stage placeholders:
+Then consult the relevant domain checkpoint:
 
 ```text
-documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
-documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md
-documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+Operational: documentation/sketch_notebook/operational/10_OPERATIONAL_STATE.md
+Didactic:    documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
+Design:      documentation/sketch_notebook/design/09_DESIGN_STATE.md
 ```
 
-Then consult domain checkpoints only as needed:
+Read G/H/I or source only if verification or drift investigation requires them.
 
-```text
-documentation/sketch_notebook/operational/10_OPERATIONAL_STATE.md
-documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
-documentation/sketch_notebook/design/09_DESIGN_STATE.md
-```
+# 4. Verified Stable State
 
-Use Git history only if forensic reconstruction of the pruned A/B/C contents is required.
+- Public tabs are Register, Lists, History, Settings.
+- Settings owns configuration and store-editing surfaces.
+- ProductService owns Settings validation, fallback, and interpretation.
+- Repository owns generic settings persistence.
+- Week boundary supports seven weekdays.
+- Month boundary supports first weekday or day-of-month.
+- Day-boundary time is persisted and validated.
+- Date-only purchases are not shifted by day-boundary time.
+- `pages.order` remains inert.
+- No second-platform implementation was introduced.
 
----
+# 5. Immediate Open Risks
 
-# 6. Deferred Application Work
+Operational:
 
-Pending Markei application work remains deferred:
+- interactive Settings validation-message behavior;
+- store-editor interaction and refresh behavior;
+- first-weekday period-end correctness;
+- full UI regression coverage.
 
-- manual UI QA;
-- invalid analytics date input handling;
-- same-day timelapse review;
-- old Storage/Shortage/Market page file cleanup decision;
-- multi-store analytics validation with richer fixture data;
-- mobile-readiness audit continuation;
-- Settings boundary correction;
-- compact Settings store editor;
-- passive supermarket/reward API placeholder fields.
+Existing application risks:
 
-No application implementation should be assumed from the interrupted Cycle 04 attempt.
+- invalid analytics date text behaves like omitted boundary;
+- same-day average timelapse can be sub-day;
+- multi-store analytics needs richer fixture validation;
+- old inventory page files remain transitional;
+- legacy month key and canonical keys may coexist;
+- `pages.order` remains misleading persisted residue.
 
----
+# 6. Deferred Decisions
+
+Do not resolve without a new explicit cycle or correction stage:
+
+- legacy month-key migration/removal;
+- `pages.order` removal or implementation;
+- purchase time-of-day storage;
+- operational-day effects on Lists or predictions;
+- Settings internal component split;
+- second-platform architecture;
+- broad external integration work.
 
 # 7. Next Session Exit Criteria
 
-A successful next session should leave one of the following clear outcomes:
+A successful next session should leave one clear result:
 
-1. Cycle 04 Sprint 01 is restarted from clean repository-backed staging.
-2. A smaller diagnostic pass is recorded before restarting Sprint 01.
-3. The method prompts are adjusted and captured in a prompt collection before further domain staging.
-4. The cycle remains paused with an explicit reason.
+1. Verification passes and Cycle 05 may be prepared.
+2. A small defect is confirmed and a focused A/B/C -> D/E/F correction pass is prepared.
+3. Verification remains incomplete and the exact missing human checks are recorded.
 
-The next session should avoid proposing a cause or solution for the disturbance unless new evidence is inspected and recorded.
+Avoid reopening already reconciled Cycle 04 decisions unless repository evidence contradicts them.
