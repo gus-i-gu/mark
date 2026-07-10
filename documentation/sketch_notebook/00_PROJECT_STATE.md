@@ -9,24 +9,19 @@
 
 # 1. Current Milestone
 
-Markei remains after Cycle 03 — Read-Model Consolidation.
-
-Cycle 04 Sprint 01 was started as a Settings boundary and integration-preparation cycle, but it was intentionally stopped before application materialization because domain staging behavior became unreliable.
-
-Current milestone classification:
+Markei has completed Cycle 04 - Settings Stabilization.
 
 ```text
-Cycle 03 application state remains the last validated application baseline.
-Cycle 04 is paused after a disturbed staging attempt.
+Cycle 04 application changes were materialized and validated.
+Operational, Didactic, and Design domain memory were reconciled.
+Main continuity is closed for the session.
 ```
 
-This file is the Main-owned global recovery surface. It intentionally combines current-state checkpoint behavior with accepted global project-state canon. It should remain concise and point to domain checkpoints for depth.
-
----
+Cycle 04 recovered from an initially disturbed staging attempt by restarting from repository-backed A/B/C stages, producing Main-approved D/E/F stages, materializing through Codex, validating through G/H/I, and reconciling into permanent O/A/D domain memory.
 
 # 2. Current Application State
 
-Public desktop tabs remain:
+Public desktop tabs:
 
 ```text
 Register
@@ -35,267 +30,180 @@ History
 Settings
 ```
 
-Former public Storage / Shortage / Market meanings remain Lists internal views:
-
-```text
-Storage  -> in-house
-Shortage -> shortage
-Market   -> to-buy
-```
-
-Lists supports:
-
-```text
-all
-in-house
-shortage
-to-buy
-in-house + shortage
-shortage + to-buy
-```
-
-Current feature state:
+Stable state:
 
 - Register remains purchase-entry-only.
-- Settings remains the store-management surface.
-- Product View remains service-driven and operational.
 - Lists remains the public inventory surface.
-- History remains grouped by service-owned Month -> Week logic.
-- History includes embedded read-only analytics.
-- Cycle 03 introduced no schema changes.
-- Cycle 04 introduced no accepted application implementation.
+- History remains service-driven with Month -> Week grouping and embedded read-only analytics.
+- Settings remains the user-facing configuration and store-management surface.
+- Store create/update remains in Settings.
+- Product View remains service-driven and read-only.
 
----
+Cycle 04 canonical settings:
+
+```text
+history.week_boundary
+history.month_boundary_mode
+history.month_boundary_weekday
+history.month_boundary_day
+time_reference.day_boundary_time
+```
+
+Implemented behavior:
+
+- week boundary supports all seven weekdays;
+- month boundary supports `first_weekday` and `day_of_month`;
+- month weekday supports all seven weekdays;
+- month day is constrained to 1-28;
+- day-boundary time uses normalized 24-hour `HH:MM`;
+- invalid submitted values are rejected before persistence;
+- invalid persisted values fall back safely;
+- defaults are inserted non-destructively;
+- legacy `history.month_boundary_rule` remains compatibility residue;
+- `pages.order` remains persisted but inert.
+
+Current purchase records are date-only. Therefore `time_reference.day_boundary_time` is contract-ready but does not materially alter current History grouping.
 
 # 3. Current Architecture State
 
-Accepted boundary remains:
-
 ```text
 Desktop UI
-↓
-ProductService
-↓
-Repository
-↓
-SQLite
+-> ProductService
+-> Repository
+-> SQLite
 ```
 
-ProductService owns:
+- UI owns rendering, controls, navigation hooks, edit events, and page composition.
+- ProductService owns business meaning, settings defaults, strict edit validation, persisted-value fallback, History grouping, read-model assembly, and operational-date interpretation.
+- Repository owns SQL retrieval, row mapping, and generic key/value persistence.
+- SQLite owns persisted facts, relationships, migrations, and settings rows.
 
-- Product View read models;
-- Lists read models;
-- grouped History read models;
-- History analytics read models;
-- inventory status classification;
-- latest/delta price meaning;
-- analytics frame interpretation;
-- expenditure percentages;
-- frame average purchase timelapse;
-- product-cycle comparison.
+Cycle 04 introduced no intentional architectural boundary drift.
 
-UI owns rendering, controls, navigation hooks, and event handling.
+Implementation watch point:
 
-Repository owns SQL retrieval, persistence, settings access, and row mapping.
-
-SQLite owns persisted facts, relationships, settings, and migrations.
-
-Cycle 04 design staging temporarily clarified that Settings boundary correction should preserve this architecture, but all A/B/C DEV_STAGE files were later pruned. Treat that design material as historical Git evidence only unless recovered deliberately.
-
----
+- First-weekday operational-month period-end calculation should be verified. Source inspection suggests its displayed end may differ from the intended day-before-next-period rule.
 
 # 4. Current Didactic State
 
-Cycle 03 learning focus remains:
+Cycle 04 learning pipeline:
 
 ```text
-raw data
-→ filtered frame
-→ aggregate
-→ derived metric
-→ read model
-→ UI presentation
+persisted preference
+-> service validation / fallback
+-> interpreted behavior
+-> read model or operational helper
+-> PySide6 presentation
 ```
 
-New or reinforced Cycle 03 concept areas:
+Strengthened concepts include Configuration State, Default Value as Fallback Contract, Validation Boundary, Enumerated Choice Values, Time Bucketing, Time Reference as Behavioral Anchor, Settings-Owned Preferences, ProductService-Owned Settings Interpretation, Repository-Owned Settings Persistence, and History Grouping Service Responsibility.
 
-- percentage as derived aggregate;
-- filtering frame;
-- comparative metric;
-- baseline definition;
-- status classification versus UI filtering;
-- platform-neutral read-model shape;
-- History analytics read model;
-- unified Lists page with internal views;
-- mobile readiness without rewrite.
+No concept was promoted to Green.
 
-Cycle 04 produced a didactic warning rather than a stable didactic state change:
+Important distinctions:
 
-- Didactic staging may have drifted toward project-local intuitive concepts rather than intrinsic CS and Coding concepts.
-- This concern is observational only.
-- Do not rewrite `02_KANBAN.md` from this observation without a later explicit didactic audit.
+- preference is not interpreted behavior;
+- invalid-edit rejection is not persisted-value fallback;
+- UI label is not stored semantic value;
+- factual purchase date is not derived operational date;
+- platform preparation is not platform implementation.
 
-Didactic concepts remain registered in `didactics/02_KANBAN.md`, summarized in `didactics/08_CONCEPT_MAP.md`, and explained through `didactics/07_GLOSSARY.md`.
+# 5. Platform Readiness
 
----
-
-# 5. Mobile Readiness
-
-Current classification remains:
+Current classification:
 
 ```text
-Prepared for future mobile discussion.
-Not ready for mobile implementation.
+Improved preparation for future platform discussion.
+Not ready for a second platform implementation.
 ```
 
 Prepared:
 
-- service-owned Lists read model;
-- service-owned History analytics read model;
-- platform-neutral dictionaries/lists;
-- reduced UI calculation ownership;
-- clearer Desktop UI / ProductService / Repository / SQLite boundary.
+- service-owned Lists and History read models;
+- service-owned Settings validation and interpretation;
+- platform-neutral semantic settings values;
+- UI-label versus semantic-value separation;
+- operational-date helper outside PySide6.
 
 Not ready:
 
-- mobile UI;
-- API/backend rewrite;
-- sync/auth design;
-- mobile persistence strategy;
+- second presentation layer;
+- shared service infrastructure;
+- account or synchronization design;
+- cross-platform persistence;
 - typed service contracts;
 - dependency injection/service factory;
-- formal date validation;
-- automated service tests;
-- explicit separation between UI labels and semantic values.
-
-Cycle 04 surfaced additional future-mobile pressure through proposed supermarket/reward integration placeholders and possible NFC-e/photo recognition, but no mobile or integration architecture was accepted.
-
----
+- reliable time-of-day purchase data;
+- automated service and UI interaction coverage.
 
 # 6. Current Sketch Notebook State
 
-Cycle 03 completed the first full experimental Sketch Notebook loop:
+Cycle 04 completed this repository-backed loop:
 
 ```text
-A/B/C functional staging
-↓
-D/E/F Main synthesis
-↓
-Codex materialization
-↓
-G/H/I Codex reports
-↓
-O/A/D domain absorption
-↓
-Main reconciliation
+INDEX-driven bootstrap
+-> A/B/C functional staging
+-> D/E/F Main synthesis
+-> Codex materialization
+-> G/H/I evidence
+-> O/A/D permanent-domain reconciliation
+-> Main session closure
 ```
 
-The Cycle 03 loop worked and produced strong application results, but exposed method refinements around recovery economy, checkpoint compactness, derived-file discipline, read-window rules, Main-root continuity roles, and reconciliation definitions.
+The earlier staging disturbance remains historical evidence, but it no longer describes current project state.
 
-Inter-cycle methodology fine-tuning then updated the method enough for `INDEX.md`-driven bootstrap and recovery-economy behavior to be treated as accepted working method.
+Permanent domain checkpoints now reflect Cycle 04:
 
-Cycle 04 then exposed a different class of problem:
+- `operational/10_OPERATIONAL_STATE.md`
+- `didactics/08_CONCEPT_MAP.md`
+- `design/09_DESIGN_STATE.md`
 
-```text
-Execution / tool / session behavior became unreliable during domain staging.
-```
+DEV_STAGE retains Cycle 04 staging and Codex evidence. These are staging and observational inputs, not current canonical truth.
 
-Observed Cycle 04 disturbance:
+# 7. Active Risks And Remaining Work
 
-- Operational and Didactic domain attempts produced canvas-style responses instead of stable repository-backed DEV_STAGE updates.
-- Design staging had been committed earlier, but Main later chose to prune all A/B/C DEV_STAGE files for consistency.
-- The disturbance appeared at the execution/staging materialization layer rather than as an obvious contradiction in the Sketch Notebook semantic method.
-- The cause is unknown.
-- No solution is accepted in this state file.
+Highest-priority work:
 
-Current DEV_STAGE status:
+1. Human Settings save-feedback QA for valid and invalid inputs.
+2. Human store create/update UI QA and dependent-page refresh verification.
+3. Verify first-weekday operational-month period-end labels.
+4. Validate Register, Lists, History analytics, Settings, and Product View interaction paths.
 
-```text
-A_OPERATIONAL.md -> pruned placeholder
-B_DIDACTIC.md   -> pruned placeholder
-C_DESIGN.md     -> pruned placeholder
-```
+Existing risks:
 
----
+- invalid analytics date input behaves like an omitted boundary;
+- same-day purchases can produce sub-day frame average timelapse;
+- multi-store analytics needs richer fixture validation;
+- old Storage/Shortage/Market source files remain transitional;
+- `pages.order` remains inert and potentially misleading;
+- legacy and canonical month-boundary keys may coexist;
+- full automated PySide6 interaction coverage is absent.
 
-# 7. Achievements Preserved From Cycle 04 Attempt
+Deferred decisions:
 
-Cycle 04 preserved these useful outcomes despite being stopped:
+- legacy month-key cleanup policy;
+- `pages.order` removal or implementation;
+- future purchase time-of-day storage;
+- operational-day effects on Lists or predictions;
+- Settings internal component split;
+- future platform architecture.
 
-- INDEX-driven domain-chat bootstrap was reaffirmed.
-- Domain prompts were refined to stress movement according to `INDEX.md` navigation rather than hard-coded methodology enumeration.
-- Sprint 01 scope was clarified as Settings boundary correction plus integration preparation.
-- The intended Settings work was scoped to:
-  - seven-weekday week boundary;
-  - configurable month boundary;
-  - compact Store section;
-  - passive supermarket/reward API placeholder fields.
-- The API/reward identifier was classified as provider-neutral for now, not hard-coded as CPF/government-ID semantics.
-- A later `PROMPT_COLLECTION.md` artifact was identified as useful.
-- A didactic audit need was identified for after Cycle 04 recovery.
-
-These are preserved observations, not implementation proof.
-
----
-
-# 8. Active Risks
-
-Application risks:
-
-- Manual UI QA remains incomplete.
-- Invalid analytics date input behaves like an omitted boundary.
-- Same-day purchases can produce sub-day frame average timelapse.
-- Multi-store analytics totals need richer validation.
-- Old Storage/Shortage/Market page files remain transitional.
-- `pages.order` remains persisted but inert.
-- Settings boundary correction remains unimplemented.
-- Supermarket/reward API fields remain unimplemented and undefined beyond placeholder intent.
-
-Methodology / execution risks:
-
-- Domain-chat staging may produce non-repository canvas outputs under some conditions.
-- Long-session/context/tool routing effects may have disturbed reliable staging behavior.
-- The cause of the Cycle 04 disturbance is unknown.
-- A/B/C DEV_STAGE files are intentionally pruned and should not be treated as current domain evidence.
-- The next session must not infer implementation progress from transient Cycle 04 conversation outputs.
-
----
-
-# 9. Next Recovery Files
+# 8. Recovery Route
 
 Start with:
 
 ```text
 documentation/sketch_notebook/INDEX.md
 documentation/sketch_notebook/00_PROJECT_STATE.md
-documentation/sketch_notebook/05_SESSION_LOG.md
 documentation/sketch_notebook/06_SESSION_SCHEME.md
 ```
 
-Then inspect:
+Then use the relevant domain checkpoint:
 
 ```text
-documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
-documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md
-documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+Operational: operational/10_OPERATIONAL_STATE.md
+Didactic: didactics/08_CONCEPT_MAP.md
+Design: design/09_DESIGN_STATE.md
 ```
 
-For operational state:
-
-```text
-documentation/sketch_notebook/operational/10_OPERATIONAL_STATE.md
-```
-
-For learning state:
-
-```text
-documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
-```
-
-For design state:
-
-```text
-documentation/sketch_notebook/design/09_DESIGN_STATE.md
-```
-
-Use Git history only if forensic reconstruction of pruned Cycle 04 stage content is required.
+Read DEV_STAGE or source files only when validating materialization, investigating drift, or executing the next approved task.
