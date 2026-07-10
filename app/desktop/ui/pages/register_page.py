@@ -71,7 +71,7 @@ class RegisterPage(QWidget):
         self.id_input = QLineEdit()
 
         self.category_input = QLineEdit()
-        self.category_input.setText("F")
+        self.category_input.setPlaceholderText("Category ID")
 
         self.product_input = QLineEdit()
 
@@ -97,7 +97,7 @@ class RegisterPage(QWidget):
         self.promotion_input = QCheckBox("Promotion")
 
         self.store_id_input = QLineEdit()
-        self.store_id_input.setText("1")
+        self.store_id_input.setPlaceholderText("Optional")
 
         self.purchase_date_input = QDateEdit()
         self.purchase_date_input.setCalendarPopup(True)
@@ -275,6 +275,19 @@ class RegisterPage(QWidget):
             )
             return False
 
+        store_id = self.store_id_input.text().strip()
+
+        if store_id:
+            try:
+                int(store_id)
+            except ValueError:
+                QMessageBox.warning(
+                    self,
+                    "Invalid field",
+                    "Store ID must be empty or numeric."
+                )
+                return False
+
         return True
 
 
@@ -328,14 +341,14 @@ class RegisterPage(QWidget):
 
     def store_id(
         self,
-    ) -> int:
+    ) -> int | None:
 
         text = (
             self.store_id_input.text().strip()
         )
 
         if text == "":
-            return 1
+            return None
 
         return int(text)
 
@@ -353,9 +366,7 @@ class RegisterPage(QWidget):
 
         self.id_input.clear()
 
-        self.category_input.setText(
-            "F"
-        )
+        self.category_input.clear()
 
         self.product_input.clear()
 
@@ -381,9 +392,7 @@ class RegisterPage(QWidget):
             False
         )
 
-        self.store_id_input.setText(
-            "1"
-        )
+        self.store_id_input.clear()
 
         self.purchase_date_input.setDate(
             QDate.currentDate()

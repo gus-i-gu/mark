@@ -59,6 +59,8 @@ from .contracts import (
 
 from .models import (
 
+    Category,
+
     Product,
 
     Purchase,
@@ -726,6 +728,37 @@ class ProductService(ServiceContract):
 
             6. Return Product and Purchase.
         """
+
+        category_id = category_id.strip()
+
+        if not category_id:
+
+            raise ValueError("Category is required.")
+
+        if not self.repository.exists_category(category_id):
+
+            self.repository.create_category(
+
+                Category(
+
+                    id=category_id,
+
+                    name=category_id,
+
+                    description=None,
+
+                )
+
+            )
+
+        if store_id is not None and not self.repository.exists_store(store_id):
+
+            raise ValueError(
+
+                f"Store '{store_id}' does not exist. "
+                "Leave Store ID empty or create the store in Settings."
+
+            )
 
         ###################################################
         # Product exists?

@@ -188,6 +188,8 @@ def initialize(
 
     recreate: bool = False,
 
+    include_sample_data: bool = False,
+
 ) -> None:
     """
     Create the user database from bundled resources.
@@ -200,7 +202,7 @@ def initialize(
 
     3. Execute schema.sql.
 
-    4. Execute seed.sql (optional).
+    4. Execute seed.sql only when explicitly requested.
 
     5. Commit changes.
 
@@ -278,10 +280,10 @@ def initialize(
 
 
     #######################################################
-    # Execute seed.sql (optional)
+    # Execute seed.sql only for explicit development fixtures.
     #######################################################
 
-    if SEED_PATH.exists():
+    if include_sample_data and SEED_PATH.exists():
 
         with open(
 
@@ -644,6 +646,24 @@ def reset() -> None:
     initialize(
 
         recreate=True,
+
+    )
+
+
+def initialize_with_sample_data(
+
+    recreate: bool = False,
+
+) -> None:
+    """
+    Create a development database with sample fixture rows.
+    """
+
+    initialize(
+
+        recreate=recreate,
+
+        include_sample_data=True,
 
     )
 

@@ -435,6 +435,25 @@ class Repository(RepositoryContract):
     # Categories
     #######################################################
 
+    def create_category(self, category: Category) -> Category:
+        self.cursor_execute(
+            """
+            INSERT INTO categories (
+                id,
+                name,
+                description
+            )
+            VALUES (?, ?, ?)
+            """,
+            (
+                category.id,
+                category.name,
+                category.description,
+            ),
+        )
+        self.commit()
+        return category
+
     def get_categories(self) -> list[Category]:
         self.cursor_execute(
             """

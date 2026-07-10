@@ -1,135 +1,397 @@
-# Codex Report - Operational Cycle 04 Settings Stabilization
+# G_OPS_CODEX.md
 
-## Source Stage Files Read
+> Cycle: 05
+> Sprint: 01 - Windows Desktop Installation
+> Report type: Codex operational evidence
 
-- `AGENTS.md`
-- `documentation/sketch_notebook/INDEX.md`
-- `documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md`
-- `documentation/sketch_notebook/methodology/FLUX.md`
-- `documentation/sketch_notebook/methodology/PROMOTION_RULES.md`
-- `documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md`
-- `documentation/sketch_notebook/00_PROJECT_STATE.md`
-- `documentation/sketch_notebook/06_SESSION_SCHEME.md`
-- `documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md`
-- `documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md`
-- `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
-- `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
-- `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
-- `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
+## 1. Bootstrap and stage files read
 
-## Files Changed
+Read in required order:
 
-- `app/core/services.py`: added service-owned settings defaults, strict save validation, tolerant persisted fallback validation, week/month boundary interpretation, and `operational_date()`.
-- `app/desktop/ui/pages/settings_page.py`: expanded Settings controls for week boundary, month mode, month weekday, month day, and day-boundary time; removed visible page-order editing from the save path.
-- `app/core/database.py`: added non-destructive defaults for new canonical settings keys.
-- `app/database/seed.sql`: updated fresh-database seed settings to the Cycle 04 keys.
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`: updated this report.
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`: updated didactic evidence report.
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`: updated design evidence report.
+```text
+AGENTS.md
+documentation/sketch_notebook/INDEX.md
+documentation/sketch_notebook/methodology/METHOD_FOUNDATIONS.md
+documentation/sketch_notebook/methodology/FLUX.md
+documentation/sketch_notebook/methodology/PROMOTION_RULES.md
+documentation/sketch_notebook/methodology/CHAT_PROTOCOL.md
+```
 
-## Files Created
+Also read:
 
-- None.
+```text
+documentation/sketch_notebook/00_PROJECT_STATE.md
+documentation/sketch_notebook/06_SESSION_SCHEME.md
+documentation/sketch_notebook/DEV_STAGE/A_OPERATIONAL.md
+documentation/sketch_notebook/DEV_STAGE/B_DIDACTIC.md
+documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md
+documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
+documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
+documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
+```
 
-## Files Deleted
+## 2. Repository baseline confirmed
 
-- None.
+Branch used: `agent/cycle05-install-staging`.
 
-## Commands Run
+Baseline confirmed:
 
-- `python -m compileall app` using the Windows app launcher; passed, but launcher later emitted Python install-manager messages.
-- `C:\Users\gusrm\AppData\Local\Python\bin\python.exe -m compileall app`
-- Temporary-`LOCALAPPDATA` service smoke for settings persistence, invalid persisted fallback, strict invalid save rejection, week/month boundaries, and operational-date helper.
-- Temporary-`LOCALAPPDATA` legacy month-boundary compatibility smoke.
-- Temporary-`LOCALAPPDATA` offscreen Qt smoke for `SettingsPage` controls and public tabs.
-- Temporary-`LOCALAPPDATA` store create/update service regression smoke.
-- `git diff --check`
-- `git restore` for generated `__pycache__` files created by validation.
+```text
+main.py -> app.main.main() -> QApplication -> MainWindow
+Desktop UI -> ProductService -> Repository -> SQLite
+%LOCALAPPDATA%\Markei\market.sqlite
+```
 
-## Validation Results
+## 3. Files changed, created, and deleted
 
-- Compile passed with the explicit project interpreter.
-- Settings persistence smoke passed on a temporary database.
-- Invalid persisted settings fell back to defaults.
-- Invalid UI-style save for `99:99` time raised `ValueError`.
-- Week boundary smoke passed for Monday and Sunday boundaries.
-- Month boundary smoke passed for `first_weekday` and `day_of_month`.
-- `operational_date()` smoke passed for a `04:30` day boundary.
-- Legacy `history.month_boundary_rule = first_friday` mapped to `history.month_boundary_mode = first_weekday` and `history.month_boundary_weekday = friday` when canonical month keys were absent.
-- Offscreen SettingsPage smoke passed: 7 week choices, 2 month modes, 7 month weekday choices, day spinbox range 1-28.
-- Public tab smoke passed: `['Register', 'Lists', 'History', 'Settings']`.
-- Store create/update service smoke passed on a temporary database.
-- Qt emitted a local PySide font-directory warning during offscreen smoke; no traceback.
-- `git diff --check` reported only line-ending warnings for edited files.
+Changed:
 
-## Settings Defaults / Validation Evidence
+```text
+main.py
+app/__main__.py
+app/main.py
+app/core/database.py
+app/core/repository.py
+app/core/services.py
+app/desktop/ui/pages/register_page.py
+requirements.txt
+scripts/build_windows.ps1
+```
 
-- Defaults are centralized in `ProductService.DEFAULT_SETTINGS`.
-- Strict user-save validation is in `ProductService.validate_history_settings_input()`.
-- Persisted corrupt values are normalized by `ProductService.validated_settings()`.
-- New canonical settings keys are persisted through `ProductService.save_history_settings()`.
-- Repository remains generic key/value persistence.
+Created:
 
-## Week Boundary Implementation Evidence
+```text
+.gitignore
+README.md
+requirements-build.txt
+packaging/markei.spec
+packaging/windows/markei.iss
+scripts/validate_windows_package.ps1
+tests/test_cycle05_installation.py
+documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+```
 
-- Weekday values are lowercase semantic strings from Monday through Sunday.
-- `SettingsPage` exposes all seven choices.
-- `ProductService.week_start()` consumes the validated `history.week_boundary`.
+Deleted from version control:
 
-## Month Boundary Implementation Evidence
+```text
+Markei.spec
+app/database/market.sqlite
+tracked __pycache__/*.pyc files
+tracked build/ generated PyInstaller files
+tracked dist/ generated PyInstaller files
+```
 
-- `history.month_boundary_mode` supports `first_weekday` and `day_of_month`.
-- `history.month_boundary_weekday` supports all seven weekday values.
-- `history.month_boundary_day` is constrained to 1-28.
-- `get_history_view()` consumes the normalized month settings when building History month sections.
+Generated-but-ignored validation output:
 
-## Time Reference Implementation Evidence
+```text
+build/
+dist/
+tests/__pycache__/
+```
 
-- `time_reference.day_boundary_time` is persisted and validated as `HH:MM`.
-- `ProductService.operational_date()` derives an operational date from date/datetime inputs and the configured boundary.
-- Current purchase records are date-only, so this setting has no material grouping effect on existing History rows in this pass.
+## 4. Dependency versions selected
 
-## Store Editor Regression Evidence
+Validated environment:
 
-- Store create/update service smoke passed.
-- Settings store editor UI code was not structurally changed beyond sharing the expanded Settings page.
-- Store deletion was not added.
+```text
+Python 3.14.6
+PySide6 6.11.1
+PyInstaller 6.21.0
+```
 
-## Pages-Order Handling Evidence
+Pinned declarations:
 
-- `MainWindow` still mounts static public tabs: Register, Lists, History, Settings.
-- `pages.order` remains persisted but inert.
-- The visible Settings page-order field was removed from the History settings save path.
+```text
+requirements.txt -> PySide6==6.11.1
+requirements-build.txt -> pyinstaller==6.21.0
+```
 
-## Instructions Completed
+## 5. Startup failure-boundary evidence
 
-- Settings defaults and validation.
-- Seven-day week boundary selector.
-- Month boundary mode, weekday, and day controls.
-- Day-boundary time setting.
-- Service-owned History week/month grouping interpretation.
-- Non-destructive seed/migration defaults.
-- Store create/update preserved.
-- G/H/I evidence reports.
+Implemented top-level boundary in `app/main.py`.
 
-## Instructions Skipped
+Induced failure command returned:
 
-- Manual interactive Settings UI QA was not performed beyond offscreen widget instantiation.
-- Manual store create/update through the actual UI was not performed; service-level regression was run.
-- Day-boundary time was not applied to date-only purchase grouping because existing purchases do not contain reliable time-of-day data.
+```text
+exit 1
+logs 1
+contains True
+```
 
-## Failures Or Blockers
+Diagnostic path example:
 
-- No implementation blocker found.
-- The generic `python` command resolved to the Windows app launcher and lacked `PySide6`; validation was rerun with the explicit project interpreter.
+```text
+%LOCALAPPDATA%\Markei\logs\startup-<timestamp>.log
+```
 
-## Unresolved Operational Risks
+The boundary reports that user data was not reset or replaced.
 
-- Full human UI QA remains needed for Settings save feedback and store editing interaction.
-- Existing old `history.month_boundary_rule` data is not deleted; it is treated as legacy/inert once new canonical keys are present.
-- `pages.order` remains an inert persisted setting.
+## 6. Resource and user-data path evidence
 
-## Suggested Follow-Up
+Source resource discovery:
 
-- Operational Chat should classify manual UI QA results after human testing.
-- A later cleanup can decide whether to migrate or remove the legacy `history.month_boundary_rule` key.
+```text
+resource_base H:\Users\Gus\source\repo\markei
+schema_exists True H:\Users\Gus\source\repo\markei\app\database\schema.sql
+database_path C:\Users\gusrm\AppData\Local\Markei\market.sqlite
+```
+
+Frozen payload validation found:
+
+```text
+dist\Markei\_internal\app\database\schema.sql
+```
+
+No `seed.sql`, `market.sqlite`, `.sqlite`, `.sqlite-wal`, or `.sqlite-shm` file was present in the frozen runtime after the new build.
+
+## 7. Production seed-policy evidence
+
+`database.initialize()` now executes `schema.sql` only by default.
+
+`seed.sql` remains in source as a development fixture and is executable only through explicit `initialize_with_sample_data()` / `include_sample_data=True`.
+
+`packaging/markei.spec` bundles only `schema.sql`.
+
+## 8. Empty-database corrections
+
+Corrections:
+
+```text
+Register default Store ID 1 removed; empty Store ID maps to NULL.
+Register validates non-numeric Store ID before service call.
+ProductService creates a user-entered category when the first receipt names a new category.
+ProductService reports a clear missing-store prerequisite if a non-existing store ID is supplied.
+```
+
+Unit evidence:
+
+```text
+products 0
+purchases 0
+stores 0
+categories 0
+settings > 0
+```
+
+Public page construction evidence:
+
+```text
+tabs 4
+['Register', 'Lists', 'History', 'Settings']
+```
+
+## 9. PyInstaller configuration evidence
+
+Created `packaging/markei.spec`.
+
+Configuration:
+
+```text
+entrypoint: root main.py
+output: one-folder dist\Markei\Markei.exe
+console: False
+UPX: False
+bundled data: app/database/schema.sql
+version metadata: generated from app.core.config.VERSION
+Qt modules: PySide6.QtCore, PySide6.QtGui, PySide6.QtWidgets
+```
+
+PyInstaller build completed successfully.
+
+## 10. Inno Setup configuration evidence
+
+Created `packaging/windows/markei.iss`.
+
+Configuration:
+
+```text
+per-user install
+DefaultDirName={localappdata}\Programs\Markei
+PrivilegesRequired=lowest
+Start Menu shortcut
+optional desktop shortcut
+ordinary uninstall registration
+stable AppId
+installer output Markei-Setup-<version>.exe
+no SQL execution
+no migration logic
+SQLite files excluded from payload
+```
+
+Installer compilation was not executed because `ISCC.exe` was unavailable.
+
+## 11. Commands executed
+
+```powershell
+git status --short --branch
+git branch --all --list
+git fetch origin agent/cycle05-install-staging:agent/cycle05-install-staging
+Get-Content <bootstrap and stage files>
+rg --files
+git rm -r build dist __pycache__ app/database/market.sqlite Markei.spec
+git rm -rf app/__pycache__ app/core/__pycache__ app/database/__pycache__ app/desktop/__pycache__ app/desktop/ui/__pycache__ app/desktop/ui/pages/__pycache__ app/desktop/ui/widgets/__pycache__ app/mobile/__pycache__
+python -c "import sys; print(sys.version); import PySide6; print('PySide6', PySide6.__version__)"
+python -m compileall -q main.py app tests
+python -m unittest discover -s tests -v
+python -m PyInstaller --version
+Get-Command ISCC.exe -ErrorAction SilentlyContinue
+python -m PyInstaller --noconfirm --clean packaging\markei.spec
+.\scripts\validate_windows_package.ps1
+.\dist\Markei\Markei.exe clean-profile launch probe
+offscreen MainWindow construction probe
+restart persistence probe
+startup failure boundary probe
+.\scripts\build_windows.ps1
+```
+
+## 12. Source regression results
+
+Passed:
+
+```text
+python -m compileall -q main.py app tests
+python -m unittest discover -s tests -v
+offscreen MainWindow construction: Register, Lists, History, Settings
+source resource discovery: schema exists under app/database/schema.sql
+```
+
+Source GUI event-loop launch was not left running as a manual UI session; offscreen construction was used to verify public page startup safely.
+
+## 13. Frozen-runtime results
+
+Passed:
+
+```text
+python -m PyInstaller --noconfirm --clean packaging\markei.spec
+dist\Markei\Markei.exe produced
+dist\Markei\_internal\app\database\schema.sql present
+.\scripts\validate_windows_package.ps1 passed
+```
+
+Frozen launch probe:
+
+```text
+alive=True
+dbExists=True
+```
+
+Process was stopped after startup to avoid leaving a GUI process running.
+
+## 14. Seed-free first-launch results
+
+Clean temporary profile frozen launch created:
+
+```text
+%LOCALAPPDATA%\Markei\market.sqlite
+```
+
+Counts:
+
+```text
+products: 0
+purchases: 0
+stores: 0
+categories: 0
+settings: 6
+```
+
+## 15. First-user-data persistence results
+
+Service-level restart persistence probe:
+
+```text
+products 1
+history 1
+stores 0
+```
+
+The first receipt used a user-entered category and no seeded store.
+
+## 16. Installer, upgrade, uninstall, and reinstall results
+
+Implemented installer script and build-script invocation.
+
+Unavailable:
+
+```text
+installer compilation
+Start Menu launch
+upgrade preservation through installer
+uninstall preservation through installer
+reinstall recovery through installer
+```
+
+Reason:
+
+```text
+ISCC.exe was not found in the environment.
+```
+
+Design evidence from script:
+
+```text
+%LOCALAPPDATA%\Markei is not referenced for deletion.
+No SQL appears in markei.iss.
+SQLite payload files are excluded.
+```
+
+## 17. Failure-path results
+
+Induced startup failure returned non-zero and wrote a traceback log.
+
+No reset path is called from the failure boundary.
+
+## 18. SmartScreen or antivirus observations
+
+Not executed. No signed installer artifact was produced because Inno Setup was unavailable, and no SmartScreen or antivirus scan was available in the execution environment.
+
+## 19. Instructions completed and skipped
+
+Completed:
+
+```text
+startup failure boundary
+schema-only production initialization
+seed fixture made explicit
+empty database public page construction
+first real data creation without seed
+PyInstaller one-folder configuration and build
+payload validation
+Inno Setup per-user script
+dependency pinning
+release documentation
+G/H/I evidence reports
+```
+
+Skipped/unavailable:
+
+```text
+installer compilation and installed-app lifecycle validation
+manual Start Menu launch
+SmartScreen/antivirus observation
+clean dependency installation in a fresh venv
+```
+
+## 20. Failures, blockers, and unresolved risks
+
+Blocker:
+
+```text
+Inno Setup ISCC.exe unavailable; installer path could not be compiled or installed.
+```
+
+Risks:
+
+```text
+Inno script syntax and relative paths remain uncompiled.
+Source launch with a synthetic LOCALAPPDATA disturbed the Windows Python launcher, so clean-profile source GUI launch was not used.
+Qt offscreen construction emitted a font-directory warning.
+No production code signing.
+No manual human UI walkthrough.
+```
+
+## 21. Suggested follow-up
+
+Install Inno Setup, run `.\scripts\build_windows.ps1`, then validate installer install, Start Menu launch, upgrade, uninstall preservation, reinstall recovery, and SmartScreen/antivirus behavior on a clean Windows profile.

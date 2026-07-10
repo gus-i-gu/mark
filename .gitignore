@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+.venv/
+build/
+dist/
+
+packaging/windows/*.tmp
+packaging/windows/*.log
