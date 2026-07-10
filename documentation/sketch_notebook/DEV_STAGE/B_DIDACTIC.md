@@ -1,74 +1,72 @@
-# Didactic Canonical Reconstruction Stage
+# Didactic Checkpoint Recovery Retrospective
 
-> Status: Active functional stage
+> Status: Ephemeral functional staging
 > Role: Didactic Chat [A]
 > Branch: `sketch-notebook-recovery`
-> Scope: Reconciliation of current structural evidence with recoverable Main synthesis and preparation of the first canonical didactic reconstruction tranche
-> Knowledge state: Staged, reconciled, not yet materialized into permanent didactic memory
-> Supersedes: `Didactic Structural Recovery Report` at commit `6b20498b3893eb8d8fc3d0aeb53668393f87391a`
+> Scope: Main-branch commit retrospective through the Cycle 05 naming transition, reconciled against current didactic canon
+> Knowledge state: Historical evidence and checkpoint preparation; not canonical knowledge
+> Permanent target: `documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md`
 
 ---
 
 ## 1. Purpose
 
-This stage begins reconstruction of the permanent didactic domain after the recovery branch pruned the current contents of:
+This stage temporarily preserves the commit retrospective required to rebuild the Didactic checkpoint after canonical and derivative repopulation.
+
+The retrospective is bounded around the transition from closed Cycle 04 into the competing Cycle 05 directions. It does not reproduce every historical commit or restore the former checkpoint verbatim.
 
 ```text
-documentation/sketch_notebook/didactics/02_KANBAN.md
-documentation/sketch_notebook/didactics/07_GLOSSARY.md
-documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
-documentation/sketch_notebook/didactics/13_LECTURE_REGISTER.md
+current 02_KANBAN canon
++ current repository recovery baseline
++ main-branch commit sequence through Cycle 05
+= compact current checkpoint
 ```
 
-The reconstruction order follows Domain Symmetry:
-
-```text
-Canonical Knowledge
-↓
-Derived Knowledge
-↓
-Domain Checkpoint
-↓
-Observational History
-```
-
-This file stages canonical reconstruction only. It does not yet derive glossary entries or refresh the concept-map checkpoint.
+Commit history explains how the current learning state emerged. It does not override current canon.
 
 ---
 
-## 2. Sources Reconciled
-
-### 2.1 Current Didactic structural evidence
-
-The superseded `B_DIDACTIC.md` structural review established the contemporary implementation chain:
+## 2. Retrospective Boundary
 
 ```text
-PySide6 desktop adapter
-→ ProductService business boundary
-→ Repository persistence adapter
-→ database lifecycle manager
-→ SQLite schema and user database
+Cycle 04 domain reconciliation and global closure
+↓
+post-Cycle 04 recovery scheme
+↓
+Cycle 05 mobile-preparation synthesis
+↓
+Cycle 05 mobile-development planning session
+↓
+cycle 5.0 outburst mode
+↓
+Cycle 05 Sprint 01 packaging reconciliation
+↓
+desktop packaging operational model
 ```
 
-Its main stable observations were:
-
-1. desktop pages call `ProductService`, not SQL;
-2. `ProductService` owns business interpretation and read-model assembly;
-3. `Repository` owns SQL operations and row mapping;
-4. the database manager owns configured connection creation, initialization, and migration;
-5. domain models carry named application state without executing SQL;
-6. raw persisted facts, cached summaries, and presentation projections are distinct representations;
-7. initialization creates new persistence state while migration evolves existing persistence state.
-
-### 2.2 Recoverable Main-stage synthesis
-
-`[M]_STAGE/J_MAIN_STAGE.md` is absent from the current recovery branch. The latest recoverable version was read from commit:
+Relevant commits:
 
 ```text
-c51938b7d603f05aa8745db7a54f3a257dd27ee5
+1e07b48  Reconcile Cycle 04 didactic checkpoint
+c84e850  Close Cycle 04 global project state
+bd4b4cd  Prepare post-Cycle 04 recovery scheme
+e9cf0f0  Stage Cycle 05 mobile preparation synthesis
+a4f7732  Prepare Cycle 05 mobile development planning session
+c51938b  cycle 5.0 outburst mode
+11a931f  Reconcile Cycle 05 Sprint 01 operational checkpoint
+bc4d3a5  Reconcile Cycle 05 Sprint 01 operational TODO
+b29aec0  Reconcile Cycle 05 Sprint 01 didactic checkpoint
+d4a1448  Append Cycle 05 Sprint 01 operational evidence
+fbeef65  Add desktop packaging operational model
 ```
 
-That Main stage carried this accepted application boundary:
+This range exposes the last closed baseline, the failed intended cycle, the pivot, the packaging evidence, and the unresolved completion boundary.
+
+---
+
+## 3. Closed Baseline Before the Failed Cycle
+
+Cycle 04 closed with:
 
 ```text
 Desktop UI
@@ -77,326 +75,150 @@ Desktop UI
 → SQLite
 ```
 
-It also preserved the following stable conclusions:
+The project had service-owned business interpretation, generic repository persistence, platform-neutral semantic values, consolidated Lists views, History analytics, Settings validation, and separation between UI labels and persisted meanings.
 
-- UI labels and persisted semantic values are separate;
-- `ProductService` owns business interpretation;
-- `Repository` is a persistence adapter rather than a business-meaning owner;
-- service-owned read models are platform-neutral contracts;
-- mobile or alternate presentation work must not copy PySide6 widget behavior into the application core;
-- typed contracts, dependency boundaries, persistence ownership, migration, and validation require explicit treatment.
-
-The recoverable J file is Main staging evidence, not canonical didactic truth. Its claims are accepted here only where they agree with contemporary repository evidence and recoverable historical didactic canon.
-
-### 2.3 Recoverable historical canonical register
-
-The last pre-pruning `02_KANBAN.md` was recovered from commit:
-
-```text
-bd4b4cd9233d08c2907c2bfe0644206994ad351a
-```
-
-That register proves that the following identifiers were already canonical and occupied:
-
-```text
-&&&01  Domain Model Field Semantics
-&&&02  Raw Data Versus Derived Data
-&&&03  Naming as Data Contract
-```
-
-These concepts remain directly supported by the current models, repository rows, service calculations, settings keys, read-model dictionaries, and desktop rendering boundary.
-
-No new KANBAN number is assigned in this tranche.
+The forward state still carried human verification gaps around Settings interaction, store editing and refresh, first-weekday period-end correctness, and broad desktop regression evidence.
 
 ---
 
-## 3. Reconciliation Result
+## 4. Failed Preceding Cycle: Mobile Preparation
 
-### 3.1 Stable agreement
+The first Cycle 05 direction was preparation for full mobile implementation. Its declared exit conditions required decisions about mobile product scope, reusable core boundaries, typed contracts, dependency construction, persistence and synchronization, backend/API responsibility, identity and security, mobile framework, migration, automated validation, and phased implementation.
 
-The current structural review, recoverable Main synthesis, historical canonical register, and contemporary source code agree on one foundational learning sequence:
+The planning documents prohibited broad mobile coding before those dependencies were reconciled.
 
-```text
-Names carry semantic responsibility
-↓
-Some values are source facts and others are derived interpretations
-↓
-Each layer must preserve those meanings while transforming representation
-```
+That cycle did not reach its declared exit conditions. Before product scope, data ownership, synchronization, backend, identity, framework, and migration decisions were resolved, the lineage pivoted into `cycle 5.0 outburst mode` and then a Windows desktop packaging sprint.
 
-This supports restoration of the first three historical canonical concepts without semantic invention.
-
-### 3.2 Conflicts and limits
-
-The following material is not promoted in this tranche:
-
-- mobile architecture proposals from the historical J stage;
-- unresolved connection-lifetime ownership;
-- dependency injection as an implemented capability;
-- typed view models as current implementation;
-- versioned migration history;
-- package subdivision proposals;
-- any new KANBAN identifier.
-
-These remain staged questions or later canonical candidates because contemporary implementation does not yet prove a stable accepted answer.
-
-### 3.3 Promotion decision
-
-The first canonical reconstruction tranche should restore:
+The first Cycle 05 direction is checkpointed as:
 
 ```text
-&&&01
-&&&02
-&&&03
+historically significant
++ useful for exposing missing decisions
++ incomplete
++ superseded as active implementation direction
 ```
 
-Their wording is refreshed only where necessary to reflect the current repository. Their identities, semantic roles, and numbering remain historically continuous.
+It must not be represented as completed mobile preparation, implemented mobile architecture, or accepted target design.
+
+Its principal lesson is capability versus readiness: a planning document and reusable service boundary do not prove that a second platform is ready to build.
 
 ---
 
-# 4. Proposed Canonical Materialization
+## 5. Cycle 05 Pivot: Desktop Packaging
 
-The following text is prepared for later materialization into:
+The pivot changed the active learning topic from mobile architecture preparation to Windows packaging and installation.
 
 ```text
-documentation/sketch_notebook/didactics/02_KANBAN.md
+source application
+→ PyInstaller one-folder frozen runtime
+→ bundled schema resource
+→ per-user writable SQLite state
+→ first-launch initialization and migration
+→ Inno Setup installer configuration
+→ installed-lifecycle validation pending
 ```
 
-It remains staged until the authorized materialization step occurs.
+Verified evidence included a generated and launched frozen runtime, working-directory-independent schema discovery, schema-only first launch, seed-free production business state, `%LOCALAPPDATA%/Markei` writable data, resource/data separation, pinned dependencies, and construction of the four public pages.
+
+Configured but incomplete were Inno Setup compilation, installed Start Menu launch, upgrade preservation, uninstall/reinstall lifecycle, SmartScreen and antivirus observation, signing, and rollback. The immediate blocker was unavailable `ISCC.exe`.
+
+The sprint produced a validated frozen runtime, not a fully validated installed release.
 
 ---
 
-## &&&01
+## 6. Conflict Against Current Canon
 
-### Domain Model Field Semantics
+The current `02_KANBAN.md` is a fresh recovery canon. Historical identifiers from the former checkpoint are not imported unless represented in current canon.
 
-#### Description
-
-A field is not merely a place where a value is stored. Its name and location express what the value means, which layer owns that meaning, and how other parts of the program may use it.
-
-Two fields can use the same Python or SQLite type while representing different domain concepts. Treating them as interchangeable because their technical types match can corrupt business meaning without producing an obvious syntax error.
-
-#### Formal Definition
-
-Domain model field semantics are the stable meaning, responsibility, and permitted interpretation assigned to a named field within the application domain, independently of the field's storage type or presentation format.
-
-#### Practical Example
-
-Two integer fields may both count days, while one describes the typical interval between purchases and another describes expected shelf life. Their shared type does not make their meanings equivalent.
-
-#### Language Implementation
-
-In Python, field semantics appear through:
-
-- dataclass attributes;
-- function parameters and return values;
-- dictionary keys;
-- type annotations;
-- property names;
-- validation rules.
-
-Python does not automatically enforce the full business meaning of similarly typed values. Clear naming and responsibility boundaries therefore carry part of the contract.
-
-#### Project Implementation
-
-In Markei:
-
-- `average_duration_days` represents purchase-cycle duration;
-- `average_shelf_life_days` represents shelf-life duration;
-- `current_quantity` represents current inventory state;
-- `quantity` on `Purchase` represents one historical receipt event;
-- `status` and `status_label` in a Lists read model represent service interpretation prepared for presentation.
-
-The schema, domain models, repository mappings, service calculations, and desktop rendering must preserve these distinctions.
-
-#### Required Concepts
-
-None.
-
-#### Related Concepts
-
-`&&&02`, `&&&03`.
-
-#### Status
-
-Yellow.
-
-#### Source
-
-Recovered historical `02_KANBAN.md`; current `app/core/models.py`, `app/core/repository.py`, `app/core/services.py`, `app/database/schema.sql`, and desktop read-model consumption; reconciled with recoverable `J_MAIN_STAGE.md`.
-
----
-
-## &&&02
-
-### Raw Data Versus Derived Data
-
-#### Description
-
-Applications work with both source facts and values calculated from those facts. The distinction matters because a calculation, label, prediction, or cached summary does not have the same evidential role as the records from which it was produced.
-
-Confusing raw and derived data can cause the application to overwrite history with interpretation or persist values that should instead be recalculated.
-
-#### Formal Definition
-
-Raw data is information directly entered, observed, imported, or retrieved as a source fact. Derived data is information produced by applying calculation, aggregation, filtering, grouping, formatting, prediction, or business interpretation to other data.
-
-#### Practical Example
-
-A receipt purchase is a source event. A predicted next-purchase date, inventory status, formatted price label, or expenditure percentage is derived from one or more source records.
-
-#### Language Implementation
-
-In Python, raw and derived values may both appear as object attributes or dictionary entries. Their distinction is therefore expressed through:
-
-- naming;
-- construction responsibility;
-- mutability rules;
-- service workflows;
-- persistence decisions;
-- recalculation behavior.
-
-A value being present in a dataclass or dictionary does not by itself reveal whether it is raw or derived.
-
-#### Project Implementation
-
-In Markei:
-
-- `Purchase` records are historical source events;
-- store, category, and settings rows are persisted facts;
-- product summary fields such as expected dates and price deltas are derived or cached interpretations;
-- Lists and History read-model labels are derived presentation data;
-- initialization and migration operate on persistence structure rather than business interpretation.
-
-`ProductService` is the main owner of business derivation. `Repository` retrieves and persists facts without becoming the owner of their business meaning.
-
-#### Required Concepts
-
-`&&&01`.
-
-#### Related Concepts
-
-`&&&03`.
-
-#### Status
-
-Yellow.
-
-#### Source
-
-Recovered historical `02_KANBAN.md`; current Product/Purchase distinction, service read-model assembly, repository persistence boundary, and Main-stage responsibility synthesis.
-
----
-
-## &&&03
-
-### Naming as Data Contract
-
-#### Description
-
-Names connect the meanings used by different layers. A field name, settings key, method name, or read-model key tells another component what value it is receiving and how that value should be interpreted.
-
-A naming mismatch can break a system even when every individual value has the expected technical type.
-
-#### Formal Definition
-
-Naming as a data contract is the use of stable, precise, and responsibility-aware names to define the expected meaning and shape of information exchanged between components.
-
-#### Practical Example
-
-`product_name`, `quantity_label`, `expected_next_purchase`, and `history.week_boundary` identify different kinds of data. Replacing them with vague or inconsistent names would force each consumer to guess their meaning.
-
-#### Language Implementation
-
-In Python, naming contracts appear in:
-
-- dataclass fields;
-- abstract and concrete method signatures;
-- keyword arguments;
-- dictionary keys;
-- constants;
-- settings keys;
-- imported symbols.
-
-Untyped dictionaries make naming especially important because their keys function as runtime contracts between producer and consumer.
-
-#### Project Implementation
-
-Markei preserves names across several representations:
+### Canon reinforced by the retrospective
 
 ```text
-SQLite column
-→ repository row mapping
-→ domain model or service projection
-→ desktop rendering
+&&&01 Responsibility Boundary
+&&&02 Raw Data Versus Derived Data
+&&&03 Naming as Data Contract
+&&&04 Resource Ownership and Lifetime
+&&%01 Package and Module Boundary
+&&%03 Context Manager and Deterministic Cleanup
+&%%01 Application Service
+&%%02 Repository Pattern and Persistence Adapter
+&%%03 Presentation Adapter
+&%%04 Database Row, Domain Model, and View Model
+&%%05 Statement Atomicity Versus Workflow Atomicity
+%%%01 SQLite Initialization Versus Migration
+%%%02 SQLite Connection and Cursor Ownership
+%%%03 SQLite PRAGMA and Connection Configuration
+%%%05 Bundled Resource Versus Writable User Data
 ```
 
-Examples include:
+Packaging-specific historical lessons—frozen execution, packaging versus installation, build-time versus runtime dependencies, reproducible builds, version compatibility, and successful build versus validated release—remain historical or next-concept material pending explicit promotion under the refreshed numbering system.
 
-- `product_name` across schema, model, repository, service, and UI;
-- settings keys such as `history.week_boundary`;
-- Lists read-model keys such as `quantity_label`, `remaining_label`, `status`, and `status_label`;
-- distinct names for raw values and formatted display values.
+### Unresolved questions
 
-The current dictionary-based view models are platform-neutral, but their correctness depends on producer and consumer agreeing on every key and its meaning.
-
-#### Required Concepts
-
-`&&&01`.
-
-#### Related Concepts
-
-`&&&02`.
-
-#### Status
-
-Yellow.
-
-#### Source
-
-Recovered historical `02_KANBAN.md`; current schema/model/repository/service/UI naming chain; recoverable Main-stage distinction between persisted semantic values and UI labels.
+- application-level shutdown ownership;
+- deterministic closure of four page-owned chains;
+- workflow transaction boundaries;
+- breadth of ProductService and Repository;
+- completeness of abstract contracts;
+- dictionary versus typed view models;
+- migration versioning;
+- promotions-table status;
+- `pages.order` drift;
+- production seed policy;
+- installer lifecycle validation;
+- mobile product and architecture direction.
 
 ---
 
-## 5. Canonical File Header Proposal
-
-When materialized, `02_KANBAN.md` should begin with metadata equivalent to:
+## 7. Checkpoint Reconstruction Decision
 
 ```text
-# 02_KANBAN.md
-
-> Domain: Didactic
-> Status: Canonical concept register under recovery reconstruction
-> Recovery source: repository evidence, recoverable historical canon, and reconciled Main staging
-> Current tranche: &&&01–&&&03
+The notebook recovered the contemporary layered desktop system,
+repopulated Didactic canon and glossary,
+and reconstructed learning state after a failed mobile-preparation cycle
+followed by a partially completed desktop-packaging pivot.
 ```
 
-The header should not claim that the complete historical register has already been restored.
+No concept becomes Green solely from code or packaging evidence. Yellow marks strongly evidenced concepts still requiring reinforcement. Red marks ownership, cleanup, and transaction concepts tied to unresolved behavior or decisions.
 
----
+### Proposed checkpoint state
 
-## 6. Next Investigation
+Stable concepts: none confirmed Green through explicit human learning validation.
 
-Before the second canonical tranche, commit-oriented recovery should determine:
-
-1. the complete historically occupied ranges for `&&&`, `&&%`, `&%%`, and `%%%`;
-2. which historical concepts remain valid under the current package structure;
-3. which concepts were superseded, renamed, or only checkpointed but never materialized canonically;
-4. whether the structural candidates `package/module boundary`, `layered responsibility`, `resource ownership`, `initialization versus migration`, and `view model` already have historical identifiers;
-5. which concept should follow `&&&03` in dependency order rather than merely file order.
-
-Only after canonical recovery is sufficiently stable should Didactic Chat derive `07_GLOSSARY.md` and refresh `08_CONCEPT_MAP.md`.
-
----
-
-## 7. Stage Conclusion
-
-The first safe canonical reconstruction is not a newly invented curriculum. It is a historically continuous restoration of three concepts whose identifiers, meanings, and current implementation evidence agree:
+Active concepts:
 
 ```text
-&&&01  Domain Model Field Semantics
-&&&02  Raw Data Versus Derived Data
-&&&03  Naming as Data Contract
+&&&01 &&&02 &&&03
+&&%01 &&%02
+&%%01 &%%02 &%%03 &%%04
+%%%01 %%%03 %%%04 %%%05
 ```
 
-This stage is ready for Main review and authorized materialization into the canonical didactic register.
+Unstable concepts:
+
+```text
+&&&04
+&&%03
+&%%05
+%%%02
+```
+
+Next concepts:
+
+- packaged execution versus source execution;
+- packaging versus installation;
+- build dependency versus runtime dependency;
+- successful build versus validated release;
+- application composition root and shutdown ownership;
+- workflow transaction boundary;
+- explicit migration/version compatibility;
+- second-platform readiness versus implementation.
+
+These are checkpoint recommendations, not canonical concepts.
+
+---
+
+## 8. Stage Exit
+
+This retrospective is ready to compress into `08_CONCEPT_MAP.md`.
+
+After checkpoint materialization, this DEV_STAGE content remains ephemeral evidence. `13_LECTURE_REGISTER.md` remains empty until explicit observational registration. The failed Cycle 05 mobile-preparation attempt may later become the first observational metadata entry once checkpoint completion is accepted.
