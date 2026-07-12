@@ -276,3 +276,88 @@ The permanent Didactic domain now contains canonical Flutter shared-beta model v
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+# Observation 006 — Cycle 07 Sprint 03 Local Flutter Evidence
+
+```text
+Date: 2026-07-12
+Branch: cycle-07-mobile-preparation
+Class: post-materialization Didactic reconciliation
+Sources:
+  [M]_STAGE/J_[M]_STAGE.md §19
+  DEV_STAGE/B_DIDACTIC.md
+  DEV_STAGE/H_DDC_CODEX.md
+Materialization commit:
+  5ef64a1d5b6af6d397d4f3a7aea6d635911be12d
+```
+
+Sprint 03 Unit 01 changed the evidence state from planning-only to a locally implemented and unit-tested Flutter/Dart foundation.
+
+Observed implementation:
+
+```text
+Flutter project under clients/markei_flutter
+→ immutable Dart domain/value models
+→ account-private reusable catalogue
+→ PACKAGED/BULK identity rules
+→ dimensional quantities and minor-unit money
+→ Purchase aggregate with one or more Items
+→ Drift fresh local schema
+→ atomic Purchase/Items/local event/pending queue transaction
+→ rollback on invalid Item
+→ close/reopen persistence
+→ minimal versioned analytics registry
+→ shared_beta/v1 JSON semantic fixtures
+```
+
+Reported validation:
+
+```text
+flutter analyze: passed
+flutter test: 9 passed
+Dart formatting/generation: passed
+Python regressions: 5 passed
+Windows runtime/build: host-blocked
+Android runtime/build: host-blocked
+iOS runtime/build: host-unavailable
+```
+
+The local tests provide executable examples for Stable Identity, Immutable Dart Model, Reusable Catalogue, Purchase Aggregate, Purchase Item, local Append-Only Event, Dimensional Quantity, Monetary Minor Unit, Historical Integrity, and Versioned Analytic. They also provide bounded evidence for deterministic normalization, offline queue preparation, and Flutter framework setup.
+
+The evidence does not prove:
+
+- responsive Flutter composition;
+- Windows, Android, or iOS lifecycle behavior;
+- authentication or authorization;
+- TypeScript API behavior;
+- server idempotency;
+- cursor download/application;
+- eventual cross-device consistency;
+- schema upgrade/recovery;
+- complete wire-contract compatibility;
+- learner mastery.
+
+The JSON files were classified as versioned semantic fixtures or contract examples. `catalogue_identity.json` contains the strongest input/expected-output evidence. The Purchase and sync fixtures remain incomplete: they do not yet fix every type, range, nullability rule, enum, unknown-field policy, timestamp form, or version transition. Fixture existence is not a complete Sync Protocol.
+
+Two important correctness questions were preserved:
+
+1. Device sequence allocation may reset to 1 on repeated registration, so monotonic device ordering is not accepted.
+2. Text normalization may mishandle accented Portuguese names and has no explicit Unicode/locale/canonical-byte policy, so normalization v1 remains provisional.
+
+Generated Drift and platform source was distinguished from handwritten design. Generated code is reviewed through its source schema/configuration and regeneration evidence; it is not independent proof of business architecture or platform execution.
+
+Maturity decision:
+
+```text
+new concepts: none
+existing maturity changes: none
+local executable evidence: recorded
+learner evidence: absent
+```
+
+The next learner boundary is to explain evidence classifications, local queue versus synchronization, fixture versus protocol, generated versus handwritten ownership, Unicode normalization, monotonic sequencing, and the proof required for a maturity transition.
+
+# Current Observation Boundary
+
+Sprint 03 Unit 01 is a successful local foundation. It does not complete the user-visible Flutter vertical slice, platform validation, synchronization protocol, or Cycle 07. Main orientation favors correcting identity/sequence defects, strengthening fixtures, and completing the local shared-client workflow before the protocol harness. Sprint 04 remains unauthorized.
+
