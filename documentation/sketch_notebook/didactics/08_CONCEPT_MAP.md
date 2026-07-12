@@ -166,120 +166,97 @@ The next Didactic evaluation requires explicit learner explanations or implement
 ---
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker preserves the prior milestone. This checkpoint below is the current compact recovery surface.
 
-# Cycle 07 Sprint 03 Unit 01 Didactic Checkpoint
+# Cycle 07 Sprint 04 Didactic Checkpoint
 
 ## Current Learning State
 
-The Flutter/Dart foundation is now implemented and unit-tested locally. A fresh Drift database, immutable Dart domain models, account-private catalogue, Purchase aggregate, Purchase Items, local `purchase.registered` event, pending queue row, and minimal versioned analytics registry exist. Nine Flutter tests and five Python regression tests passed.
+Cycle 07 Sprint 04 has a tested local Flutter Purchase vertical slice and Windows host evidence. It separates the account-private Product code, immutable local Product record UUID, and future central semantic UUID responsibility; uses normalization v2; validates readable v2 JSON examples against JSON Schema; migrates local schema v1 to v2; preserves atomic Purchase/event/queue writes; and proves local device sequences 1, 2, 3 across rollback boundaries.
 
-This evidence is bounded:
+This is project evidence, not learner mastery. Authentication, authorization, API synchronization, server cursors, cross-device convergence, and a central catalogue remain absent. Android is tooling-blocked, iOS host-unvalidated, and manual UI acceptance remains open.
 
-```text
-local implementation: evidenced
-local unit tests: passed
-fresh local persistence and close/reopen: evidenced
-generated Flutter targets: present
-Windows/Android/iOS runtime: host-unvalidated
-responsive Flutter workflow: absent
-authentication/authorization: absent
-server sync/cursor/eventual consistency: absent
-legacy migration and schema upgrade: absent
-learner mastery: not evidenced
-```
+## Maturity Guard
 
-## Maturity
+All Cycle 07 Sprint 02 concepts retain their existing `Red` status. Earlier Green, Yellow, and Red entries are unchanged. No maturity transition is inferred from implementation, tests, schemas, generated code, build success, or Main preference.
 
-No maturity changed. All Cycle 07 concepts remain Red because implementation and passing tests are not explicit learner evidence.
+## Current Evidence Map
 
-## Evidence-Bearing Concepts
+### Strong local implementation/test evidence
 
-Strong local executable evidence:
+- `&&&06` Stable Identity — Product code and immutable local Product UUID have separate ownership.
+- `&&&10` Historical Integrity — append-only facts and tested v1-to-v2 migration preserve history boundaries.
+- `&&%05` Immutable Dart Model — value objects and domain facts remain immutable.
+- `&%%07`–`&%%10` — catalogue, identification, Purchase aggregate, and Items drive the local workflow.
+- `&%%11`–`&%%13` — local event, queue preparation, rollback, and monotonic device ordering are evidenced locally.
+- `&%%15`–`&%%17` — dimensional quantities, minor-unit money, and versioned analytics remain executable concepts.
+- `%%%07` — responsive widget composition and Windows execution have evidence.
 
-```text
-&&&06 Stable Identity
-&&&10 Historical Integrity
-&&%05 Immutable Dart Model
-&%%07 Reusable Catalogue
-&%%09 Purchase Aggregate
-&%%10 Purchase Item
-&%%11 Append-Only Synchronization Event — local event only
-&%%15 Dimensional Quantity
-&%%16 Monetary Minor Unit
-&%%17 Versioned Analytic
-```
+### Stronger specification, still bounded
 
-Bounded or provisional evidence:
+- `&%%08` — normalization v2 has Unicode fixtures, but TypeScript parity and central identity assignment are unproved.
+- `&%%14` — JSON Schema plus readable examples provide structural contracts, not an implemented synchronization protocol.
+
+### Still absent as distributed behavior
+
+- `&&&07` Authentication.
+- `&&&08` Authorization; row ownership remains an example only.
+- `&&&09` Eventual Consistency.
+- server idempotency, server cursor application, remote replay, and convergence portions of `&%%12`–`&%%14`.
+
+## Dependency Spine
 
 ```text
-&%%08 Deterministic Normalization
-    basic unit equivalence passes
-    Unicode/Portuguese and cross-language parity unresolved
-
-&%%12 Offline Queue and Idempotent Delivery
-    queue preparation passes
-    server idempotency absent
-
-%%%07 Flutter Framework and Responsive Widget Composition
-    framework/test setup evidenced
-    responsive composition and platform runtime absent
-```
-
-Unimplemented or defective:
-
-```text
-&&&07 Authentication
-&&&08 Authorization
-&&&09 Eventual Consistency
-&%%13 Device Ordering and Synchronization Cursor
-&%%14 Sync Protocol
-```
-
-Device ordering has a likely sequence-reset defect. Current JSON files are versioned semantic fixtures or contract examples, not a complete protocol specification.
-
-## Updated Dependency/Evidence Spine
-
-```text
-immutable Dart models
-→ local catalogue identity
-→ Purchase aggregate validation
-→ atomic Drift transaction
-→ local immutable event
-→ pending queue preparation
-→ close/reopen persistence
-→ local projection/analytics registry
-→ platform workflow evidence — pending
-→ API/idempotency/cursor evidence — pending
-→ cross-device convergence — pending
+immutable values and stable local identities
+→ account-private Product code + local Product UUID
+→ versioned semantic normalization
+→ dimensional quantity + minor-unit money
+→ Purchase aggregate and Items
+→ one local transaction
+→ append-only local event
+→ pending offline queue
+→ monotonic per-device sequence
+→ schema migration and historical preservation
+→ JSON Schema structural contract
+→ Flutter composition and local history projection
+→ Windows host validation
+→ authentication/authorization — pending
+→ API idempotency/server cursor — pending
+→ cross-device eventual consistency — pending
 ```
 
 ## Distinctions to Preserve
 
-- Local implementation is not platform validation.
-- Generated target files are not responsive application evidence.
-- Offline queue preparation is not synchronization.
-- Fixture examples are not a complete protocol.
-- Local event identity is not proven server idempotency.
-- Occurrence time is not device order or server cursor.
-- Passing tests are not learner mastery.
-- Fresh schema creation is not migration validation.
-- Handwritten domain design differs from generated Drift/platform code.
+- Visible Product code is not the immutable local Product UUID.
+- A future central Product UUID is neither of those identities.
+- Normalized semantic facts aid comparison; they do not authorize automatic merge.
+- JSON Schema validates structure; domain tests own cross-field meaning.
+- Local device sequence is not server cursor order.
+- Atomic queue creation is not synchronization.
+- Windows validation does not prove Android or iOS behavior.
+- A history projection is derived from authoritative Purchase facts.
+- Project implementation evidence is not learner maturity.
 
 ## Next Learner Questions
 
-1. Which Sprint 03 claims are implemented, validated locally, host-unvalidated, or absent?
-2. Why does a persisted pending event not prove synchronization?
-3. What would make the JSON examples a complete language-neutral protocol contract?
-4. Why can a generated Flutter target exist without platform validation?
-5. How should handwritten schema definitions and generated Drift code be reviewed differently?
-6. Why might `\w`-style normalization damage Portuguese names?
-7. What must a normalization-version migration preserve?
-8. How should repeated registrations prove device sequences 1, 2, 3?
-9. Why are authentication, authorization, and eventual consistency still conceptually Red/unimplemented?
-10. Which evidence would support an actual maturity transition?
+1. Why must user Product code, local record UUID, and future central UUID remain separate?
+2. Which normalization facts are versioned, and what must migration preserve?
+3. Which rules can JSON Schema express, and which remain domain invariants?
+4. Why does rollback preserve both Purchase atomicity and device ordering?
+5. What does a local pending event prove, and what distributed evidence is still missing?
+6. How do device sequence and future server cursor solve different ordering problems?
+7. Why is Windows build/launch evidence platform-specific?
+8. What explicit learner evidence would justify changing one Red concept?
+
+## Permanent-Memory Pointers
+
+- Observation and chronology: `13_LECTURE_REGISTER.md`, Observation 007.
+- Canonical concepts and evidence limits: `02_KANBAN.md`, Cycle 07 Sprint 04 evidence reconciliation.
+- Derived retrieval terminology: `07_GLOSSARY.md`, Sprint 04 current-evidence retrieval.
+- Staged synthesis: `DEV_STAGE/B_DIDACTIC.md`.
+- Materialization evidence: `DEV_STAGE/H_DDC_CODEX.md`.
+- Main authority and limits: `[M]_STAGE/J_[M]_STAGE.md`, §21.
 
 ## Next Learning Boundary
 
-Main currently favors the local shared-client route first: correct sequence and normalization defects, strengthen fixtures, add a minimal Flutter Purchase workflow and visible projection, then obtain Windows/Android runtime evidence. The local protocol harness remains a later route. This is Main orientation, not Didactic architecture selection or Sprint 04 authorization.
-
+The next Didactic step is explanation and evidence classification, not automatic promotion. Distributed concepts should be revisited only when authentication, authorization, API idempotency, server cursors, replay, and convergence exist as bounded evidence. Platform claims must remain separated by Windows, Android, and iOS validation boundaries.
