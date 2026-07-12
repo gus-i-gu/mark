@@ -1,222 +1,97 @@
-# A_OPERATIONAL — Cycle 06 Sprint 02
+# Main Synthesis Summary
 
-> Status: Complete compact Operational delta
-> Role: Operational Chat [O]
-> Branch: `sketch-notebook-recovery`
-> Authority: Main reconciliation input only
-> Milestone: Fully executable and installable Windows primary beta
+Operational recommends that Sprint 02 prototype one **Android-first, offline-only vertical slice using the existing Python core behind an injected mobile database path**, with a Python-native UI as the cheapest first falsification test—not as a final architecture selection. The present models and calculations are reusable Python; the application is not mobile-portable as constructed. `ProductService()` creates a concrete `Repository`, which opens desktop-oriented SQLite lifecycle code, and `user_data_dir()` defaults to `~/AppData/Local/Markei`. A mobile run therefore requires a bounded construction/path seam before any UI can safely exercise the core.
 
-## Main Synthesis Summary
+If Main prioritizes long-term Android/iOS UX and conventional distribution over maximum immediate Python reuse, Approach C (a cross-platform client with explicit contracts and fixtures) is the stronger strategic candidate. It costs a second runtime implementation. Approach B is feasible but similarly cannot execute the current Python core locally without adding a bridge, rewrite, or service. Approach D has no demonstrated requirement and should be deferred.
 
-Sprint 01 already established a configured, built, and launched one-folder frozen runtime. Sprint 02 does not need another packaging redesign. Its operational task is to cross the remaining evidence boundaries: resolve Inno Setup, compile and inspect the installer, exercise an ordinary per-user installation, validate principal workflows and immediate reopen, then prove retention through reinstall, uninstall, and recovery.
+Cycle 06 is accepted and closed. `operational/10_OPERATIONAL_STATE.md` still says acceptance is pending; this is inherited checkpoint drift, superseded for global status by `00_PROJECT_STATE.md` and `J_[M]_STAGE.md`. Nothing in this investigation reopens Cycle 06.
 
-The repository route is concrete. `scripts/build_installer.ps1` requires `dist\Markei\Markei.exe`, resolves `ISCC.exe` from an explicit `-ISCCPath`, `ISCC_PATH`, or the two normal Inno Setup 6 installation locations, compiles `installer\Markei.iss`, and expects `dist\installer\Markei-Setup-0.1.0-x64.exe`. The installer is configured for lowest-privilege per-user placement under `%LOCALAPPDATA%\Programs\Markei`, a Start Menu shortcut, optional desktop shortcut, and no removal of `%LOCALAPPDATA%\Markei` user state.
+## Evidence and baseline
 
-No current evidence justifies an implementation correction. The immediate route is validation-first: provide Inno Setup 6, rebuild the frozen distribution, compile, inspect, and run the lifecycle in a dedicated Windows test account. A dedicated account is preferred over redirecting only environment variables because the installer and shortcuts use Windows per-user shell locations. It protects ordinary user data while preserving realistic Start Menu, uninstall-registration, and Local AppData behavior.
+**Observation — repository identity.** Inspection explicitly used branch `cycle-07-mobile-preparation`. The recorded and verified Cycle 07 baseline is `f6414fbe7394453387067a5a34ca6cc7621bbed3` (`Close Cycle 06 and hand off Cycle 07`). That commit is an ancestor of the inspected HEAD. At inspection time, the branch and `origin/cycle-07-mobile-preparation` were at `889c9ac365e0d717ac33431bd82af286b0f343f1`, one later staging commit (`Stage Cycle 07 Sprint 01 domain investigation`). No default-branch or `sketch-notebook-recovery` content was used for recovery.
 
-Codex can execute static tests, frozen rebuild, compiler discovery, installer compilation, hashes, file inspection, and some scripted install-state checks when desktop access permits. Human interaction remains required for installer UI, SmartScreen/antivirus observations, Start Menu usability, the four application workflows, visible close/reopen behavior, and final acceptance. Any failure must be classified before a correction is staged. The beta remains `installed: blocked`, `validated: partial`, and `accepted: no` until all acceptance gates pass.
+**Inspected project evidence.** Methodology boot and Cycle context followed the assigned order: `AGENTS.md`, `INDEX.md`, the four methodology files, `00_PROJECT_STATE.md`, `06_SESSION_SCHEME.md`, `operational/10_OPERATIONAL_STATE.md`, and `[M]_STAGE/J_[M]_STAGE.md`. Implementation inspection covered `app/core/models.py`, `contracts.py`, `services.py`, `repository.py`, `database.py`, `config.py`; all files under `app/desktop/`; empty `app/mobile/main.py`; `app/main.py`; root `main.py`; `app/database/schema.sql`; and, because dependencies and validation were uncertain, `requirements*.txt`, import maps, and `tests/test_release_configuration.py`. No tools were installed, no framework was initialized, no application command was run, and no database was opened.
 
-## Inherited Evidence
+External feasibility evidence was limited to current official documentation. Kivy documents Android packaging through python-for-android/Buildozer; Buildozer runs on Linux/macOS (Windows through WSL), downloads SDK/NDK prerequisites, and can build/deploy/run an APK. Its iOS route compiles Python/modules, creates an Xcode project, and requires macOS tooling. Capacitor currently requires Node 22+, Android Studio/SDK for Android, and macOS/Xcode for iOS; its guidance warns that browser `localStorage` is unsuitable for durable mobile records and distinguishes native storage. Flutter supports Android and iOS deployment, but iOS release likewise requires macOS/Xcode. These sources establish procedures, not compatibility with Markei.
 
-Do not repeat or reopen Sprint 01 findings unless drift appears:
+## Implementation-surface classification
 
-```text
-configured: yes
-built: yes
-launched: yes — frozen isolated launch and immediate reopen
-installed: blocked
-validated: partial
-accepted: no
-```
+| Classification | Surfaces | Operational evidence |
+| --- | --- | --- |
+| Platform-neutral and likely reusable | `models.py`; calculation, validation, date/status functions in `services.py`; constants in `config.py`; schema semantics provisionally | Standard-library Python and dataclasses; no Qt imports in core. Business calculations can be unit-tested headlessly once persistence construction is isolated. |
+| Platform-neutral but coupled by construction/imports | `contracts.py`; `ProductService`; UI-facing list/history dictionaries; `Repository` API | `ServiceContract` exists, but `ProductService.__init__` directly creates concrete `Repository`; repository contract does not cover all methods actually used. Read models contain formatted labels useful to the desktop presentation. |
+| Desktop-specific | `app/main.py`, root `main.py`, all `app/desktop/`, startup diagnostics and Windows release files | Qt application/event loop, PySide6 widgets/dialogs, desktop page-owned services and refresh/close coordination. |
+| Persistence-specific | `repository.py`, `database.py`, `schema.sql` | Concrete `sqlite3`, SQL/row mapping, commits, WAL, schema initialization/migration/defaults, global module paths. SQLite semantics may transfer; lifecycle/path code does not yet. |
+| Presentation-specific | Qt pages/widgets plus formatted UI projection fields in service read models | Qt imports are confined to desktop, but labels/groupings encode presentation choices inside service output. |
+| Unknown until tested | CPython/SQLite behavior inside chosen mobile runtime; WAL and file-lock lifecycle; schema resource bundling; suspend/resume; Unicode/date behavior; APK/AAB and iOS archive; accessibility/performance; backup/uninstall behavior | No mobile dependency, configuration, test, artifact, emulator evidence, or populated mobile entry point exists. |
 
-Validated evidence includes source compilation, five standard-library tests, a clean one-folder build, schema-only first launch, resource exclusions, startup-log creation, bounded shutdown correction, closure of four page-owned repositories, and frozen immediate reopen. The built executable was reported at `dist\Markei\Markei.exe` with SHA256 `E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B`.
+**Observation.** `schema.sql` declares `products` before referenced `categories`; SQLite accepted this on desktop, but fresh initialization must still be tested on the packaged runtime. Dates are stored as formatted text and the service owns parsing, which avoids platform date APIs but requires fixture parity. Repository methods commit independently, preserving the inherited multi-step workflow atomicity risk.
 
-The previous installer attempt was blocked solely because `ISCC.exe` was unavailable. No compiled installer or installed-lifecycle evidence exists.
+## Operational approach comparison
 
-## Essential Evidence Index
+| Approach | Reproducibility and platforms | Offline persistence/testability | Cost and failure states | Operational disposition |
+| --- | --- | --- | --- | --- |
+| A. Shared Python core + Python-native UI | Maximum source reuse. Android build introduces Linux/WSL, Buildozer, SDK/NDK, JDK and emulator/device layers. iOS adds macOS, Xcode and a separate Python-for-iOS build. Tool versions must be pinned beyond current `requirements.txt`, which contains only PySide6. | Python `sqlite3` and current schema are promising if the runtime includes SQLite and receives an app-private path. Headless service tests can reuse Python fixtures. | Native packaging, binary recipes, resource inclusion and mobile lifecycle are the main risks; custom UI/accessibility maturity must be tested. Windows alone cannot close iOS gates. | Best low-cost **prototype/falsification** route; do not treat first Android success as cross-platform acceptance. |
+| B. Web/hybrid presentation | Familiar web tooling and fast UI iteration; Android Studio and Xcode remain for packaged targets. No web project exists. Current Python does not execute in a normal Capacitor client. | Needs a mobile SQLite plugin/adapter or IndexedDB design; lightweight preferences/localStorage are not adequate for Markei’s relational ledger. Contract tests must span JS/TS and Python behavior if rules are ported. | Plugin/version churn, bridge failures, webview lifecycle, database migrations, and a second business implementation or premature service are likely costs. | Viable if web skills dominate, but not the smallest evidence path from this repository. |
+| C. Native/cross-platform client + explicit contracts | Flutter-like tooling provides established Android/iOS build paths; Android is accessible from Windows, iOS build/release requires macOS/Xcode. Python runtime reuse is low. | Mature local SQLite options are plausible but must be selected/tested. JSON fixtures and expected projections can test semantic parity independently of the desktop database. | Highest initial porting and dual-language maintenance cost; strongest conventional mobile lifecycle/UX path. Contract drift is the primary product risk. | Strong strategic candidate after contracts/fixtures are made executable; reasonable primary choice if Main values platform fit over immediate reuse. |
+| D. Service-backed client | Adds server runtime, deployment, network observability, secrets/accounts and API compatibility to every client build. | Offline-first would still need local persistence, queues, retries, conflict resolution and migrations; a backend does not remove client storage. | Network failure, authentication, hosting cost, privacy, sync conflict and operational support become new mandatory surfaces. | **Constrained out:** no multi-device, household-sharing or account requirement currently justifies it. |
 
-| ID | File or evidence | Sprint 02 relevance |
-| -- | -- | -- |
-| E1 | `installer/Markei.iss` | Defines per-user placement, identity, file source, shortcuts, output name, and configured preservation behavior. |
-| E2 | `scripts/build_installer.ps1` | Defines compiler discovery, prerequisites, compile invocation, and expected artifact path. |
-| E3 | `Markei.spec` | Confirms the installer input is the schema-only windowed one-folder runtime. |
-| E4 | `scripts/build_windows.ps1` and `requirements-build.txt` | Provide the reproducible frozen rebuild route and observed build dependencies. |
-| E5 | `tests/test_release_configuration.py` | Checks package policy, installer source policy, identity, diagnostics, and schema-only first launch. |
-| E6 | `DEV_STAGE/G_OPS_CODEX.md` | Records successful Sprint 01 gates, executable hash, shutdown correction, and the `ISCC.exe` blocker. |
-| E7 | Main continuity and Operational checkpoint | Establish the remaining lifecycle route and prohibit status inflation. |
+**Assumption.** The next prototype is single-user, single-device, offline-first and may use a fresh isolated database whose logical schema resembles desktop Markei. It neither opens nor copies the ordinary desktop database. Export/import and synchronization are deferred boundaries.
 
-## Installer Toolchain Route
+**Blockers to implementation, not to investigation.** No approach has been selected by Main; `app/mobile/main.py` is empty; no mobile requirements or lockfile exist; no injectable repository/database path exists; no mobile-safe lifecycle contract exists; no contract fixture suite exists; installed SDK/JDK/Android Studio/Xcode/device availability has been evidenced. iOS validation cannot be claimed without a macOS/Xcode execution environment and suitable signing/device arrangements.
 
-### Prerequisite and resolution
+## Later prototype commands and validation gates (do not execute yet)
 
-Provide Inno Setup 6 so that `ISCC.exe` is available by one repository-supported route, in this precedence order:
+Commands below are reproducibility templates. Exact pinned versions and framework-generated filenames must be authorized and recorded by the later materialization stage; placeholders must not be pasted blindly.
 
-1. explicit parameter:
-   ```powershell
-   .\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
-   ```
-2. environment variable:
-   ```powershell
-   $env:ISCC_PATH = "C:\path\to\ISCC.exe"
-   .\scripts\build_installer.ps1
-   ```
-3. automatic discovery under either:
-   ```text
-   %ProgramFiles(x86)%\Inno Setup 6\ISCC.exe
-   %ProgramFiles%\Inno Setup 6\ISCC.exe
-   ```
-
-Before compilation, confirm the path exists and capture the compiler version. Missing compiler remains a `toolchain prerequisite` blocker, not an installer defect.
-
-### Build and compile
-
-From the repository root on `sketch-notebook-recovery`:
-
-```powershell
-python -m unittest discover -s tests
-.\scripts\build_windows.ps1
-.\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
-```
-
-Expected input:
+### Gate 0 — isolation and host inventory
 
 ```text
-dist\Markei\Markei.exe
+git switch cycle-07-mobile-preparation
+git status --short --branch
+git rev-parse HEAD
+git merge-base --is-ancestor f6414fbe7394453387067a5a34ca6cc7621bbed3 HEAD
+python --version
+java -version
+adb version
+<framework-command> --version
 ```
 
-Expected output:
+Pass: correct descendant branch, clean intended scope, and captured host/tool versions. For Android, capture SDK/API, build-tools, NDK and emulator/device IDs. For iOS, separately capture `xcodebuild -version`, simulator/device target and signing boundary on macOS.
+
+### Gate 1 — host-side contract and isolation tests
 
 ```text
-dist\installer\Markei-Setup-0.1.0-x64.exe
+python -m unittest discover -s tests -v
+python -m unittest tests.test_mobile_core_contract -v
 ```
 
-### Artifact inspection
+The future test must inject a temporary database directory, initialize schema/defaults, register one deterministic receipt, read one Lists projection, close, reopen, and assert persistence. It must assert that the resolved path is inside the temporary/mobile sandbox and differs from desktop `DATABASE_PATH`. Pass before framework build.
 
-Record compiler path/version, command exit code, artifact path, byte size, timestamp, and SHA256. Verify Windows file properties and installer-visible identity agree with `Markei`, `0.1.0`, publisher `Markei`, and x64. Inspect the packaged source set or installed files to confirm the installer consumes `dist\Markei` and does not introduce source files, tests, `seed.sql`, `market.sqlite`, WAL/SHM, logs, caches, or development residue.
+### Gate 2 — Android debug build and install
 
-A compiled artifact advances the state to `installer built`; it does not establish `installed` or lifecycle `validated`.
-
-## Installed Lifecycle Test Route
-
-### Safe test environment
-
-Use a dedicated ordinary Windows test account with no existing Markei state. Before starting, record whether these paths exist:
+For an authorized Kivy/Buildozer spike, the official command shape is:
 
 ```text
-%LOCALAPPDATA%\Programs\Markei
-%LOCALAPPDATA%\Markei
-%APPDATA%\Microsoft\Windows\Start Menu\Programs\Markei
+buildozer android debug
+adb devices
+adb install -r <generated-debug-apk>
+adb shell am start -n <application-id>/<activity>
+adb logcat
 ```
 
-Do not delete or repurpose the ordinary user’s Markei directory. Preserve a copy of the dedicated account’s test database before destructive lifecycle transitions.
+Equivalent authorized framework commands may replace these, but gates remain: clean build; install; cold launch; no permission/path/schema error; isolated database created; empty list shown; one receipt registered; projection updated; app backgrounded/foregrounded; process stopped and relaunched; record remains; ordinary desktop database hash/path unchanged. Capture logs and artifact checksum. Then validate uninstall/reinstall semantics explicitly—data loss on uninstall may be expected, but must be recorded rather than inferred.
 
-### Clean install and launch
+### Gate 3 — iOS parity
 
-1. Run `dist\installer\Markei-Setup-0.1.0-x64.exe` interactively.
-2. Confirm per-user destination and no administrator requirement.
-3. Leave the optional desktop shortcut unselected for the primary route; test it separately if selected.
-4. Confirm installed program files exist under `%LOCALAPPDATA%\Programs\Markei`.
-5. Confirm the Start Menu entry exists.
-6. Launch only from the Start Menu, with no active development shell, Python command, or repository working directory.
-7. Record process start, visible MainWindow, and any startup log or error dialog.
+On macOS only, use the chosen framework’s generated Xcode project and `xcodebuild`/simulator procedure. Pass the same cold-launch, write/read, suspend/resume and terminate/reopen gates. Android success does not waive this gate or establish App Store distributability.
 
-### Principal workflow evidence
+## Smallest vertical-slice constraint
 
-Exercise a small, uniquely identifiable dataset:
+**Recommendation.** Authorize one Android emulator/device slice: mobile launch → application-private fresh SQLite initialization → show only the Lists/Storage projection → register one product/purchase through the ProductService-equivalent workflow → return to the list → terminate and relaunch → verify the same record. Use one hard-coded/default category and store only where current structural defaults already define them. Exclude editing, History analytics, Settings, synchronization, desktop import, release signing and store publication.
 
-1. Settings: create or edit a test store and save settings.
-2. Register: register one identifiable product and purchase.
-3. Lists: verify the product appears in the appropriate current projection.
-4. History: verify the purchase appears with the expected values.
-5. Return to Settings and confirm saved values remain visible.
+For Approach A, the minimum enabling change is not a broad core refactor: permit `ProductService` to receive a repository (or equivalent persistence factory) and permit the database manager to receive/resolve a mobile app-private data/resource location. Keep the desktop default behavior intact and prove it with existing release tests. If that seam becomes invasive or the packaged SQLite/core cannot pass lifecycle gates, stop the Python-native spike and use the recorded contracts/fixtures to compare Approach C rather than adding a backend.
 
-Capture the entered identifiers and observed results, not just screenshots of an open window.
+## Handoff to Main
 
-### Close, reopen, and persistence
-
-Close through the normal window control. Immediately relaunch from the Start Menu. Confirm no database-lock or startup error appears and that the store, product, purchase, Lists projection, History entry, and settings persist. Record `%LOCALAPPDATA%\Markei\market.sqlite` existence and modification time. Installed shutdown is `validated` only after this installed-context route passes; Sprint 01 frozen evidence is insufficient.
-
-### Reinstall, uninstall, and recovery
-
-Run the same-version installer again and confirm program files are replaced or repaired without losing the test dataset. If a compatible version change is staged later, repeat with the same AppId and verify the existing database opens.
-
-Uninstall through Windows Installed Apps or the registered Markei uninstaller. Confirm program files and shortcuts are removed, then separately verify `%LOCALAPPDATA%\Markei\market.sqlite` remains. External placement and absence of installer deletion directives are only configuration evidence; direct post-uninstall inspection is required.
-
-Reinstall the same compatible package, launch from Start Menu, and verify the retained test dataset reappears without manual database copying. Capture before/after database hash or a query-based record summary when practical; hashes may change during normal SQLite access, so semantic row evidence remains required.
-
-## Human Validation Boundary
-
-Codex may execute or automate:
-
-- compiler discovery and version capture;
-- standard-library tests and frozen rebuild;
-- installer compilation;
-- artifact hashing and file-set inspection;
-- scripted existence checks for program, shortcut, and data paths;
-- database row queries before and after lifecycle transitions;
-- unattended steps only when they do not hide required human observations.
-
-Human validation is required for:
-
-- installer wizard, destination, and privilege behavior;
-- SmartScreen prompts and antivirus detections or absence thereof;
-- Start Menu and optional desktop shortcut usability;
-- visible launch without development tooling;
-- Register, Lists, History, and Settings workflow correctness;
-- normal close and immediate reopen behavior;
-- acceptance of retained-data behavior;
-- final beta acceptance.
-
-Unsigned reputation warnings must be recorded as Windows reputation/security observations, not automatically classified as application defects.
-
-## Failure Classification
-
-Classify the first failing gate before changing files:
-
-| Class | Examples |
-| -- | -- |
-| toolchain prerequisite | `ISCC.exe` missing or inaccessible |
-| installer configuration defect | compile error, wrong output, shortcut or uninstall registration absent |
-| packaging defect | missing executable, Qt plugin, schema, or forbidden bundled data |
-| installed runtime defect | installed executable fails before workflows begin |
-| application workflow defect | Register, Lists, History, or Settings behaves incorrectly only after launch |
-| data-retention defect | data lost or overwritten during reinstall, uninstall, or recovery |
-| Windows reputation/security observation | SmartScreen warning or antivirus action |
-| human acceptance failure | technically passing artifact rejected for observable beta usability |
-
-Stop dependent gates after a failure and retain the original evidence.
-
-## Potential Bounded Corrections
-
-No correction is presently authorized. After a demonstrated failure, Main may stage only the smallest relevant change, such as:
-
-- compiler-path or actionable-error correction in `build_installer.ps1`;
-- output-name/path synchronization between the wrapper and `.iss`;
-- a narrow Inno Setup file, shortcut, identity, or uninstall-registration correction;
-- a missing packaged runtime/resource correction in `Markei.spec`;
-- an installed-only startup diagnostic correction;
-- an installed shutdown correction only if the existing `MainWindow.closeEvent()` route fails in the installed context;
-- a workflow correction only for a reproducible beta-blocking workflow failure;
-- a retention correction only if direct lifecycle evidence contradicts the accepted preserve-data policy.
-
-Do not use Sprint 02 failures to authorize broad service/repository, transaction, schema, migration, UI, or composition redesign.
-
-## Acceptance Gates
-
-| Gate | Required evidence | Current state |
-| -- | -- | -- |
-| Compiler | Inno Setup 6 path and version captured | blocked |
-| Installer artifact | compile succeeds; identity, contents, size, hash inspected | blocked |
-| Clean installation | ordinary per-user install and registered shortcuts | blocked |
-| Installed launch | Start Menu launch without Python/source checkout | blocked |
-| Workflows | Register, Lists, History, Settings pass with recorded data | blocked |
-| Installed close/reopen | immediate reopen with no retained lock and persisted data | blocked |
-| Reinstall/upgrade | compatible replacement preserves and opens data | blocked |
-| Uninstall retention | program removed; `%LOCALAPPDATA%\Markei` retained | blocked |
-| Reinstall recovery | retained compatible data reopens after reinstall | blocked |
-| Windows observations | SmartScreen/antivirus behavior recorded | pending |
-| Acceptance | Main/human explicitly accepts the complete lifecycle | pending |
-
-## Main Handoff
-
-Operational finds no new policy decision and no justified preemptive source change. Main should define Sprint 02 as one validation-centered materialization unit: make Inno Setup available, compile and inspect the installer, add only safe evidence automation needed for a dedicated Windows test account, execute the complete installed lifecycle, and patch only a failed beta gate. The critical separation is maintained: configured installer source is not a compiled artifact; a compiled artifact is not installation; installation is not lifecycle validation; validation is not acceptance. Until the dedicated-account route passes, the current status remains `installed: blocked`, `validated: partial`, and `accepted: no`.
+Main should reconcile this with Design’s boundary recommendation and Didactic’s learning cost. Operationally, Approach A is the smallest Android evidence experiment; Approach C is the stronger long-term alternative if platform fit is decisive. Before D/E/F authorization, Main must select the framework, define pinned host/tool versions, authorize the narrow construction/path seam and fixture test, and identify an Android target. Keep iOS explicitly unvalidated until a macOS/Xcode gate runs; keep Approach D deferred absent a synchronization requirement.
