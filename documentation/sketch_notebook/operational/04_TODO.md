@@ -1,311 +1,147 @@
 # 04_TODO.md
 
-> Version: Recovery derivative 0.1
+> Version: Cycle 06 active derivative 0.2
 > Status: Active operational derivative
 > Persistence Class: Derived
 > Knowledge Class: Operational
 > Canonical source: `operational/12_OPERATIONAL_MODEL.md`
-> Purpose: Low-cost recovery, human supervision, and immediate execution guidance
+> Branch: `sketch-notebook-recovery`
 
 ---
 
-# 1. Use This File For
+# 1. Fast Recovery Card
 
-Use this file to answer:
+Current evidence:
 
 ```text
-What is operationally established?
-What requires validation now?
-What decisions remain outside Operational authority?
-Which commands or inspections should run next?
+configured: yes
+built: yes
+launched: yes — isolated frozen launch and immediate reopen
+installed: blocked
+validated: partial
+accepted: no
 ```
 
-This file reorganizes canonical knowledge. It does not replace or override `12_OPERATIONAL_MODEL.md` and must not introduce independent truth.
+Completed in the first Cycle 06 materialization unit:
 
----
+- authoritative one-folder `Markei.spec`;
+- build wrapper invoking the spec;
+- schema-only production packaging;
+- exclusion of seed/live database/WAL/SHM/logs;
+- build dependency record;
+- per-user installer source and compile wrapper;
+- startup diagnostics;
+- focused release tests;
+- bounded MainWindow shutdown correction;
+- successful source/static, frozen build, resource, first-launch, shutdown, and reopen gates.
 
-# 2. Fast Recovery Card
+# 2. Active Cycle 06 Work
 
-## Runtime spine
+## P0 — Provide installer compiler
+
+- Install or provide Inno Setup 6 / `ISCC.exe`.
+- Use `-ISCCPath` or `ISCC_PATH` when discovery does not find it.
+- Record compiler path and version.
+
+## P0 — Compile and inspect installer
+
+Run the repository wrapper only after the frozen distribution exists:
+
+```powershell
+.\scripts\build_installer.ps1
+```
+
+Required evidence:
+
+- compile exit status;
+- artifact path and filename;
+- artifact size and SHA256;
+- expected version/publisher/application identity;
+- no source tree, seed fixture, live database, WAL/SHM, logs, tests, or caches.
+
+## P0 — Validate installed lifecycle
+
+Use an ordinary user environment and capture:
 
 ```text
-main.py
-→ app.main.main()
-→ MainWindow
+clean install
+→ Start Menu launch
 → Register / Lists / History / Settings
-→ ProductService
-→ Repository
-→ app.core.database
-→ SQLite
+→ store creation or editing
+→ receipt registration
+→ dependent-page refresh
+→ close
+→ immediate reopen
+→ persistence verification
 ```
 
-## Persistence ownership
+Then validate:
 
 ```text
-ProductService
-    workflows, calculations, settings interpretation, UI projections
-
-Repository
-    SQL, row/model mapping, mutation commits, one connection + cursor
-
-Database Manager
-    paths, connection configuration, initialization, migration, close/reset
-```
-
-## Writable state
-
-```text
-%LOCALAPPDATA%/Markei/market.sqlite
-```
-
-Bundled SQL resources remain under `app/database/`.
-
-## Current lifecycle shape
-
-```text
-4 desktop pages
-→ 4 ProductService instances
-→ 4 Repository instances
-→ 4 long-lived SQLite connections
-```
-
-Local close capability exists. Application-wide shutdown ownership remains implicit.
-
-## Current transaction shape
-
-```text
-Repository mutation
-→ commit
-
-multi-step service workflow
-→ several committed mutations
-→ not transactionally atomic as one business operation
-```
-
----
-
-# 3. Immediate Operational Priorities
-
-## P0 — Protect data during validation
-
-- Use an isolated `LOCALAPPDATA` path for initialization, migration, reset, and failure tests.
-- Never run exploratory reset against the ordinary user database.
-- Close every Repository created by a test.
-- Account for SQLite `-wal` and `-shm` files before deletion or recreation.
-
-## P1 — Verify deterministic desktop shutdown
-
-Establish whether normal Qt shutdown closes all four page-owned services and repositories.
-
-Evidence required:
-
-- each Repository is open after page construction;
-- all four are closed after normal window/application shutdown;
-- no cleanup exception is emitted;
-- the database can be reopened immediately;
-- isolated test directories can be removed without retained locks.
-
-Do not classify the current model as leaking until runtime evidence demonstrates it.
-
-## P1 — Validate multi-commit failure behavior
-
-Inject failure after each mutation boundary in:
-
-```text
-register_receipt()
-create/update Product
-→ insert Purchase
-→ recalculate Product
-→ update Product summary
-```
-
-Also inspect purchase deletion followed by summary recalculation.
-
-Record the durable database state after each injected failure. The current workflow is known to be non-atomic; the test should identify exact partial-state outcomes.
-
-## P1 — Resolve production seed policy
-
-Current `seed.sql` contains baseline category, store, and settings rows plus an example Rice product.
-
-Human/Main classification is required for:
-
-- required production defaults;
-- optional development fixtures;
-- demonstration business records;
-- rows that must be excluded from packaged production initialization.
-
-Packaging acceptance must not proceed while this classification is ambiguous.
-
-## P2 — Validate migration behavior
-
-Confirm on an isolated database that:
-
-- repeated connections converge on the same schema;
-- required columns are not duplicated;
-- default settings are not duplicated;
-- user-selected settings are not overwritten;
-- migration failure behavior is observable and recoverable;
-- current additive compatibility remains distinct from a future versioned migration system.
-
-## P2 — Validate packaged resource discovery
-
-For every generated runtime mode under consideration, verify:
-
-- `schema.sql` is bundled and discoverable;
-- seed inclusion matches the approved policy;
-- no prebuilt live database is bundled;
-- no SQLite WAL/SHM files are bundled;
-- the live database is created or reused outside the runtime directory.
-
-## P2 — Validate installed data preservation
-
-Source path separation is implemented, but lifecycle preservation still requires direct evidence for:
-
-```text
-install
-→ launch
-→ write data
-→ upgrade
-→ relaunch
+compatible upgrade or same-version reinstall
+→ data preservation
 → uninstall
+→ accepted retention behavior
 → reinstall
+→ retained-data recovery
 ```
 
-Record which operations preserve `%LOCALAPPDATA%/Markei/market.sqlite` and which intentionally remove it.
+Installed shutdown and retention remain unvalidated until these gates execute.
 
----
+## P1 — Record Windows trust observations
 
-# 4. Validation Ladder
+- Record SmartScreen behavior.
+- Record antivirus detections or absence of detections.
+- Do not classify unsigned reputation warnings as application runtime defects without evidence.
 
-Use the lowest sufficient validation layer first.
+## P1 — Obtain human acceptance
 
-```text
-1. syntax/import
-2. isolated database connection
-3. fresh initialization
-4. repeated migration
-5. Repository lifecycle
-6. service workflow failure injection
-7. desktop smoke and shutdown
-8. generated runtime launch
-9. installed lifecycle
-10. release acceptance
-```
+Acceptance requires review of the installed artifact and principal workflow path. Operational evidence may support but cannot grant final acceptance.
 
-Evidence from one level does not prove a later level.
+# 3. Retained Inherited Debt
 
-Status vocabulary:
+## Workflow atomicity
 
-```text
-implemented
-validated
-configured but unvalidated
-blocked
-deferred
-```
+Receipt registration and purchase deletion/recalculation span multiple committed mutations. Retain as inherited debt:
 
----
+- inject failure between mutation boundaries;
+- record exact durable partial states;
+- escalate only if beta validation demonstrates a blocking user-visible defect or Main stages a transaction change.
 
-# 5. Command-Ready Checks
+## Additional non-blocking validation debt
 
-## Syntax and imports
+- additive migration failure behavior;
+- reset behavior with active connections and WAL/SHM;
+- broader interactive workflow coverage beyond the beta smoke route.
+
+# 4. Required Commands
+
+Already evidenced in the materialization report:
 
 ```powershell
 python -m compileall app main.py
+python -m unittest discover -s tests
+.\scripts\build_windows.ps1
 ```
 
-## Connection configuration
+`python -m pytest` was unavailable because `pytest` was not installed; this is an environment limitation, not an open release-test failure.
+
+Next command:
 
 ```powershell
-python -c "from app.core.database import connect; c=connect(); print(c.execute('PRAGMA foreign_keys').fetchone()[0]); print(c.execute('PRAGMA journal_mode').fetchone()[0]); c.close()"
+.\scripts\build_installer.ps1
 ```
 
-## Repository lifecycle
+Current result: `blocked` until `ISCC.exe` is available.
 
-```powershell
-python -c "from app.core.repository import Repository; r=Repository(); print(r.is_open); r.close(); print(r.is_open)"
-```
+# 5. Completion Boundary
 
-## Isolated fresh initialization
+Cycle 06 remains open until a compiled installer is installed and the complete installed lifecycle is validated and accepted.
 
-```powershell
-$env:LOCALAPPDATA = "$PWD\.tmp-localappdata"
-Remove-Item -Recurse -Force $env:LOCALAPPDATA -ErrorAction SilentlyContinue
-python -c "from app.core.database import connect, DATABASE_PATH; c=connect(); print(DATABASE_PATH); print([r['name'] for r in c.execute('SELECT name FROM sqlite_master WHERE type=''table'' ORDER BY name')]); c.close()"
-```
-
-## Repeated migration
-
-```powershell
-$env:LOCALAPPDATA = "$PWD\.tmp-localappdata"
-python -c "from app.core.database import connect; [connect().close() for _ in range(3)]; print('repeated connect/migrate complete')"
-```
-
-## Developer desktop smoke
-
-```powershell
-python main.py
-python -m app.main
-```
-
-Manual checks:
-
-- visible MainWindow;
-- Register, Lists, History, and Settings load;
-- Lists modes change;
-- a write refreshes dependent views;
-- closure releases database access;
-- reopening preserves data.
-
----
-
-# 6. Human and Main Decisions Required
-
-Operational evidence can inform but cannot decide:
-
-1. whether page-local service ownership remains the intended lifecycle model;
-2. whether shutdown ownership moves to `app/main.py`, MainWindow, or another composition object;
-3. whether workflow-level atomicity is required for the current product stage;
-4. whether migrations adopt a numbered/versioned ledger;
-5. which seed rows belong in production;
-6. whether reset becomes user-facing and under which safeguards;
-7. which installer lifecycle should preserve or remove user data.
-
-These are not implementation defects merely because alternatives exist.
-
----
-
-# 7. Retrieval Map
-
-Consult the canonical model when exact rules or full rationale are needed:
+When this file conflicts with canon:
 
 ```text
-runtime and responsibilities       → 12_OPERATIONAL_MODEL §§2–4
-resources and writable data        → §5
-connection configuration           → §6
-initialization                      → §7
-migration                           → §8
-connection ownership               → §§9–10
-transaction behavior               → §11
-reset safety                        → §12
-validation language and isolation  → §§13–14
-packaging lifecycle                → later canonical sections
-```
-
-Consult this derivative first when the goal is rapid orientation, task selection, or validation planning.
-
----
-
-# 8. Derivative Maintenance Rule
-
-Refresh this file when canonical operational knowledge changes or when active priorities are reordered by Main/human direction.
-
-When a statement here conflicts with `12_OPERATIONAL_MODEL.md`:
-
-```text
-canon wins
+12_OPERATIONAL_MODEL.md wins
 → identify derivative drift
 → refresh this file
 ```
-
-Completed execution events do not become permanent truth here. They should update the checkpoint and, once the repopulation milestone is complete, the observational record.

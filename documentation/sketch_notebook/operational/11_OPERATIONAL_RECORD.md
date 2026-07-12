@@ -572,3 +572,85 @@ Future entries should record only definite Operational events such as:
 - later detected and corrected notebook drift.
 
 Temporary hypotheses and intended work remain in `DEV_STAGE/A_OPERATIONAL.md` or `04_TODO.md`, not in this record until an actual event occurs.
+
+---
+
+# 15. Cycle 06 First Windows Release-Enablement Unit
+
+## 2026-07-12 — D-stage materialization and Main reconciliation accepted
+
+Main authorized the bounded `D_OPS_STAGE.md` unit. Codex changed:
+
+```text
+Modified
+    Markei.spec
+    scripts/build_windows.ps1
+    main.py
+    app/desktop/main_window.py
+
+Created
+    app/startup_diagnostics.py
+    requirements-build.txt
+    installer/Markei.iss
+    scripts/build_installer.ps1
+    tests/test_release_configuration.py
+```
+
+The materialization established `Markei.spec` as the authoritative one-folder packaging source, made the PowerShell build script invoke the spec, included only `schema.sql` as the production SQL resource, excluded the seed fixture and transient/live data, added a per-user installer definition and compile wrapper, added startup diagnostics, and added focused release-configuration tests.
+
+Observed toolchain:
+
+```text
+Python 3.14.6
+PySide6 6.11.1
+PyInstaller 6.21.0
+```
+
+Observed commands and results:
+
+```text
+python -m compileall app main.py
+    passed
+
+python -m pytest
+    blocked: pytest not installed
+
+python -m unittest discover -s tests
+    passed: 5 tests
+
+.\scripts\build_windows.ps1
+    passed
+
+.\scripts\build_installer.ps1
+    blocked: ISCC.exe not found
+```
+
+The successful frozen build produced:
+
+```text
+dist\Markei\Markei.exe
+SHA256 E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B
+```
+
+Distribution inspection found `Markei.exe` and `_internal\app\database\schema.sql`. It did not find `seed.sql`, a live database, WAL/SHM files, or startup logs.
+
+Isolated first launch created the external user database with zero category, store, product, and purchase rows plus expected structural/default settings. A second isolated frozen launch also succeeded.
+
+Focused shutdown validation initially failed because the isolated SQLite file remained held open after `MainWindow.close()`. A bounded `MainWindow.closeEvent()` coordinator was then added. The rerun showed all four page-owned repositories open before close and closed afterward; the isolated database directory became removable. The frozen runtime was rebuilt, and immediate frozen reopen succeeded.
+
+The focused shutdown issue is therefore resolved for the tested source/frozen context. Installed shutdown remains unvalidated.
+
+Installer compilation produced no artifact because `ISCC.exe` was unavailable. Consequently clean installation, Start Menu launch, installed principal workflows, compatible upgrade/reinstall, uninstall retention, reinstall recovery, SmartScreen/antivirus observation, and final human acceptance remain blocked or pending.
+
+Main reconciled the evidence as:
+
+```text
+configured: yes
+built: yes
+launched: yes — frozen isolated launch and reopen
+installed: blocked
+validated: partial
+accepted: no
+```
+
+Main authorized permanent Operational reconciliation through `J_[M]_STAGE.md`. Workflow atomicity remained inherited debt and was not modified.
