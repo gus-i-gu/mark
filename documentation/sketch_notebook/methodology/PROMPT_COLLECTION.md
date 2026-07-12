@@ -1,6 +1,6 @@
 # PROMPT_COLLECTION.md
 
-> Version: 0.2
+> Version: 0.3
 > Status: Active Methodology Prompt Register
 > Persistence Class: Canonical / Operational
 > Knowledge Class: Methodological
@@ -77,6 +77,10 @@ Rules:
 | `PRI-A` | Didactic Role Initialization | Initialize or refresh Didactic Chat |
 | `PRI-D` | Design Role Initialization | Initialize or refresh Design Chat |
 | `PRI-CODEX` | Codex Materialization Initialization | Initialize Codex after D/E/F authorization |
+| `PDR-00` | Permanent Domain Reconciliation Protocol | Shared J/evidence/promotion and temporal-boundary rules |
+| `PDR-O` | Operational Permanent Reconciliation | Reconcile latest J + A/G into Operational memory |
+| `PDR-A` | Didactic Permanent Reconciliation | Reconcile latest J + B/H into Didactic memory |
+| `PDR-D` | Design Permanent Reconciliation | Reconcile latest J + C/I into Design memory |
 
 ---
 
@@ -345,7 +349,200 @@ Do not commit or push unless the invoking task explicitly authorizes it.
 
 ---
 
-# 11. Maintenance Rule
+# 11. PDR-00 — Permanent Domain Reconciliation Protocol
+
+```text
+Run PDR-00 as the shared protocol for a functional-domain permanent-memory update.
+
+First run the role initializer named by the selected PDR prompt, then PMC-01. Run PMC-02 only when routing, authority, knowledge-state, or promotion confidence is uncertain or possibly stale.
+
+Resolve the active branch from the explicit task. If the task omits it, verify repository state against 06_SESSION_SCHEME.md before any write. Never silently use the default branch.
+
+Recover in this order:
+1. 00_PROJECT_STATE.md and 06_SESSION_SCHEME.md;
+2. the role's permanent checkpoint;
+3. the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md;
+4. the role's paired functional stage and Codex evidence report;
+5. the role's permanent files from their latest temporal marker forward;
+6. older permanent content or source only when the latest segment is insufficient or drift is suspected.
+
+The latest J section supplies Main orientation, not automatic promotion. Compare it with the paired stage/evidence files and repository truth where necessary.
+
+Classify every material claim as one of:
+- proposed;
+- provisional;
+- accepted;
+- implemented;
+- validated;
+- host-unvalidated;
+- blocked;
+- deferred.
+
+Preserve disagreements and defects. Do not convert generated structure, a passing unit test, or a Main preference into broader platform or production validation.
+
+Temporal-marker rule for each authorized permanent file:
+
+1. Find the final occurrence of TEMPORAL_MARKER: in the file.
+2. Count lines after that marker. If no marker exists, count the complete file.
+3. If more than 800 lines exist after the latest marker, insert a new marker at the current end before appending the reconciliation.
+4. Derive the marker ID from the active cycle, sprint, role, and current date. Use:
+
+   <!-- TEMPORAL_MARKER:CYCLE-SPRINT-ROLE-DATE -->
+   > Temporal boundary — permanent-domain reconciliation entry. Content above belongs to the preceding reviewed segment; content below belongs to the newly reconciled domain state.
+
+5. Do not insert a marker when the post-marker segment contains 800 lines or fewer.
+6. Do not relocate an old marker, split a file, rewrite history, or treat line count alone as authorization to create a new file.
+7. Report the files checked, line counts after their latest markers, and any new marker IDs.
+
+Append or minimally amend according to each file's semantic role:
+- canonical files receive stable accepted knowledge only;
+- checkpoints receive concise current state;
+- derived files receive rebuildable explanations or maps;
+- observational files remain append-oriented;
+- KANBAN changes require explicit evidence.
+
+Before writing, state:
+- exact input files;
+- exact writable files;
+- latest J section selected;
+- evidence boundary;
+- anticipated temporal-marker actions.
+
+After writing:
+- inspect the diff;
+- confirm no unlisted files changed;
+- commit only the role-owned permanent files when the invoking task authorizes commit;
+- pull/rebase safely before push if the remote branch advanced;
+- never force-push;
+- report commit SHA, changed files, marker actions, classifications, unresolved conflicts, and clean status.
+
+PDR-00 does not authorize source, methodology, Main-root, J, D/E/F, G/H/I, or another domain's files.
+```
+
+---
+
+# 12. PDR-O — Operational Permanent Reconciliation
+
+```text
+Initialize through PRI-O and run PMC-01. Run PMC-02 only if its confidence gate is triggered. Then run PDR-00 with Operational scope.
+
+Required evidence pair:
+- DEV_STAGE/A_OPERATIONAL.md;
+- DEV_STAGE/G_OPS_CODEX.md.
+
+Main orientation:
+- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+
+Authorized permanent outputs:
+- operational/04_TODO.md;
+- operational/10_OPERATIONAL_STATE.md;
+- operational/11_OPERATIONAL_RECORD.md;
+- operational/12_OPERATIONAL_MODEL.md.
+
+Reconcile:
+- commands, environment, reproducibility, and toolchain state;
+- passed, failed, blocked, and host-unvalidated evidence;
+- runtime, persistence, migration, packaging, and platform gates;
+- generated-versus-handwritten ownership;
+- data-isolation and rollback evidence;
+- operational defects and risks;
+- the next bounded validation sequence and its cost.
+
+Semantic placement:
+- 04_TODO: active gates and executable next work;
+- 10_OPERATIONAL_STATE: concise current Operational checkpoint;
+- 11_OPERATIONAL_RECORD: append-only events, commands, results, and observed failures;
+- 12_OPERATIONAL_MODEL: stable technology-independent operational rules only.
+
+Do not accept architecture, change Didactic maturity, perform Main synthesis, modify source, or broaden implementation authority.
+
+If the invoking task authorizes publication, commit only the four Operational files and push the active branch without force.
+```
+
+---
+
+# 13. PDR-A — Didactic Permanent Reconciliation
+
+```text
+Initialize through PRI-A and run PMC-01. Run PMC-02 only if its confidence gate is triggered. Then run PDR-00 with Didactic scope.
+
+Required evidence pair:
+- DEV_STAGE/B_DIDACTIC.md;
+- DEV_STAGE/H_DDC_CODEX.md.
+
+Main orientation:
+- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+
+Authorized permanent outputs:
+- didactics/02_KANBAN.md;
+- didactics/07_GLOSSARY.md;
+- didactics/08_CONCEPT_MAP.md;
+- didactics/13_LECTURE_REGISTER.md.
+
+Reconcile:
+- concepts introduced by planning versus concepts evidenced by implementation;
+- learner-facing distinctions exposed by J and H;
+- executable evidence and its limits;
+- vocabulary and conceptual dependencies;
+- misunderstandings, unresolved questions, and next learning boundary;
+- maturity changes only where promotion evidence satisfies the KANBAN rules.
+
+Semantic placement:
+- 02_KANBAN: canonical concept identity and evidence-backed maturity;
+- 07_GLOSSARY: concise derived terminology;
+- 08_CONCEPT_MAP: current conceptual checkpoint and dependencies;
+- 13_LECTURE_REGISTER: append-only learning events and evidence history.
+
+Explicitly distinguish local implementation from platform validation, offline queue preparation from synchronization, fixture examples from a complete protocol, and generated code from handwritten design.
+
+Do not select architecture, claim Operational acceptance, perform Main synthesis, modify source, or infer maturity from file existence.
+
+If the invoking task authorizes publication, commit only the four Didactic files and push the active branch without force.
+```
+
+---
+
+# 14. PDR-D — Design Permanent Reconciliation
+
+```text
+Initialize through PRI-D and run PMC-01. Run PMC-02 only if its confidence gate is triggered. Then run PDR-00 with Design scope.
+
+Required evidence pair:
+- DEV_STAGE/C_DESIGN.md;
+- DEV_STAGE/I_DSN_CODEX.md.
+
+Main orientation:
+- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+
+Authorized permanent outputs:
+- design/01_ARCHITECTURE.md;
+- design/03_DECISION_LOG.md;
+- design/09_DESIGN_STATE.md;
+- design/14_MODEL_OVERVIEW.md.
+
+Reconcile:
+- stable responsibility and dependency boundaries;
+- implemented topology and invariants;
+- physical implementation facts that remain observational;
+- provisional dependencies, schemas, protocols, and identity rules;
+- alternatives and development-cost tradeoffs;
+- defects, drift, and decisions requiring Main or human resolution;
+- recommended next bounded design route without converting recommendation into authority.
+
+Semantic placement:
+- 01_ARCHITECTURE: stable accepted architecture only;
+- 03_DECISION_LOG: append-oriented alternatives, decisions, rationale, and reversibility;
+- 09_DESIGN_STATE: concise current Design checkpoint;
+- 14_MODEL_OVERVIEW: derived responsibility and model map.
+
+Do not claim Operational validation, change Didactic maturity, perform Main synthesis, modify source, or treat generated framework structure as accepted product architecture by itself.
+
+If the invoking task authorizes publication, commit only the four Design files and push the active branch without force.
+```
+
+---
+
+# 15. Maintenance Rule
 
 This file should change when:
 
