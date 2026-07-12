@@ -143,70 +143,69 @@ no D/E/F
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
-# Cycle 07 Sprint 03 Review — Active Sprint 04 Gates
+# Cycle 07 Sprint 04 — Active Operational Gates
 
-The prior Sprint 03 preparation gates produced a local Flutter/Dart and Drift foundation. Current active work is now:
+> Reconciled at implementation head `32898f56f76895dc0f23d72cd132bcc24830e740`
+> Authority: planning accepted in J §21; execution awaits new D/E/F
 
-## P0 — Correct device-sequence continuity
+## P0 — Safe host preflight
 
-- reproduce repeated Purchase registration;
-- require observed sequences `1, 2, 3` without reset;
-- add durable uniqueness for account/device/sequence ownership;
-- define recovery after interrupted allocation;
-- rerun rollback and close/reopen tests.
+- pin or explicitly revise Flutter 3.44.6 and Dart 3.12.2;
+- authorize only the exact Visual Studio 2022 Native Desktop workload/components;
+- capture `flutter doctor -v` before and after host change;
+- do not install Android tooling in this unit;
+- if Android tooling already exists, capture `flutter devices` and attempt a debug build;
+- keep iOS deferred to macOS/Xcode.
 
-Do not allow synchronization work to depend on device ordering until this passes.
+## P0 — Sequence and schema-v2 migration
 
-## P0 — Harden normalization and identifiers
+- stop Device registration from overwriting existing `nextSequence`;
+- add account/device/sequence uniqueness;
+- prove 1, 2, 3 across repeated registration and close/reopen;
+- rehearse Drift v1→v2 from fresh and representative v1 stores;
+- preserve Product and Purchase references and pending events;
+- backfill temporary account-unique legacy Product codes without inventing meaning;
+- record migration execution using runtime time;
+- prove failed migration leaves prior state or a recoverable copy.
 
-- add Portuguese and Unicode fixtures, including accented product names;
-- preserve display text separately from normalized identity;
-- define normalization form, case, whitespace, punctuation, diacritic, and version policy;
-- add fixed deterministic Product-ID expectations;
-- decide whether identifiers require RFC UUID semantics or stable opaque IDs;
-- execute Dart/TypeScript parity before protocol promotion.
+## P0 — Product identity and contract gates
 
-## P0 — Complete language-neutral contract examples
+- preserve display name and brand;
+- create immutable UUID-v4 internal IDs for new Products;
+- add required account-scoped user Product code and normalized uniqueness key;
+- implement normalization v2 using NFKC, case conversion, whitespace collapse, documented punctuation, and accent preservation;
+- retain v1 identities without silent reinterpretation;
+- create `contracts/shared_beta/v2/` with Draft 7 schemas and readable valid/invalid examples;
+- run Dart structural validation and separate domain-invariant tests.
 
-Expand Purchase and sync fixtures with complete valid/invalid inputs and expected outputs. Define types, ranges, nullability, enums, unknown-field behavior, timestamps, decimals, canonical ordering where required, and version compatibility. Evaluate JSON Schema or an equivalent validator without discarding human-readable examples.
+## P0 — Local user workflow and lifecycle
 
-## P0 — Local shared-client vertical slice
+- replace the foundation label with the bounded multi-item Purchase form;
+- use the existing application/repository transaction rather than widget-owned SQL;
+- show success/error state and local history with ID, time, Store, currency, total, and item count;
+- prove application-support database path, termination/relaunch, sequence persistence, facts, queue, and history;
+- verify the ordinary Cycle 06 database remains untouched.
 
-Implement only after new D/E/F authority:
+## P0 — Required validation
 
 ```text
-minimal Flutter Purchase UI
-→ fresh app-private database
-→ Product and Store selection/create
-→ multi-item staging
-→ atomic registration and pending event
-→ visible projection/history
-→ close/reopen
+flutter doctor -v
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+flutter build windows
+flutter run -d windows
+python -m unittest discover -s tests
 ```
 
-Product similarity remains warning-only. Store deduplication is not claimed.
+Record versions, exit results, generated-source diff, database paths, lifecycle observations, and changed-file scope. Windows build and launch are required. Android is a conditional build attempt only when tooling already exists.
 
-## P0 — Host platform evidence
+## Deferred
 
-- install/verify Visual Studio C++ desktop workload, then build/run Windows;
-- install/verify Android SDK and emulator/device, then build/run Android;
-- capture clean tool versions, build commands, logs, artifacts, lifecycle, database path, and close/reopen evidence;
-- keep iOS blocked until macOS/Xcode evidence exists.
+Authentication, secure token storage, TypeScript API, Postgres/Neon, real synchronization, central catalogue assignment, Product-code editing/retirement, legacy import, iOS, production packaging, and PySide6 retirement remain deferred.
 
-Generated platform directories do not satisfy these gates.
+## Stop conditions
 
-## P1 — Schema evolution and generated ownership
-
-- rehearse Drift v1 → v2 migration and failure recovery;
-- decide migration-ledger authored identity versus execution timestamp;
-- verify `local_database.g.dart` regeneration from reviewed schema/config;
-- retain `pubspec.lock` as resolved dependency evidence;
-- exclude build outputs and local databases.
-
-## Deferred route
-
-The TypeScript API/disposable Postgres protocol harness remains the likely following unit. Authentication, Neon, upload/download, cursor bootstrap, cross-device convergence, legacy import, and PySide6 retirement remain unimplemented and deferred.
-
-## Completion boundary
-
-Sprint 04 planning is ready for Main after functional-domain reconciliation and human approval of one bounded route. D/E/F remain inactive until then.
+Stop on ambiguous tool-install scope, Cycle 06 database access, migration data loss, sequence reuse, schema/example divergence, UI bypass of the transaction boundary, unexplained generated diffs, Windows build/run failure after authorized prerequisites, or expansion into deferred work.
