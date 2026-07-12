@@ -944,3 +944,22 @@ Evidence limits remain canonical:
 
 No status changes. Project execution evidence is not explicit learner evidence.
 
+# Cycle 07 Sprint 04 Local Workflow Evidence Reconciliation
+
+> Evidence sources: `DEV_STAGE/H_DDC_CODEX.md`, Main J §21, current Flutter source/tests, and `contracts/shared_beta/v2/`  
+> Evidence class: implemented and tested locally, with Windows host validation  
+> Maturity effect: none
+
+Sprint 04 strengthens project evidence for `&&&06`, `&&&10`, `&&%05`, `&%%07`–`&%%13`, `&%%15`–`&%%17`, and `%%%07`. Product code, immutable local record UUID, and versioned semantic identification are now separate responsibilities. NFKC-based normalization, PACKAGED/BULK rules, atomic Purchase/event/queue persistence, monotonic device sequencing, v1-to-v2 migration, multi-item Flutter workflow, local history, and Windows build/launch evidence are implemented and tested within the reported boundary.
+
+Canonical limits remain:
+
+- `&%%08`: deterministic normalization is evidenced in Dart and fixtures, but cross-language parity and any future central catalogue assignment remain unproved.
+- `&%%12`: durable queue creation and rollback are local delivery preparation; server retry/deduplication is absent.
+- `&%%13`: per-device monotonic allocation is now locally evidenced; no server cursor exists.
+- `&%%14`: v2 JSON Schemas and examples define a stronger structural contract, not a complete implemented Sync Protocol.
+- `&&&07`, `&&&08`, and `&&&09`: authentication, authorization, and eventual consistency remain unimplemented.
+- `%%%07`: responsive widget behavior and Windows execution are evidenced; Android is tooling-blocked, iOS host-unvalidated, and manual UI acceptance open.
+- A future central Product UUID is not the user Product code or current local Product record UUID and remains deferred.
+
+No KANBAN status changes. Implementation evidence is not learner evidence.
