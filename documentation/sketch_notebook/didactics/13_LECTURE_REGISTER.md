@@ -361,3 +361,40 @@ The next learner boundary is to explain evidence classifications, local queue ve
 
 Sprint 03 Unit 01 is a successful local foundation. It does not complete the user-visible Flutter vertical slice, platform validation, synchronization protocol, or Cycle 07. Main orientation favors correcting identity/sequence defects, strengthening fixtures, and completing the local shared-client workflow before the protocol harness. Sprint 04 remains unauthorized.
 
+---
+
+# Observation 007 — Cycle 07 Sprint 04 Local Flutter Workflow Evidence
+
+> Evidence sources: `DEV_STAGE/H_DDC_CODEX.md`, Main J §21, `DEV_STAGE/B_DIDACTIC.md`, current Flutter source/tests, and `contracts/shared_beta/v2/`  
+> Evidence class: implemented, tested, and selectively host-validated; learner mastery not evidenced
+
+Sprint 04 materialized the bounded local Flutter workflow anticipated by the prior checkpoint. The protected Python beta remained regression-tested while the Flutter client gained an explicit composition boundary, a multi-item Purchase form, atomic local registration, and a readable local history projection.
+
+The strongest concept evidence is:
+
+- a user-designable, account-private Product code is stored as display value plus normalized key;
+- the Product record keeps a separately generated immutable local UUID;
+- normalized Name, Brand, mode, and package facts form versioned semantic identification evidence without becoming the record identity;
+- Unicode NFKC and whitespace collapse preserve readable display facts while producing deterministic comparison keys;
+- PACKAGED and BULK retain different package-quantity rules;
+- Purchase, Items, local append-only event, pending queue entry, and device-sequence allocation remain within one local transaction;
+- repeated successful registrations produce device sequences 1, 2, 3, while a rolled-back registration consumes no sequence;
+- schema v1-to-v2 migration preserves the existing Product row, assigns an explicit temporary legacy code, records the migration, and survives reopen;
+- JSON Schema validates the readable v2 catalogue, Purchase, and sync-event examples structurally;
+- the Flutter widget test exercises multi-item registration and the resulting history view;
+- Windows analysis, tests, build, and launch smoke supplied host evidence.
+
+The evidence boundaries are equally important. JSON Schema does not establish every cross-field business invariant or Dart/TypeScript parity. A local event and pending queue are not an API, server acknowledgement, cursor application, or cross-device convergence. The future central Product UUID remains a design possibility rather than an implemented identity. Authentication, authorization, eventual consistency, and real Sync Protocol behavior remain unimplemented. Android was blocked by absent tooling under the authorized installation boundary; iOS remains host-unvalidated. Manual UI acceptance remains open.
+
+Maturity decision:
+
+```text
+new concepts: none
+existing maturity changes: none
+implementation/test evidence: recorded
+learner evidence: absent
+```
+
+# Current Observation Boundary
+
+Sprint 04 closes several local correctness and platform-evidence gaps from Sprint 03, but it does not prove distributed synchronization or learner mastery. The next learner work is to explain the three Product identities, structural schema versus semantic invariants, local atomic delivery preparation versus synchronization, and why Windows validation does not generalize automatically to Android or iOS.
