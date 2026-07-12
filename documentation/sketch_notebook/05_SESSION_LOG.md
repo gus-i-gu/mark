@@ -353,3 +353,169 @@ D/E/F:
 ```
 
 The next knowledge target is a technology-neutral behavior and fixture specification. An empirical prototype remains required before Cycle 07 can close, but its materialization awaits later human/Main direction.
+
+
+---
+
+# 7. Session 005 — Cycle 07 Sprint 02 Shared-Beta Architecture
+
+```text
+Date: 2026-07-12
+Repository: gus-i-gu/markei
+Branch: cycle-07-mobile-preparation
+Class: shared-client, synchronization, catalogue, analytics, and learning-model design
+Outcome: Flutter/Dart planning architecture and permanent domain memory accepted
+```
+
+## 7.1 Product-direction expansion
+
+The human expanded Cycle 07 from mobile-only preparation toward one synchronized shared application for Windows, Android, and iOS.
+
+The favored product boundary became:
+
+```text
+one maintained shared client
++ local-first persistence
++ verified-email identity
++ custom synchronization API
++ Neon Postgres
++ append-only first synchronized slice
+```
+
+The earlier near-term no-backend assumption was superseded because synchronized state became an explicit requirement.
+
+## 7.2 Infrastructure and synchronization planning
+
+Neon was classified as a way to reduce Postgres infrastructure operations, not as a replacement for synchronization semantics. Email was classified as a login/verification attribute, while immutable account UUID owns data.
+
+The favored responsibility chain became:
+
+```text
+Flutter local client
+→ authenticated TypeScript API
+→ Neon Postgres
+```
+
+The API owns authorization, runtime validation, idempotency, device sequencing, account cursors, protocol versions, server transactions, and diagnostics. Clients never receive privileged Postgres credentials.
+
+The first protocol uses event UUID, device sequence, business occurrence time, and account-scoped cursor for distinct responsibilities.
+
+## 7.3 Reusable catalogue and purchase model
+
+The human proposed the Reusable Catalogue Perspective: stable account-private Product identities should be separated from variable purchase observations.
+
+Main and the domains reconciled:
+
+```text
+Account
+├── Products
+├── Stores
+└── Purchases
+    └── Purchase Items
+```
+
+Packaged identity uses normalized name, brand, packaged mode, package amount, and explicit unit/dimension. Bulk identity omits packaged amount. Exact normalization may reuse; fuzzy similarity only warns.
+
+Purchase became an atomic aggregate containing one or more Items and a pending `purchase.registered` event. The first interface may guide one Item without constraining the model to one-item Purchases.
+
+## 7.4 Quantity, money, and analytics
+
+The broad `M/m` abstraction was narrowed for persistence.
+
+```text
+quantity:
+    MASS/KG
+    VOLUME/L
+    COUNT/UNIT
+
+money:
+    explicit currency
+    integer minor units
+```
+
+Package amount, package count, and purchased amount became distinct.
+
+Analytics moved toward a versioned Dart registry. Raw catalogue/purchase/item facts remain authoritative; Storage/Shortage/Market, interval, price, personalized inflation/deflation, shrinkflation, store comparison, and forecasts remain derived.
+
+## 7.5 Language and framework decision
+
+TypeScript was initially explored as the shared-client basis. Human/Main then selected Flutter/Dart as the stronger planning basis for one Windows/Android/iOS client.
+
+Final language boundary:
+
+```text
+Flutter/Dart
+    shared client
+
+TypeScript
+    custom synchronization API
+
+Python/PySide6
+    protected beta, fixtures, migration source, rollback
+
+Python ↔ Dart
+    contracts, fixtures, and parity evidence
+    no embedded runtime bridge
+```
+
+Tauri and React Native Windows remain comparison controls, not current leaders.
+
+## 7.6 Functional restaging and Main reconciliation
+
+A/B/C restaged the Flutter direction.
+
+Operational recommended a Windows+Android-first, Drift-first local experiment followed by a TypeScript/disposable-Postgres protocol harness. iOS remained separately gated by macOS/Xcode.
+
+Design defined the Flutter dependency direction, catalogue/purchase aggregate, local event queue, TypeScript API, Neon responsibilities, progressive migration, and accepted/provisional/open decision matrix.
+
+Didactic proposed and later promoted eighteen new Red concepts spanning identity, access, consistency, Dart models, Flutter, catalogue, purchase, synchronization, quantity, money, and analytics.
+
+Main reconciled these reports in J sections 17–18.
+
+## 7.7 Permanent-domain absorption
+
+Operational updated:
+
+```text
+04_TODO.md
+10_OPERATIONAL_STATE.md
+11_OPERATIONAL_RECORD.md
+12_OPERATIONAL_MODEL.md
+```
+
+Didactic updated:
+
+```text
+02_KANBAN.md
+07_GLOSSARY.md
+08_CONCEPT_MAP.md
+13_LECTURE_REGISTER.md
+```
+
+Design updated:
+
+```text
+01_ARCHITECTURE.md
+03_DECISION_LOG.md
+09_DESIGN_STATE.md
+14_MODEL_OVERVIEW.md
+```
+
+New concepts were introduced as Red. No existing maturity changed.
+
+No Flutter project, Dart source, TypeScript API, physical schema, authentication provider, Neon environment, or D/E/F/G/H/I materialization was produced.
+
+## 7.8 Sprint 02 closure
+
+```text
+Flutter/Dart planning basis: accepted
+TypeScript API: favored
+Neon Postgres: favored
+shared catalogue/purchase architecture: accepted for planning
+synchronization semantics: accepted for planning
+permanent-domain reconciliation: complete
+implementation: not started
+D/E/F: pending Sprint 03 authorization
+```
+
+Sprint 03 should begin the additive transition into a fresh Flutter structure and new local schema while preserving the accepted Python/PySide6 application and database.
