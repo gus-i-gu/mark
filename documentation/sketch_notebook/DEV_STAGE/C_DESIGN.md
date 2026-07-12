@@ -1,261 +1,279 @@
-# 1. Main Synthesis Summary
+# C_DESIGN — Cycle 07 Sprint 04 Functional State of Union
 
-Cycle 07 Sprint 02 should restage Markei around a Flutter/Dart shared client for Windows, Android, and iOS; a favored TypeScript synchronization API; and favored Neon Postgres event persistence. Python/PySide6 remains the accepted Cycle 06 application, behavioral reference, migration source, and rollback until the Flutter client proves parity.
+> Role: Design Chat [D]  
+> Cycle: 07  
+> Sprint: 04 exploration  
+> Branch: `cycle-07-mobile-preparation`  
+> Inspected remote head: `faf62fff1b3b9266934a8295891fd386e7d36371`  
+> Date: 2026-07-12  
+> Status: Functional Design stage; temporary and non-canonical  
+> Sources: J sections 19–20; `00_PROJECT_STATE.md`; latest `05_SESSION_LOG.md` segment; `06_SESSION_SCHEME.md`; `design/09_DESIGN_STATE.md`; G/H/I; protected Python source; handwritten Flutter source, schema, manifests, fixtures, and tests
 
-The shared client owns presentation, use cases, domain rules, application-private persistence, a pending-event queue, synchronization coordination, authenticated session state, versioned analytics, and platform composition. Python and Dart share behavior through language-neutral contracts, deterministic fixtures, and migration evidence—not an embedded Python runtime or IPC bridge.
+## 1. Recovered Main State
 
-The first synchronized fact is one atomic `purchase.registered` event containing a Purchase aggregate and one or more Purchase Items. The first UI may guide a single item, but the contract must never encode one purchase equals one product. Products are account-private catalogue identities. Packaged identity includes normalized name, brand, mode, package amount, and explicit unit/dimension; bulk identity includes normalized name, brand, and BULK mode.
+**Accepted:** Cycle 06 remains a recoverable PySide6/SQLite Windows beta. Cycle 07 Sprint 03 closed with an additive Flutter/Dart foundation, fresh Drift persistence, account-private catalogue structures, Purchase/Purchase Item aggregation, local event preparation, and pending queue persistence.
 
-All conclusions remain planning architecture. No Flutter code, schema, API, infrastructure, or D/E/F authorization follows from this report.
+**Implemented and validated locally:** the independent Dart domain/application boundary, fresh Drift schema, atomic local Purchase transaction, invalid-item rollback, close/reopen persistence, dimensional quantity, minor-unit money, and minimal versioned analytics. Nine Flutter tests, clean analysis, and five Python regressions passed.
 
-# 2. Accepted and Superseded Decisions
+**Host-unvalidated:** generated Windows, Android, and iOS targets. No platform build/run or responsive lifecycle evidence exists.
 
-## Accepted planning direction
+**Accepted Sprint 04 direction:** correct identity and sequence defects, harden contracts, implement the local Flutter Purchase workflow and visible history/projection, prove close/reopen, and require Windows build/run. Android build is attempted only when tooling is available; complete Android execution is not an acceptance requirement.
 
-- Flutter/Dart owns the future shared Windows/Android/iOS client.
-- TypeScript is favored for the custom synchronization API.
-- Neon Postgres is favored for shared append-only event persistence.
-- PySide6 and its database remain protected until parity acceptance.
-- Client behavior crosses Python/Dart through contracts and fixtures.
-- Products are account-private.
-- Purchases are atomic aggregates containing Purchase Items.
-- Currency is explicit and money uses integer minor units.
-- Quantity is dimensionally explicit: MASS/KG, VOLUME/L, COUNT/UNIT.
-- Analytics use stable algorithm identifiers and versions.
-- First-beta synchronization is append-only.
+**Deferred:** TypeScript/Postgres synchronization harness, authentication, Neon, distributed convergence, legacy import, editing/deletion, household sharing, background/realtime sync, parity, and PySide6 retirement.
 
-## Superseded direction
+Implementation remains inactive until Main writes and the human approves fresh D/E/F, including any host-tool installation.
 
-TypeScript no longer leads shared-client exploration. It remains favored at the API boundary. A permanent dual-client strategy is also superseded: Flutter should progressively become the common desktop/mobile client, but only after evidence. Earlier “no backend” planning is superseded by the explicit synchronized-beta requirement.
+## 2. Hierarchical Recovery
 
-Not superseded: the accepted desktop architecture, ordinary user-data protection, offline-first operation, fixture-first semantic continuity, and implementation postponement.
+Recovery followed Main continuity first: J section 20 → 00 → latest 05 segment → 06. The Design checkpoint was then required because Main explicitly carried unresolved sequence, normalization, Product identity, contract, migration, and Store boundaries into Sprint 04.
 
-# 3. Flutter Client Architecture
+No deeper permanent Design file was required. `design/09_DESIGN_STATE.md` already distinguishes accepted topology, implemented evidence, host-unvalidated targets, defects, and the recommended route. Repository inspection was required because MSU-02 asks Design to compare intended architecture with current Python and Flutter implementation truth.
 
-The Flutter client should have explicit inward dependency direction:
+## 3. Repository Surfaces Inspected
 
-```text
-Flutter presentation
-→ application/use cases
-→ domain contracts and algorithms
-→ repository interfaces
-→ local persistence / event queue / sync adapters
-```
+Protected Python boundary:
 
-**Presentation** owns responsive Windows/mobile widgets, navigation, input, accessibility, formatting, and platform interaction. It receives view data and stable error/status codes, not SQL rows or raw API responses.
+- root and `app/main.py` entrypoints;
+- Python Product/Purchase models;
+- ProductService and concrete Repository coupling;
+- Windows/PyInstaller-shaped database manager;
+- Cycle 06 SQLite schema;
+- PySide6 dependency manifest.
 
-**Application/use cases** coordinate Register Purchase, catalogue lookup/create, local projection reads, authentication, and synchronization requests. Register Purchase owns the aggregate transaction boundary.
+Flutter boundary:
 
-**Domain** owns Product identity normalization, Purchase/Purchase Item invariants, dimensional quantity, money, event construction, and analytics selection. Domain objects should be typed and immutable where representing accepted facts.
+- `pubspec.yaml`, lock/dependency ownership, and Dart entrypoint;
+- placeholder `MarkeiApp`;
+- Register Purchase command and repository port;
+- Product, Purchase, Item, Store, ID, quantity, money, event, and analytics domain models;
+- handwritten Drift schema and local Purchase repository;
+- catalogue and repository tests;
+- human-readable shared-beta JSON fixtures.
 
-**Local persistence** maps domain facts, events, projections, and synchronization metadata to an application-private database. **Event queue** tracks pending, in-flight, accepted, and rejected upload outcomes without treating timeout as rejection.
+Generated Drift and platform-runner files were not read line by line. Their ownership is evaluated through schema/configuration, dependency lock, regeneration evidence, and G/H/I validation.
 
-**Synchronization coordinator** uploads pending events, downloads after the account cursor, applies accepted events transactionally, and exposes status. It does not calculate business meaning independently.
+## 4. Current Design State of Union
 
-**Authentication session** owns access-token use, refresh/re-authentication boundaries, account UUID, device registration, logout, and platform-secure credential storage adapters.
+### Protected Python beta
 
-**Analytics registry** maps stable algorithm ID/version pairs to pure Dart calculations and fixtures.
-
-**Composition root** creates platform-specific database paths, secure storage, HTTP transport, repositories, coordinator, registry, and use cases. It owns startup and lifecycle wiring while preventing Flutter widgets from constructing persistence directly.
-
-# 4. Reusable Catalogue
-
-A Product is a relatively stable account-private identity, not a current purchase record.
-
-Candidate normalization must be deterministic and versioned. Recommended identity string:
+The Python application remains a coherent desktop-only layered system:
 
 ```text
-v1|account=<account_uuid>
-|name=<normalized_name>
-|brand=<normalized_brand_or_empty>
-|mode=PACKAGED
-|kind=<MASS|VOLUME|COUNT>
-|amount=<canonical_fixed_precision>
-|unit=<KG|L|UNIT>
+PySide6
+→ ProductService
+→ concrete Repository
+→ Windows-shaped Database Manager
+→ Cycle 06 SQLite
 ```
 
-For bulk:
+Its Product ID is user-entered text and its Purchase row directly references one Product. It does not implement the new Purchase aggregate, dimensional quantity, internal/user code separation, or shared synchronization model. That mismatch is expected: Python is the protected behavioral reference and migration source, not the target schema.
+
+### Flutter foundation
+
+Implemented dependency direction matches the accepted inward architecture:
 
 ```text
-v1|account=<account_uuid>
-|name=<normalized_name>
-|brand=<normalized_brand_or_empty>
-|mode=BULK
+Flutter composition
+→ application port
+→ infrastructure-independent Dart domain
+→ repository boundary
+→ Drift local adapter
 ```
 
-Normalization v1 should Unicode-normalize, trim outer whitespace, collapse internal whitespace, apply a locale-independent case rule, and preserve semantic characters rather than deleting punctuation broadly. Package input converts only within its dimension to KG, L, or UNIT and serializes a canonical fixed-precision decimal. It never converts mass to volume.
+The UI is still only a foundation screen. It does not construct the Drift database or expose catalogue, Store, Purchase staging, registration, or history.
 
-A deterministic account-scoped Product UUID is feasible using a namespaced UUID derived from the versioned normalized identity string. It allows offline devices to derive equal IDs for mechanically equivalent identities such as 350 g and 0.350 kg. It remains provisional because correction of normalization defects or identity fields creates a new identity. The normalization version must therefore be explicit, collision fixtures must exist, and migration must preserve old mappings.
+The local repository atomically persists Store/Product references, Purchase/Items, `purchase.registered`, and pending queue state. This is a validated local transaction boundary, not synchronization.
 
-Exact normalized match may reuse a Product automatically. Fuzzy matching is advisory only: it warns and asks the user. It never changes identity or merges products.
+## 5. Product Identity and Catalogue Responsibilities
 
-Identity fields are immutable in the first beta. Changed name, brand, packaged amount, mode, dimension, or unit creates a new Product. A future successor or product-family relationship may connect variants for shrinkflation and longitudinal analytics without rewriting history; aliases, merges, spelling correction, and global catalogue deduplication are deferred.
+Human direction establishes three separate identifiers:
 
-# 5. Purchase Aggregate
+1. **User Product code — accepted product direction.** An account-private, user-designable opaque code displayed to the user. It is a catalogue handle, not a derivation of Product meaning.
+2. **Internal Product record identity — accepted architectural distinction.** Immutable identity used by local relations, events, and future synchronization. Users do not redefine it by editing the Product code.
+3. **Future central Product UUID — deferred future catalogue identity.** A system-controlled identifier may later be assigned against a versioned Name + Brand + Package Quantity production identification set.
 
-The aggregate is:
+The current Flutter `Product.id` conflates internal identity with a SHA-256-derived identity-set result. Sprint 04 should separate these responsibilities before adding UI.
+
+Recommended provisional local model:
 
 ```text
-Purchase
-    purchase_uuid
-    account_uuid
-    store reference
-    occurrence timestamp
-    currency code
-    one or more Purchase Items
-
-Purchase Item
-    item_uuid
-    product_uuid
-    package count
-    purchased amount/dimension/unit
-    line total minor units
-    promotion observation
-    optional expiration/notes
+Product
+    internalProductId      immutable opaque record ID
+    userProductCode        account-private user-facing code
+    normalized identity fields
+    normalizationVersion
+    display name / brand
+    mode and package quantity
 ```
 
-Store is an account-private reusable reference with stable UUID and minimum name; address/location remain optional and outside identity unless later accepted.
+The user code must not be the primary/foreign key. Whether it is required, unique per account, mutable, reusable after retirement, case-sensitive, or history-snapshotted requires Main/human definition. Design recommends account-scoped uniqueness after a documented normalization rule, mutability through an explicit catalogue operation, and immutable Purchase references to `internalProductId`.
 
-The first UI may collect one item, but the command/result and event payload contain an item list. Registering commits Product/Store bootstrap facts when absent, Purchase, all Items, projection changes, and the pending event atomically. An invalid item rejects the entire aggregate locally.
+The future central UUID must not be introduced into Sprint 04 storage as if the central catalogue exists. A nullable future mapping boundary may be designed later.
 
-The recommended `purchase.registered` payload includes protocol and payload versions; event/account/device/purchase UUIDs; device sequence; occurrence timestamp; currency; Store identity plus minimum bootstrap name; Product identity records required by the Items; and immutable item lines. This purchase-level event preserves receipt atomicity and lets a new device apply it independently.
+## 6. Defects, Drift, and Contradictions
 
-Minimum historical snapshot facts are the immutable referenced Product identity, Store identity/name needed for display, occurrence time, dimensional purchased amount, package count, line total/currency, and promotion observation. Broad duplicated Product snapshots are unnecessary while identity records are immutable. Future catalogue corrections must not rewrite prior Items.
+**Defective — device sequence.** `registerPurchase` uses an upsert that resets `nextSequence` to 1 before allocation. Repeated purchases can reuse sequence 1. The schema also lacks explicit account/device/sequence uniqueness. Sprint 04 must correct and test 1, 2, 3 allocation, rollback, reopen, and uniqueness.
 
-# 6. Quantity and Money
+**Defective/provisional — normalization.** `[^\w\s]` may remove accented Portuguese letters. Display text is also not stored separately from normalized identity in the Product schema. Sprint 04 requires explicit Unicode normalization, Portuguese fixtures, stable canonical bytes, and separation of display/normalized fields.
 
-Quantity must carry dimension, canonical unit, and fixed-precision amount:
+**Provisional — Product ID.** The current SHA-256 output is formatted like a UUID without an accepted UUID-version/variant contract. With the new human decision, it should be treated as an internal opaque candidate rather than a user code. Deterministic identity-set derivation may later belong to the central catalogue instead.
 
-- MASS uses KG;
-- VOLUME uses L;
-- COUNT uses UNIT.
+**Incomplete — contracts.** Catalogue fixtures test useful semantics, but Purchase and event files contain mainly counts and required-field names. They do not define a wire contract.
 
-Package amount describes one packaged unit. Package count describes how many packages were bought. Purchased amount is their measured total. For a 0.350 KG package bought twice, package amount is 0.350 KG, package count is 2, and purchased amount is 0.700 KG. Bulk mode has no packaged amount; the Item records purchased amount directly.
+**Unvalidated — migration.** Drift schema version 1 creates fresh data only. Upgrade rehearsal and Cycle 06 import remain separate.
 
-No mass/volume inference is permitted. COUNT values may be displayed without fractional noise, but storage rules must define whether fractional UNIT is rejected. Exact decimal scale/range is an open technical choice; floating-point storage is inappropriate for authoritative equality or identity.
+**Incomplete — Store.** Exact display-name reuse is not stable Store identity or deduplication.
 
-The account supplies a default currency for input convenience. Every Purchase persists an ISO-style currency code. Every Item persists authoritative line total in integer minor units. Receipt-level total may be stored if independently observed, but it does not silently overwrite line totals.
+**Stale staging:** the prior C report described Sprint 02 planning before implementation. This report supersedes it while preserving its contract-first, protected-migration, and local-first findings.
 
-Package price, normalized KG/L/UNIT price, unit price, price deltas, and inflation/deflation indicators are derived. Currency minor-unit metadata must be respected; not every currency has two decimal places. Cross-currency analytics and conversion are deferred.
+## 7. Human Decisions Applied
 
-# 7. Versioned Analytics
+- **Accepted:** private catalogue exposes a user-designable opaque Product code.
+- **Accepted:** user code is distinct from immutable internal Product identity.
+- **Deferred:** central catalogue may later assign a system UUID for a versioned production identification set.
+- **Accepted:** Sprint 04 uses JSON Schema and retains readable examples.
+- **Required validation:** Windows build and launch.
+- **Conditional evidence:** Android build should be attempted when tooling exists; full Android execution is not required.
+- **Authority constraint:** host-tool installation requires exact D/E/F scope, permission, and validation.
 
-Flutter owns a Dart analytics registry. Each algorithm has a stable identifier, semantic version, declared inputs, output contract, and deterministic fixtures. Candidate identifiers include `purchase_interval`, `package_price`, `normalized_measure_price`, and `price_change`.
+These decisions supersede J’s earlier binary choice between opaque deterministic Product ID and standards-defined UUID: Sprint 04 needs an opaque internal record identity plus a separate user code; central semantic UUID assignment remains future work.
 
-Raw Product/Purchase/Item facts remain authoritative. Cached projections record algorithm ID/version when reproducibility matters and are rebuildable. A released algorithm version never changes meaning; improved formulas receive a new version.
+## 8. JSON Schema Contract Boundary
 
-Python fixtures should capture accepted Cycle 06 behavior where it remains intended. Dart must reproduce those expected results, while new dimensional-money fixtures define behavior Python never modeled precisely. Future personalized inflation, deflation, shrinkflation, store comparison, and product-family analytics remain derived; the first beta proves registry/version mechanics with only the calculations required by its projection.
+Sprint 04 should add schemas for Product catalogue input/output, Purchase aggregate, and `purchase.registered` envelope while retaining readable valid and invalid examples.
 
-# 8. Local Persistence
+Schema ownership should define:
 
-Logical local responsibilities are separate even if one physical SQLite database later implements them:
+- required fields and types;
+- nullability;
+- enums and ranges;
+- timestamps;
+- fixed decimal strings and integer minor units;
+- additional-property policy;
+- schema and payload versions;
+- user Product code versus internal identity;
+- valid/invalid examples.
 
-- account/device/session metadata excluding raw privileged secrets;
-- Catalogue Products and Stores;
-- Purchases and Purchase Items;
-- immutable local/applied synchronization events;
-- pending upload queue and stable rejection state;
-- last transactionally applied account cursor;
-- rebuildable projections and algorithm versions;
-- migration/import ledger.
+JSON Schema validates structural interchange, not all domain meaning. Cross-field invariants—currency agreement, package-mode rules, Product-code policy, aggregate totals, and normalization—remain domain/fixture tests. No TypeScript service belongs in this unit.
 
-One local Register transaction commits aggregate facts, event, queue state, and affected projection together. Network work occurs after commit and never inside the database transaction.
+## 9. Recommended Sprint 04 Materialization Scope
 
-Downloaded events are inserted if unseen, references and aggregate facts are applied, projections rebuild, and cursor advances in one local transaction. Failure leaves the old cursor so replay is safe. Bootstrap initializes an empty store and downloads from cursor zero in bounded pages.
+### Unit A — correctness and identity
 
-Physical table names, SQLite package/plugin, migration framework, indexes, encryption choice, and schema layout remain open until tooling evidence and logical-contract fixtures exist.
+- preserve Device state and allocate monotonic sequence atomically;
+- add account/device/sequence uniqueness;
+- add repeat, rollback, reopen, and recovery tests;
+- introduce immutable internal Product ID and separate user Product code;
+- preserve display name/brand independently;
+- replace unsafe normalization and add accented Portuguese fixtures;
+- retain advisory-only similarity.
 
-# 9. Synchronization Event Contract
+### Unit B — contract hardening
 
-Identifiers include account, device, Product, Store, Purchase, Item, and event UUIDs. The envelope carries protocol version, event type, payload version, event UUID, device UUID, monotonic device sequence, occurrence time, and immutable payload.
+- adopt JSON Schema;
+- retain human-readable examples;
+- cover valid/invalid Product, Purchase, and event cases;
+- include fixed expected canonical identity values where still relevant;
+- validate schemas in tests;
+- avoid API/Postgres work.
 
-The server cursor should be account-scoped and opaque. This bounds downloads and ownership checks to one account and avoids leaking global activity. The API may implement it as an account-local monotonic value, but clients depend only on ordering and continuation semantics.
+### Unit C — local Flutter workflow
 
-Sequence gaps should be rejected with a stable “missing prior sequence” result. This prevents silent loss and asks the device to retry earlier pending events. Identical event UUID and content returns the prior acceptance; the same UUID with different canonical content returns an immutable-content conflict.
+- composition root opens app-private Drift storage;
+- minimal responsive Purchase page;
+- Product and Store select/create;
+- one-or-more Item staging;
+- user Product-code entry/selection;
+- atomic Register Purchase;
+- visible local history/projection;
+- close/reopen persistence.
 
-Upload batches return per-event results. Each event receives its own server transaction: validate/authenticate/authorize, check idempotency and sequence, ensure account-owned references, append the immutable event and aggregate facts, allocate cursor, and commit. One rejected event need not roll back unrelated valid events, but later same-device sequences cannot leap over its gap.
+### Unit D — platform evidence
 
-Stable errors should distinguish authentication required, forbidden account/device, device revoked, unsupported protocol/payload, invalid payload, sequence gap, identity conflict, event-content conflict, retryable server failure, and page/cursor invalidity.
+- analysis, formatting, code generation, and tests;
+- Python regression suite;
+- Windows build and launch required;
+- verify app-private path and reopen lifecycle;
+- Android build attempt only when tooling is available;
+- record Android blocker without making full execution a Sprint 04 failure;
+- keep iOS unvalidated.
 
-# 10. TypeScript API
+The units may share one D/E/F package but require separate pass/fail evidence.
 
-The TypeScript API is favored because it offers mature runtime schema validation, Postgres/Neon tooling, authentication middleware, JSON protocol support, migration ecosystems, and test harnesses. Dart and TypeScript remain separated by serialized language-neutral contracts and shared fixtures.
+## 10. Alternatives and Development Cost
 
-The API owns token verification, immutable account UUID resolution, device authorization, runtime payload validation, event canonicalization/hash comparison, idempotent append, sequence enforcement, account cursor allocation, cursor-based download, protocol negotiation, transactions, stable errors, rate/size limits, and privacy-safe observability.
+Adding the Product-code/internal-ID split now costs a schema migration within the new Flutter database, model changes, fixtures, and UI fields. Deferring it would be cheaper immediately but would let the first UI and JSON contracts harden the wrong identity semantics, making later migration more expensive.
 
-Clients never carry privileged Neon credentials. Exact runtime, framework, host, validation library, migration tool, and auth provider remain open. Familiarity is insufficient; selection requires deployment, migration, transaction, Neon, token-validation, logging, and contract-test evidence.
+JSON Schema adds validator/tooling and maintenance cost, but reduces ambiguity before Dart/TypeScript divergence. Readable examples remain necessary because schemas alone are poor scenario documentation.
 
-# 11. Neon Responsibilities
+Windows-first evidence narrows toolchain work and gives visible shared-client progress. Requiring Android execution simultaneously would expand SDK/emulator cost and risk hiding local architecture defects behind environment setup. A conditional Android build preserves evidence without making two platforms one acceptance gate.
 
-Neon logically stores account identity references, device registrations/revocation, account-private Products and Stores, Purchases and Items or their accepted-event materialization, immutable events, account cursors, idempotency/content hashes, and protocol/schema metadata.
+The TypeScript/Postgres harness remains strategically important but should follow the local workflow. Building it now would multiply identity and contract changes across two runtimes before the Product-code distinction and event envelope stabilize.
 
-Every user-data row is owned by immutable `account_uuid`; email is replaceable login metadata, never the ownership key. Constraints enforce account-scoped references, event uniqueness, device-sequence uniqueness, and immutable accepted content.
+## 11. Questions Requiring Resolution
 
-API transactions own synchronization semantics. Neon supplies Postgres persistence, constraints, migrations, roles, backups/recovery, and observability support. Row-level security is a provisional defense-in-depth candidate, not a replacement for API authorization.
+Main/human should decide before final D/E/F:
 
-Logical cloud schema may separate immutable event log from query/materialized aggregate tables, but physical tables are not justified until the event payload, invariants, cursor allocation, migration tool, and transaction tests are accepted.
+1. Is `userProductCode` mandatory?
+2. Must it be unique per account after normalization?
+3. May users change it, and must old codes remain aliases or snapshots?
+4. Can a retired code be reused?
+5. What maximum length and permitted character policy apply?
+6. Should internal Product IDs be random UUIDs/opaque IDs in Sprint 04, leaving deterministic semantic UUIDs solely to the future central catalogue?
+7. Which JSON Schema draft and validator will D/E/F authorize?
+8. Does Android “attempt” mean install tooling when permission is granted, or build only if tooling already exists?
+9. Which exact Visual Studio workload/components may be installed for Windows?
 
-# 12. Migration From PySide6
+Design recommends: mandatory account-unique code, explicit user-authorized change, no silent reuse during the beta, internal opaque random UUID, and no central semantic UUID field until the central catalogue is actually designed.
 
-Migration is additive and reversible:
+## 12. Explicit Non-Goals
 
-1. preserve the accepted PySide6 program and untouched original database;
-2. work from a protected copy;
-3. define deterministic UUID mapping for legacy Product, Store, Purchase, and generated Item identities;
-4. normalize legacy units/money only through explicit migration rules and exception reporting;
-5. import through append-only events or a separately authorized controlled-fact import;
-6. record source identity, mapping version, and import idempotency keys;
-7. compare entity counts, totals, dates, history, and projection fixtures;
-8. test retry and rollback;
-9. run Flutter Windows/Android parity, then iOS separately;
-10. retire or demote PySide6 only after human/Main acceptance.
+- changing or migrating the ordinary Cycle 06 database;
+- retiring PySide6;
+- TypeScript API, Postgres, Neon, authentication, or authorization;
+- actual upload/download synchronization;
+- household/global catalogue;
+- Product merge/alias or central UUID assignment;
+- purchase editing/deletion;
+- background/realtime sync;
+- Android execution as mandatory acceptance;
+- iOS validation;
+- broad analytics expansion;
+- permanent documentation promotion.
 
-Legacy rows with ambiguous package amount, currency, quantity dimension, or promotion meaning must be reported rather than guessed. The migration may preserve a legacy/unknown representation pending user correction, but the exact policy is open. Direct destructive conversion and shared opening of the ordinary Cycle 06 database are prohibited.
+## 13. Evidence Matrix
 
-# 13. Decision-State Matrix
+| Claim | Classification | Source |
+| --- | --- | --- |
+| PySide6 beta remains protected | accepted/validated | 00, 05, Python boundaries |
+| Flutter foundation coexists additively | implemented | J20, I, repository |
+| Dart domain is infrastructure-independent | implemented/validated | imports, analyze/tests |
+| Drift local schema and atomic aggregate exist | implemented/validated | schema, repository tests |
+| Close/reopen local persistence passes | validated | repository test, G/I |
+| Windows/Android/iOS targets exist | implemented, host-unvalidated | generated topology, G/I |
+| Purchase UI exists | blocked/not implemented | `markei_app.dart` placeholder |
+| Device sequence is monotonic | defective, not accepted | repository upsert/allocation |
+| Unicode-safe normalization exists | defective/provisional | Product normalizer |
+| Deterministic Product ID is final | provisional/superseded | code plus human decision |
+| User Product code is required direction | accepted | 06 human decisions |
+| JSON Schema is Sprint 04 validator | accepted | 06 human decisions |
+| TypeScript API/Neon synchronization exists | deferred/not implemented | J20, repository |
+| Windows execution is Sprint 04 gate | accepted/required | 06 human decision |
+| Android full execution is required | deferred/not required | 06 human decision |
 
-| Item | State |
-| --- | --- |
-| Flutter/Dart shared client | Accepted planning direction |
-| TypeScript synchronization API | Favored planning direction |
-| Neon Postgres | Favored planning direction |
-| PySide6 protection until parity | Accepted planning direction |
-| Account-private catalogue | Accepted planning direction |
-| Product normalized identity fields | Provisional structural definition |
-| Deterministic Product UUID | Provisional; fixture evidence required |
-| Purchase + Item atomic aggregate | Provisional structural definition |
-| One-item UI / multi-item contract | Accepted planning direction |
-| Dimensional quantity and minor-unit money | Provisional structural definition |
-| Versioned Dart analytics registry | Accepted planning direction |
-| Account-scoped cursor | Recommended provisional definition |
-| Sequence-gap rejection | Recommended provisional definition |
-| Per-event upload transaction/results | Recommended provisional definition |
-| Exact local/cloud physical schema | Open technical choice |
-| Flutter database, storage and auth plugins | Open technical choice |
-| TypeScript runtime/host/auth/migration tools | Open technical choice |
-| Editing, deletion, families, sharing, real-time/background sync | Deferred features |
-| Cross-platform lifecycle/plugin viability | Empirical question |
-| Migration treatment of ambiguous legacy facts | Empirical/policy question |
+## 14. Proposed F_DSN Gates and Handoff
 
-# 14. Unresolved Empirical Questions
+Design-relevant future F stage should require:
 
-Evidence must determine: deterministic normalization equivalence across Dart/TypeScript/Python; Unicode/case behavior; UUID derivation collision and version migration; decimal scale/range; fractional COUNT policy; currency minor-unit metadata; event canonicalization/hash parity; Flutter SQLite migrations and transaction behavior; secure token storage; Windows/Android/iOS lifecycle and packaging; cursor throughput/bootstrap paging; sequence recovery after local queue corruption; Neon transaction/cursor contention; RLS compatibility; API deployment and cold-start behavior; and legacy import ambiguity rates.
+1. exact Product identifier responsibilities and invariants;
+2. a migration from current Drift v1 without touching Cycle 06 data;
+3. sequence preservation plus uniqueness;
+4. Unicode/display separation;
+5. JSON Schema and readable examples;
+6. composition-root database ownership;
+7. multi-item atomic workflow and visible history;
+8. Windows lifecycle evidence;
+9. conditional Android build classification;
+10. explicit preservation of deferred cloud/sync work.
 
-Parity evidence must cover deterministic Register fixtures, projections, close/reopen, offline queue recovery, unknown-result retry, two-device bootstrap, cross-account denial, migration counts/totals, rollback, and unchanged Cycle 06 data.
-
-# 15. Permanent-Documentation Update Plan
-
-After Main reconciles A/B/C, Design may propose:
-
-- `design/03_DECISION_LOG.md`: observational Flutter supersession, alternatives, rationale, and deferrals;
-- `design/09_DESIGN_STATE.md`: checkpoint for Flutter/Dart basis, TypeScript API, Neon, and unresolved evidence;
-- `design/14_MODEL_OVERVIEW.md`: derived compact client/API/event ownership map;
-- `design/01_ARCHITECTURE.md`: only accepted stable planning boundaries that Main/human explicitly promotes.
-
-No permanent file should copy this stage wholesale. Physical schema, framework plugins, repository layout, and implementation structures remain outside canon until accepted.
-
-# 16. Handoff to Main
-
-Main should reconcile the Operational feasibility gates and Didactic promotion recommendations against this architecture. The next decisions should accept or revise normalization v1, deterministic UUID namespace/versioning, Purchase payload, snapshot minimum, account cursor, sequence policy, per-event transaction, TypeScript API boundary, and logical schema responsibilities.
-
-Before any physical schema or D/E/F materialization, require cross-language canonicalization fixtures, aggregate/event invariants, money/quantity fixtures, migration exception rules, local/cloud transaction tests, account-isolation tests, and explicit PySide6 parity/rollback criteria.
+Main should reconcile this C report with refreshed A and B. D/E/F should not be written from older Sprint 02 staging. The smallest coherent Sprint 04 outcome is a Windows-executed, local-only Flutter Purchase workflow with corrected identities, schema-validated contracts, persistent history, and preserved PySide6 rollback.
