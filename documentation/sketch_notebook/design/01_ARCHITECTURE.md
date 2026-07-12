@@ -405,3 +405,53 @@ Editing/deletion, catalogue merges/aliases, global catalogue, household sharing,
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+
+# 17. Sprint 03 Implemented Local Flutter Foundation
+
+Cycle 07 Sprint 03 Unit 01 materialized the accepted additive transition without replacing the Python/PySide6 beta.
+
+Stable implemented dependency direction:
+
+```text
+Flutter composition
+→ application use case
+→ Dart domain
+→ repository boundary
+→ Drift local adapter
+```
+
+The Dart domain imports no Flutter widget, Drift, HTTP, Python, or platform-plugin API. Widgets own neither SQL nor durable transactions. The new client uses a fresh application-private database and does not access the Cycle 06 database.
+
+The implemented local model includes account-private Product and Store facts, Purchase aggregates with Purchase Items, immutable local synchronization-event preparation, pending-event state, synchronization metadata, and a migration ledger. Drift is the implemented local persistence choice for this foundation.
+
+`LocalPurchaseRepository.registerPurchase` owns one local transaction:
+
+```text
+resolve/create Store and exact Products
++ validate all Purchase Items
++ insert Purchase and Items
++ allocate local event metadata
++ insert immutable purchase.registered event
++ enqueue pending event
+= one atomic local commit
+```
+
+Invalid Item validation rolls back the aggregate, catalogue writes, event, and pending queue entry. Network work remains outside the transaction. Local facts and pending events survive close/reopen.
+
+Implemented representations use explicit MASS/VOLUME/COUNT dimensions, canonical KG/L/UNIT units, fixed six-decimal microunits, rejection of fractional COUNT, ISO currency code, and integer minor units. A minimal identifier/version analytics registry selects calculations without rewriting raw facts.
+
+Versioned JSON files under `contracts/shared_beta/v1/` are accepted as semantic fixtures and contract examples. They are not database tables, user data, or a complete wire-protocol specification.
+
+The following are not stable implemented invariants and remain outside canon:
+
+- monotonic device-sequence continuity, because repeated registration may reset the sequence;
+- exact Unicode/locale-safe normalization;
+- RFC UUID version/variant semantics or cross-language Product-ID equivalence;
+- complete payload typing, nullability, ranges, unknown-field and compatibility rules;
+- schema-upgrade and migration-recovery behavior;
+- Store deduplication and branch/location identity;
+- Windows, Android, or iOS runtime/lifecycle behavior;
+- authentication, TypeScript API, Postgres/Neon, upload/download synchronization, cross-device convergence, legacy import, parity, or PySide6 retirement.
+
+Generated platform projects establish topology only. They do not establish platform validation.
