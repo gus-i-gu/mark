@@ -1,191 +1,77 @@
-# B_DIDACTIC — Cycle 06 Sprint 02
+# Main Synthesis Summary
 
-> Status: Ephemeral functional stage
-> Role: Didactic Chat [A]
-> Branch: `sketch-notebook-recovery`
-> Authority: Sprint 02 learning delta for Main reconciliation; not permanent Didactic memory
-> Milestone: Fully executable and installable Windows primary beta
+Cycle 07 Sprint 01 should teach portability as a set of boundaries, not as a technology-name choice. Markei already separates much business vocabulary from PySide6, but that does not prove that the application can move unchanged to mobile. The smallest useful learning target is an offline-first, single-device prototype that uses mobile-local data, exercises one business workflow, and treats desktop behavior as evidence rather than the desktop database as a shared resource. A backend is not conceptually required unless later requirements introduce cross-device or multi-user coordination.
 
-## Main Synthesis Summary
+Cycle 06 is accepted and closed. The Didactic checkpoint still says acceptance is pending; this is inherited checkpoint drift, not evidence for reopening the cycle. No existing concept maturity is changed by this report.
 
-Sprint 02 does not require a new release-engineering concept family. The four canonical Red concepts created after Sprint 01 already cover the remaining learning problem:
+## Inspected Evidence
 
-```text
-&&&05  Evidence State and Validation Boundary
-&&%04  Source, Frozen, and Installed Execution Context
-&%%06  Packaging and Installation Artifact Lifecycle
-%%%06  Build-Time, Runtime, and Installer-Time Dependency
-```
+Inspection explicitly used branch `cycle-07-mobile-preparation`. Current HEAD `889c9ac365e0d717ac33431bd82af286b0f343f1` descends from the verified baseline `f6414fbe7394453387067a5a34ca6cc7621bbed3`.
 
-The required delta is reinforcement through installed-lifecycle evidence. Sprint 01 established configuration, frozen artifact generation, frozen launch, schema-only first launch, startup diagnostics, and corrected source/frozen shutdown behavior. Sprint 02 must cross the still-unproven boundaries from installer configuration to compiled installer, from frozen launch to installed launch, and from configured data retention to observed preservation across reinstall, uninstall, and recovery.
+Methodology and Cycle context were recovered from `AGENTS.md`, `INDEX.md`, the four required methodology files, `00_PROJECT_STATE.md`, `06_SESSION_SCHEME.md`, `didactics/08_CONCEPT_MAP.md`, and `[M]_STAGE/J_[M]_STAGE.md`.
 
-No genuinely new canonical concept is justified before those gates run. SmartScreen and antivirus observations can be taught as environmental or reputation evidence inside `&&&05`, rather than as proof for or against application correctness. The existing resource and ownership concepts remain sufficient for explaining installed file placement, external `%LOCALAPPDATA%/Markei` state, and close/reopen behavior.
+Implementation evidence included `app/core/models.py`, `contracts.py`, `services.py`, `repository.py`, `database.py`, `config.py`, all tracked source under `app/desktop/` and `app/mobile/`, both entry points, and `app/database/schema.sql`. The models are Python dataclasses without UI imports. `ProductService` contains validation, calculations, settings, and UI-facing projections, but imports and constructs the concrete `Repository`. The repository owns SQLite operations. The database manager assumes bundled resources plus a Windows-oriented `%LOCALAPPDATA%`/home fallback. The desktop tree is a substantial PySide6 UI; `app/mobile/main.py` is empty. The schema expresses durable product, purchase, category, store, setting, and promotion facts.
 
-Main should therefore authorize a reinforcement-only Didactic delta in the later E stage: preserve all four concepts as Red, add installed-lifecycle examples only after matching evidence exists, and use learner checks to prevent status inflation. No concept may become Green automatically because an installer compiles or an installed workflow passes.
+## Concepts Required for the Decision
 
-## Inherited Learning State
+**Shared language versus shared runtime.** Two platforms may both use Python source syntax while needing different interpreters, packaging systems, native bridges, libraries, and lifecycle support. Shared Python therefore reduces translation only if a supported Python runtime and every required dependency can execute inside the mobile platform boundary.
 
-Current evidence state:
+**Platform-neutral code versus portable application.** Code is platform-neutral when its meaning does not depend on a particular UI toolkit, operating-system path, packaging context, or device lifecycle. An application is portable only when its entire executable chain—runtime, dependencies, storage paths, resources, lifecycle, UI, and deployment—works on the target. Markei’s dataclasses and many calculations look platform-neutral; the concrete repository construction and Windows-shaped database location remain portability questions.
 
-```text
-configured: yes
-built: yes
-launched: yes — frozen
-installed: blocked
-validated: partial
-accepted: no
-```
+**Business behavior versus UI implementation.** Business behavior defines what registering a receipt, recalculating a product, or classifying a list means. UI implementation defines how a user enters, navigates, and sees that behavior. PySide6 pages are desktop presentation, while service rules are candidate business behavior. UI-facing dictionaries may preserve useful meanings, but their shape could also reflect current widgets and must be tested as contracts rather than assumed universal.
 
-The canonical register already teaches that evidence from one lifecycle stage cannot prove a later one. The Concept Map accurately records the project learning spine through installer configuration, with compiled installer and installed execution still blocked.
+**Contract reuse versus source-code reuse.** Source reuse means executing the same implementation. Contract reuse means preserving inputs, outputs, invariants, error cases, and fixtures even when another language reimplements the behavior. `contracts.py` names responsibilities, but its Python abstract classes alone are not a language-neutral mobile contract. Cross-language clients would learn more from explicit schemas and shared behavioral examples than from copying Python interfaces.
 
-Relevant existing concepts:
+**Client, service, and contract.** A client is the user-facing application and its local orchestration. A service owns business workflows; it need not mean a network server. A contract describes the stable boundary by which callers use behavior. This vocabulary prevents “service layer” from being mistaken for “backend.”
 
-- `&&&05` owns evidence-state vocabulary and validation boundaries.
-- `&&%04` owns source, frozen, and installed execution contexts.
-- `&%%06` owns the sequence of configuration, generated artifacts, installed state, and lifecycle evidence.
-- `%%%06` owns build-time, runtime, and installer-time prerequisites.
-- `%%%05` owns bundled resources versus writable user data.
-- `&&&04`, `&&%03`, and `%%%02` own resource lifetime, deterministic cleanup, and connection ownership.
-- `&&&03` reinforces precise status naming.
+**Local persistence versus synchronization.** Local persistence keeps state across launches on one installation. Synchronization reconciles state between independent stores and therefore requires identity, transport, conflict, failure, and security semantics. SQLite proves local persistence, not synchronization. The mobile prototype should create its own sandboxed database and must not access the ordinary desktop database.
 
-No Green concept exists through explicit learner validation.
+**Offline-first versus cloud-backed operation.** Offline-first means core work remains available against authoritative local state without a network; optional synchronization can happen later. Cloud-backed operation makes remote infrastructure part of the operating boundary, even if caches exist. Markei’s current single-device workflow supports investigating offline-first without accounts or a backend.
 
-## Essential Evidence Index
+**Prototype evidence versus production architecture.** A prototype answers a bounded uncertainty: can one vertical slice run and preserve its meanings? It does not prove maintainability, complete migration, store distribution, accessibility, synchronization, security, or production fitness. Evidence should be recorded at exactly the level demonstrated.
 
-| ID | File or evidence | Didactic relevance |
-|---|---|---|
-| E1 | `[M]_STAGE/J_[M]_STAGE.md` | Authorizes the Sprint 02 delta and defines the remaining installed-lifecycle boundaries. |
-| E2 | `didactics/02_KANBAN.md` | Confirms the four required concepts already exist as canonical Red entries. |
-| E3 | `didactics/07_GLOSSARY.md` | Provides the derived vocabulary for installer artifact, installed application, dependencies, and validation boundary. |
-| E4 | `didactics/08_CONCEPT_MAP.md` | Records the current learning spine and the blocked installed state. |
-| E5 | `DEV_STAGE/G_OPS_CODEX.md` | Supplies Sprint 01 evidence: frozen build/launch passed; installer compilation was blocked. |
-| E6 | `installer/Markei.iss` | Demonstrates installer configuration, per-user placement, shortcuts, and configured retention behavior. |
-| E7 | `scripts/build_installer.ps1` | Demonstrates the installer-time dependency and compiler-discovery boundary. |
+## Candidate Concept Dependency Order
 
-## Existing Concepts to Reinforce
+1. Platform boundary and execution context.
+2. Business behavior versus presentation.
+3. Shared language versus shared runtime.
+4. Platform-neutral component versus portable application.
+5. Client, service, repository, and contract boundaries.
+6. Source reuse versus contract/fixture reuse.
+7. Mobile-local persistence and sandbox ownership.
+8. Offline-first operation.
+9. Synchronization and conflict semantics, only if required.
+10. Prototype evidence versus production acceptance.
 
-### `&&&05` — Evidence State and Validation Boundary
+## Approach Families from the Learner’s Perspective
 
-Sprint 02 should provide the clearest project example yet of evidence progression:
+| Family | Main learning gain | Principal misconception to avoid | Prototype question |
+| --- | --- | --- | --- |
+| A. Shared Python core + Python-native UI | Tests whether source and business behavior can share one runtime | “Written in Python” means mobile-ready | Can a supported mobile Python runtime execute one service workflow with sandboxed SQLite and a native-feeling screen? |
+| B. Web/hybrid presentation | Separates portable UI skills from local storage and native bridges | Web UI automatically implies a server | Can a packaged client perform the slice offline with local persistence and no Python process? |
+| C. Native/cross-platform client + explicit contracts | Makes behavior preservation independent of implementation language | Reimplementation must drift | Can contract examples and fixtures reproduce one Python-defined workflow locally? |
+| D. Service-backed client | Teaches remote authority, accounts, sync, and failure boundaries | Mobile automatically requires cloud infrastructure | Which demonstrated requirement cannot be satisfied by a local client? |
 
-```text
-installer configured
-→ installer compiled
-→ application installed
-→ installed workflows observed
-→ lifecycle validated
-→ Main/human acceptance
-```
+A offers maximal possible source reuse but depends most strongly on mobile Python runtime evidence. B may match existing web-language familiarity and remain offline, but likely replaces or relocates Python behavior. C makes the reuse distinction clearest and may offer stronger platform integration at the cost of duplicated implementation. D should remain deferred under current requirements because it adds concepts and operations not needed to test local portability.
 
-Each arrow requires new evidence. A successful `ISCC.exe` command would prove installer artifact generation, not installation, workflow correctness, retention, or acceptance. A SmartScreen warning would prove a Windows reputation/security observation, not an application defect.
+## Possible KANBAN Candidates — Not Promoted
 
-### `&&%04` — Source, Frozen, and Installed Execution Context
+- `&&&` Platform Boundary and Execution Context.
+- `&&&` Source Reuse versus Contract Reuse.
+- `&&&` Local Persistence versus Synchronization.
+- `&&&` Offline-First State Authority.
+- `&&&` Prototype Evidence versus Production Architecture.
+- `&&%` Python Language Availability versus Python Runtime Availability.
+- `&%%` UI Projection as Contract Candidate.
+- `&%%` Mobile Sandbox and Database Ownership.
+- `%%%` Mobile Runtime, Packaging, and Native Bridge Dependency.
 
-Installed execution must be observed through the installer-created path, ideally the Start Menu shortcut, without Python or a source checkout. It remains the same business application, but its placement, launch route, resource resolution, dependencies, permissions, and uninstall registration differ from source and frozen-directory execution.
+These are candidates only. IDs, canonical definitions, relationships, and maturity require later Didactic promotion authority and learner evidence.
 
-### `&%%06` — Packaging and Installation Artifact Lifecycle
+## Minimum Concepts Before Prototype Materialization
 
-Sprint 02 should reinforce the distinction:
+Before Main authorizes a prototype, the learner needs only to explain: where code executes; which behavior is being preserved; whether preservation uses the same source or an explicit contract; who owns the mobile-local database; why offline-first does not mean synchronized; and what single claim the prototype can validate. Synchronization algorithms, authentication, cloud hosting, production migrations, and final repository topology are unnecessary unless the selected slice or demonstrated requirements make them unavoidable.
 
-```text
-installer/Markei.iss
-    installer configuration
+## Handoff to Main
 
-dist/installer/Markei-Setup-0.1.0-x64.exe
-    compiled installer artifact
-
-%LOCALAPPDATA%/Programs/Markei
-    installed application files
-
-%LOCALAPPDATA%/Markei
-    retained writable user state
-```
-
-The exact compiled path is anticipated by configuration but remains unproven until compilation succeeds.
-
-### `%%%06` — Build-Time, Runtime, and Installer-Time Dependency
-
-`ISCC.exe` remains an installer-time prerequisite. Its absence blocked only the installer transformation; it did not invalidate the built frozen application. Sprint 02 should show how providing the missing tool advances the artifact lifecycle without turning that tool into a runtime dependency of installed Markei.
-
-### Existing resource and cleanup concepts
-
-`%%%05` should be reinforced with direct comparison between replaceable installed files and retained user state. `&&&04`, `&&%03`, and `%%%02` should receive installed close/reopen evidence only if the installed application demonstrates the same deterministic cleanup already proven in source/frozen contexts.
-
-## New Candidate Need Assessment
-
-No new canonical concept is currently required.
-
-The following proposed topics are adequately represented by existing canon:
-
-- SmartScreen or antivirus reputation behavior → `&&&05`;
-- installed file placement versus user-state placement → `%%%05` plus `&&%04`;
-- shortcut-created launch paths → `&&%04` and `&%%06`;
-- reinstall, upgrade, uninstall, and recovery evidence → `&%%06`;
-- compiler discovery and missing `ISCC.exe` → `%%%06`;
-- human acceptance versus technical validation → `&&&05`.
-
-A new concept should be considered only if Sprint 02 exposes a reusable distinction that cannot be expressed through these existing boundaries. Tool-specific syntax or wizard behavior is not sufficient.
-
-## Installed-Lifecycle Distinctions
-
-Main reconciliation should preserve these distinctions:
-
-```text
-installer configuration ≠ compiled installer artifact
-frozen launch ≠ installed launch
-installed launch ≠ installed workflow validation
-external data placement ≠ observed preservation
-no uninstall deletion rule ≠ validated retention
-reinstall success ≠ upgrade compatibility
-SmartScreen warning ≠ application malfunction
-antivirus observation ≠ release acceptance
-technical validation ≠ learner mastery
-technical validation ≠ Main/human acceptance
-```
-
-Configured retention means the installer source does not intentionally remove `%LOCALAPPDATA%/Markei`. Observed preservation requires data to exist before uninstall, remain afterward, and reopen correctly after reinstall.
-
-## Learner Validation Questions
-
-1. What exact artifact or state does the successful command prove, and what later states remain unproven?
-2. How can one demonstrate that Markei launched as an installed application rather than from `dist/Markei`?
-3. Which files should be replaceable program files, and which should survive uninstall under the accepted policy?
-4. What evidence would distinguish configured retention from observed preservation?
-5. Why does a Start Menu shortcut matter to the installed-execution claim?
-6. If SmartScreen displays a warning but Markei installs and runs correctly, which evidence category does the warning belong to?
-7. If installed close/reopen fails while frozen close/reopen passed, where is the new validation boundary?
-8. Why does a compiled installer not establish workflow, upgrade, uninstall, or recovery correctness?
-9. Which dependency is needed to compile the installer, and why is it not necessarily needed by the installed application?
-10. Who may declare the beta accepted after technical gates pass?
-
-## Maturity Constraints
-
-All four Cycle 06 concepts remain Red during this functional stage.
-
-Possible later movement from Red to Yellow may be considered only after:
-
-- installer compilation and artifact inspection are evidenced;
-- installed launch is distinguished from frozen launch;
-- installed workflows and close/reopen are observed;
-- retention is tested through uninstall and reinstall;
-- the learner can answer the validation questions accurately.
-
-Even then, maturity change requires Didactic evaluation and explicit learner evidence. Passing commands, tests, or human acceptance of the software does not automatically demonstrate conceptual mastery. Green promotion is not authorized.
-
-## Main Handoff
-
-Didactic recommends a reinforcement-only Sprint 02 materialization. No new KANBAN identifier is needed, and no Didactic decision blocks installer work.
-
-The later E-stage delta should prepare concise post-evidence updates for the four existing Red concepts, glossary examples, Concept Map status, and Lecture Register chronology. Those updates must remain conditional on matching G/H/I evidence and Main reconciliation.
-
-Main should preserve the following learning acceptance rule:
-
-```text
-compiled installer
-+ installed execution
-+ lifecycle evidence
-+ human software acceptance
-≠ automatic learner mastery
-```
-
-The Didactic domain is ready to interpret Sprint 02 evidence without expanding the concept inventory or reopening Sprint 01 canon.
+Select a vertical slice that registers or reads one meaningful local fact through a mobile presentation, preserves an explicit business invariant, uses a fresh sandboxed store, and produces evidence for one approach family. Keep backend, desktop-database access, full UI parity, maturity changes, and production-architecture claims outside the Sprint 01 conclusion.
