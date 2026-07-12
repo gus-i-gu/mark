@@ -455,3 +455,80 @@ The following are not stable implemented invariants and remain outside canon:
 - authentication, TypeScript API, Postgres/Neon, upload/download synchronization, cross-device convergence, legacy import, parity, or PySide6 retirement.
 
 Generated platform projects establish topology only. They do not establish platform validation.
+
+
+# 18. Sprint 04 Accepted Local Shared-Client Boundaries
+
+Sprint 04 confirms and extends the accepted local-first Flutter architecture without replacing the protected Python/PySide6 beta.
+
+## 18.1 Composition and dependency ownership
+
+The shared-client local slice uses this stable direction:
+
+```text
+Flutter presentation
+→ application commands and query ports
+→ Dart domain contracts
+→ local repository adapters
+→ Drift-managed application-private SQLite
+```
+
+The composition root owns database construction and adapter wiring. Presentation owns navigation, input staging, display state, and formatting; it does not own SQL or durable transactions. Application ports express registration and read use cases. Domain code remains independent of Flutter widgets, Drift, Python, HTTP, and platform APIs. Infrastructure implements persistence and query ports.
+
+## 18.2 Catalogue identity
+
+A private Product has three distinct responsibilities:
+
+1. an immutable opaque internal record ID used by relations and events;
+2. a required user-designed Product code, preserved for display and normalized for account-scoped uniqueness;
+3. versioned normalized identification facts used for exact catalogue matching.
+
+New internal Product IDs are UUID v4 values. Existing migrated Product IDs remain unchanged and are treated as opaque internal IDs. User Product code is never a primary or foreign key. A future central-catalogue UUID remains absent until that catalogue and its versioned identification set are separately accepted.
+
+Product display name and brand remain distinct from normalized identity facts. Normalization is versioned. Exact account-scoped equivalence may reuse a Product; fuzzy similarity is advisory and never merges automatically. PACKAGED/BULK and dimensional package facts remain part of exact identity.
+
+## 18.3 Purchase and event transaction
+
+Purchase remains an atomic aggregate containing one or more Purchase Items. Local registration owns one transaction that:
+
+```text
+resolves account-private Store and Product references
++ validates every Item and the Purchase aggregate
++ persists Purchase and Items
++ allocates the next device sequence
++ persists one immutable purchase.registered event
++ enqueues that event as pending
+= one local commit
+```
+
+Device creation is insert-if-absent and must not reset an existing sequence. Account/device/sequence uniqueness protects local ordering. Network operations remain outside the local transaction. Local event preparation and a pending queue do not constitute synchronization.
+
+## 18.4 Local schema and contract responsibility
+
+Drift schema v2 is the implemented local persistence structure. Its accepted responsibilities include account-private catalogue and purchase facts, local Device state, immutable prepared events, pending-event state, synchronization metadata, and a migration ledger.
+
+The v1→v2 migration preserves internal Product IDs and Purchase references, adds Product code/display responsibilities, backfills reviewable legacy codes, and records the migration. This is evidence for one controlled upgrade, not acceptance of a general migration framework or desktop import path.
+
+JSON Schema Draft 7 under the versioned shared-beta contract surface owns structural validation. Readable JSON examples retain scenario legibility. Cross-field invariants and normalization semantics remain owned by Dart domain and fixture tests. Structural schema success does not prove cross-language semantic parity.
+
+## 18.5 Platform and transition boundary
+
+Windows build and startup smoke are validated for this local slice. Android remains blocked by absent tooling; iOS remains host-unvalidated. Generated platform projects alone do not establish platform acceptance. Manual UI, accessibility, and responsive-lifecycle acceptance remain separate evidence gates.
+
+The Flutter database remains isolated from the ordinary Cycle 06 database. PySide6 remains a recoverable accepted beta, behavior reference, migration source, and rollback until parity and human/Main acceptance authorize retirement.
+
+## 18.6 Boundaries not promoted
+
+The following remain provisional, blocked, or deferred rather than canonical completed architecture:
+
+- fixed local account and device placeholders as production identity;
+- authentication and authorization;
+- TypeScript API and Neon/Postgres implementation;
+- actual upload/download synchronization and cursor convergence;
+- central Product catalogue identity;
+- general schema migration, downgrade, and corruption recovery;
+- Store branch/location identity and deduplication;
+- Product-code editing, aliases, retirement, and reuse;
+- Purchase editing/deletion;
+- Android/iOS validation and public release;
+- PySide6 retirement.
