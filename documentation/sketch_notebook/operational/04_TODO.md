@@ -1,6 +1,6 @@
 # 04_TODO.md
 
-> Version: Cycle 06 active derivative 0.2
+> Version: Cycle 06 active derivative 0.3
 > Status: Active operational derivative
 > Persistence Class: Derived
 > Knowledge Class: Operational
@@ -14,89 +14,88 @@
 Current evidence:
 
 ```text
-configured: yes
-built: yes
-launched: yes — isolated frozen launch and immediate reopen
-installed: blocked
-validated: partial
+configured: validated
+built: validated
+launched: validated — frozen and installed shortcut launch
+installed: validated — automated per-user lifecycle
+validated: partial-to-strong technical evidence
 accepted: no
 ```
 
-Completed in the first Cycle 06 materialization unit:
+Technically completed:
 
-- authoritative one-folder `Markei.spec`;
-- build wrapper invoking the spec;
-- schema-only production packaging;
-- exclusion of seed/live database/WAL/SHM/logs;
-- build dependency record;
-- per-user installer source and compile wrapper;
-- startup diagnostics;
-- focused release tests;
-- bounded MainWindow shutdown correction;
-- successful source/static, frozen build, resource, first-launch, shutdown, and reopen gates.
+- Inno Setup 6.7.3 resolved from a per-user installation;
+- frozen runtime rebuilt and inspected;
+- installer compiled, inspected, sized, and hashed;
+- per-user installation completed;
+- Start Menu shortcut launched the installed executable;
+- external database initialized with structural defaults and no sample products or purchases;
+- Register-equivalent persistence plus Lists, History, and Settings projections passed;
+- installed close and immediate reopen passed;
+- same-version reinstall preserved data;
+- uninstall retained user data;
+- reinstall recovered retained compatible data.
 
-# 2. Active Cycle 06 Work
+# 2. Remaining Cycle 06 Work
 
-## P0 — Provide installer compiler
+## P0 — Human-visible installer and UI walkthrough
 
-- Install or provide Inno Setup 6 / `ISCC.exe`.
-- Use `-ISCCPath` or `ISCC_PATH` when discovery does not find it.
-- Record compiler path and version.
-
-## P0 — Compile and inspect installer
-
-Run the repository wrapper only after the frozen distribution exists:
-
-```powershell
-.\scripts\build_installer.ps1
-```
-
-Required evidence:
-
-- compile exit status;
-- artifact path and filename;
-- artifact size and SHA256;
-- expected version/publisher/application identity;
-- no source tree, seed fixture, live database, WAL/SHM, logs, tests, or caches.
-
-## P0 — Validate installed lifecycle
-
-Use an ordinary user environment and capture:
+Using the compiled controlled-beta package, observe and record:
 
 ```text
-clean install
-→ Start Menu launch
-→ Register / Lists / History / Settings
-→ store creation or editing
-→ receipt registration
-→ dependent-page refresh
-→ close
-→ immediate reopen
-→ persistence verification
+interactive installer wizard and destination
+→ privilege behavior
+→ Start Menu usability
+→ visible Register workflow
+→ visible Lists result
+→ visible History result
+→ visible Settings/store behavior
+→ normal close
+→ immediate Start Menu reopen
+→ persisted values visible after reopen
 ```
 
-Then validate:
+Automated service/database evidence supports this route but does not replace human UI acceptance.
+
+## P0 — Windows security and reputation observation
+
+Record the human-visible behavior of:
+
+- SmartScreen during interactive installer execution;
+- Microsoft Defender or other active antivirus;
+- any quarantine, warning, block, or absence of warning;
+- the unsigned `NotSigned` status as release context, not automatically an application defect.
+
+Silent execution produced no observed SmartScreen prompt, so human-visible behavior remains `unknown`.
+
+## P0 — Final human/Main acceptance
+
+Main/human review must decide whether the installer and principal visible workflows are acceptable for controlled beta use. Operational evidence cannot declare acceptance.
+
+## P1 — Resolve generated-artifact repository drift
+
+Current contradiction:
 
 ```text
-compatible upgrade or same-version reinstall
-→ data preservation
-→ uninstall
-→ accepted retention behavior
-→ reinstall
-→ retained-data recovery
+G_OPS_CODEX
+    installer described as generated but uncommitted
+
+current branch
+    dist/installer/Markei-Setup-0.1.0-x64.exe exists
 ```
 
-Installed shutdown and retention remain unvalidated until these gates execute.
+Operational policy is that generated release binaries should not be ordinary source-controlled files. A separately authorized cleanup should:
 
-## P1 — Record Windows trust observations
+1. remove the committed installer binary from source history going forward;
+2. add appropriate ignore coverage for generated `dist/` release outputs;
+3. retain the installer hash, size, toolchain, and command evidence in documentation or an approved release channel;
+4. publish controlled-beta binaries through an approved release/artifact surface.
 
-- Record SmartScreen behavior.
-- Record antivirus detections or absence of detections.
-- Do not classify unsigned reputation warnings as application runtime defects without evidence.
+This documentation pass does not modify the binary or ignore rules.
 
-## P1 — Obtain human acceptance
+## P1 — Installer architecture warning
 
-Acceptance requires review of the installed artifact and principal workflow path. Operational evidence may support but cannot grant final acceptance.
+Replace deprecated Inno Setup architecture identifier `x64` with the accepted `x64compatible` form only through a bounded installer-maintenance stage followed by installer rebuild and lifecycle regression evidence. The current warning is non-blocking.
 
 # 3. Retained Inherited Debt
 
@@ -105,43 +104,41 @@ Acceptance requires review of the installed artifact and principal workflow path
 Receipt registration and purchase deletion/recalculation span multiple committed mutations. Retain as inherited debt:
 
 - inject failure between mutation boundaries;
-- record exact durable partial states;
-- escalate only if beta validation demonstrates a blocking user-visible defect or Main stages a transaction change.
+- record durable partial states;
+- escalate only if beta use demonstrates a blocking user-visible defect or Main stages a transaction correction.
 
 ## Additional non-blocking validation debt
 
+- dedicated clean-account lifecycle evidence, if later required because current-user backup/restore evidence proves ambiguous;
 - additive migration failure behavior;
 - reset behavior with active connections and WAL/SHM;
-- broader interactive workflow coverage beyond the beta smoke route.
+- broader interactive regression beyond the accepted beta route.
 
-# 4. Required Commands
+# 4. Evidence Already Captured
 
-Already evidenced in the materialization report:
-
-```powershell
-python -m compileall app main.py
-python -m unittest discover -s tests
-.\scripts\build_windows.ps1
+```text
+python -m compileall app main.py       passed
+python -m unittest discover -s tests  passed, 5 tests
+scripts/build_windows.ps1             passed
+scripts/build_installer.ps1           passed
 ```
 
-`python -m pytest` was unavailable because `pytest` was not installed; this is an environment limitation, not an open release-test failure.
+Installer evidence:
 
-Next command:
-
-```powershell
-.\scripts\build_installer.ps1
+```text
+dist/installer/Markei-Setup-0.1.0-x64.exe
+SHA256 122A772D66BBE7D5522EF2262E7E89D6D2E332B6318135BB25D55A27F75F4623
+size 34,448,651 bytes
 ```
-
-Current result: `blocked` until `ISCC.exe` is available.
 
 # 5. Completion Boundary
 
-Cycle 06 remains open until a compiled installer is installed and the complete installed lifecycle is validated and accepted.
+Cycle 06 remains open until the human-visible installer/UI/security route is observed and Main/human acceptance is recorded. Technical lifecycle completion alone does not close the milestone.
 
 When this file conflicts with canon:
 
 ```text
 12_OPERATIONAL_MODEL.md wins
 → identify derivative drift
-→ refresh this file
+→ refresh 04_TODO.md
 ```
