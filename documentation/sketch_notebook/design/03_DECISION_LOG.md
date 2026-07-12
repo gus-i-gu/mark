@@ -646,3 +646,92 @@ Two candidate routes remain:
 Design recommends Route 1 first because it completes the local shared-client vertical slice and platform evidence before distributed infrastructure. Route 2 remains the likely following unit. This recommendation is reversible and is not Sprint 04 authority.
 
 Deferred: authentication, API/Neon, distributed synchronization, legacy import, editing/deletion, household sharing, global catalogue, background/realtime sync, parity, and PySide6 retirement.
+
+
+# 14. Event 16 — Cycle 07 Sprint 04 Local Shared-Client Materialization
+
+## Reconciled evidence
+
+Sprint 04 materialized the bounded Windows-first local Flutter slice authorized by J section 21. The paired Design report records Drift schema v2, Product-code and display-field separation, normalization v2, JSON Schema validation, a multi-item Purchase UI, local history, sequence correction, migration rehearsal, and Windows build/startup evidence. Repository inspection confirms those responsibilities in handwritten composition, application ports, domain code, Drift schema/migration, repository transaction, and UI composition.
+
+Validation reported:
+
+```text
+flutter pub get             validated
+Dart formatting             validated
+flutter analyze             validated
+flutter test                validated — 21 tests
+flutter build windows       validated
+Windows startup smoke       validated — process alive after 5 seconds
+Python regression suite     validated — 5 tests
+Android build               blocked — SDK absent and installation prohibited
+iOS build/run               host-unvalidated
+manual human UI acceptance  blocked/pending
+```
+
+## Accepted resolutions materialized
+
+The private catalogue now distinguishes:
+
+- immutable opaque internal Product record ID, generated as UUID v4 for new Products;
+- required user-designed Product code, preserved for display and normalized for account-scoped uniqueness;
+- versioned normalized identification facts used for exact matching;
+- no local field pretending that a future central catalogue identity already exists.
+
+Normalization v2 applies Unicode NFKC, lowercasing, whitespace collapse, a bounded punctuation rule, and preserves accented Portuguese letters. Display name and brand remain separate from normalized facts. Existing v1 Product IDs are preserved as opaque internal identities during migration and legacy rows receive deterministic reviewable bootstrap codes.
+
+Device creation now uses insert-if-absent, so registration does not reset sequence state. Sequence allocation remains inside the Purchase transaction, and the local schema constrains account/device/sequence uniqueness. Tests report monotonic 1, 2, 3 behavior across repeated registration and reopen.
+
+JSON Schema Draft 7 plus readable v2 examples now owns structural contract evidence. Dart domain tests continue to own cross-field semantics; schema validation is not semantic parity and does not establish a TypeScript implementation.
+
+## Architecture and ownership outcome
+
+The physically observed path is now:
+
+```text
+Flutter presentation
+→ application/query ports
+→ independent Dart domain
+→ local repository adapters
+→ Drift schema v2 / application-private SQLite
+```
+
+The composition root supplies one local account placeholder, one local device placeholder, the database, registration repository, catalogue queries, and history queries. Widgets do not execute SQL. The local registration transaction resolves Store/Product references, validates the aggregate, writes Purchase and Items, allocates sequence, writes one immutable event, and enqueues it before commit. Networking remains absent.
+
+The UI is intentionally bounded rather than complete: Purchase and History navigation, multi-item staging, atomic submission, and visible local history exist. Accessibility, responsive depth, error recovery, editing, deletion, Product-code editing, and manual human acceptance remain incomplete.
+
+## Deviations, costs, and reversibility
+
+The Windows host required Visual Studio Build Tools 2022 rather than the incomplete Community installation. This is host/tooling evidence, not canonical product architecture. Android was not attempted because the SDK was absent and installation was outside authority; iOS cannot be validated on this Windows host.
+
+Drift v2 proves one controlled local upgrade, not a general migration system. The upgrade ledger uses runtime UTC time, while fresh schema creation still records a source-fixed timestamp. Store identity remains exact display-name reuse. The app-private composition currently uses fixed local account/device identifiers, so authentication, durable device registration, and multi-account lifecycle remain deferred.
+
+The cost of separating Product identity before UI hardening was additional domain, migration, fixture, and presentation work. It avoided establishing user Product code as relational identity and preserved a future central-catalogue mapping seam. PySide6 and its database remain untouched and recoverable, retaining rollback if Flutter parity is not accepted.
+
+## Deferred distributed boundary
+
+Still deferred: TypeScript API, Neon/Postgres, authentication/authorization, upload/download synchronization, server cursor behavior, second-device convergence, central catalogue identity, legacy desktop import, Product-code editing/aliases, Purchase editing/deletion, background/realtime synchronization, Android/iOS acceptance, and PySide6 retirement.
+
+## Current decision classification
+
+```text
+accepted + implemented
+    inward Flutter dependency direction
+    local-first isolated persistence
+    Product code / internal ID separation
+    versioned normalized exact identity
+    Purchase aggregate and local atomic transaction
+    structural JSON Schema plus semantic Dart tests
+    protected PySide6 transition
+
+validated
+    local tests and migration rehearsal
+    Windows build and startup smoke
+
+provisional or blocked
+    placeholder account/device lifecycle
+    general migration policy
+    Store identity
+    manual UI/accessibility acceptance
+    Android and iOS platform evidence
+```
