@@ -123,3 +123,98 @@ Remaining learner checks:
 # Current Observation Boundary
 
 Cycle 06 is technically release-candidate ready under automated installed-lifecycle evidence, but Didactic memory does not claim learner mastery, human-visible UI acceptance, SmartScreen behavior, or final beta acceptance.
+
+# Observation 004 — Cycle 07 Sprint 01 Portability Learning Reconciliation
+
+```text
+Date: 2026-07-12
+Branch: cycle-07-mobile-preparation
+Class: portability investigation and pathway-cost observation
+Sources:
+  [M]_STAGE/J_[M]_STAGE.md
+  DEV_STAGE/A_OPERATIONAL.md
+  DEV_STAGE/B_DIDACTIC.md
+  DEV_STAGE/C_DESIGN.md
+```
+
+Cycle 07 Sprint 01 investigated portability without implementing a mobile prototype. It established a learning boundary: shared source language does not guarantee a shared runtime, and platform-neutral components do not by themselves make an application portable. Markei's models and parts of its business behavior are reuse candidates, while presentation, storage paths, construction, packaging, and lifecycle remain platform-sensitive.
+
+The investigation preserved two serious pathways.
+
+## Python-native pathway
+
+The Python-native pathway tries to lower initial implementation cost by executing more of the existing Python core directly. Its attraction is immediate: fewer rules may need to be rewritten, existing Python tests may remain useful, and the learner can initially work in a familiar language.
+
+That saving is conditional. Cost may move into mobile Python packaging, device lifecycle handling, native integration, accessibility, platform support, distribution, and debugging across less conventional boundaries. Reusing source can reduce rewriting while increasing uncertainty about whether the runtime, dependencies, and UI toolchain behave reliably on Android and iOS.
+
+## Contract-first cross-platform pathway
+
+The contract-first pathway accepts a larger initial cost because some behavior must be implemented again in a conventional native or cross-platform client. It tries to make that cost visible and controlled through behavioral contracts, golden fixtures, semantic-parity checks, explicit lifecycle ownership, a mobile-owned local store, and platform-appropriate presentation.
+
+Its cost includes duplicate implementation, contract and fixture design, parity testing, and learning a mobile toolchain. Its intended benefit is lower long-term uncertainty: each platform can use established tooling while shared examples protect the meaning of receipt registration, calculation, validation, and status behavior.
+
+Human/Main direction currently favors this contract-first Design pathway. This is a reasoned project preference, not evidence that the pathway is understood by the learner, validated by a prototype, or permanently accepted as architecture. The Python-native route remains a bounded challenger whose direct-reuse claim requires device evidence.
+
+## Development cost in learner-facing terms
+
+Development cost is everything the project must spend to create, understand, prove, distribute, and keep a change working. It is not only money or lines of code. It includes:
+
+- learning effort and setup time;
+- the number of ideas that must be held together;
+- repeated or duplicate implementation;
+- designing tests and shared examples;
+- finding and explaining failures;
+- fragile or unusual toolchains;
+- maintenance across Android, iOS, and desktop;
+- preventing two implementations from silently changing meaning;
+- packaging and distribution requirements;
+- the effort required by future changes.
+
+A pathway can look cheaper because it writes less code today while becoming expensive to package and debug later. Another can look expensive because it rewrites behavior today while making later maintenance and platform support more predictable. Sprint 01 compared where cost may occur; it did not measure either pathway through implementation.
+
+## Candidate concepts observed
+
+```text
+Platform Boundary
+Composition Root
+Dependency Injection
+Behavioral Contract
+Golden Fixture
+Semantic Parity
+Local Persistence
+Offline-First
+Transaction Boundary
+Application Lifecycle Ownership
+Synchronization
+```
+
+These remain KANBAN candidates. Existing canon already partially supports them through Responsibility Boundary, Application Service, Repository Pattern, Resource Ownership and Lifetime, Statement Atomicity versus Workflow Atomicity, and SQLite Connection Ownership. Canonical creation should wait until prototype preparation identifies which candidates are necessary as independent concepts and provides concrete project examples.
+
+Unresolved learner questions include:
+
+1. Which parts of Markei can share source, and which can share only behavior?
+2. What does a composition root create and connect?
+3. Why does dependency injection make a storage implementation selectable?
+4. How can a fixture prove equivalent behavior across Python and another runtime?
+5. Who owns the mobile database and its transaction lifetime?
+6. What must remain available for the application to be offline-first?
+7. When does synchronization become a requirement rather than speculative infrastructure?
+8. Which costs are paid once, and which recur with every platform or feature change?
+9. What evidence would fairly compare the two pathways?
+10. Why does a project preference not change learner maturity?
+
+Maturity decision:
+
+```text
+new canonical concepts: none
+candidate concepts: eleven
+maturity changes: none
+project preference: contract-first, provisional
+prototype validation: not performed
+learner mastery: not demonstrated
+```
+
+# Current Observation Boundary
+
+Cycle 06 remains accepted and closed. Cycle 07 Sprint 01 provides classified portability knowledge and a preferred investigation direction, but not mobile runtime evidence, prototype validation, permanent architecture acceptance, or learner mastery. D/E/F remain postponed.
+
