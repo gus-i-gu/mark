@@ -1,187 +1,261 @@
 # 1. Main Synthesis Summary
 
-Cycle 07 Shared Beta Planning should pursue one maintained cross-platform client for desktop and mobile, with offline-first local authority during ordinary use and a small synchronization API coordinating account-scoped events through Neon Postgres. This is a planning architecture, not framework acceptance or implementation authority.
+Cycle 07 Sprint 02 should restage Markei around a Flutter/Dart shared client for Windows, Android, and iOS; a favored TypeScript synchronization API; and favored Neon Postgres event persistence. Python/PySide6 remains the accepted Cycle 06 application, behavioral reference, migration source, and rollback until the Flutter client proves parity.
 
-The first shared slice should synchronize immutable purchase-registration events plus the minimum product, category, and store facts needed to apply those purchases independently. Each client writes locally first, queues an event, projects local state immediately, and later exchanges events through an authenticated API. Clients never receive privileged Neon credentials and never write Neon tables directly.
+The shared client owns presentation, use cases, domain rules, application-private persistence, a pending-event queue, synchronization coordination, authenticated session state, versioned analytics, and platform composition. Python and Dart share behavior through language-neutral contracts, deterministic fixtures, and migration evidence—not an embedded Python runtime or IPC bridge.
 
-Three orderings serve different purposes: a device-local monotonically increasing sequence detects gaps and stabilizes retries; a server cursor orders accepted events for download; timestamps preserve business and diagnostic time but do not decide synchronization order. Globally unique UUIDs identify accounts, devices, entities, events, and commands. Event IDs and an account-scoped idempotency constraint make retry after an unknown network result safe.
+The first synchronized fact is one atomic `purchase.registered` event containing a Purchase aggregate and one or more Purchase Items. The first UI may guide a single item, but the contract must never encode one purchase equals one product. Products are account-private catalogue identities. Packaged identity includes normalized name, brand, mode, package amount, and explicit unit/dimension; bulk identity includes normalized name, brand, and BULK mode.
 
-The strategic migration is progressive: build the cross-platform client as the future shared desktop/mobile application while keeping the accepted PySide6 beta unchanged and recoverable. The new client does not replace PySide6 until fixture parity, desktop workflow parity, mobile lifecycle evidence, migration safety, and human/Main acceptance exist.
+All conclusions remain planning architecture. No Flutter code, schema, API, infrastructure, or D/E/F authorization follows from this report.
 
-# 2. Accepted Human/Product Direction
+# 2. Accepted and Superseded Decisions
 
-The current Human/Main preference is:
+## Accepted planning direction
+
+- Flutter/Dart owns the future shared Windows/Android/iOS client.
+- TypeScript is favored for the custom synchronization API.
+- Neon Postgres is favored for shared append-only event persistence.
+- PySide6 and its database remain protected until parity acceptance.
+- Client behavior crosses Python/Dart through contracts and fixtures.
+- Products are account-private.
+- Purchases are atomic aggregates containing Purchase Items.
+- Currency is explicit and money uses integer minor units.
+- Quantity is dimensionally explicit: MASS/KG, VOLUME/L, COUNT/UNIT.
+- Analytics use stable algorithm identifiers and versions.
+- First-beta synchronization is append-only.
+
+## Superseded direction
+
+TypeScript no longer leads shared-client exploration. It remains favored at the API boundary. A permanent dual-client strategy is also superseded: Flutter should progressively become the common desktop/mobile client, but only after evidence. Earlier “no backend” planning is superseded by the explicit synchronized-beta requirement.
+
+Not superseded: the accepted desktop architecture, ordinary user-data protection, offline-first operation, fixture-first semantic continuity, and implementation postponement.
+
+# 3. Flutter Client Architecture
+
+The Flutter client should have explicit inward dependency direction:
 
 ```text
-one maintained shared desktop/mobile application
-+ offline-first local data
-+ verified-email accounts
-+ small custom synchronization API
-+ Neon Postgres
-+ append-only first synchronized slice
+Flutter presentation
+→ application/use cases
+→ domain contracts and algorithms
+→ repository interfaces
+→ local persistence / event queue / sync adapters
 ```
 
-This activates synchronized-state planning and supersedes the earlier near-term “no backend” assumption. It does not accept a UI framework, authentication provider, API language, Neon schema, repository topology, or implementation plan. D/E/F remain unauthorized.
+**Presentation** owns responsive Windows/mobile widgets, navigation, input, accessibility, formatting, and platform interaction. It receives view data and stable error/status codes, not SQL rows or raw API responses.
 
-The product goal is not two applications that happen to read a shared remote database. It is one maintained client behavior expressed on desktop and mobile, with each installation owning its local database and the service boundary owning cross-device acceptance. Email provides a familiar login identifier; an immutable account UUID—not the email string—owns data.
+**Application/use cases** coordinate Register Purchase, catalogue lookup/create, local projection reads, authentication, and synchronization requests. Register Purchase owns the aggregate transaction boundary.
 
-# 3. Shared Client Boundary
+**Domain** owns Product identity normalization, Purchase/Purchase Item invariants, dimensional quantity, money, event construction, and analytics selection. Domain objects should be typed and immutable where representing accepted facts.
 
-The shared client owns responsive presentation, local application composition, local persistence, projection calculation, pending-event management, synchronization coordination, and the authenticated session.
+**Local persistence** maps domain facts, events, projections, and synchronization metadata to an application-private database. **Event queue** tracks pending, in-flight, accepted, and rejected upload outcomes without treating timeout as rejection.
 
-The presentation requests use cases and renders facts. It does not own synchronization rules or SQL. The application composition root creates the local database, repositories, projection services, pending-event queue, synchronization coordinator, and authentication session for one installation. It also coordinates startup, logout, suspend/resume, and orderly close.
+**Synchronization coordinator** uploads pending events, downloads after the account cursor, applies accepted events transactionally, and exposes status. It does not calculate business meaning independently.
 
-The local database is the client’s operational source while offline. A successful local registration should immediately appear in lists without waiting for Neon. The synchronization coordinator uploads pending events, downloads accepted remote events after the stored cursor, applies them idempotently, advances local sync metadata, and reports status without becoming a second business-rule engine.
+**Authentication session** owns access-token use, refresh/re-authentication boundaries, account UUID, device registration, logout, and platform-secure credential storage adapters.
 
-Projection calculation belongs to shared client behavior. Average duration, expected next purchase, current quantity, and Storage/Shortage/Market status should be deterministically rebuilt from accepted facts where practical, rather than synchronized as competing mutable values.
+**Analytics registry** maps stable algorithm ID/version pairs to pure Dart calculations and fixtures.
 
-# 4. Local Persistence and Event Queue
+**Composition root** creates platform-specific database paths, secure storage, HTTP transport, repositories, coordinator, registry, and use cases. It owns startup and lifecycle wiring while preventing Flutter widgets from constructing persistence directly.
 
-Each installation owns a fresh application-private database. It stores local entity references, immutable events, derived projections, authentication/session metadata appropriate for secure client storage, device identity, the last applied server cursor, and queue state.
+# 4. Reusable Catalogue
 
-A local purchase transaction should atomically:
+A Product is a relatively stable account-private identity, not a current purchase record.
 
-1. validate the registration command;
-2. ensure the required local reference facts exist;
-3. append one immutable local event with a global event UUID and next device sequence;
-4. update or rebuild affected projections;
-5. mark the event pending upload;
-6. commit once.
+Candidate normalization must be deterministic and versioned. Recommended identity string:
 
-Queue states may be `pending`, `in_flight`, `accepted`, or `rejected`, but network timeout must not imply rejection. After an unknown upload result, the client retries the identical event IDs and device sequences. The server returns the previously accepted result rather than duplicating facts.
+```text
+v1|account=<account_uuid>
+|name=<normalized_name>
+|brand=<normalized_brand_or_empty>
+|mode=PACKAGED
+|kind=<MASS|VOLUME|COUNT>
+|amount=<canonical_fixed_precision>
+|unit=<KG|L|UNIT>
+```
 
-Downloaded events are applied in server-cursor order within a local transaction. The client inserts an event only if unseen, applies its reference facts, rebuilds affected projections, and advances the cursor only after successful commit. A crash before commit leaves the old cursor and permits safe replay.
+For bulk:
 
-# 5. Identity and Ownership Model
+```text
+v1|account=<account_uuid>
+|name=<normalized_name>
+|brand=<normalized_brand_or_empty>
+|mode=BULK
+```
 
-Candidate global identifiers are UUIDs generated without central coordination:
+Normalization v1 should Unicode-normalize, trim outer whitespace, collapse internal whitespace, apply a locale-independent case rule, and preserve semantic characters rather than deleting punctuation broadly. Package input converts only within its dimension to KG, L, or UNIT and serializes a canonical fixed-precision decimal. It never converts mass to volume.
 
-- `account_id`: immutable ownership principal;
-- `device_id`: one registered installation;
-- `event_id`: immutable synchronization event identity;
-- `product_id`, `category_id`, and `store_id`: account-scoped entity identities;
-- optional `batch_id` or request id: observability and request correlation.
+A deterministic account-scoped Product UUID is feasible using a namespaced UUID derived from the versioned normalized identity string. It allows offline devices to derive equal IDs for mechanically equivalent identities such as 350 g and 0.350 kg. It remains provisional because correction of normalization defects or identity fields creates a new identity. The normalization version must therefore be explicit, collision fixtures must exist, and migration must preserve old mappings.
 
-Verified email is a replaceable login attribute linked to `account_id`. Changing email must not move, duplicate, or orphan data. Authentication proves a session belongs to an account; authorization checks that every device, event, entity, cursor request, and status query belongs to that account.
+Exact normalized match may reuse a Product automatically. Fuzzy matching is advisory only: it warns and asks the user. It never changes identity or merges products.
 
-Access tokens authorize short API calls. Refresh tokens or equivalent renewable sessions belong in platform-secure client storage and may be revoked. Exact token format and provider remain open. Clients must never contain privileged database credentials, service-role tokens, or a Neon connection string capable of bypassing account authorization.
+Identity fields are immutable in the first beta. Changed name, brand, packaged amount, mode, dimension, or unit creates a new Product. A future successor or product-family relationship may connect variants for shrinkflation and longitudinal analytics without rewriting history; aliases, merges, spelling correction, and global catalogue deduplication are deferred.
 
-A device receives its `device_id` through authenticated registration. Each event carries `device_id` and a strictly increasing `device_sequence`. The server enforces uniqueness for both `event_id` and the account/device/sequence tuple.
+# 5. Purchase Aggregate
 
-# 6. Append-Only Event Contract
+The aggregate is:
 
-The first event family is `purchase.registered`. It records a completed purchase fact and is never edited in the first beta. The envelope should include:
+```text
+Purchase
+    purchase_uuid
+    account_uuid
+    store reference
+    occurrence timestamp
+    currency code
+    one or more Purchase Items
 
-- protocol version;
-- event type and payload version;
-- event UUID;
-- account and device identity as authenticated/validated context;
-- device sequence;
-- client-recorded timestamp with timezone or UTC normalization;
-- product, category, store, and purchase UUIDs;
-- payload;
-- optional correlation metadata.
+Purchase Item
+    item_uuid
+    product_uuid
+    package count
+    purchased amount/dimension/unit
+    line total minor units
+    promotion observation
+    optional expiration/notes
+```
 
-The minimum independently applicable payload should contain purchase date, quantity, unit, unit price, total price, promotion flag, optional expiration date and notes, plus product name, brand, unit, category identity/name, and store identity/name required to create missing references. Reference snapshots avoid a second device receiving a purchase whose product/store rows do not exist.
+Store is an account-private reusable reference with stable UUID and minimum name; address/location remain optional and outside identity unless later accepted.
 
-This does not define editing. If the same product identity appears again, stable identity links the purchase. Category/store facts included in the event are bootstrap facts for that identity, not permission for arbitrary last-writer-wins updates. Address, analytics settings, page order, cached projections, and desktop display labels are outside the first payload.
+The first UI may collect one item, but the command/result and event payload contain an item list. Registering commits Product/Store bootstrap facts when absent, Purchase, all Items, projection changes, and the pending event atomically. An invalid item rejects the entire aggregate locally.
 
-Invariants include positive quantity, coherent price fields, recognized units, supported versions, valid UUIDs, authenticated account ownership, monotonic device sequence, immutable accepted payload, and deterministic validation results. Client timestamps record when the user says the purchase occurred; server acceptance time records ingestion. Neither replaces server cursor ordering.
+The recommended `purchase.registered` payload includes protocol and payload versions; event/account/device/purchase UUIDs; device sequence; occurrence timestamp; currency; Store identity plus minimum bootstrap name; Product identity records required by the Items; and immutable item lines. This purchase-level event preserves receipt atomicity and lets a new device apply it independently.
 
-# 7. Synchronization API Boundary
+Minimum historical snapshot facts are the immutable referenced Product identity, Store identity/name needed for display, occurrence time, dimensional purchased amount, package count, line total/currency, and promotion observation. Broad duplicated Product snapshots are unnecessary while identity records are immutable. Future catalogue corrections must not rewrite prior Items.
 
-Candidate operations are technology-neutral:
+# 6. Quantity and Money
 
-**Register device.** Input: authenticated account context, installation-generated device UUID, protocol/client version, platform metadata kept minimal. Output: accepted device identity, active protocol range, current account cursor, and registration status. Errors: invalid session, revoked device, unsupported protocol, identity collision.
+Quantity must carry dimension, canonical unit, and fixed-precision amount:
 
-**Upload event batch.** Input: authenticated device, protocol version, ordered events, and request correlation ID. Output per event: accepted/already accepted/rejected, assigned server cursor when accepted, stable error code, and latest cursor. The API validates the whole envelope and each event, authorizes ownership, and appends idempotently.
+- MASS uses KG;
+- VOLUME uses L;
+- COUNT uses UNIT.
 
-**Download after cursor.** Input: authenticated device, last applied cursor, supported protocol versions, bounded page size. Output: ordered accepted events, next cursor, high-water mark, and continuation indicator. Cursors are opaque to clients even if represented numerically.
+Package amount describes one packaged unit. Package count describes how many packages were bought. Purchased amount is their measured total. For a 0.350 KG package bought twice, package amount is 0.350 KG, package count is 2, and purchased amount is 0.700 KG. Bulk mode has no packaged amount; the Item records purchased amount directly.
 
-**Synchronization status.** Output: device registration/revocation state, server high-water cursor, client-reported cursor if submitted, pending rejection summaries, and protocol compatibility. It must not expose another account’s metadata.
+No mass/volume inference is permitted. COUNT values may be displayed without fractional noise, but storage rules must define whether fractional UNIT is rejected. Exact decimal scale/range is an open technical choice; floating-point storage is inappropriate for authoritative equality or identity.
 
-**Revoke device/session**, optional for the first UI: invalidates future token/device use without deleting accepted events.
+The account supplies a default currency for input convenience. Every Purchase persists an ISO-style currency code. Every Item persists authoritative line total in integer minor units. Receipt-level total may be stored if independently observed, but it does not silently overwrite line totals.
 
-The API owns token verification, authorization, payload validation, protocol negotiation, idempotency, database transactions, cursor allocation, stable error taxonomy, and observability. Logs correlate account safely, device, batch, event, result, latency, and error class while avoiding purchase-note or token leakage.
+Package price, normalized KG/L/UNIT price, unit price, price deltas, and inflation/deflation indicators are derived. Currency minor-unit metadata must be respected; not every currency has two decimal places. Cross-currency analytics and conversion are deferred.
 
-# 8. Neon Data Responsibilities
+# 7. Versioned Analytics
 
-Neon Postgres is the shared synchronization store, not the client’s direct operational database. Candidate responsibilities include:
+Flutter owns a Dart analytics registry. Each algorithm has a stable identifier, semantic version, declared inputs, output contract, and deterministic fixtures. Candidate identifiers include `purchase_interval`, `package_price`, `normalized_measure_price`, and `price_change`.
 
-- account identity references keyed by immutable account UUID;
-- verified-email/provider reference metadata only as required;
-- device registrations and revocation state;
-- account-scoped entity identities;
-- immutable accepted event envelopes and payloads;
-- global or account-partitioned monotonically allocated server cursor;
-- unique constraints for event UUID and account/device/device-sequence;
-- protocol and schema metadata;
-- acceptance timestamps and minimal observability references.
+Raw Product/Purchase/Item facts remain authoritative. Cached projections record algorithm ID/version when reproducibility matters and are rebuildable. A released algorithm version never changes meaning; improved formulas receive a new version.
 
-Every row carrying user data must be bound to `account_id`. The API transaction obtains the authenticated account context and never trusts a client-supplied ownership key alone. Whether database row-level security adds defense in depth remains open, but API authorization is mandatory.
+Python fixtures should capture accepted Cycle 06 behavior where it remains intended. Dart must reproduce those expected results, while new dimensional-money fixtures define behavior Python never modeled precisely. Future personalized inflation, deflation, shrinkflation, store comparison, and product-family analytics remain derived; the first beta proves registry/version mechanics with only the calculations required by its projection.
 
-Neon migrations belong to the server deployment boundary, not clients. Managed Postgres reduces infrastructure operations; it does not supply identity semantics, event idempotency, conflict rules, API authorization, or projection policy.
+# 8. Local Persistence
 
-# 9. Projection and Transaction Ownership
+Logical local responsibilities are separate even if one physical SQLite database later implements them:
 
-Immutable events are shared facts. Local projections are rebuildable client views. The server may maintain operational indexes or account/device status projections, but it should not become the initial authority for Markei’s calculated Storage/Shortage/Market values.
+- account/device/session metadata excluding raw privileged secrets;
+- Catalogue Products and Stores;
+- Purchases and Purchase Items;
+- immutable local/applied synchronization events;
+- pending upload queue and stable rejection state;
+- last transactionally applied account cursor;
+- rebuildable projections and algorithm versions;
+- migration/import ledger.
 
-Server upload transaction ownership should cover validation against server state, idempotency lookup, entity/reference acceptance, immutable event append, cursor allocation, and response status. Either all accepted effects for an event commit together or none do. Batch atomicity remains open: per-event atomic acceptance permits partial success; whole-batch atomicity is simpler conceptually but makes one bad event block unrelated valid events. The initial candidate is per-event results inside bounded transactional processing, while preserving request idempotency.
+One local Register transaction commits aggregate facts, event, queue state, and affected projection together. Network work occurs after commit and never inside the database transaction.
 
-Local application transactions separately own local event creation/projection and downloaded-event application/cursor advancement. Network calls never remain inside a local database transaction.
+Downloaded events are inserted if unseen, references and aggregate facts are applied, projections rebuild, and cursor advances in one local transaction. Failure leaves the old cursor so replay is safe. Bootstrap initializes an empty store and downloads from cursor zero in bounded pages.
 
-A second device bootstraps by authenticating, registering, initializing an empty local store, and downloading from cursor zero in bounded pages. It applies all accepted events and rebuilds projections before declaring synchronization current.
+Physical table names, SQLite package/plugin, migration framework, indexes, encryption choice, and schema layout remain open until tooling evidence and logical-contract fixtures exist.
 
-# 10. Desktop-Beta Migration Strategy
+# 9. Synchronization Event Contract
 
-Choose strategy B: progressively make the cross-platform client the shared desktop/mobile application, while preserving PySide6 unchanged until parity is evidenced. Strategy A—permanently adding a mobile client beside PySide6—would preserve desktop stability but retain two presentation/runtime implementations indefinitely, conflicting with the one-maintained-application direction.
+Identifiers include account, device, Product, Store, Purchase, Item, and event UUIDs. The envelope carries protocol version, event type, payload version, event UUID, device UUID, monotonic device sequence, occurrence time, and immutable payload.
 
-Progression should be additive:
+The server cursor should be account-scoped and opaque. This bounds downloads and ownership checks to one account and avoids leaking global activity. The API may implement it as an account-local monotonic value, but clients depend only on ordering and continuation semantics.
 
-1. freeze and preserve the accepted Cycle 06 desktop recovery boundary;
-2. specify contracts and deterministic fixtures from current behavior;
-3. build the new client against a fresh isolated local database;
-4. evidence mobile and desktop parity for the reduced slice;
-5. design a one-time import that reads a protected copy of current desktop data and emits mapped append-only events;
-6. validate counts, identities, dates, totals, and projections before any cutover;
-7. keep rollback to PySide6 and the untouched original database;
-8. retire or demote PySide6 only after human/Main acceptance.
+Sequence gaps should be rejected with a stable “missing prior sequence” result. This prevents silent loss and asks the device to retry earlier pending events. Identical event UUID and content returns the prior acceptance; the same UUID with different canonical content returns an immutable-content conflict.
 
-Current text IDs and integer purchase/store IDs require explicit mapping to new UUIDs. Migration must be deterministic and recorded so retry does not create new identities. Direct file transfer, shared opening of the old SQLite file, and in-place destructive conversion are prohibited.
+Upload batches return per-event results. Each event receives its own server transaction: validate/authenticate/authorize, check idempotency and sequence, ensure account-owned references, append the immutable event and aggregate facts, allocate cursor, and commit. One rejected event need not roll back unrelated valid events, but later same-device sequences cannot leap over its gap.
 
-# 11. API Runtime Comparison
+Stable errors should distinguish authentication required, forbidden account/device, device revoked, unsupported protocol/payload, invalid payload, sequence gap, identity conflict, event-content conflict, retryable server failure, and page/cursor invalidity.
 
-A TypeScript API aligns naturally with many cross-platform/web-oriented clients, offers strong JSON/schema validation ecosystems, mature Postgres tooling, and convenient shared generated types. It may reduce boundary friction if the client is TypeScript-based. It does not reuse Python business code, so deterministic fixtures become essential; careless type sharing can also confuse compile-time shapes with runtime validation.
+# 10. TypeScript API
 
-A Python API can reuse vocabulary, validation concepts, date logic, and potentially fixture tooling from Markei. Mature web frameworks, validation libraries, database drivers, and migration tools exist. It may reduce the cost of translating current behavior, but sharing Python server code does not make the cross-platform client share that runtime, and async/deployment/database choices still require disciplined maintenance.
+The TypeScript API is favored because it offers mature runtime schema validation, Postgres/Neon tooling, authentication middleware, JSON protocol support, migration ecosystems, and test harnesses. Dart and TypeScript remain separated by serialized language-neutral contracts and shared fixtures.
 
-Selection should depend on executable contract tests, database migration quality, authentication integration, deployment support, observability, team maintenance burden, and how cleanly the API remains a synchronization boundary. Familiarity alone is insufficient. The first architecture should keep events language-neutral so either runtime can be replaced.
+The API owns token verification, immutable account UUID resolution, device authorization, runtime payload validation, event canonicalization/hash comparison, idempotent append, sequence enforcement, account cursor allocation, cursor-based download, protocol negotiation, transactions, stable errors, rate/size limits, and privacy-safe observability.
 
-# 12. Explicit Deferrals
+Clients never carry privileged Neon credentials. Exact runtime, framework, host, validation library, migration tool, and auth provider remain open. Familiarity is insufficient; selection requires deployment, migration, transaction, Neon, token-validation, logging, and contract-test evidence.
 
-Deferred from the first shared beta: purchase editing/deletion or compensating-event design; household sharing; collaborative permissions; complex conflicts; real-time push; background sync; broad schema redesign; direct database-file transfer; complete settings sync; historical mutable product/store editing; app-store production release; permanent repository split; public API; server-authoritative analytics; full PySide6 retirement; and final authentication, client, API, or database framework selection.
+# 11. Neon Responsibilities
 
-# 13. Candidate Minimal Shared Slice
+Neon logically stores account identity references, device registrations/revocation, account-private Products and Stores, Purchases and Items or their accepted-event materialization, immutable events, account cursors, idempotency/content hashes, and protocol/schema metadata.
 
-The smallest meaningful synchronized slice is:
+Every user-data row is owned by immutable `account_uuid`; email is replaceable login metadata, never the ownership key. Constraints enforce account-scoped references, event uniqueness, device-sequence uniqueness, and immutable accepted content.
 
-1. user verifies email and signs in on device A;
-2. client registers the device and initializes a fresh local database;
-3. user registers one purchase offline;
-4. local event, pending queue entry, and projection commit atomically;
-5. client uploads the event; the API authenticates, authorizes, validates, appends idempotently, and assigns a cursor;
-6. device B signs into the same account, registers, and downloads from cursor zero;
-7. device B applies the event and rebuilds the same projection;
-8. device A retries the original upload after a simulated unknown response and receives “already accepted,” with no duplicate;
-9. a different account cannot read or append against either account’s data;
-10. the Cycle 06 database remains unchanged and recoverable.
+API transactions own synchronization semantics. Neon supplies Postgres persistence, constraints, migrations, roles, backups/recovery, and observability support. Row-level security is a provisional defense-in-depth candidate, not a replacement for API authorization.
 
-# 14. Unresolved Decisions
+Logical cloud schema may separate immutable event log from query/materialized aggregate tables, but physical tables are not justified until the event payload, invariants, cursor allocation, migration tool, and transaction tests are accepted.
 
-Main must still decide: client framework; authentication provider; TypeScript versus Python API; cursor allocation scope; per-event versus whole-batch atomicity; exact event/reference payload; unit and currency representation; secure token storage; database row-level-security role; migration mapping rules; repository topology during the shared-client transition; whether device revocation is required in the first UI; and the evidence threshold for desktop parity and PySide6 retirement.
+# 12. Migration From PySide6
 
-The first decisions should be contract and identity semantics, because framework experiments without stable events may test packaging while leaving synchronization meaning undefined.
+Migration is additive and reversible:
 
-# 15. Handoff to Main
+1. preserve the accepted PySide6 program and untouched original database;
+2. work from a protected copy;
+3. define deterministic UUID mapping for legacy Product, Store, Purchase, and generated Item identities;
+4. normalize legacy units/money only through explicit migration rules and exception reporting;
+5. import through append-only events or a separately authorized controlled-fact import;
+6. record source identity, mapping version, and import idempotency keys;
+7. compare entity counts, totals, dates, history, and projection fixtures;
+8. test retry and rollback;
+9. run Flutter Windows/Android parity, then iOS separately;
+10. retire or demote PySide6 only after human/Main acceptance.
 
-Main should reconcile this report with Operational infrastructure/toolchain constraints and Didactic contract/synchronization distinctions. The next authorized work should remain planning: accept or revise the identity/event envelope, decide the minimum purchase/reference payload, choose the batch transaction rule, and define fixture scenarios. Only after those boundaries are accepted should Main select one bounded D/E/F unit for framework/API/Neon prototyping.
+Legacy rows with ambiguous package amount, currency, quantity dimension, or promotion meaning must be reported rather than guessed. The migration may preserve a legacy/unknown representation pending user correction, but the exact policy is open. Direct destructive conversion and shared opening of the ordinary Cycle 06 database are prohibited.
+
+# 13. Decision-State Matrix
+
+| Item | State |
+| --- | --- |
+| Flutter/Dart shared client | Accepted planning direction |
+| TypeScript synchronization API | Favored planning direction |
+| Neon Postgres | Favored planning direction |
+| PySide6 protection until parity | Accepted planning direction |
+| Account-private catalogue | Accepted planning direction |
+| Product normalized identity fields | Provisional structural definition |
+| Deterministic Product UUID | Provisional; fixture evidence required |
+| Purchase + Item atomic aggregate | Provisional structural definition |
+| One-item UI / multi-item contract | Accepted planning direction |
+| Dimensional quantity and minor-unit money | Provisional structural definition |
+| Versioned Dart analytics registry | Accepted planning direction |
+| Account-scoped cursor | Recommended provisional definition |
+| Sequence-gap rejection | Recommended provisional definition |
+| Per-event upload transaction/results | Recommended provisional definition |
+| Exact local/cloud physical schema | Open technical choice |
+| Flutter database, storage and auth plugins | Open technical choice |
+| TypeScript runtime/host/auth/migration tools | Open technical choice |
+| Editing, deletion, families, sharing, real-time/background sync | Deferred features |
+| Cross-platform lifecycle/plugin viability | Empirical question |
+| Migration treatment of ambiguous legacy facts | Empirical/policy question |
+
+# 14. Unresolved Empirical Questions
+
+Evidence must determine: deterministic normalization equivalence across Dart/TypeScript/Python; Unicode/case behavior; UUID derivation collision and version migration; decimal scale/range; fractional COUNT policy; currency minor-unit metadata; event canonicalization/hash parity; Flutter SQLite migrations and transaction behavior; secure token storage; Windows/Android/iOS lifecycle and packaging; cursor throughput/bootstrap paging; sequence recovery after local queue corruption; Neon transaction/cursor contention; RLS compatibility; API deployment and cold-start behavior; and legacy import ambiguity rates.
+
+Parity evidence must cover deterministic Register fixtures, projections, close/reopen, offline queue recovery, unknown-result retry, two-device bootstrap, cross-account denial, migration counts/totals, rollback, and unchanged Cycle 06 data.
+
+# 15. Permanent-Documentation Update Plan
+
+After Main reconciles A/B/C, Design may propose:
+
+- `design/03_DECISION_LOG.md`: observational Flutter supersession, alternatives, rationale, and deferrals;
+- `design/09_DESIGN_STATE.md`: checkpoint for Flutter/Dart basis, TypeScript API, Neon, and unresolved evidence;
+- `design/14_MODEL_OVERVIEW.md`: derived compact client/API/event ownership map;
+- `design/01_ARCHITECTURE.md`: only accepted stable planning boundaries that Main/human explicitly promotes.
+
+No permanent file should copy this stage wholesale. Physical schema, framework plugins, repository layout, and implementation structures remain outside canon until accepted.
+
+# 16. Handoff to Main
+
+Main should reconcile the Operational feasibility gates and Didactic promotion recommendations against this architecture. The next decisions should accept or revise normalization v1, deterministic UUID namespace/versioning, Purchase payload, snapshot minimum, account cursor, sequence policy, per-event transaction, TypeScript API boundary, and logical schema responsibilities.
+
+Before any physical schema or D/E/F materialization, require cross-language canonicalization fixtures, aggregate/event invariants, money/quantity fixtures, migration exception rules, local/cloud transaction tests, account-isolation tests, and explicit PySide6 parity/rollback criteria.
