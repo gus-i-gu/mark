@@ -104,48 +104,56 @@ Recovery route:
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
-# Cycle 07 Sprint 03 Operational Checkpoint
+# Cycle 07 Sprint 04 Operational Checkpoint
 
-## Current evidence
+> Branch: `cycle-07-mobile-preparation`
+> Inspected implementation head: `32898f56f76895dc0f23d72cd132bcc24830e740`
+> Evidence: `DEV_STAGE/G_OPS_CODEX.md`
+> Staging: `DEV_STAGE/A_OPERATIONAL.md`
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` §21
+
+## Current truth
 
 ```text
-Sprint 03 Unit 01: materialized
-Flutter SDK: installed, 3.44.6 stable
-Dart: 3.12.2
-Flutter/Dart client foundation: implemented
-Drift local schema/generated source: implemented
-shared_beta/v1 JSON examples: implemented but incomplete
-flutter analyze: passed
-flutter test: 9 passed
-Python unittest: 5 passed
-Windows build/run: host-blocked
-Android build/run: host-blocked
-iOS build/run: host-unavailable
-TypeScript API/auth/Neon/synchronization: not implemented
-Sprint 04: not authorized
+Cycle 06 Python/PySide6 beta: accepted, validated, protected
+Sprint 03 Flutter foundation: implemented and locally validated
+Flutter/Dart: 3.44.6 / 3.12.2 recorded
+Drift local schema: version 1 implemented
+analysis/tests: passed (9 Flutter, 5 Python)
+atomic Purchase/Items/event/queue: locally validated
+Windows target: generated, build/run blocked
+Android target: generated, SDK/device absent
+iOS target: generated, host-unvalidated
+Sprint 04 implementation: not started
 ```
 
-## Implemented and locally validated
+## Accepted Sprint 04 planning
 
-- additive Flutter client coexists with the preserved PySide6 beta;
-- domain models remain independent from widgets and Drift;
-- PACKAGED/BULK, dimensional quantity, minor-unit money, Purchase aggregate, Purchase Items, pending event, and analytics version structures exist;
-- Purchase facts, Items, immutable local event, and pending queue entry commit in one Drift transaction;
-- invalid Item rollback and temporary-file close/reopen passed;
-- Drift is an implemented foundation dependency, not proof of platform compatibility.
+- local shared-client workflow precedes the synchronization harness;
+- new internal Product IDs use UUID v4 and remain distinct from required account-private user Product codes;
+- normalization v2 preserves display text and uses Unicode NFKC with versioned identity rules;
+- contracts advance additively to `shared_beta/v2`, JSON Schema Draft 7, and readable examples;
+- Drift advances through a rehearsed v1→v2 migration without rewriting existing Product references;
+- Windows build/run is required;
+- Android tooling installation is not authorized; attempt a build only if tooling already exists;
+- PySide6 and ordinary Cycle 06 data remain protected.
 
-## Defects and unvalidated boundaries
+## Defective, blocked, and deferred
 
-- device allocation likely resets `nextSequence`; monotonic ordering is not accepted;
-- Unicode/Portuguese-safe normalization is unproven;
-- deterministic Product ID is cross-language and UUID-contract unvalidated;
-- Purchase/event JSON examples are not a complete wire specification;
-- fresh schema creation passed, but schema upgrade/recovery did not;
-- Windows lacks Visual Studio C++ workload; Android SDK is absent; iOS lacks macOS/Xcode;
-- Store identity/deduplication, user Purchase UI, cloud sync, authentication, API, Postgres/Neon, legacy import, and parity remain absent.
+Defective/unimplemented: Device upsert can reset sequence; no sequence uniqueness; no user Product code/display fields; Unicode-safe normalization absent; schemas absent; UI remains a foundation label; migration recovery untested.
 
-## Next bounded sequence
+Blocked/host-unvalidated: Windows requires the Visual Studio Native Desktop workload; Android SDK/device is absent; iOS requires macOS/Xcode.
 
-Main orientation favors the local shared-client vertical slice first, beginning with sequence correction and contract hardening, then minimal UI, visible projections, close/reopen, and Windows/Android execution. The local synchronization harness remains the following candidate.
+Deferred: authentication, TypeScript API, Postgres/Neon, real synchronization, central catalogue mapping, code editing/retirement, legacy import, production packaging, iOS validation, and PySide6 retirement.
 
-No implementation is authorized until Sprint 04 D/E/F is approved.
+## Next valid route and authority
+
+Main may write new D/E/F for sequence correction, schema v2 migration, Product identity separation, normalization v2, v2 schemas/examples, minimal Flutter Purchase UI/history, Windows setup/build/run, conditional Android build, Python regression, and Cycle 06 isolation. No implementation or host mutation is authorized by this checkpoint.
+
+## Recovery pointers
+
+1. Read this checkpoint first.
+2. Read `04_TODO.md` for ordered executable gates.
+3. Read `12_OPERATIONAL_MODEL.md` for stable safety rules.
+4. Read the latest entry in `11_OPERATIONAL_RECORD.md` for chronology.
+5. Read G for command evidence, A for contrary findings, and J §21 for accepted resolution.
