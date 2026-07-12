@@ -1,126 +1,92 @@
-# I_DSN_CODEX - Cycle 07 Sprint 03 Design Codex Report
+# I_DSN_CODEX - Cycle 07 Sprint 04 Design Codex Report
 
-> Status: Local Flutter foundation materialized
+> Status: Windows local vertical slice materialized
 > Branch: `cycle-07-mobile-preparation`
 > Source stage: `F_DSN_STAGE.md`
 > Date: 2026-07-12
-
-## Source Stage Files
-
-- `documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md`
-- `documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md`
-- `documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md`
 
 ## Implemented Topology
 
 ```text
 clients/markei_flutter/
-├── android/
-├── ios/
-├── windows/
 ├── lib/
 │   ├── app/
+│   │   ├── markei_app.dart
+│   │   ├── markei_composition.dart
+│   │   └── pages/
 │   ├── application/
+│   │   ├── catalogue_queries.dart
+│   │   ├── purchase_history.dart
+│   │   └── register_purchase.dart
 │   ├── domain/
-│   │   ├── analytics/
-│   │   ├── catalogue/
-│   │   ├── purchase/
-│   │   ├── shared/
-│   │   ├── store/
-│   │   └── sync/
 │   └── infrastructure/local/
-└── test/
+├── test/
+│   ├── app/
+│   ├── contracts/
+│   ├── domain/
+│   └── infrastructure/
+├── android/
+├── ios/
+└── windows/
 
-contracts/shared_beta/v1/
-├── README.md
-├── catalogue_identity.json
-├── purchase_aggregate.json
-└── sync_event.json
+contracts/shared_beta/v2/
 ```
 
-No `services/sync_api/` directory was created.
+## Schema And Migration
 
-## Dependency Direction
+- Drift schema version is now 2.
+- `products` gained Product-code and display columns.
+- Product uniqueness is account-scoped by normalized Product code and exact identity key.
+- `sync_events` uniqueness is account/device/sequence scoped.
+- `migration_ledger` records from/to version and migration ID.
+- v1 to v2 migration adds new columns, backfills legacy Product codes, preserves existing Product IDs, and records `v1-to-v2-product-code-display`.
+- Migration test creates a v1 database, opens it through v2 Drift, verifies backfill/ledger, closes, and reopens.
 
-- Flutter composition lives in `lib/app/` and `lib/main.dart`.
-- Application use-case port lives in `lib/application/register_purchase.dart`.
-- Domain models live under `lib/domain/`.
-- Drift implementation lives under `lib/infrastructure/local/`.
-- Domain imports no Flutter widgets, Drift, HTTP, Python, or platform plugin APIs.
-- Widgets issue no SQL and own no durable transaction.
+## Dependencies
 
-## Dependencies Added
+- Runtime added: `unorm_dart`.
+- Dev added: `json_schema`.
+- Existing Drift/build dependencies retained.
+- Visual Studio Build Tools 2022 installed/modified on the host for Windows build validation.
 
-- Runtime: `crypto`, `drift`, `path`, `path_provider`, `sqlite3_flutter_libs`, `uuid`.
-- Development: `build_runner`, `drift_dev`, `flutter_lints`, `flutter_test`.
-- `pubspec.lock` was generated and retained.
+## Boundary Decisions
 
-## Schema Responsibilities Implemented
+- Domain remains independent of Flutter widgets, Drift, Python, HTTP, and platform APIs.
+- Widgets call application/repository ports and do not issue SQL.
+- Local persistence remains a fresh Flutter database and does not access the Cycle 06 SQLite database.
+- Synchronization remains event/queue preparation only; no networking or cloud sync exists.
+- JSON Schema provides structural validation only; Dart tests carry semantic invariants.
 
-- `local_accounts`
-- `devices`
-- `products`
-- `stores`
-- `purchases`
-- `purchase_items`
-- `sync_events`
-- `pending_events`
-- `sync_state`
-- `migration_ledger`
+## Implemented Surface
 
-The schema is fresh and local. It is not the Cycle 06 SQLite schema and does not access the Cycle 06 database.
-
-## Transaction Boundary Implemented
-
-`LocalPurchaseRepository.registerPurchase` performs one Drift transaction:
-
-```text
-resolve/create Store
-+ resolve/create exact Products
-+ validate all Items
-+ insert Purchase and Items
-+ allocate device sequence
-+ insert immutable purchase.registered event
-+ enqueue pending event
-= one local transaction
-```
-
-The invalid Item test proves rollback of Store, Product, Purchase, Purchase Item, sync event, and pending event writes. No network work exists inside the transaction.
-
-## Representation Decisions
-
-- Quantity uses fixed 6-decimal microunits.
-- COUNT rejects fractional values in this unit.
-- MASS normalizes `g` and `kg` to canonical `KG`.
-- VOLUME normalizes `ml` and `l` to canonical `L`.
-- Money uses ISO currency code plus integer minor units.
-- Product normalization version is `1`.
-- Deterministic Product ID uses SHA-256 over namespace `markei.shared-beta.product.v1` and the exact identity key.
+- Product normalization v2.
+- Product-code value object.
+- Product reference model for new/existing Product references.
+- Local query repository for catalogue warnings and purchase history.
+- Local composition root.
+- Multi-item Purchase page.
+- History page.
+- Contract validation test suite.
+- Device sequence and migration tests.
+- Windows buildable Flutter desktop app.
 
 ## Validation Evidence
 
+- `flutter pub get`: passed.
 - `dart format --output=none --set-exit-if-changed .`: passed.
-- `flutter analyze`: no issues.
-- `flutter test`: 9 tests passed.
-- `python -m unittest discover -s tests`: 5 tests passed.
+- `flutter analyze`: passed.
+- `flutter test`: passed, 21 tests.
+- `flutter build windows`: passed.
+- Windows startup smoke: built `markei.exe` remained running after 5 seconds.
+- `python -m unittest discover -s tests`: passed, 5 tests.
 
-## Implemented But Host-Unvalidated
+## Deviations And Host Limits
 
-- Android, Windows, and iOS project directories were generated.
-- Android SDK is unavailable, so Android build/run is unvalidated.
-- Visual Studio C++ desktop workload is unavailable, so Windows build/run is unvalidated.
-- macOS/Xcode is unavailable, so iOS validation is unclaimed.
-
-## Deviations
-
-- Flutter SDK was unavailable at first; human approved installing/configuring it from the official stable Flutter Git repository.
-- `flutter doctor -v` still reports Android SDK, Chrome, and Visual Studio gaps.
-- The local foundation is implemented and tested, but platform execution evidence is deferred by host prerequisites.
+- Visual Studio Community 2022 was incomplete/canceled; Build Tools 2022 was installed and used for Windows validation.
+- Android build was skipped because no Android SDK is installed and Android tooling installation is prohibited.
+- iOS remains unvalidated on this Windows host.
+- Manual human UI acceptance remains required.
 
 ## Deferred By Scope
 
-Production auth/authorization, Neon, TypeScript API, direct Postgres access, household collaboration, merge/alias, edits/deletion, background/realtime sync, public catalogue, full UI workflow, complete parity, and PySide6 retirement.
-
-## Suggested Functional Follow-Up
-
-Design Chat should treat the local domain/persistence boundary as materialized and tested, while keeping platform runtime and server synchronization as separate future materialization units.
+TypeScript, API, Postgres, Neon, authentication, authorization, real synchronization, central catalogue identity, Product-code editing, legacy import, PySide6 retirement, merge/alias, deletion/edit workflows, and full Purchase UI remain out of scope.

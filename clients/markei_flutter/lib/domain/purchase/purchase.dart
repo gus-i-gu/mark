@@ -88,15 +88,31 @@ final class Purchase {
   };
 }
 
+sealed class ProductReference {
+  const ProductReference();
+}
+
+final class ExistingProductReference extends ProductReference {
+  const ExistingProductReference(this.productId);
+
+  final ProductId productId;
+}
+
+final class NewProductReference extends ProductReference {
+  const NewProductReference(this.productDraft);
+
+  final ProductDraft productDraft;
+}
+
 final class PurchaseItemDraft {
   const PurchaseItemDraft({
-    required this.productDraft,
+    required this.productReference,
     required this.packageCount,
     required this.purchasedQuantity,
     required this.lineTotal,
   });
 
-  final ProductDraft productDraft;
+  final ProductReference productReference;
   final int packageCount;
   final NormalizedQuantity purchasedQuantity;
   final Money lineTotal;

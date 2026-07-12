@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markei.local/contracts/shared_beta/v2/sync_event.schema.json",
+  "type": "object",
+  "required": ["version", "eventType", "payloadVersion", "eventId", "accountId", "deviceId", "deviceSequence", "occurrenceTime", "queueState", "requiredPayloadFields"],
+  "properties": {
+    "version": { "const": 2 },
+    "eventType": { "const": "purchase.registered" },
+    "payloadVersion": { "const": 2 },
+    "eventId": { "type": "string", "minLength": 1 },
+    "accountId": { "type": "string", "minLength": 1 },
+    "deviceId": { "type": "string", "minLength": 1 },
+    "deviceSequence": { "type": "integer", "minimum": 1 },
+    "occurrenceTime": { "type": "string", "format": "date-time" },
+    "queueState": { "const": "pending" },
+    "requiredPayloadFields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "contains": { "const": "items" }
+    }
+  },
+  "additionalProperties": false
+}

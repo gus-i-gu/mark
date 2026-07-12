@@ -1,0 +1,79 @@
+{
+  "version": 2,
+  "accountId": "11111111-1111-4111-8111-111111111111",
+  "normalizationVersion": 2,
+  "productIdPolicy": "LOCAL_UUID_V4_NOT_IDENTITY_DERIVED",
+  "packaged": {
+    "input": {
+      "userCode": "ARROZ-001",
+      "name": " Arroz   Branco ",
+      "brand": "Marca A",
+      "mode": "PACKAGED",
+      "measurementKind": "MASS",
+      "packageAmount": "1",
+      "packageUnit": "kg"
+    },
+    "expected": {
+      "normalizedUserProductCode": "arroz-001",
+      "normalizedName": "arroz branco",
+      "normalizedBrand": "marca a",
+      "mode": "PACKAGED",
+      "measurementKind": "MASS",
+      "packageAmount": "1.000000",
+      "packageUnit": "KG",
+      "identityKey": "11111111-1111-4111-8111-111111111111|v2|arroz branco|marca a|PACKAGED|MASS|1.000000|KG"
+    }
+  },
+  "equivalentPackaged": {
+    "input": {
+      "userCode": "ARROZ-ALT",
+      "name": "Arroz Branco",
+      "brand": "Marca A",
+      "mode": "PACKAGED",
+      "measurementKind": "MASS",
+      "packageAmount": "1000",
+      "packageUnit": "g"
+    },
+    "expectedIdentityKey": "11111111-1111-4111-8111-111111111111|v2|arroz branco|marca a|PACKAGED|MASS|1.000000|KG"
+  },
+  "bulk": {
+    "input": {
+      "userCode": "BANANA-001",
+      "name": "Banana Prata",
+      "brand": "",
+      "mode": "BULK",
+      "measurementKind": "MASS"
+    },
+    "expected": {
+      "normalizedUserProductCode": "banana-001",
+      "normalizedName": "banana prata",
+      "normalizedBrand": "",
+      "mode": "BULK",
+      "identityKey": "11111111-1111-4111-8111-111111111111|v2|banana prata||BULK"
+    }
+  },
+  "similarity": {
+    "inputA": {
+      "userCode": "ARROZ-001",
+      "name": "Arroz Branco",
+      "brand": "Marca A",
+      "mode": "PACKAGED",
+      "measurementKind": "MASS",
+      "packageAmount": "1",
+      "packageUnit": "kg"
+    },
+    "inputB": {
+      "userCode": "ARROZ-002",
+      "name": "Aroz Branco",
+      "brand": "Marca A",
+      "mode": "PACKAGED",
+      "measurementKind": "MASS",
+      "packageAmount": "1",
+      "packageUnit": "kg"
+    },
+    "expected": {
+      "warnOnly": true,
+      "automaticMerge": false
+    }
+  }
+}

@@ -125,3 +125,14 @@ Antes de editar código, pergunte:
 Se sim, prossiga.
 
 Se não, registre primeiro no `DEV_STAGE` correto.
+
+
+####
+
+Initialize through PRI-O and run PMC-01, followed by PMC-02.
+
+Initialize through PRI-A and run PMC-01, followed by PMC-02.
+
+Initialize through PRI-D and run PMC-01, followed by PMC-02.
+
+Run PDR-D from PROMPT_COLLECTION.md against the active branch. The task authorizes the Design permanent-document reconciliation and publication described by PDR-D.

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markei.local/contracts/shared_beta/v2/catalogue_identity.schema.json",
+  "type": "object",
+  "required": ["version", "accountId", "normalizationVersion", "productIdPolicy", "packaged", "equivalentPackaged", "bulk", "similarity"],
+  "properties": {
+    "version": { "const": 2 },
+    "accountId": { "type": "string", "minLength": 1 },
+    "normalizationVersion": { "const": 2 },
+    "productIdPolicy": { "const": "LOCAL_UUID_V4_NOT_IDENTITY_DERIVED" },
+    "packaged": { "$ref": "#/$defs/productCase" },
+    "equivalentPackaged": {
+      "type": "object",
+      "required": ["input", "expectedIdentityKey"],
+      "properties": {
+        "input": { "$ref": "#/$defs/productInput" },
+        "expectedIdentityKey": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "bulk": { "$ref": "#/$defs/productCase" },
+    "similarity": {
+      "type": "object",
+      "required": ["inputA", "inputB", "expected"],
+      "properties": {
+        "inputA": { "$ref": "#/$defs/productInput" },
+        "inputB": { "$ref": "#/$defs/productInput" },
+        "expected": {
+          "type": "object",
+          "required": ["warnOnly", "automaticMerge"],
+          "properties": {
+            "warnOnly": { "const": true },
+            "automaticMerge": { "const": false }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "productCase": {
+      "type": "object",
+      "required": ["input", "expected"],
+      "properties": {
+        "input": { "$ref": "#/$defs/productInput" },
+        "expected": {
+          "type": "object",
+          "required": ["normalizedUserProductCode", "normalizedName", "normalizedBrand", "mode", "identityKey"],
+          "properties": {
+            "normalizedUserProductCode": { "type": "string", "minLength": 1 },
+            "normalizedName": { "type": "string" },
+            "normalizedBrand": { "type": "string" },
+            "mode": { "enum": ["PACKAGED", "BULK"] },
+            "measurementKind": { "enum": ["MASS", "VOLUME", "COUNT"] },
+            "packageAmount": { "type": "string" },
+            "packageUnit": { "enum": ["KG", "L", "UNIT"] },
+            "identityKey": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "productInput": {
+      "type": "object",
+      "required": ["userCode", "name", "brand", "mode", "measurementKind"],
+      "properties": {
+        "userCode": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "brand": { "type": "string" },
+        "mode": { "enum": ["PACKAGED", "BULK"] },
+        "measurementKind": { "enum": ["MASS", "VOLUME", "COUNT"] },
+        "packageAmount": { "type": "string" },
+        "packageUnit": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,20 +1,23 @@
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
+import 'package:uuid/uuid.dart';
 
 import '../shared/ids.dart';
 import '../shared/quantity.dart';
+import 'product_code.dart';
 
-const int productNormalizationVersion = 1;
-const String productUuidNamespace = 'markei.shared-beta.product.v1';
+const int productNormalizationVersion = 2;
 
 enum ProductMode { packaged, bulk }
+
+const semanticPunctuationPattern = r'''[-_,.;:!?/\\()\[\]{}'""]+''';
 
 final class Product {
   const Product({
     required this.id,
     required this.accountId,
+    required this.userProductCode,
     required this.normalizationVersion,
+    required this.displayName,
+    required this.displayBrand,
     required this.normalizedName,
     required this.normalizedBrand,
     required this.mode,
@@ -24,7 +27,10 @@ final class Product {
 
   final ProductId id;
   final AccountId accountId;
+  final ProductCode userProductCode;
   final int normalizationVersion;
+  final String displayName;
+  final String displayBrand;
   final String normalizedName;
   final String normalizedBrand;
   final ProductMode mode;
@@ -57,7 +63,10 @@ final class Product {
   Map<String, Object?> toJson() => {
     'id': id.value,
     'accountId': accountId.value,
+    'userProductCode': userProductCode.toJson(),
     'normalizationVersion': normalizationVersion,
+    'displayName': displayName,
+    'displayBrand': displayBrand,
     'normalizedName': normalizedName,
     'normalizedBrand': normalizedBrand,
     'mode': mode.name.toUpperCase(),
@@ -69,6 +78,7 @@ final class Product {
 
 final class ProductDraft {
   const ProductDraft({
+    required this.userCode,
     required this.name,
     required this.brand,
     required this.mode,
@@ -77,6 +87,7 @@ final class ProductDraft {
     this.packageUnit,
   });
 
+  final String userCode;
   final String name;
   final String brand;
   final ProductMode mode;
@@ -85,10 +96,57 @@ final class ProductDraft {
   final String? packageUnit;
 }
 
+final class NormalizedProductFacts {
+  const NormalizedProductFacts({
+    required this.displayName,
+    required this.displayBrand,
+    required this.normalizedName,
+    required this.normalizedBrand,
+    required this.packageQuantity,
+  });
+
+  final String displayName;
+  final String displayBrand;
+  final String normalizedName;
+  final String normalizedBrand;
+  final NormalizedQuantity? packageQuantity;
+}
+
+Product createProductFromDraft({
+  required AccountId accountId,
+  required ProductDraft draft,
+  ProductId? id,
+  Uuid uuid = const Uuid(),
+}) {
+  final facts = normalizeProductFacts(draft);
+  return Product(
+    id: id ?? ProductId(uuid.v4()),
+    accountId: accountId,
+    userProductCode: normalizeProductCode(draft.userCode),
+    normalizationVersion: productNormalizationVersion,
+    displayName: facts.displayName,
+    displayBrand: facts.displayBrand,
+    normalizedName: facts.normalizedName,
+    normalizedBrand: facts.normalizedBrand,
+    mode: draft.mode,
+    measurementKind: draft.measurementKind,
+    packageQuantity: facts.packageQuantity,
+  );
+}
+
 Product normalizeProductDraft({
   required AccountId accountId,
   required ProductDraft draft,
 }) {
+  return createProductFromDraft(accountId: accountId, draft: draft);
+}
+
+NormalizedProductFacts normalizeProductFacts(ProductDraft draft) {
+  final displayName = draft.name.trim();
+  if (displayName.isEmpty) {
+    throw ArgumentError('Product display name is required.');
+  }
+  final displayBrand = draft.brand.trim();
   final packageQuantity = switch (draft.mode) {
     ProductMode.packaged => normalizeDisplayQuantity(
       kind: draft.measurementKind,
@@ -97,48 +155,25 @@ Product normalizeProductDraft({
     ),
     ProductMode.bulk => null,
   };
-  final product = Product(
-    id: const ProductId('pending'),
-    accountId: accountId,
-    normalizationVersion: productNormalizationVersion,
-    normalizedName: normalizeIdentityText(draft.name),
-    normalizedBrand: normalizeIdentityText(draft.brand),
-    mode: draft.mode,
-    measurementKind: draft.measurementKind,
+  return NormalizedProductFacts(
+    displayName: displayName,
+    displayBrand: displayBrand,
+    normalizedName: normalizeSemanticIdentityText(displayName),
+    normalizedBrand: normalizeSemanticIdentityText(displayBrand),
     packageQuantity: packageQuantity,
   );
-  return Product(
-    id: deterministicProductId(product.identityKey),
-    accountId: product.accountId,
-    normalizationVersion: product.normalizationVersion,
-    normalizedName: product.normalizedName,
-    normalizedBrand: product.normalizedBrand,
-    mode: product.mode,
-    measurementKind: product.measurementKind,
-    packageQuantity: product.packageQuantity,
-  );
 }
 
-ProductId deterministicProductId(String identityKey) {
-  final digest = sha256
-      .convert(utf8.encode('$productUuidNamespace|$identityKey'))
-      .bytes;
-  final hex = digest
-      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-      .join();
-  return ProductId(
-    '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-'
-    '${hex.substring(16, 20)}-${hex.substring(20, 32)}',
-  );
-}
-
-String normalizeIdentityText(String value) {
-  final lower = value.trim().toLowerCase();
-  return lower
-      .replaceAll(RegExp(r'[^\w\s]+'), ' ')
+String normalizeSemanticIdentityText(String value) {
+  final normalized = nfkcCollapse(value).toLowerCase();
+  return normalized
+      .replaceAll(RegExp(semanticPunctuationPattern), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }
+
+String normalizeIdentityText(String value) =>
+    normalizeSemanticIdentityText(value);
 
 bool isSimilarButNotExact(Product a, Product b) {
   if (a.identityKey == b.identityKey) {

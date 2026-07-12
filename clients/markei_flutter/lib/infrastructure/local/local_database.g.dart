@@ -388,6 +388,10 @@ class $DevicesTable extends Devices with TableInfo<$DevicesTable, Device> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {accountId, id},
+  ];
+  @override
   Device map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Device(
@@ -631,6 +635,36 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       'REFERENCES local_accounts (id) ON DELETE RESTRICT',
     ),
   );
+  static const VerificationMeta _userProductCodeMeta = const VerificationMeta(
+    'userProductCode',
+  );
+  @override
+  late final GeneratedColumn<String> userProductCode = GeneratedColumn<String>(
+    'user_product_code',
+    aliasedName,
+    true,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 64,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _normalizedUserProductCodeMeta =
+      const VerificationMeta('normalizedUserProductCode');
+  @override
+  late final GeneratedColumn<String> normalizedUserProductCode =
+      GeneratedColumn<String>(
+        'normalized_user_product_code',
+        aliasedName,
+        true,
+        additionalChecks: GeneratedColumn.checkTextLength(
+          minTextLength: 1,
+          maxTextLength: 64,
+        ),
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _normalizationVersionMeta =
       const VerificationMeta('normalizationVersion');
   @override
@@ -640,6 +674,28 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _displayBrandMeta = const VerificationMeta(
+    'displayBrand',
+  );
+  @override
+  late final GeneratedColumn<String> displayBrand = GeneratedColumn<String>(
+    'display_brand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _normalizedNameMeta = const VerificationMeta(
     'normalizedName',
@@ -715,7 +771,6 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -732,7 +787,11 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
   List<GeneratedColumn> get $columns => [
     id,
     accountId,
+    userProductCode,
+    normalizedUserProductCode,
     normalizationVersion,
+    displayName,
+    displayBrand,
     normalizedName,
     normalizedBrand,
     mode,
@@ -767,6 +826,24 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
     } else if (isInserting) {
       context.missing(_accountIdMeta);
     }
+    if (data.containsKey('user_product_code')) {
+      context.handle(
+        _userProductCodeMeta,
+        userProductCode.isAcceptableOrUnknown(
+          data['user_product_code']!,
+          _userProductCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('normalized_user_product_code')) {
+      context.handle(
+        _normalizedUserProductCodeMeta,
+        normalizedUserProductCode.isAcceptableOrUnknown(
+          data['normalized_user_product_code']!,
+          _normalizedUserProductCodeMeta,
+        ),
+      );
+    }
     if (data.containsKey('normalization_version')) {
       context.handle(
         _normalizationVersionMeta,
@@ -777,6 +854,24 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       );
     } else if (isInserting) {
       context.missing(_normalizationVersionMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('display_brand')) {
+      context.handle(
+        _displayBrandMeta,
+        displayBrand.isAcceptableOrUnknown(
+          data['display_brand']!,
+          _displayBrandMeta,
+        ),
+      );
     }
     if (data.containsKey('normalized_name')) {
       context.handle(
@@ -862,6 +957,11 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {accountId, normalizedUserProductCode},
+    {accountId, exactIdentityKey},
+  ];
+  @override
   Product map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Product(
@@ -873,10 +973,26 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
         DriftSqlType.string,
         data['${effectivePrefix}account_id'],
       )!,
+      userProductCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_product_code'],
+      ),
+      normalizedUserProductCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}normalized_user_product_code'],
+      ),
       normalizationVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}normalization_version'],
       )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      ),
+      displayBrand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_brand'],
+      ),
       normalizedName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}normalized_name'],
@@ -921,7 +1037,11 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
 class Product extends DataClass implements Insertable<Product> {
   final String id;
   final String accountId;
+  final String? userProductCode;
+  final String? normalizedUserProductCode;
   final int normalizationVersion;
+  final String? displayName;
+  final String? displayBrand;
   final String normalizedName;
   final String normalizedBrand;
   final String mode;
@@ -933,7 +1053,11 @@ class Product extends DataClass implements Insertable<Product> {
   const Product({
     required this.id,
     required this.accountId,
+    this.userProductCode,
+    this.normalizedUserProductCode,
     required this.normalizationVersion,
+    this.displayName,
+    this.displayBrand,
     required this.normalizedName,
     required this.normalizedBrand,
     required this.mode,
@@ -948,7 +1072,21 @@ class Product extends DataClass implements Insertable<Product> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['account_id'] = Variable<String>(accountId);
+    if (!nullToAbsent || userProductCode != null) {
+      map['user_product_code'] = Variable<String>(userProductCode);
+    }
+    if (!nullToAbsent || normalizedUserProductCode != null) {
+      map['normalized_user_product_code'] = Variable<String>(
+        normalizedUserProductCode,
+      );
+    }
     map['normalization_version'] = Variable<int>(normalizationVersion);
+    if (!nullToAbsent || displayName != null) {
+      map['display_name'] = Variable<String>(displayName);
+    }
+    if (!nullToAbsent || displayBrand != null) {
+      map['display_brand'] = Variable<String>(displayBrand);
+    }
     map['normalized_name'] = Variable<String>(normalizedName);
     map['normalized_brand'] = Variable<String>(normalizedBrand);
     map['mode'] = Variable<String>(mode);
@@ -968,7 +1106,20 @@ class Product extends DataClass implements Insertable<Product> {
     return ProductsCompanion(
       id: Value(id),
       accountId: Value(accountId),
+      userProductCode: userProductCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userProductCode),
+      normalizedUserProductCode:
+          normalizedUserProductCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(normalizedUserProductCode),
       normalizationVersion: Value(normalizationVersion),
+      displayName: displayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayName),
+      displayBrand: displayBrand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayBrand),
       normalizedName: Value(normalizedName),
       normalizedBrand: Value(normalizedBrand),
       mode: Value(mode),
@@ -992,9 +1143,15 @@ class Product extends DataClass implements Insertable<Product> {
     return Product(
       id: serializer.fromJson<String>(json['id']),
       accountId: serializer.fromJson<String>(json['accountId']),
+      userProductCode: serializer.fromJson<String?>(json['userProductCode']),
+      normalizedUserProductCode: serializer.fromJson<String?>(
+        json['normalizedUserProductCode'],
+      ),
       normalizationVersion: serializer.fromJson<int>(
         json['normalizationVersion'],
       ),
+      displayName: serializer.fromJson<String?>(json['displayName']),
+      displayBrand: serializer.fromJson<String?>(json['displayBrand']),
       normalizedName: serializer.fromJson<String>(json['normalizedName']),
       normalizedBrand: serializer.fromJson<String>(json['normalizedBrand']),
       mode: serializer.fromJson<String>(json['mode']),
@@ -1011,7 +1168,13 @@ class Product extends DataClass implements Insertable<Product> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'accountId': serializer.toJson<String>(accountId),
+      'userProductCode': serializer.toJson<String?>(userProductCode),
+      'normalizedUserProductCode': serializer.toJson<String?>(
+        normalizedUserProductCode,
+      ),
       'normalizationVersion': serializer.toJson<int>(normalizationVersion),
+      'displayName': serializer.toJson<String?>(displayName),
+      'displayBrand': serializer.toJson<String?>(displayBrand),
       'normalizedName': serializer.toJson<String>(normalizedName),
       'normalizedBrand': serializer.toJson<String>(normalizedBrand),
       'mode': serializer.toJson<String>(mode),
@@ -1026,7 +1189,11 @@ class Product extends DataClass implements Insertable<Product> {
   Product copyWith({
     String? id,
     String? accountId,
+    Value<String?> userProductCode = const Value.absent(),
+    Value<String?> normalizedUserProductCode = const Value.absent(),
     int? normalizationVersion,
+    Value<String?> displayName = const Value.absent(),
+    Value<String?> displayBrand = const Value.absent(),
     String? normalizedName,
     String? normalizedBrand,
     String? mode,
@@ -1038,7 +1205,15 @@ class Product extends DataClass implements Insertable<Product> {
   }) => Product(
     id: id ?? this.id,
     accountId: accountId ?? this.accountId,
+    userProductCode: userProductCode.present
+        ? userProductCode.value
+        : this.userProductCode,
+    normalizedUserProductCode: normalizedUserProductCode.present
+        ? normalizedUserProductCode.value
+        : this.normalizedUserProductCode,
     normalizationVersion: normalizationVersion ?? this.normalizationVersion,
+    displayName: displayName.present ? displayName.value : this.displayName,
+    displayBrand: displayBrand.present ? displayBrand.value : this.displayBrand,
     normalizedName: normalizedName ?? this.normalizedName,
     normalizedBrand: normalizedBrand ?? this.normalizedBrand,
     mode: mode ?? this.mode,
@@ -1054,9 +1229,21 @@ class Product extends DataClass implements Insertable<Product> {
     return Product(
       id: data.id.present ? data.id.value : this.id,
       accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      userProductCode: data.userProductCode.present
+          ? data.userProductCode.value
+          : this.userProductCode,
+      normalizedUserProductCode: data.normalizedUserProductCode.present
+          ? data.normalizedUserProductCode.value
+          : this.normalizedUserProductCode,
       normalizationVersion: data.normalizationVersion.present
           ? data.normalizationVersion.value
           : this.normalizationVersion,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      displayBrand: data.displayBrand.present
+          ? data.displayBrand.value
+          : this.displayBrand,
       normalizedName: data.normalizedName.present
           ? data.normalizedName.value
           : this.normalizedName,
@@ -1085,7 +1272,11 @@ class Product extends DataClass implements Insertable<Product> {
     return (StringBuffer('Product(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('userProductCode: $userProductCode, ')
+          ..write('normalizedUserProductCode: $normalizedUserProductCode, ')
           ..write('normalizationVersion: $normalizationVersion, ')
+          ..write('displayName: $displayName, ')
+          ..write('displayBrand: $displayBrand, ')
           ..write('normalizedName: $normalizedName, ')
           ..write('normalizedBrand: $normalizedBrand, ')
           ..write('mode: $mode, ')
@@ -1102,7 +1293,11 @@ class Product extends DataClass implements Insertable<Product> {
   int get hashCode => Object.hash(
     id,
     accountId,
+    userProductCode,
+    normalizedUserProductCode,
     normalizationVersion,
+    displayName,
+    displayBrand,
     normalizedName,
     normalizedBrand,
     mode,
@@ -1118,7 +1313,11 @@ class Product extends DataClass implements Insertable<Product> {
       (other is Product &&
           other.id == this.id &&
           other.accountId == this.accountId &&
+          other.userProductCode == this.userProductCode &&
+          other.normalizedUserProductCode == this.normalizedUserProductCode &&
           other.normalizationVersion == this.normalizationVersion &&
+          other.displayName == this.displayName &&
+          other.displayBrand == this.displayBrand &&
           other.normalizedName == this.normalizedName &&
           other.normalizedBrand == this.normalizedBrand &&
           other.mode == this.mode &&
@@ -1132,7 +1331,11 @@ class Product extends DataClass implements Insertable<Product> {
 class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String> id;
   final Value<String> accountId;
+  final Value<String?> userProductCode;
+  final Value<String?> normalizedUserProductCode;
   final Value<int> normalizationVersion;
+  final Value<String?> displayName;
+  final Value<String?> displayBrand;
   final Value<String> normalizedName;
   final Value<String> normalizedBrand;
   final Value<String> mode;
@@ -1145,7 +1348,11 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   const ProductsCompanion({
     this.id = const Value.absent(),
     this.accountId = const Value.absent(),
+    this.userProductCode = const Value.absent(),
+    this.normalizedUserProductCode = const Value.absent(),
     this.normalizationVersion = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.displayBrand = const Value.absent(),
     this.normalizedName = const Value.absent(),
     this.normalizedBrand = const Value.absent(),
     this.mode = const Value.absent(),
@@ -1159,7 +1366,11 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   ProductsCompanion.insert({
     required String id,
     required String accountId,
+    this.userProductCode = const Value.absent(),
+    this.normalizedUserProductCode = const Value.absent(),
     required int normalizationVersion,
+    this.displayName = const Value.absent(),
+    this.displayBrand = const Value.absent(),
     required String normalizedName,
     required String normalizedBrand,
     required String mode,
@@ -1181,7 +1392,11 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   static Insertable<Product> custom({
     Expression<String>? id,
     Expression<String>? accountId,
+    Expression<String>? userProductCode,
+    Expression<String>? normalizedUserProductCode,
     Expression<int>? normalizationVersion,
+    Expression<String>? displayName,
+    Expression<String>? displayBrand,
     Expression<String>? normalizedName,
     Expression<String>? normalizedBrand,
     Expression<String>? mode,
@@ -1195,8 +1410,13 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
+      if (userProductCode != null) 'user_product_code': userProductCode,
+      if (normalizedUserProductCode != null)
+        'normalized_user_product_code': normalizedUserProductCode,
       if (normalizationVersion != null)
         'normalization_version': normalizationVersion,
+      if (displayName != null) 'display_name': displayName,
+      if (displayBrand != null) 'display_brand': displayBrand,
       if (normalizedName != null) 'normalized_name': normalizedName,
       if (normalizedBrand != null) 'normalized_brand': normalizedBrand,
       if (mode != null) 'mode': mode,
@@ -1212,7 +1432,11 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   ProductsCompanion copyWith({
     Value<String>? id,
     Value<String>? accountId,
+    Value<String?>? userProductCode,
+    Value<String?>? normalizedUserProductCode,
     Value<int>? normalizationVersion,
+    Value<String?>? displayName,
+    Value<String?>? displayBrand,
     Value<String>? normalizedName,
     Value<String>? normalizedBrand,
     Value<String>? mode,
@@ -1226,7 +1450,12 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     return ProductsCompanion(
       id: id ?? this.id,
       accountId: accountId ?? this.accountId,
+      userProductCode: userProductCode ?? this.userProductCode,
+      normalizedUserProductCode:
+          normalizedUserProductCode ?? this.normalizedUserProductCode,
       normalizationVersion: normalizationVersion ?? this.normalizationVersion,
+      displayName: displayName ?? this.displayName,
+      displayBrand: displayBrand ?? this.displayBrand,
       normalizedName: normalizedName ?? this.normalizedName,
       normalizedBrand: normalizedBrand ?? this.normalizedBrand,
       mode: mode ?? this.mode,
@@ -1248,8 +1477,22 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     if (accountId.present) {
       map['account_id'] = Variable<String>(accountId.value);
     }
+    if (userProductCode.present) {
+      map['user_product_code'] = Variable<String>(userProductCode.value);
+    }
+    if (normalizedUserProductCode.present) {
+      map['normalized_user_product_code'] = Variable<String>(
+        normalizedUserProductCode.value,
+      );
+    }
     if (normalizationVersion.present) {
       map['normalization_version'] = Variable<int>(normalizationVersion.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (displayBrand.present) {
+      map['display_brand'] = Variable<String>(displayBrand.value);
     }
     if (normalizedName.present) {
       map['normalized_name'] = Variable<String>(normalizedName.value);
@@ -1286,7 +1529,11 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     return (StringBuffer('ProductsCompanion(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('userProductCode: $userProductCode, ')
+          ..write('normalizedUserProductCode: $normalizedUserProductCode, ')
           ..write('normalizationVersion: $normalizationVersion, ')
+          ..write('displayName: $displayName, ')
+          ..write('displayBrand: $displayBrand, ')
           ..write('normalizedName: $normalizedName, ')
           ..write('normalizedBrand: $normalizedBrand, ')
           ..write('mode: $mode, ')
@@ -2956,6 +3203,10 @@ class $SyncEventsTable extends SyncEvents
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {accountId, deviceId, deviceSequence},
+  ];
+  @override
   SyncEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SyncEvent(
@@ -3945,6 +4196,39 @@ class $MigrationLedgerTable extends MigrationLedger
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _fromVersionMeta = const VerificationMeta(
+    'fromVersion',
+  );
+  @override
+  late final GeneratedColumn<int> fromVersion = GeneratedColumn<int>(
+    'from_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _toVersionMeta = const VerificationMeta(
+    'toVersion',
+  );
+  @override
+  late final GeneratedColumn<int> toVersion = GeneratedColumn<int>(
+    'to_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _migrationIdMeta = const VerificationMeta(
+    'migrationId',
+  );
+  @override
+  late final GeneratedColumn<String> migrationId = GeneratedColumn<String>(
+    'migration_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _appliedAtMeta = const VerificationMeta(
     'appliedAt',
   );
@@ -3961,6 +4245,9 @@ class $MigrationLedgerTable extends MigrationLedger
     id,
     schemaName,
     schemaVersion,
+    fromVersion,
+    toVersion,
+    migrationId,
     appliedAt,
   ];
   @override
@@ -3997,6 +4284,30 @@ class $MigrationLedgerTable extends MigrationLedger
     } else if (isInserting) {
       context.missing(_schemaVersionMeta);
     }
+    if (data.containsKey('from_version')) {
+      context.handle(
+        _fromVersionMeta,
+        fromVersion.isAcceptableOrUnknown(
+          data['from_version']!,
+          _fromVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('to_version')) {
+      context.handle(
+        _toVersionMeta,
+        toVersion.isAcceptableOrUnknown(data['to_version']!, _toVersionMeta),
+      );
+    }
+    if (data.containsKey('migration_id')) {
+      context.handle(
+        _migrationIdMeta,
+        migrationId.isAcceptableOrUnknown(
+          data['migration_id']!,
+          _migrationIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('applied_at')) {
       context.handle(
         _appliedAtMeta,
@@ -4026,6 +4337,18 @@ class $MigrationLedgerTable extends MigrationLedger
         DriftSqlType.int,
         data['${effectivePrefix}schema_version'],
       )!,
+      fromVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}from_version'],
+      ),
+      toVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}to_version'],
+      ),
+      migrationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}migration_id'],
+      ),
       appliedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}applied_at'],
@@ -4044,11 +4367,17 @@ class MigrationLedgerData extends DataClass
   final int id;
   final String schemaName;
   final int schemaVersion;
+  final int? fromVersion;
+  final int? toVersion;
+  final String? migrationId;
   final DateTime appliedAt;
   const MigrationLedgerData({
     required this.id,
     required this.schemaName,
     required this.schemaVersion,
+    this.fromVersion,
+    this.toVersion,
+    this.migrationId,
     required this.appliedAt,
   });
   @override
@@ -4057,6 +4386,15 @@ class MigrationLedgerData extends DataClass
     map['id'] = Variable<int>(id);
     map['schema_name'] = Variable<String>(schemaName);
     map['schema_version'] = Variable<int>(schemaVersion);
+    if (!nullToAbsent || fromVersion != null) {
+      map['from_version'] = Variable<int>(fromVersion);
+    }
+    if (!nullToAbsent || toVersion != null) {
+      map['to_version'] = Variable<int>(toVersion);
+    }
+    if (!nullToAbsent || migrationId != null) {
+      map['migration_id'] = Variable<String>(migrationId);
+    }
     map['applied_at'] = Variable<DateTime>(appliedAt);
     return map;
   }
@@ -4066,6 +4404,15 @@ class MigrationLedgerData extends DataClass
       id: Value(id),
       schemaName: Value(schemaName),
       schemaVersion: Value(schemaVersion),
+      fromVersion: fromVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fromVersion),
+      toVersion: toVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(toVersion),
+      migrationId: migrationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(migrationId),
       appliedAt: Value(appliedAt),
     );
   }
@@ -4079,6 +4426,9 @@ class MigrationLedgerData extends DataClass
       id: serializer.fromJson<int>(json['id']),
       schemaName: serializer.fromJson<String>(json['schemaName']),
       schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      fromVersion: serializer.fromJson<int?>(json['fromVersion']),
+      toVersion: serializer.fromJson<int?>(json['toVersion']),
+      migrationId: serializer.fromJson<String?>(json['migrationId']),
       appliedAt: serializer.fromJson<DateTime>(json['appliedAt']),
     );
   }
@@ -4089,6 +4439,9 @@ class MigrationLedgerData extends DataClass
       'id': serializer.toJson<int>(id),
       'schemaName': serializer.toJson<String>(schemaName),
       'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'fromVersion': serializer.toJson<int?>(fromVersion),
+      'toVersion': serializer.toJson<int?>(toVersion),
+      'migrationId': serializer.toJson<String?>(migrationId),
       'appliedAt': serializer.toJson<DateTime>(appliedAt),
     };
   }
@@ -4097,11 +4450,17 @@ class MigrationLedgerData extends DataClass
     int? id,
     String? schemaName,
     int? schemaVersion,
+    Value<int?> fromVersion = const Value.absent(),
+    Value<int?> toVersion = const Value.absent(),
+    Value<String?> migrationId = const Value.absent(),
     DateTime? appliedAt,
   }) => MigrationLedgerData(
     id: id ?? this.id,
     schemaName: schemaName ?? this.schemaName,
     schemaVersion: schemaVersion ?? this.schemaVersion,
+    fromVersion: fromVersion.present ? fromVersion.value : this.fromVersion,
+    toVersion: toVersion.present ? toVersion.value : this.toVersion,
+    migrationId: migrationId.present ? migrationId.value : this.migrationId,
     appliedAt: appliedAt ?? this.appliedAt,
   );
   MigrationLedgerData copyWithCompanion(MigrationLedgerCompanion data) {
@@ -4113,6 +4472,13 @@ class MigrationLedgerData extends DataClass
       schemaVersion: data.schemaVersion.present
           ? data.schemaVersion.value
           : this.schemaVersion,
+      fromVersion: data.fromVersion.present
+          ? data.fromVersion.value
+          : this.fromVersion,
+      toVersion: data.toVersion.present ? data.toVersion.value : this.toVersion,
+      migrationId: data.migrationId.present
+          ? data.migrationId.value
+          : this.migrationId,
       appliedAt: data.appliedAt.present ? data.appliedAt.value : this.appliedAt,
     );
   }
@@ -4123,13 +4489,24 @@ class MigrationLedgerData extends DataClass
           ..write('id: $id, ')
           ..write('schemaName: $schemaName, ')
           ..write('schemaVersion: $schemaVersion, ')
+          ..write('fromVersion: $fromVersion, ')
+          ..write('toVersion: $toVersion, ')
+          ..write('migrationId: $migrationId, ')
           ..write('appliedAt: $appliedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, schemaName, schemaVersion, appliedAt);
+  int get hashCode => Object.hash(
+    id,
+    schemaName,
+    schemaVersion,
+    fromVersion,
+    toVersion,
+    migrationId,
+    appliedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4137,6 +4514,9 @@ class MigrationLedgerData extends DataClass
           other.id == this.id &&
           other.schemaName == this.schemaName &&
           other.schemaVersion == this.schemaVersion &&
+          other.fromVersion == this.fromVersion &&
+          other.toVersion == this.toVersion &&
+          other.migrationId == this.migrationId &&
           other.appliedAt == this.appliedAt);
 }
 
@@ -4144,17 +4524,26 @@ class MigrationLedgerCompanion extends UpdateCompanion<MigrationLedgerData> {
   final Value<int> id;
   final Value<String> schemaName;
   final Value<int> schemaVersion;
+  final Value<int?> fromVersion;
+  final Value<int?> toVersion;
+  final Value<String?> migrationId;
   final Value<DateTime> appliedAt;
   const MigrationLedgerCompanion({
     this.id = const Value.absent(),
     this.schemaName = const Value.absent(),
     this.schemaVersion = const Value.absent(),
+    this.fromVersion = const Value.absent(),
+    this.toVersion = const Value.absent(),
+    this.migrationId = const Value.absent(),
     this.appliedAt = const Value.absent(),
   });
   MigrationLedgerCompanion.insert({
     this.id = const Value.absent(),
     required String schemaName,
     required int schemaVersion,
+    this.fromVersion = const Value.absent(),
+    this.toVersion = const Value.absent(),
+    this.migrationId = const Value.absent(),
     required DateTime appliedAt,
   }) : schemaName = Value(schemaName),
        schemaVersion = Value(schemaVersion),
@@ -4163,12 +4552,18 @@ class MigrationLedgerCompanion extends UpdateCompanion<MigrationLedgerData> {
     Expression<int>? id,
     Expression<String>? schemaName,
     Expression<int>? schemaVersion,
+    Expression<int>? fromVersion,
+    Expression<int>? toVersion,
+    Expression<String>? migrationId,
     Expression<DateTime>? appliedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (schemaName != null) 'schema_name': schemaName,
       if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (fromVersion != null) 'from_version': fromVersion,
+      if (toVersion != null) 'to_version': toVersion,
+      if (migrationId != null) 'migration_id': migrationId,
       if (appliedAt != null) 'applied_at': appliedAt,
     });
   }
@@ -4177,12 +4572,18 @@ class MigrationLedgerCompanion extends UpdateCompanion<MigrationLedgerData> {
     Value<int>? id,
     Value<String>? schemaName,
     Value<int>? schemaVersion,
+    Value<int?>? fromVersion,
+    Value<int?>? toVersion,
+    Value<String?>? migrationId,
     Value<DateTime>? appliedAt,
   }) {
     return MigrationLedgerCompanion(
       id: id ?? this.id,
       schemaName: schemaName ?? this.schemaName,
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      fromVersion: fromVersion ?? this.fromVersion,
+      toVersion: toVersion ?? this.toVersion,
+      migrationId: migrationId ?? this.migrationId,
       appliedAt: appliedAt ?? this.appliedAt,
     );
   }
@@ -4199,6 +4600,15 @@ class MigrationLedgerCompanion extends UpdateCompanion<MigrationLedgerData> {
     if (schemaVersion.present) {
       map['schema_version'] = Variable<int>(schemaVersion.value);
     }
+    if (fromVersion.present) {
+      map['from_version'] = Variable<int>(fromVersion.value);
+    }
+    if (toVersion.present) {
+      map['to_version'] = Variable<int>(toVersion.value);
+    }
+    if (migrationId.present) {
+      map['migration_id'] = Variable<String>(migrationId.value);
+    }
     if (appliedAt.present) {
       map['applied_at'] = Variable<DateTime>(appliedAt.value);
     }
@@ -4211,6 +4621,9 @@ class MigrationLedgerCompanion extends UpdateCompanion<MigrationLedgerData> {
           ..write('id: $id, ')
           ..write('schemaName: $schemaName, ')
           ..write('schemaVersion: $schemaVersion, ')
+          ..write('fromVersion: $fromVersion, ')
+          ..write('toVersion: $toVersion, ')
+          ..write('migrationId: $migrationId, ')
           ..write('appliedAt: $appliedAt')
           ..write(')'))
         .toString();
@@ -5411,7 +5824,11 @@ typedef $$ProductsTableCreateCompanionBuilder =
     ProductsCompanion Function({
       required String id,
       required String accountId,
+      Value<String?> userProductCode,
+      Value<String?> normalizedUserProductCode,
       required int normalizationVersion,
+      Value<String?> displayName,
+      Value<String?> displayBrand,
       required String normalizedName,
       required String normalizedBrand,
       required String mode,
@@ -5426,7 +5843,11 @@ typedef $$ProductsTableUpdateCompanionBuilder =
     ProductsCompanion Function({
       Value<String> id,
       Value<String> accountId,
+      Value<String?> userProductCode,
+      Value<String?> normalizedUserProductCode,
       Value<int> normalizationVersion,
+      Value<String?> displayName,
+      Value<String?> displayBrand,
       Value<String> normalizedName,
       Value<String> normalizedBrand,
       Value<String> mode,
@@ -5492,8 +5913,28 @@ class $$ProductsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get userProductCode => $composableBuilder(
+    column: $table.userProductCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get normalizedUserProductCode => $composableBuilder(
+    column: $table.normalizedUserProductCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get normalizationVersion => $composableBuilder(
     column: $table.normalizationVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayBrand => $composableBuilder(
+    column: $table.displayBrand,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5600,8 +6041,28 @@ class $$ProductsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userProductCode => $composableBuilder(
+    column: $table.userProductCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get normalizedUserProductCode => $composableBuilder(
+    column: $table.normalizedUserProductCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get normalizationVersion => $composableBuilder(
     column: $table.normalizationVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayBrand => $composableBuilder(
+    column: $table.displayBrand,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5681,8 +6142,28 @@ class $$ProductsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get userProductCode => $composableBuilder(
+    column: $table.userProductCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get normalizedUserProductCode => $composableBuilder(
+    column: $table.normalizedUserProductCode,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get normalizationVersion => $composableBuilder(
     column: $table.normalizationVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get displayBrand => $composableBuilder(
+    column: $table.displayBrand,
     builder: (column) => column,
   );
 
@@ -5801,7 +6282,11 @@ class $$ProductsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> accountId = const Value.absent(),
+                Value<String?> userProductCode = const Value.absent(),
+                Value<String?> normalizedUserProductCode = const Value.absent(),
                 Value<int> normalizationVersion = const Value.absent(),
+                Value<String?> displayName = const Value.absent(),
+                Value<String?> displayBrand = const Value.absent(),
                 Value<String> normalizedName = const Value.absent(),
                 Value<String> normalizedBrand = const Value.absent(),
                 Value<String> mode = const Value.absent(),
@@ -5814,7 +6299,11 @@ class $$ProductsTableTableManager
               }) => ProductsCompanion(
                 id: id,
                 accountId: accountId,
+                userProductCode: userProductCode,
+                normalizedUserProductCode: normalizedUserProductCode,
                 normalizationVersion: normalizationVersion,
+                displayName: displayName,
+                displayBrand: displayBrand,
                 normalizedName: normalizedName,
                 normalizedBrand: normalizedBrand,
                 mode: mode,
@@ -5829,7 +6318,11 @@ class $$ProductsTableTableManager
               ({
                 required String id,
                 required String accountId,
+                Value<String?> userProductCode = const Value.absent(),
+                Value<String?> normalizedUserProductCode = const Value.absent(),
                 required int normalizationVersion,
+                Value<String?> displayName = const Value.absent(),
+                Value<String?> displayBrand = const Value.absent(),
                 required String normalizedName,
                 required String normalizedBrand,
                 required String mode,
@@ -5842,7 +6335,11 @@ class $$ProductsTableTableManager
               }) => ProductsCompanion.insert(
                 id: id,
                 accountId: accountId,
+                userProductCode: userProductCode,
+                normalizedUserProductCode: normalizedUserProductCode,
                 normalizationVersion: normalizationVersion,
+                displayName: displayName,
+                displayBrand: displayBrand,
                 normalizedName: normalizedName,
                 normalizedBrand: normalizedBrand,
                 mode: mode,
@@ -8562,6 +9059,9 @@ typedef $$MigrationLedgerTableCreateCompanionBuilder =
       Value<int> id,
       required String schemaName,
       required int schemaVersion,
+      Value<int?> fromVersion,
+      Value<int?> toVersion,
+      Value<String?> migrationId,
       required DateTime appliedAt,
     });
 typedef $$MigrationLedgerTableUpdateCompanionBuilder =
@@ -8569,6 +9069,9 @@ typedef $$MigrationLedgerTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> schemaName,
       Value<int> schemaVersion,
+      Value<int?> fromVersion,
+      Value<int?> toVersion,
+      Value<String?> migrationId,
       Value<DateTime> appliedAt,
     });
 
@@ -8593,6 +9096,21 @@ class $$MigrationLedgerTableFilterComposer
 
   ColumnFilters<int> get schemaVersion => $composableBuilder(
     column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fromVersion => $composableBuilder(
+    column: $table.fromVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get toVersion => $composableBuilder(
+    column: $table.toVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get migrationId => $composableBuilder(
+    column: $table.migrationId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8626,6 +9144,21 @@ class $$MigrationLedgerTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get fromVersion => $composableBuilder(
+    column: $table.fromVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get toVersion => $composableBuilder(
+    column: $table.toVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get migrationId => $composableBuilder(
+    column: $table.migrationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get appliedAt => $composableBuilder(
     column: $table.appliedAt,
     builder: (column) => ColumnOrderings(column),
@@ -8651,6 +9184,19 @@ class $$MigrationLedgerTableAnnotationComposer
 
   GeneratedColumn<int> get schemaVersion => $composableBuilder(
     column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get fromVersion => $composableBuilder(
+    column: $table.fromVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get toVersion =>
+      $composableBuilder(column: $table.toVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get migrationId => $composableBuilder(
+    column: $table.migrationId,
     builder: (column) => column,
   );
 
@@ -8698,11 +9244,17 @@ class $$MigrationLedgerTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> schemaName = const Value.absent(),
                 Value<int> schemaVersion = const Value.absent(),
+                Value<int?> fromVersion = const Value.absent(),
+                Value<int?> toVersion = const Value.absent(),
+                Value<String?> migrationId = const Value.absent(),
                 Value<DateTime> appliedAt = const Value.absent(),
               }) => MigrationLedgerCompanion(
                 id: id,
                 schemaName: schemaName,
                 schemaVersion: schemaVersion,
+                fromVersion: fromVersion,
+                toVersion: toVersion,
+                migrationId: migrationId,
                 appliedAt: appliedAt,
               ),
           createCompanionCallback:
@@ -8710,11 +9262,17 @@ class $$MigrationLedgerTableTableManager
                 Value<int> id = const Value.absent(),
                 required String schemaName,
                 required int schemaVersion,
+                Value<int?> fromVersion = const Value.absent(),
+                Value<int?> toVersion = const Value.absent(),
+                Value<String?> migrationId = const Value.absent(),
                 required DateTime appliedAt,
               }) => MigrationLedgerCompanion.insert(
                 id: id,
                 schemaName: schemaName,
                 schemaVersion: schemaVersion,
+                fromVersion: fromVersion,
+                toVersion: toVersion,
+                migrationId: migrationId,
                 appliedAt: appliedAt,
               ),
           withReferenceMapper: (p0) => p0

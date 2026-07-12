@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://markei.local/contracts/shared_beta/v2/purchase_aggregate.schema.json",
+  "type": "object",
+  "required": ["version", "accountId", "deviceId", "storeName", "occurrenceTime", "currencyCode", "oneItemPurchase", "multiItemPurchase", "invalidItemRollback", "closeReopen"],
+  "properties": {
+    "version": { "const": 2 },
+    "accountId": { "type": "string", "minLength": 1 },
+    "deviceId": { "type": "string", "minLength": 1 },
+    "storeName": { "type": "string", "minLength": 1 },
+    "occurrenceTime": { "type": "string", "format": "date-time" },
+    "currencyCode": { "type": "string", "minLength": 3, "maxLength": 3 },
+    "oneItemPurchase": { "$ref": "#/$defs/purchaseExpectation" },
+    "multiItemPurchase": { "$ref": "#/$defs/purchaseExpectation" },
+    "invalidItemRollback": {
+      "type": "object",
+      "required": ["invalidPackageCount", "expectedPurchasesAfterFailure", "expectedPurchaseItemsAfterFailure", "expectedPendingEventsAfterFailure"],
+      "properties": {
+        "invalidPackageCount": { "const": 0 },
+        "expectedPurchasesAfterFailure": { "const": 0 },
+        "expectedPurchaseItemsAfterFailure": { "const": 0 },
+        "expectedPendingEventsAfterFailure": { "const": 0 }
+      },
+      "additionalProperties": false
+    },
+    "closeReopen": {
+      "type": "object",
+      "required": ["expectedPurchasesAfterReopen", "expectedPendingEventsAfterReopen"],
+      "properties": {
+        "expectedPurchasesAfterReopen": { "const": 1 },
+        "expectedPendingEventsAfterReopen": { "const": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "purchaseExpectation": {
+      "type": "object",
+      "required": ["expectedItems", "expectedTotalMinorUnits"],
+      "properties": {
+        "expectedItems": { "type": "integer", "minimum": 1 },
+        "expectedTotalMinorUnits": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

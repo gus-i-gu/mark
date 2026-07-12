@@ -24,10 +24,14 @@ void main() {
 
     expect(product.normalizedName, expected['normalizedName']);
     expect(product.normalizedBrand, expected['normalizedBrand']);
+    expect(
+      product.userProductCode.normalizedKey,
+      expected['normalizedUserProductCode'],
+    );
     expect(product.packageQuantity?.decimalText, expected['packageAmount']);
     expect(product.identityKey, expected['identityKey']);
     expect(equivalentProduct.identityKey, equivalent['expectedIdentityKey']);
-    expect(equivalentProduct.id.value, product.id.value);
+    expect(equivalentProduct.id.value == product.id.value, isFalse);
   });
 
   test('normalizes bulk identity without package amount', () {
@@ -78,6 +82,7 @@ void main() {
 
 ProductDraft _productDraft(Map<String, Object?> input) {
   return ProductDraft(
+    userCode: (input['userCode'] as String?) ?? input['name']! as String,
     name: input['name']! as String,
     brand: input['brand']! as String,
     mode: _mode(input['mode']! as String),

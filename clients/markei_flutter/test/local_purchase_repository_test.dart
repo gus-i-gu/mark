@@ -94,7 +94,7 @@ void main() {
     final fixture = loadFixture('sync_event.json');
 
     expect(fixture['eventType'], 'purchase.registered');
-    expect(fixture['payloadVersion'], 1);
+    expect(fixture['payloadVersion'], 2);
     expect(fixture['deviceSequence'], 1);
     expect(fixture['queueState'], 'pending');
   });
@@ -116,13 +116,16 @@ RegisterPurchaseCommand _command(
 
 PurchaseItemDraft _riceItem({int packageCount = 1}) {
   return PurchaseItemDraft(
-    productDraft: const ProductDraft(
-      name: 'Arroz Branco',
-      brand: 'Marca A',
-      mode: ProductMode.packaged,
-      measurementKind: MeasurementKind.mass,
-      packageAmount: '1',
-      packageUnit: 'kg',
+    productReference: const NewProductReference(
+      ProductDraft(
+        userCode: 'ARROZ-001',
+        name: 'Arroz Branco',
+        brand: 'Marca A',
+        mode: ProductMode.packaged,
+        measurementKind: MeasurementKind.mass,
+        packageAmount: '1',
+        packageUnit: 'kg',
+      ),
     ),
     packageCount: packageCount,
     purchasedQuantity: NormalizedQuantity.fromDecimalString(
@@ -136,11 +139,14 @@ PurchaseItemDraft _riceItem({int packageCount = 1}) {
 
 PurchaseItemDraft _bananaItem() {
   return PurchaseItemDraft(
-    productDraft: const ProductDraft(
-      name: 'Banana Prata',
-      brand: '',
-      mode: ProductMode.bulk,
-      measurementKind: MeasurementKind.mass,
+    productReference: const NewProductReference(
+      ProductDraft(
+        userCode: 'BANANA-001',
+        name: 'Banana Prata',
+        brand: '',
+        mode: ProductMode.bulk,
+        measurementKind: MeasurementKind.mass,
+      ),
     ),
     packageCount: 1,
     purchasedQuantity: NormalizedQuantity.fromDecimalString(

@@ -6,8 +6,10 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/register_purchase.dart';
 import '../../domain/catalogue/product.dart' as domain;
+import '../../domain/catalogue/product_code.dart' as domain_code;
 import '../../domain/purchase/purchase.dart' as domain_purchase;
 import '../../domain/shared/ids.dart';
+import '../../domain/shared/quantity.dart' as domain_quantity;
 import '../../domain/store/store.dart' as domain_store;
 import '../../domain/sync/sync_event.dart' as domain_sync;
 import 'local_database.dart';
@@ -49,13 +51,14 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
           );
       await _db
           .into(_db.devices)
-          .insertOnConflictUpdate(
+          .insert(
             DevicesCompanion.insert(
               id: command.deviceId.value,
               accountId: command.accountId.value,
               nextSequence: 1,
               createdAt: now,
             ),
+            mode: InsertMode.insertOrIgnore,
           );
 
       final store = await _resolveStore(command, now);
@@ -63,11 +66,7 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
       final itemModels = <domain_purchase.PurchaseItem>[];
 
       for (final draft in command.items) {
-        final product = domain.normalizeProductDraft(
-          accountId: command.accountId,
-          draft: draft.productDraft,
-        );
-        await _upsertProduct(product, now);
+        final product = await _resolveProduct(command.accountId, draft, now);
         final item = domain_purchase.PurchaseItem(
           id: PurchaseItemId(_uuid.v4()),
           purchaseId: purchaseId,
@@ -128,7 +127,7 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
         deviceId: command.deviceId,
         deviceSequence: sequence,
         eventType: 'purchase.registered',
-        payloadVersion: 1,
+        payloadVersion: 2,
         occurrenceTime: command.occurrenceTime,
         purchase: purchase,
       );
@@ -209,26 +208,120 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
     return store;
   }
 
-  Future<void> _upsertProduct(domain.Product product, DateTime now) async {
-    await _db
-        .into(_db.products)
-        .insertOnConflictUpdate(
-          ProductsCompanion.insert(
-            id: product.id.value,
-            accountId: product.accountId.value,
-            normalizationVersion: product.normalizationVersion,
-            normalizedName: product.normalizedName,
-            normalizedBrand: product.normalizedBrand,
-            mode: product.mode.name.toUpperCase(),
-            measurementKind: product.measurementKind.name.toUpperCase(),
-            packageAmount: Value(product.packageQuantity?.decimalText),
-            packageUnit: Value(
-              product.packageQuantity?.unit.name.toUpperCase(),
-            ),
-            exactIdentityKey: product.identityKey,
-            createdAt: now,
-          ),
+  Future<domain.Product> _resolveProduct(
+    AccountId accountId,
+    domain_purchase.PurchaseItemDraft draft,
+    DateTime now,
+  ) async {
+    switch (draft.productReference) {
+      case domain_purchase.ExistingProductReference(:final productId):
+        final existing =
+            await (_db.select(_db.products)..where(
+                  (table) =>
+                      table.accountId.equals(accountId.value) &
+                      table.id.equals(productId.value),
+                ))
+                .getSingleOrNull();
+        if (existing == null) {
+          throw ArgumentError('Existing Product does not belong to account.');
+        }
+        return _productFromRow(existing);
+      case domain_purchase.NewProductReference(:final productDraft):
+        final product = domain.createProductFromDraft(
+          accountId: accountId,
+          draft: productDraft,
+          uuid: _uuid,
         );
+        final exact =
+            await (_db.select(_db.products)..where(
+                  (table) =>
+                      table.accountId.equals(accountId.value) &
+                      table.exactIdentityKey.equals(product.identityKey),
+                ))
+                .getSingleOrNull();
+        if (exact != null) {
+          return _productFromRow(exact);
+        }
+        final code =
+            await (_db.select(_db.products)..where(
+                  (table) =>
+                      table.accountId.equals(accountId.value) &
+                      table.normalizedUserProductCode.equals(
+                        product.userProductCode.normalizedKey,
+                      ),
+                ))
+                .getSingleOrNull();
+        if (code != null) {
+          throw ArgumentError('Product code already exists in this account.');
+        }
+        await _db
+            .into(_db.products)
+            .insert(
+              ProductsCompanion.insert(
+                id: product.id.value,
+                accountId: product.accountId.value,
+                userProductCode: Value(product.userProductCode.displayValue),
+                normalizedUserProductCode: Value(
+                  product.userProductCode.normalizedKey,
+                ),
+                normalizationVersion: product.normalizationVersion,
+                displayName: Value(product.displayName),
+                displayBrand: Value(product.displayBrand),
+                normalizedName: product.normalizedName,
+                normalizedBrand: product.normalizedBrand,
+                mode: product.mode.name.toUpperCase(),
+                measurementKind: product.measurementKind.name.toUpperCase(),
+                packageAmount: Value(product.packageQuantity?.decimalText),
+                packageUnit: Value(
+                  product.packageQuantity?.unit.name.toUpperCase(),
+                ),
+                exactIdentityKey: product.identityKey,
+                createdAt: now,
+              ),
+            );
+        return product;
+    }
+  }
+
+  domain.Product _productFromRow(Product row) {
+    final mode = row.mode == 'BULK'
+        ? domain.ProductMode.bulk
+        : domain.ProductMode.packaged;
+    final kind = switch (row.measurementKind) {
+      'MASS' => domain_quantity.MeasurementKind.mass,
+      'VOLUME' => domain_quantity.MeasurementKind.volume,
+      'COUNT' => domain_quantity.MeasurementKind.count,
+      _ => throw StateError('Unknown measurement kind ${row.measurementKind}.'),
+    };
+    final unit = switch (row.packageUnit) {
+      'KG' => domain_quantity.CanonicalUnit.kg,
+      'L' => domain_quantity.CanonicalUnit.l,
+      'UNIT' => domain_quantity.CanonicalUnit.unit,
+      null => null,
+      _ => throw StateError('Unknown package unit ${row.packageUnit}.'),
+    };
+    return domain.Product(
+      id: ProductId(row.id),
+      accountId: AccountId(row.accountId),
+      userProductCode: domain_code.ProductCode(
+        displayValue: row.userProductCode ?? 'legacy',
+        normalizedKey: row.normalizedUserProductCode ?? 'legacy',
+      ),
+      normalizationVersion: row.normalizationVersion,
+      displayName: row.displayName ?? row.normalizedName,
+      displayBrand: row.displayBrand ?? row.normalizedBrand,
+      normalizedName: row.normalizedName,
+      normalizedBrand: row.normalizedBrand,
+      mode: mode,
+      measurementKind: kind,
+      packageQuantity: row.packageAmount == null || unit == null
+          ? null
+          : domain_quantity.NormalizedQuantity.fromDecimalString(
+              kind: kind,
+              unit: unit,
+              decimal: row.packageAmount!,
+            ),
+    );
   }
 
   Future<int> _allocateDeviceSequence(DeviceId deviceId) async {
