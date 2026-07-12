@@ -568,3 +568,222 @@ D/E/F
 ```
 
 The next cycle step remains documentation/specification work. Main should activate D/E/F only when the human requests an empirical prototype and one bounded uncertainty has been selected.
+
+
+---
+
+# 14. Shared Beta Planning Activation
+
+## 14.1 Human/Main direction
+
+The human developer has activated planning for an actual shared Markei beta spanning desktop and mobile.
+
+Favored product direction:
+
+```text
+one shared cross-platform application
++
+local-first persistence on every installation
++
+verified-email user account
++
+small custom synchronization API
++
+Neon Postgres shared synchronization store
++
+append-only first synchronization slice
+```
+
+This direction supersedes the earlier assumption that backend and synchronization remain wholly outside near-term planning. It does not authorize implementation yet.
+
+Approach C remains the favored client direction. The cloud boundary is now activated as a planning concern because synchronized desktop/mobile state is an explicit human requirement.
+
+## 14.2 Responsibility boundary
+
+```text
+Email authentication
+    proves account access and resolves an immutable account ID
+
+Local database
+    supports offline use and durable device-local state
+
+Synchronization API
+    owns upload/download protocol, validation, idempotency,
+    authorization, cursors, and protocol versions
+
+Neon Postgres
+    stores shared account-scoped synchronization facts
+
+Shared client
+    owns responsive desktop/mobile presentation, local use cases,
+    local projections, pending-event queue, and sync application
+```
+
+Clients must not embed a privileged Neon connection string or connect directly with shared database credentials.
+
+## 14.3 Reduced first synchronized slice
+
+The first synchronized beta should support only:
+
+```text
+verified email registration/sign-in
+→ immutable account UUID
+→ per-installation device UUID
+→ local database initialization
+→ offline purchase registration
+→ append-only local purchase event
+→ authenticated event upload
+→ idempotent server acceptance
+→ server cursor assignment
+→ second device downloads unseen events
+→ deterministic local projection rebuild
+→ close/reopen persistence
+```
+
+Explicitly excluded from the first slice:
+
+- purchase editing;
+- purchase deletion;
+- concurrent product renaming;
+- household sharing;
+- multi-account roles;
+- real-time push;
+- background synchronization;
+- conflict-resolution UI;
+- desktop database-file transfer;
+- complete settings synchronization;
+- broad schema redesign;
+- app-store publication;
+- production scaling claims.
+
+## 14.4 Initial synchronization event requirements
+
+A planning candidate event should contain at least:
+
+```text
+event_id
+account_id
+device_id
+device_sequence
+entity_type
+entity_id
+operation_type
+payload
+client_created_at
+server_received_at or server sequence
+schema_version
+```
+
+Timestamps alone are not accepted as ordering or duplicate protection.
+
+Required properties:
+
+- globally unique event identity;
+- per-device ordering;
+- safe retry through idempotency;
+- server-owned incremental cursor;
+- authenticated account ownership;
+- deterministic application into local state;
+- schema/protocol versioning;
+- transactional local application.
+
+The authoritative first synchronized facts should be purchase events and necessary identity/reference facts. Calculated projections such as average duration, expected purchase date, and Storage/Shortage/Market classification should be rebuilt deterministically where possible rather than synchronized as competing mutable values.
+
+## 14.5 Custom API preference
+
+The custom synchronization API is favored over direct client table access because it provides one owner for:
+
+- authentication-token validation;
+- account authorization;
+- event validation;
+- idempotent append;
+- batch upload;
+- cursor-based download;
+- transaction semantics;
+- protocol versions;
+- observability;
+- future conflict policy.
+
+Neon is favored as managed Postgres infrastructure. It reduces database operations but does not define synchronization semantics.
+
+Authentication provider selection remains open. Verified email is a product requirement; Neon Auth may be evaluated, but its current Beta status prevents automatic acceptance.
+
+## 14.6 Planning phases
+
+```text
+Phase 1 — Shared local application specification
+    responsive desktop/mobile client boundary
+    local schema and lifecycle
+    shared contracts and deterministic fixtures
+    no cloud dependency required for core workflow
+
+Phase 2 — Synchronization protocol specification
+    identities
+    append-only events
+    idempotency
+    per-device order
+    server cursor
+    upload/download batches
+    failure and retry behavior
+
+Phase 3 — Small API + Neon prototype
+    verified account
+    authenticated append
+    cursor download
+    two-device semantic parity
+    offline/reconnect lifecycle
+
+Phase 4 — Shared beta validation
+    desktop and mobile builds
+    local persistence
+    cross-device propagation
+    retry/duplicate safety
+    ordinary Cycle 06 desktop data protected
+    bounded security and operational evidence
+```
+
+## 14.7 Required domain planning before D/E/F
+
+Operational should plan:
+
+- local development and hosted environments;
+- Neon, API runtime, auth, secrets, migrations, logs, and test prerequisites;
+- two-device sync validation;
+- offline/reconnect, retry, duplicate, and cursor gates;
+- minimum deployment and rollback evidence.
+
+Didactic should plan:
+
+- authentication versus authorization;
+- local persistence versus synchronization;
+- event identity, idempotency, ordering, cursors, eventual consistency;
+- authoritative facts versus derived projections;
+- API and managed-database responsibilities;
+- learner dependency order.
+
+Design should plan:
+
+- shared client boundary;
+- local store and pending-event queue;
+- immutable account/device/entity/event identities;
+- append-only event contract;
+- custom API endpoints and ownership;
+- Neon schema responsibilities and row ownership;
+- projection rebuild and transaction boundaries;
+- explicit deferrals and migration path from the accepted PySide6 beta.
+
+Main should reconcile A/B/C into one shared-beta architecture plan before authorizing D/E/F.
+
+## 14.8 Current authorization state
+
+```text
+shared synchronized beta planning: active
+human product preference: recorded
+architecture: not yet accepted
+framework: not selected
+auth provider: not selected
+API runtime/host: not selected
+Neon project/schema: not created
+implementation: not authorized
+D/E/F: postponed pending domain planning
+```
