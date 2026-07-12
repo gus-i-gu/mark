@@ -591,3 +591,8 @@ Transition is additive. The accepted PySide6 beta and original database remain p
 Deferred: purchase editing/deletion, aliases/merges, global catalogue, household sharing, product-family/successor UI, complex conflicts, realtime/background sync, broad settings synchronization, app-store/public release, permanent repository split, and PySide6 retirement.
 
 Still empirical or open: Flutter persistence and secure-storage plugins; state management/navigation; auth provider; API framework/runtime/host; Postgres migration tool; canonical JSON toolchain; exact decimal scale/range; fractional COUNT; currency metadata; normalization migration; legacy ambiguity policy; RLS; paging limits; queue-corruption recovery; iOS/macOS evidence; and parity threshold.
+
+---
+
+<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
