@@ -1,6 +1,6 @@
 # 06_SESSION_SCHEME.md
 
-> Version: Cycle 07 Sprint 03 forward checkpoint 0.3
+> Version: Cycle 07 Sprint 04 forward checkpoint 0.4
 > Status: Active Forward Checkpoint
 > Persistence Class: Forward Checkpoint
 > Knowledge Class: Main / Global
@@ -10,8 +10,8 @@
 > Baseline commit: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
 > Current-state source: `00_PROJECT_STATE.md`
 > Historical source: `05_SESSION_LOG.md`
-> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` sections 17–18
-> Cycle target: begin the additive Flutter/Dart transition and fresh synchronized data-model implementation without destabilizing the accepted PySide6 beta
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` sections 19–20
+> Cycle target: complete and execute the first local shared Flutter client workflow without destabilizing the accepted PySide6 beta
 
 ---
 
@@ -560,3 +560,219 @@ Sprint 03 local success ≠ Cycle 07 closure
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+# Cycle 07 Sprint 04 Forward Checkpoint
+
+> This section supersedes earlier Sprint 03 forward planning below the latest temporal boundary.
+
+## 1. Entry state
+
+Sprint 03 Unit 01 and its permanent-domain reconciliation are complete.
+
+```text
+Flutter/Dart local foundation: implemented and unit-tested
+Drift fresh schema: implemented
+Purchase aggregate transaction: implemented
+local event/pending queue: implemented
+Flutter UI: foundation label only
+Windows/Android/iOS runtime: unvalidated
+TypeScript API/Postgres/Neon: absent
+Sprint 04 D/E/F: not yet prepared
+```
+
+## 2. Sprint 04 milestone
+
+> Correct the local foundation defects, harden its language-neutral contracts, implement the first user-visible multi-item Purchase workflow, and validate the shared Flutter client on Windows while preserving Android as a required target or precisely evidenced host blocker.
+
+Sprint 04 is not a cloud-sync sprint.
+
+## 3. Required implementation units
+
+### Unit A — Sequence and identity correctness
+
+Required outcomes:
+
+- Device creation does not overwrite an existing sequence.
+- Purchase registrations allocate durable monotonic sequences.
+- Repeated registration proves `1, 2, 3`.
+- Account/device/sequence uniqueness is explicit.
+- Allocation rollback and close/reopen are tested.
+- Product display name and brand remain available separately from normalized identity.
+- Unicode normalization policy covers Portuguese accented text.
+- Normalization version is explicit and migration-sensitive.
+- Fixed Product-ID fixtures establish deterministic output.
+
+Open human decision:
+
+```text
+Product ID semantics:
+A. standards-defined deterministic UUID
+B. opaque stable deterministic identifier
+```
+
+Main recommends A only if Dart and future TypeScript libraries reproduce identical standards-compliant fixtures; otherwise use B and avoid the UUID label.
+
+### Unit B — Contract hardening
+
+Required outcomes:
+
+- preserve readable JSON examples;
+- expand complete valid/invalid catalogue, Purchase, and event cases;
+- specify types, ranges, nullability, enums, timestamps, decimals, unknown-field policy, and version compatibility;
+- add an executable structural validator;
+- defer TypeScript parity execution to the protocol unit unless a tiny validator-only check is economical.
+
+Preferred planning choice: JSON Schema plus readable example documents.
+
+Open human decision: approve JSON Schema or name another schema mechanism.
+
+### Unit C — Local Flutter Purchase workflow
+
+Required user-visible flow:
+
+```text
+launch Markei
+→ initialize fresh app-private Drift database
+→ begin Purchase
+→ select/create Store
+→ select/create Product
+→ stage one or more Purchase Items
+→ review totals
+→ register atomically
+→ show success
+→ show local Purchase history/projection
+→ close/reopen
+→ verify persisted result
+```
+
+Boundaries:
+
+- Product similarity warns only;
+- Store exact-name behavior may remain bounded and explicitly described;
+- no editing/deletion, merge/alias, login, network, sync, or legacy import;
+- widgets call application boundaries and own neither SQL nor durable transactions.
+
+### Unit D — Runtime and regression evidence
+
+Required commands/evidence:
+
+```text
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+flutter build windows
+flutter run -d windows
+python -m unittest discover -s tests
+```
+
+Android evidence when tooling is available:
+
+```text
+flutter doctor -v
+flutter devices
+flutter build apk --debug
+flutter run -d <device-id>
+```
+
+Record database path, termination/relaunch, persistence, error handling, and working-tree scope.
+
+iOS remains unvalidated until macOS/Xcode.
+
+## 4. Human/manual prerequisites
+
+Before Windows execution:
+
+1. install or modify Visual Studio 2022 with **Desktop development with C++**;
+2. include MSVC build tools, Windows SDK, and CMake tools selected by that workload;
+3. restart the terminal/VS Code;
+4. run `flutter doctor -v`;
+5. require the Visual Studio Windows-development line to pass.
+
+Before Android execution:
+
+1. install Android Studio or an equivalent supported Android SDK setup;
+2. install SDK platform/build tools, command-line tools, and emulator;
+3. create/start an emulator or connect a developer-enabled test device;
+4. accept required Android licenses through the Flutter/Android tooling;
+5. run `flutter doctor -v` and `flutter devices`.
+
+These are host changes and require human approval. Codex may diagnose them but must not install system tooling without explicit approval.
+
+## 5. Current run command
+
+From the repository root:
+
+```powershell
+cd clients/markei_flutter
+flutter pub get
+flutter run -d windows
+```
+
+This is the Flutter equivalent of the earlier `python main.py` entry.
+
+Current expected visual result before Sprint 04 implementation:
+
+```text
+Markei shared client foundation
+```
+
+The current screen is a scaffold confirmation, not a working Purchase interface.
+
+If Windows tooling remains unavailable, validate the current source with:
+
+```powershell
+cd clients/markei_flutter
+flutter analyze
+flutter test
+```
+
+## 6. Prohibited Sprint 04 expansion
+
+Do not combine this milestone with:
+
+- production authentication or authorization;
+- TypeScript synchronization API;
+- Postgres or Neon provisioning;
+- real upload/download or cursor bootstrap;
+- household collaboration;
+- editing/deletion or Product merge;
+- legacy database conversion;
+- PySide6 retirement;
+- app-store publication;
+- broad analytics expansion.
+
+## 7. Exit criteria
+
+Sprint 04 local-client work succeeds only when:
+
+```text
+sequence defect corrected and tested
+Unicode identity policy fixture-tested
+contract examples structurally validated
+minimal multi-item Purchase UI runs
+atomic registration is used by the UI
+local history/projection is visible
+close/reopen preserves facts
+Windows build and launch pass
+Android passes or has a precise host blocker
+Python regression suite passes
+Cycle 06 data remains untouched
+G/H/I distinguish implementation from platform evidence
+```
+
+A generated project, passing unit tests without a user workflow, or documentation alone is insufficient.
+
+## 8. Next methodology route
+
+```text
+human confirms Sprint 04 decisions and host actions
+→ Main writes new D/E/F
+→ Codex materializes bounded units
+→ G/H/I report
+→ functional chats reconcile
+→ Main closes Sprint 04
+```
+
+The local TypeScript/Postgres synchronization harness remains the candidate next sprint or following bounded unit after this exit boundary.
