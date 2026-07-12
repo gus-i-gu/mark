@@ -1,10 +1,10 @@
 # 11_OPERATIONAL_RECORD.md
 
-> Version: Cycle 06 observational record 0.2
+> Version: Cycle 07 observational record 0.3
 > Status: Active observational history
 > Persistence Class: Observational
 > Knowledge Class: Operational
-> Branch: `sketch-notebook-recovery`
+> Branch: `cycle-07-mobile-preparation`
 > Scope: Chronological Operational recovery, materialization, validation, correction, and reconciliation evidence
 > Truth boundary: Present rules belong to `12_OPERATIONAL_MODEL.md`, active work to `04_TODO.md`, and current state to `10_OPERATIONAL_STATE.md`.
 
@@ -313,3 +313,107 @@ Retained debt:
 - generated-artifact repository cleanup.
 
 Future entries should record human-visible acceptance evidence, artifact cleanup, any bounded correction triggered by manual walkthrough, and final Cycle 06 closure.
+
+# 7. Cycle 07 Sprint 01 — Mobile Portability Investigation and Reconciliation
+
+## 2026-07-12 — Investigation boundary
+
+Cycle 07 began on `cycle-07-mobile-preparation` from the accepted Cycle 06 closure baseline. Sprint 01 was investigation-only. No application code, framework project, toolchain, database, or ordinary desktop user data was modified or opened.
+
+The investigation observed:
+
+```text
+reusable behavior exists
+≠
+the current desktop application is mobile-portable
+```
+
+Likely reusable surfaces were Python domain models, validation and calculation rules, workflow meanings, schema semantics, structural defaults, and deterministic desktop behavior as a fixture source. Coupled surfaces included concrete service/repository construction, SQLite lifecycle and global paths, presentation-shaped service projections, incomplete abstract contracts, and separately committed workflow mutations.
+
+No Android/iOS runtime, package, lifecycle persistence, semantic-parity suite, accessibility behavior, or distribution path was demonstrated.
+
+## Preserved pathway 1 — Operational challenger
+
+Operational recorded a time-boxed Python-native Android experiment as the cheapest direct falsification test for existing Python reuse.
+
+The apparent economy is direct: reuse the Python models, calculations, services, repository behavior, and possibly SQLite schema inside one Android package; initialize a fresh app-private store; execute one receipt workflow; close and reopen; verify persistence.
+
+This pathway becomes expensive if the supposedly narrow experiment expands into broad construction refactoring, custom binary recipes, repeated SDK/NDK/JDK/WSL troubleshooting, native bridges, framework-specific lifecycle corrections, accessibility/platform-integration workarounds, or a separate iOS adaptation. Debugging may cross Python, framework runtime, packaging recipes, Gradle/Android tooling, and device behavior. An Android success would not prove iOS feasibility, maintainability, or distribution readiness.
+
+Observed classification:
+
+```text
+cheapest direct experiment
+bounded challenger
+not final architecture evidence
+not authorized
+```
+
+## Preserved pathway 2 — Design strategic direction
+
+Design recorded a native/cross-platform client with explicit, language-neutral contracts and deterministic fixtures as the stronger current direction for maintained Android/iOS development.
+
+Its cost begins earlier and is more visible: learn and configure another language/framework; establish Android and iOS SDK boundaries; reimplement relevant behavior and persistence; construct shared fixtures; and verify semantic parity with accepted desktop behavior.
+
+That cost may reduce later expense when the mobile client has conventional ownership of navigation, accessibility, lifecycle, local persistence, packaging, and platform integration; contracts keep business facts separate from presentation labels; fixtures expose drift; and Android/iOS maintenance follows supported framework paths rather than a layered embedded-Python packaging boundary.
+
+Android and iOS still have different operational environments. Android development may use Windows-supported tooling, while iOS build, signing, simulator/device, and distribution validation require macOS/Xcode. Cross-platform source does not remove separate platform gates.
+
+Observed classification:
+
+```text
+stronger strategic candidate
+higher initial setup and behavior-porting cost
+potentially lower maintained-product cost
+not empirically proven
+framework not selected
+not authorized
+```
+
+## Human/Main planning preference
+
+Human/Main direction currently favors the Design pathway. This is recorded as a planning preference, not as empirical proof, framework acceptance, or implementation authorization.
+
+The two pathways answer different questions:
+
+```text
+Operational:
+What is the cheapest bounded experiment that can falsify direct Python reuse?
+
+Design:
+What architecture is strongest if mobile becomes a maintained Android/iOS product?
+```
+
+They remain preserved rather than collapsed into a false consensus.
+
+## Unresolved cost assumptions
+
+The following remain assumptions until measured:
+
+- how much current Python behavior can execute unchanged in a mobile package;
+- whether required construction and path seams remain narrow;
+- how much business behavior a strategic client must reimplement;
+- the cost of producing language-neutral contracts and golden fixtures;
+- mobile SQLite/library maturity and migration ownership;
+- suspend/resume and terminate/relaunch failure behavior;
+- debugging cost across runtime and native-toolchain boundaries;
+- accessible UI and platform-integration effort;
+- Android-versus-iOS build and device differences;
+- dependency upgrade and packaging maintenance over time.
+
+A cheap prototype becomes expensive when success requires continuing exceptions, custom packaging, duplicated lifecycle work, or an architecture that cannot satisfy maintained-product requirements. A costly initial architecture reduces later cost only when its contracts, fixtures, persistence ownership, tests, and supported platform tooling actually prevent drift and repeated rework.
+
+## Reconciliation result
+
+```text
+Cycle 06: accepted and closed
+Cycle 07 Sprint 01: complete
+strategic planning preference: Design pathway
+bounded challenger: Operational Python-native Android experiment
+backend: deferred
+implementation authorization: none
+D/E/F: postponed
+next work: documentation, contract/fixture specification, and explicit later experiment gates
+```
+
+No stable Operational rule was promoted into `12_OPERATIONAL_MODEL.md` during this pass. The pathway comparison and cost assumptions remain observational; current state and active evidence gaps were refreshed separately.
