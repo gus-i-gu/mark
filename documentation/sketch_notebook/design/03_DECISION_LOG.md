@@ -596,3 +596,53 @@ Still empirical or open: Flutter persistence and secure-storage plugins; state m
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+
+# 13. Event 15 — Sprint 03 Unit 01 Flutter Foundation Evidence
+
+## Materialized result
+
+Commit `5ef64a1d5b6af6d397d4f3a7aea6d635911be12d` added the authorized Flutter client foundation under `clients/markei_flutter/`, semantic fixtures under `contracts/shared_beta/v1/`, and G/H/I evidence while preserving Python/PySide6.
+
+The materialization confirmed that the planned inward boundaries can exist physically: Flutter composition and application coordination depend on a Dart domain that remains independent of widgets and Drift; Drift implements fresh local persistence; Register Purchase commits catalogue facts, Purchase/Items, an immutable local event, and pending queue state atomically.
+
+Validation observed `flutter analyze`, nine Flutter tests, and five Python regression tests passing. Platform projects were generated but Android, Windows, and iOS build/run remained host-unvalidated.
+
+## Generated versus handwritten ownership
+
+Handwritten Dart is reviewed directly. Drift-generated Dart and Flutter platform runners are reviewed through their source schema/configuration and regeneration evidence. `pubspec.lock` is committed dependency-resolution evidence. Build outputs and local databases remain excluded.
+
+The size of generated topology is not equivalent to business complexity, but generator versions and reproducibility are operational responsibilities.
+
+## Fixture interpretation
+
+The v1 JSON files are useful language-neutral semantic fixtures:
+
+- catalogue identity contains the strongest input/expected-output evidence;
+- purchase aggregate and sync event examples remain shallow;
+- no complete validator defines types, nullability, ranges, enums, unknown fields, canonical ordering, or compatibility;
+- Dart/TypeScript equivalence is untested.
+
+They must not be described as a complete protocol specification.
+
+## Exposed defects and drift
+
+1. Device registration may reset `nextSequence`, allowing repeated sequence 1; monotonic ordering is not implemented reliably.
+2. `\w`-based normalization may damage accented Portuguese names; display text and normalized identity require separation.
+3. The SHA-256-derived UUID-shaped Product identifier is deterministic but lacks an accepted RFC UUID or cross-language contract.
+4. Fresh Drift schema creation is tested; upgrade/recovery is not.
+5. Store reuse is exact-name based and is not Store deduplication.
+6. Product similarity is warning-oriented and is not merge/alias behavior.
+
+These are recorded as defects or provisional questions, not silently promoted.
+
+## Alternatives and next bounded route
+
+Two candidate routes remain:
+
+- Route 1: correct identity/sequence defects, strengthen fixtures, add the minimal Flutter purchase workflow and visible local projection, then obtain Windows/Android lifecycle evidence.
+- Route 2: correct the same defects, complete wire contracts, then build the TypeScript/Postgres local synchronization harness.
+
+Design recommends Route 1 first because it completes the local shared-client vertical slice and platform evidence before distributed infrastructure. Route 2 remains the likely following unit. This recommendation is reversible and is not Sprint 04 authority.
+
+Deferred: authentication, API/Neon, distributed synchronization, legacy import, editing/deletion, household sharing, global catalogue, background/realtime sync, parity, and PySide6 retirement.
