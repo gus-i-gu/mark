@@ -580,3 +580,31 @@ These remain unresolved. Monotonic ordering, Unicode-safe identity, complete pro
 ## Main route orientation
 
 J §19 favors a local shared-client vertical slice before the synchronization harness, with sequence correction and contract hardening first. This is Main orientation, not Sprint 04 implementation authority.
+
+# Cycle 07 Sprint 04 — Operational PDR2 Reconciliation
+
+## 2026-07-12 — Evidence reconciled
+
+PDR2-O reconciled the Sprint 03 Operational Codex report, J §21, Sprint 04 A staging, current Flutter/Python source truth, and all four permanent Operational roles at branch head `32898f56f76895dc0f23d72cd132bcc24830e740`.
+
+Confirmed execution evidence remains:
+
+```text
+Flutter 3.44.6 / Dart 3.12.2 installed
+flutter pub get passed
+Drift generation passed
+format passed
+flutter analyze passed
+flutter test passed: 9
+Python regression tests passed: 5
+fresh Drift schema and temporary-file close/reopen passed
+Windows build/run blocked by missing Visual Studio native-desktop workload
+Android build/run blocked by absent SDK/device tooling
+iOS host-unvalidated outside macOS/Xcode
+```
+
+Repository inspection confirmed that the Flutter presentation remains a foundation label; the local schema remains version 1; Device upsert can reset `nextSequence`; Product display fields and user Product code are absent; normalization v1 remains unsafe for Portuguese/Unicode identity; v1 JSON documents remain examples without executable schemas; and TypeScript/API/Postgres/Neon/authentication/synchronization remain absent. The Flutter store remains distinct from the protected Cycle 06 database.
+
+J §21 accepted the Sprint 04 planning resolution: UUID v4 for new immutable internal Product identities; required account-private user Product code; Unicode NFKC normalization v2 with preserved display text; `shared_beta/v2` using JSON Schema Draft 7 and readable examples; Drift schema v2 migration; sequence uniqueness and 1,2,3 recovery proof; minimal multi-item UI/history; Windows build/run; conditional Android build only if tooling already exists. These are accepted instructions for forthcoming D/E/F, not implementation evidence.
+
+No commands, installations, migrations, builds, tests, or application executions were performed during this reconciliation. No source or user database was modified.
