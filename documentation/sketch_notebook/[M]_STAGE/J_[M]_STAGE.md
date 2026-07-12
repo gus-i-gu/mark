@@ -2336,3 +2336,181 @@ domain permanent review: authorized next
 Sprint 04: not yet authorized
 ```
 
+---
+
+# 20. Cycle 07 Sprint 03 Permanent-Domain Reconciliation and Sprint 04 Orientation
+
+> Date: 2026-07-12
+> Branch: `cycle-07-mobile-preparation`
+> Domain-reconciled head inspected: `36996361ce06e8833b91e04800ccbe0944d778e1`
+> Sources: all twelve Operational, Didactic, and Design permanent files after their latest temporal boundary
+> Status: Main provisional synthesis accepted for 00/05/06 continuity; implementation still requires new D/E/F
+
+## 20.1 Cross-domain agreement
+
+Operational, Didactic, and Design permanent reconciliation is complete and mutually coherent.
+
+All domains agree that Sprint 03 Unit 01 established:
+
+- an additive Flutter/Dart client beside the protected Python/PySide6 beta;
+- an independent Dart domain and application boundary;
+- fresh Drift-local persistence;
+- reusable account-private catalogue structures;
+- Purchase and Purchase Item aggregation;
+- atomic local facts, event, and pending-queue persistence;
+- rollback and close/reopen evidence;
+- dimensional quantity, minor-unit money, and versioned analytics foundations;
+- useful but incomplete language-neutral semantic fixtures;
+- nine passing Flutter tests, clean analysis, and five passing Python regressions.
+
+All domains preserve the same evidence limits:
+
+- no Windows, Android, or iOS runtime evidence;
+- no responsive purchase workflow;
+- no authentication, API, Postgres/Neon, or distributed synchronization;
+- no schema-upgrade rehearsal or legacy import;
+- no PySide6 retirement or parity claim;
+- no Didactic maturity transition.
+
+No permanent-domain conflict requires human arbitration before forward planning.
+
+## 20.2 Defects and provisional boundaries carried forward
+
+The following are mandatory Sprint 04 entry corrections, not optional polish:
+
+1. Device registration must not reset `nextSequence`; repeated purchases must allocate 1, 2, 3.
+2. Account/device/sequence ownership requires an explicit uniqueness invariant and recovery test.
+3. Product display text must be preserved separately from normalized identity.
+4. Unicode and Portuguese accented text require canonical fixtures and an explicit normalization policy.
+5. Deterministic Product identity must be specified as either a stable opaque identifier or an RFC-defined UUID form.
+6. Purchase and sync fixtures must become complete enough to validate types, ranges, nullability, enums, timestamps, decimal form, unknown fields, and version compatibility.
+7. Drift schema evolution must be rehearsed separately from legacy Cycle 06 import.
+8. Store reuse remains exact-name behavior, not Store deduplication.
+9. Product similarity remains advisory and never automatically merges.
+
+## 20.3 Sprint 04 route selection
+
+Main accepts the unanimous domain recommendation:
+
+> Sprint 04 should complete the local shared-client vertical slice before beginning the TypeScript/Postgres synchronization harness.
+
+Authorized planning sequence:
+
+```text
+correct device sequencing
+→ harden Unicode identity and deterministic-ID fixtures
+→ strengthen human-readable contract fixtures
+→ minimal Flutter purchase workflow
+→ Product and Store select/create
+→ multi-item Purchase staging
+→ atomic registration
+→ visible local history/projection
+→ close/reopen
+→ Windows build/run
+→ Android build/run when the SDK/emulator or device is available
+```
+
+The synchronization harness remains the candidate following unit and must not be silently combined with this route.
+
+## 20.4 Implementation directives for future D/E/F
+
+A future Sprint 04 D/E/F package should divide work into independently testable units:
+
+### Unit A — Correctness foundation
+
+- preserve an existing Device row during purchase registration;
+- allocate and persist monotonic sequence atomically;
+- add repeated-registration, uniqueness, rollback, and reopen tests;
+- preserve original Product display name/brand alongside normalized identity;
+- specify and test Unicode normalization with Portuguese examples;
+- record normalization version in identity and fixtures;
+- choose and document deterministic identifier semantics.
+
+### Unit B — Contract hardening
+
+- keep JSON examples human-readable;
+- add full valid/invalid Product, Purchase, and event examples;
+- evaluate JSON Schema as the preferred first validator;
+- do not claim Dart/TypeScript parity until both runtimes execute the same fixtures;
+- avoid implementing the TypeScript service in this unit.
+
+### Unit C — Local Flutter workflow
+
+- replace the placeholder foundation screen with a minimal Purchase flow;
+- initialize the app-private Drift database through the composition root;
+- stage one or more Items;
+- select or create Product and Store;
+- call the existing application/repository boundary;
+- show a successful local Purchase and a visible local history/projection;
+- preserve warning-only similarity;
+- survive close/reopen.
+
+### Unit D — Platform evidence
+
+- run analysis and tests;
+- build and launch Windows;
+- validate database path and lifecycle persistence;
+- build and launch Android when tooling exists;
+- keep iOS explicitly unvalidated outside macOS/Xcode;
+- preserve the Python beta and rerun its regression suite.
+
+Each unit needs its own pass/fail boundary in D/E/F and exact G/H/I reporting.
+
+## 20.5 Human decisions and actions
+
+Human action is required before materialization for:
+
+1. approving the Sprint 04 local-client route;
+2. approving installation of missing Windows/Android host prerequisites;
+3. choosing whether Product IDs are stable opaque deterministic IDs or standards-defined UUIDs;
+4. accepting JSON Schema as the first contract validator, or selecting an alternative;
+5. deciding whether Android execution belongs to the same materialization unit or may be a recorded host-blocked follow-up.
+
+Main recommendation:
+
+- use a standards-defined deterministic UUID form if cross-language libraries produce identical fixed fixtures; otherwise expose the identifier as an opaque stable Product ID and do not call it a UUID;
+- use JSON Schema for structural wire validation while retaining readable example JSON;
+- require Windows execution in Sprint 04; allow Android to remain a precise blocker only if SDK/emulator setup cannot be completed safely in the available host.
+
+## 20.6 Current executable entrypoint
+
+The Flutter equivalent of the former Python entry command is run from the Flutter client directory:
+
+```powershell
+cd clients/markei_flutter
+flutter pub get
+flutter run -d windows
+```
+
+At the inspected state this launches only the foundation screen:
+
+```text
+Markei shared client foundation
+```
+
+It does not yet expose the Purchase workflow or open the Drift database through the UI.
+
+Until the Visual Studio C++ desktop workload is installed, the reliable executable verification is:
+
+```powershell
+cd clients/markei_flutter
+flutter analyze
+flutter test
+```
+
+Android later uses `flutter devices` followed by `flutter run -d <device-id>`.
+
+## 20.7 Continuation state
+
+```text
+Sprint 03 Unit 01: closed as local foundation
+domain permanent reconciliation: complete
+J second reconciliation: complete
+00/05/06 refresh: authorized now
+Sprint 04 route: local shared-client vertical slice
+Sprint 04 implementation: not yet authorized
+D/E/F: must be freshly written after human choices
+TypeScript/Postgres harness: deferred following route
+Cycle 07: open
+```
+
