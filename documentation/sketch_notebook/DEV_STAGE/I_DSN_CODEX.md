@@ -1,4 +1,4 @@
-# I_DSN_CODEX — Cycle 06 Design Codex Report
+# I_DSN_CODEX — Cycle 06 Sprint 02 Design Codex Report
 
 > Status: Codex evidence report
 > Branch: `sketch-notebook-recovery`
@@ -7,138 +7,125 @@
 
 ## Design Materialization Status
 
-Permanent Design files were not modified in the final materialization state after human correction.
+Permanent Design files were not modified.
 
-The Design evidence from Cycle 06 is reported here for later Design Chat classification rather than being written directly into:
+This report records whether Sprint 02 installed lifecycle validation preserved accepted Design boundaries. It does not update permanent Design memory or reopen Main decisions.
 
-- `documentation/sketch_notebook/design/01_ARCHITECTURE.md`
-- `documentation/sketch_notebook/design/14_MODEL_OVERVIEW.md`
-- `documentation/sketch_notebook/design/09_DESIGN_STATE.md`
-- `documentation/sketch_notebook/design/03_DECISION_LOG.md`
+## Boundaries Preserved
 
-## Release Boundaries Materialized In Source
+- Desktop UI remained the application surface.
+- Desktop workflow continued through `ProductService`.
+- `ProductService` continued through `Repository`.
+- `Repository` continued through the database layer.
+- SQLite remained the persistence store.
+- `%LOCALAPPDATA%\Markei` remained the writable per-user data location.
+- `schema.sql` remained the bundled production resource.
+- `seed.sql` remained excluded from the production frozen package.
+- `market.sqlite` remained user data and was not bundled.
+- Installer uninstall behavior retained user data by default.
+- Startup diagnostics remained under `%LOCALAPPDATA%\Markei\logs`.
+- Installer identity and shortcut behavior remained centralized in `installer/Markei.iss`.
+- Frozen packaging remained centralized in `Markei.spec`, with `scripts/build_windows.ps1` acting as a wrapper.
 
-- Root `main.py` remains the packaged launcher adapter and now owns the outer startup diagnostic boundary.
-- `app.main.main()` remains the Qt application-construction function.
-- `Markei.spec` is the authoritative one-folder PyInstaller definition.
-- `scripts/build_windows.ps1` is an invocation wrapper, not an independent package definition.
-- `installer/Markei.iss` defines installer identity, placement, shortcuts, and uninstall behavior.
-- `scripts/build_installer.ps1` is the installer compile wrapper.
+## Bounded Design-Relevant Corrections
 
-## Resource And State Classifications Implemented
+### Installer Wrapper
 
-| Item | Implemented classification |
-| --- | --- |
-| `schema.sql` | Bundled read-only production resource |
-| `seed.sql` | Development/test fixture excluded from production frozen package |
-| `market.sqlite` | Writable user data under `%LOCALAPPDATA%/Markei` |
-| WAL/SHM | Transient writable companions, not bundled |
-| startup logs | Generated writable diagnostics under `%LOCALAPPDATA%/Markei/logs` |
-| version metadata | Replaceable release identity content |
+`scripts/build_installer.ps1` now discovers the Inno Setup per-user install path. This preserves one authoritative installer configuration and changes only compiler discovery.
 
-## Seed And Retention Policies Implemented
+### Structural Production Defaults
 
-- Production package includes `schema.sql`.
-- Production package excludes sample-bearing `seed.sql`.
-- Fresh production first launch creates schema and structural/default settings without sample category, store, product, or purchase rows.
-- Installer source preserves `%LOCALAPPDATA%/Markei` by default because it contains no data-removal directives.
+`app/core/database.py` now creates only required structural defaults during migration:
 
-## Identity And Shortcut Contract
+- category `F` / `General`
+- store `1` / `Default Store`
 
-Implemented configuration:
+This preserves the accepted production seed policy because sample products and purchases are still absent from fresh production databases.
+
+## Installed Lifecycle Evidence
+
+Clean install:
 
 ```text
-Display name: Markei
-Executable: Markei.exe
-Version: 0.1.0
-Publisher: Markei
-Installer AppId: {9F5F5C2A-43EA-4CF0-9C25-FF9E7BB57D3A}
-Primary target: Windows x64 controlled beta
+installed
 ```
 
-Installer source creates a Start Menu shortcut and exposes an optional desktop shortcut task.
-
-## Startup Diagnostic Boundary
-
-`main.py` catches unhandled startup exceptions before normal UI operation and calls `app.startup_diagnostics.report_startup_exception()`.
-
-The helper writes UTF-8 logs to:
+Start Menu launch:
 
 ```text
-%LOCALAPPDATA%/Markei/logs/startup.log
+launched
 ```
 
-Tests validated log path selection and log content creation.
-
-## Shutdown And Lifecycle Outcome
-
-Initial focused shutdown validation failed:
+Register / Lists / History / Settings data path:
 
 ```text
-MainWindow.close()
-→ SQLite file still held open
-→ isolated LOCALAPPDATA directory removal failed with WinError 32
+validated
 ```
 
-Evidence-triggered correction:
+Close and immediate reopen:
 
 ```text
-app/desktop/main_window.py
-→ MainWindow.closeEvent()
-→ close_page_services()
-→ idempotently closes Register, Lists, History, and Settings page services
+validated
 ```
 
-Rerun result:
+Same-version reinstall:
 
 ```text
-before close: [True, True, True, True]
-after close:  [False, False, False, False]
-isolated database directory removed: True
+validated
 ```
 
-This is a bounded close-path correction, not a composition-root or dependency-injection redesign.
-
-## Deployment Map For Later Design Absorption
+Uninstall with retained user data:
 
 ```text
-Source tree
-    main.py
-    app/
-    app/database/schema.sql
-
-Build layer
-    Markei.spec
-    scripts/build_windows.ps1
-    dist/Markei
-
-Install layer
-    installer/Markei.iss
-    scripts/build_installer.ps1
-    compiled installer blocked by missing ISCC.exe
-
-User-state layer
-    %LOCALAPPDATA%/Markei/market.sqlite
-    transient WAL/SHM
-    startup logs
+validated
 ```
 
-## Evidence Status
+Reinstall and retained-data recovery:
 
 ```text
-configured: yes
-built: yes
-launched: yes, frozen isolated launch/reopen smoke check
-installed: blocked
-validated: partial, source/static/frozen/resource/shutdown gates only
-accepted: no
-blocked: installer compile and installed lifecycle
+validated
+```
+
+SmartScreen / antivirus:
+
+```text
+unknown
+```
+
+No installed lifecycle gate required a redesign of the Desktop, ProductService, Repository, Database Manager, or SQLite boundaries.
+
+## Artifact And Identity Evidence
+
+Installer artifact:
+
+```text
+dist\installer\Markei-Setup-0.1.0-x64.exe
+SHA256: 122A772D66BBE7D5522EF2262E7E89D6D2E332B6318135BB25D55A27F75F4623
+```
+
+Frozen executable:
+
+```text
+dist\Markei\Markei.exe
+SHA256: E13E276139E5F680D91A9816FC79776EB9837CA901C2DEBCF6B9CFAF8594A282
+```
+
+Installed executable:
+
+```text
+%LOCALAPPDATA%\Programs\Markei\Markei.exe
+```
+
+Start Menu shortcut:
+
+```text
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Markei\Markei.lnk
 ```
 
 ## Explicit Deferrals Preserved
 
-No mobile, backend/API, synchronization, authentication, cloud persistence, auto-update, signing, rollback framework, migration ledger, ProductService/Repository decomposition, broad schema redesign, typed view-model conversion, UI/navigation redesign, optional uninstall data-removal UX, or one-file packaging was introduced.
+No mobile, backend/API, synchronization, authentication, cloud persistence, auto-update, signing, rollback framework, migration ledger, broad `ProductService`/`Repository` decomposition, UI/navigation redesign, optional uninstall data-removal UX, or one-file packaging was introduced.
 
-## Suggested Design Follow-Up
+## Remaining Design Follow-Up
 
-Design Chat should classify this report and G evidence before deciding whether to update permanent Design memory. Any future checkpoint must avoid claiming installed lifecycle validation or beta acceptance until installer and human workflow evidence exist.
+Design Chat may later decide how to absorb the installed lifecycle evidence into permanent Design memory. Codex did not perform semantic promotion or beta acceptance.

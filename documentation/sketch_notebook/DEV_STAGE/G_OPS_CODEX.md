@@ -1,51 +1,66 @@
-# G_OPS_CODEX — Cycle 06 Operational Codex Report
+# G_OPS_CODEX — Cycle 06 Sprint 02 Operational Codex Report
 
 > Status: Codex implementation evidence
 > Branch: `sketch-notebook-recovery`
 > Source stages: `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
 > Date: 2026-07-12
 
+## Bootstrap
+
+- `AGENTS.md` loaded and applied.
+- `documentation/sketch_notebook/INDEX.md` loaded.
+- Methodology boot sequence completed: `METHOD_FOUNDATIONS.md`, `FLUX.md`, `PROMOTION_RULES.md`, `CHAT_PROTOCOL.md`.
+- Current state recovered from `00_PROJECT_STATE.md`, `06_SESSION_SCHEME.md`, and `[M]_STAGE/J_[M]_STAGE.md`.
+- Sprint 02 implementation authority read from D/E/F before implementation inspection.
+
 ## Files Changed
 
-Modified:
+Modified source/configuration:
 
-- `Markei.spec`
-- `scripts/build_windows.ps1`
-- `main.py`
-- `app/desktop/main_window.py`
-
-Created:
-
-- `app/startup_diagnostics.py`
-- `requirements-build.txt`
-- `installer/Markei.iss`
 - `scripts/build_installer.ps1`
+- `app/core/database.py`
 - `tests/test_release_configuration.py`
 
-Deleted:
+Modified report files:
 
-- none
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
 
 Generated but not committed:
 
-- PyInstaller `build/` and `dist/` outputs
-- Python `__pycache__` files
+- `dist/installer/Markei-Setup-0.1.0-x64.exe`
 
-## Implementation Summary
+## Bounded Corrections
 
-- Made `Markei.spec` the authoritative one-folder PyInstaller packaging source.
-- Changed the production spec to include `app/database/schema.sql` and exclude `app/database/seed.sql`.
-- Disabled UPX and configured the distributable executable as windowed.
-- Attached `build/markei_version_info.txt` version metadata.
-- Refactored `scripts/build_windows.ps1` to invoke `Markei.spec` rather than duplicate package contents.
-- Added `requirements-build.txt` with versions observed in the successful build: PyInstaller 6.21.0 and PySide6 6.11.1.
-- Added startup diagnostics at root `main.py`, writing UTF-8 logs to `%LOCALAPPDATA%/Markei/logs/startup.log` on unhandled startup exceptions.
-- Added `installer/Markei.iss` with per-user install path, stable AppId, Markei 0.1.0 identity, Start Menu shortcut, optional desktop shortcut task, and default user-data retention.
-- Added `scripts/build_installer.ps1` to locate `ISCC.exe`, require the frozen distribution, compile the `.iss`, and report the installer artifact.
-- Added focused release-configuration tests covering spec policy, installer policy, identity consistency, startup log creation, and schema-only production first launch.
-- Added a bounded `MainWindow.closeEvent()` coordinator after validation showed the isolated SQLite file remained held open without it.
+### Installer Compiler Discovery
 
-## Commands Run
+Failure:
+
+- `.\scripts\build_installer.ps1` initially failed because `ISCC.exe` was not found.
+- Inno Setup 6.7.3 was installed by `winget` under the per-user path:
+  `C:\Users\gusrm\AppData\Local\Programs\Inno Setup 6\ISCC.exe`.
+
+Correction:
+
+- Added `$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe` to `scripts/build_installer.ps1`.
+
+### Fresh Production Register Defaults
+
+Failure:
+
+- Fresh installed production workflow failed with `sqlite3.IntegrityError: FOREIGN KEY constraint failed`.
+- Evidence showed Register defaults require category `F` and store `1`, while the production package intentionally excludes sample `seed.sql`.
+
+Correction:
+
+- Added migration-time structural defaults only:
+  - category `F` / `General`
+  - store `1` / `Default Store`
+- No sample products or purchases were introduced.
+- Release configuration tests now verify those structural defaults and still verify zero products and purchases.
+
+## Commands And Evidence
 
 ```text
 git branch --show-current
@@ -54,22 +69,16 @@ git branch --show-current
 Result: `sketch-notebook-recovery`.
 
 ```text
-python -c "import sys; print(sys.version); import PySide6; print('PySide6=='+PySide6.__version__); import PyInstaller; print('pyinstaller=='+PyInstaller.__version__)"
+winget install --id JRSoftware.InnoSetup --silent --accept-package-agreements --accept-source-agreements
 ```
 
-Result: Python 3.14.6, PySide6 6.11.1, PyInstaller 6.21.0.
+Result: Inno Setup installed. `winget list --id JRSoftware.InnoSetup` reported version `6.7.3`.
 
 ```text
 python -m compileall app main.py
 ```
 
-Result: passed after implementation and after shutdown correction.
-
-```text
-python -m pytest
-```
-
-Result: blocked. Active Python reported `No module named pytest`.
+Result: passed after corrections.
 
 ```text
 python -m unittest discover -s tests
@@ -81,29 +90,80 @@ Result: passed, 5 tests.
 .\scripts\build_windows.ps1
 ```
 
-Result: passed after correcting build cleanup so committed version metadata remained available. Produced `dist\Markei\Markei.exe`.
-
-```text
-Get-ChildItem -Recurse dist\Markei | Where-Object { $_.Name -match 'schema\.sql|seed\.sql|market\.sqlite|sqlite-wal|sqlite-shm|startup\.log|Markei\.exe' }
-```
-
-Result: distribution contained `Markei.exe` and `_internal\app\database\schema.sql`; no `seed.sql`, live database, WAL, SHM, or startup log was observed.
-
-```text
-Get-FileHash dist\Markei\Markei.exe -Algorithm SHA256
-```
-
-Result: `E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B`.
+Result: passed after structural-default correction.
 
 ```text
 .\scripts\build_installer.ps1
 ```
 
-Result: blocked. `ISCC.exe` was not found.
+Result: passed after per-user `ISCC.exe` path correction.
 
-## Validation Evidence
+Observed Inno warning:
 
-Gate A — static/source integrity:
+```text
+Architecture identifier "x64" is deprecated. Substituting "x64os"; "x64compatible" preferred in most cases.
+```
+
+The warning did not block compilation.
+
+## Artifacts
+
+Frozen executable:
+
+```text
+dist\Markei\Markei.exe
+SHA256: E13E276139E5F680D91A9816FC79776EB9837CA901C2DEBCF6B9CFAF8594A282
+Size: 2,173,220 bytes
+```
+
+Installer:
+
+```text
+dist\installer\Markei-Setup-0.1.0-x64.exe
+SHA256: 122A772D66BBE7D5522EF2262E7E89D6D2E332B6318135BB25D55A27F75F4623
+Size: 34,448,651 bytes
+```
+
+Distribution inspection:
+
+- `dist\Markei\Markei.exe` present.
+- `_internal\app\database\schema.sql` present.
+- `seed.sql`, `market.sqlite`, WAL/SHM files, and startup logs were not present in the frozen distribution after restore/inspection.
+
+## Installed Lifecycle Gates
+
+Environment:
+
+- Automated lifecycle validation used the current ordinary Windows user.
+- Existing `%LOCALAPPDATA%\Markei` was backed up before clean-install testing and restored afterward.
+- Restored evidence: `%LOCALAPPDATA%\Markei\market.sqlite` exists; temporary backup path no longer exists.
+
+Clean per-user install:
+
+```text
+installed
+```
+
+Evidence:
+
+- Silent installer exited with code `0`.
+- Installed executable existed at `%LOCALAPPDATA%\Programs\Markei\Markei.exe`.
+- Start Menu shortcut existed at `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Markei\Markei.lnk`.
+
+Start Menu launch:
+
+```text
+launched
+```
+
+Evidence:
+
+- Shortcut launch started the installed process.
+- First launch created `%LOCALAPPDATA%\Markei\market.sqlite`.
+- No startup diagnostic log was produced during normal startup.
+- `CloseMainWindow()` returned `true`.
+
+Register / Lists / History / Settings validation:
 
 ```text
 validated
@@ -111,27 +171,13 @@ validated
 
 Evidence:
 
-- `compileall` passed.
-- `unittest` suite passed.
-- identity values match `Markei` / `0.1.0` / `Markei.exe`.
-- tests verify spec includes schema and excludes seed/transient data.
-- tests verify installer source consumes `dist\Markei`.
+- Installed user database contained one category, one store, one product, and one purchase after Register-equivalent `ProductService` workflow.
+- Product evidence: `T006` / `Cycle 06 Test Product`.
+- List projection returned product row with quantity `2 unit`, latest price `3.5`, status `in-house`, and label `$ 3.50`.
+- History projection returned expected keys including `months`, `settings`, and `unparsed_rows`.
+- Settings evidence showed `week_boundary` as `wednesday`.
 
-Gate B — clean frozen build:
-
-```text
-built / launched
-```
-
-Evidence:
-
-- `scripts/build_windows.ps1` completed successfully.
-- `dist\Markei\Markei.exe` exists.
-- distribution inspection found `schema.sql` and did not find `seed.sql`, live database, WAL, SHM, or startup logs.
-- isolated frozen launch from outside the repo working directory stayed alive, created `%LOCALAPPDATA%\Markei\market.sqlite`, and a second isolated launch also stayed alive.
-- first-launch database contained zero category, store, product, and purchase rows, plus structural/default settings.
-
-Gate C — first-launch database state:
+Close and immediate reopen:
 
 ```text
 validated
@@ -139,61 +185,81 @@ validated
 
 Evidence:
 
-- standard-library test simulating frozen resources without `seed.sql` passed.
-- isolated frozen database query showed no sample business rows and expected default settings.
+- Installed app reopened twice after close.
+- `CloseMainWindow()` returned `true` on each close.
+- Database persisted across reopen with counts:
+  `categories=1`, `stores=1`, `products=1`, `purchases=1`.
 
-Gate D — shutdown and reopen:
+Same-version reinstall:
 
 ```text
-validated after correction
+validated
 ```
 
 Evidence:
 
-- initial focused source probe failed because the isolated SQLite file could not be removed after `MainWindow.close()`.
-- added bounded `MainWindow.closeEvent()` service-close coordination.
-- rerun probe reported repositories open before close, all closed after close, and isolated database directory removable.
-- frozen launch/reopen smoke check succeeded after rebuilding.
+- Same-version reinstall exited with code `0`.
+- `%LOCALAPPDATA%\Markei\market.sqlite` remained present.
+- Test product and purchase remained present after reinstall.
 
-Gate E — installer compilation:
+Uninstall with retained user data:
 
 ```text
-blocked
+validated
 ```
 
 Evidence:
 
-- `scripts/build_installer.ps1` failed because `ISCC.exe` was not found.
+- Uninstall exited with code `0`.
+- `%LOCALAPPDATA%\Markei\market.sqlite` remained present after uninstall.
+- Data counts remained:
+  `categories=1`, `stores=1`, `products=1`, `purchases=1`.
 
-Gate F — installed lifecycle:
+Reinstall and retained-data recovery:
 
 ```text
-blocked
+validated
 ```
 
-Reason:
+Evidence:
 
-- installer compilation did not produce an installer, so clean install, Start Menu launch, installed workflows, uninstall retention, and reinstall checks could not be executed.
+- Reinstall exited with code `0`.
+- Installed app launched after reinstall and closed cleanly.
+- Data counts and `Cycle 06 Test Product` remained present.
 
-## Artifact Evidence
+SmartScreen / antivirus:
 
-- Built executable path: `dist\Markei\Markei.exe`
-- Built executable SHA256: `E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B`
-- Installer artifact: none, blocked by unavailable `ISCC.exe`
+```text
+unknown
+```
 
-## Deviations From D/E/F
+Evidence:
 
-- `python -m pytest` could not run because pytest is not installed. `python -m unittest discover -s tests` was added and passed so validation assets remain executable with the standard library.
-- Permanent Didactic and Design domain files were not modified after human correction; implementation evidence is reported only through G/H/I.
-- Installed lifecycle validation was not attempted because installer compilation was blocked.
+- Microsoft Defender status showed antivirus and real-time protection enabled.
+- Installer and executable Authenticode status: `NotSigned`.
+- No SmartScreen prompt was observed during silent installation or programmatic launch.
+- Human-visible SmartScreen behavior remains unvalidated because the installer was executed silently.
+
+## Evidence Status
+
+```text
+configured: validated
+built: validated
+launched: validated
+installed: validated
+validated: validated for automated installed lifecycle
+accepted: unknown
+blocked: human-visible SmartScreen and dedicated-account validation if required
+```
+
+No beta acceptance is claimed.
+
+## Deviations Or Limits
+
+- A dedicated separate Windows test account was not used; automated validation used the current ordinary Windows user with existing Markei data backed up and restored.
+- Visual/manual UI confirmation of Register, Lists, History, and Settings remains human validation. Automated installed lifecycle evidence exercised the same `ProductService` and database path used by the installed desktop application.
+- The Inno architecture warning remains as non-blocking implementation debt.
 
 ## Prohibited Scope Check
 
-No mobile, backend, API, synchronization, authentication, cloud, schema redesign, transaction redesign, broad service/repository decomposition, one-file packaging, auto-update, signing, rollback framework, or optional uninstall data deletion UX was introduced.
-
-## Remaining Risks
-
-- Inno Setup is required to compile and validate the installer.
-- Installed lifecycle remains unvalidated.
-- Human workflow validation remains required before acceptance.
-- Workflow atomicity remains inherited validation debt and was not redesigned.
+No mobile, backend, API, synchronization, authentication, cloud, schema redesign, transaction redesign, broad service/repository decomposition, one-file packaging, auto-update, signing, rollback framework, optional uninstall data deletion UX, or permanent Sketch Notebook promotion was introduced.

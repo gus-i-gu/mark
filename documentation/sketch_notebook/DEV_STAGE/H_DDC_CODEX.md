@@ -1,4 +1,4 @@
-# H_DDC_CODEX — Cycle 06 Didactic Codex Report
+# H_DDC_CODEX — Cycle 06 Sprint 02 Didactic Codex Report
 
 > Status: Codex evidence report
 > Branch: `sketch-notebook-recovery`
@@ -7,70 +7,41 @@
 
 ## Didactic Materialization Status
 
-Permanent Didactic files were not modified in the final materialization state after human correction.
+Permanent Didactic files were not modified.
 
-The didactic evidence from Cycle 06 is reported here for later Didactic Chat classification rather than being written directly into:
+This report records Sprint 02 reinforcement evidence only for later Didactic Chat classification. It does not create concepts, promote concepts, or update permanent Didactic memory.
 
-- `documentation/sketch_notebook/didactics/02_KANBAN.md`
-- `documentation/sketch_notebook/didactics/07_GLOSSARY.md`
-- `documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md`
-- `documentation/sketch_notebook/didactics/13_LECTURE_REGISTER.md`
+## Reinforcement Evidence
 
-## Concepts Staged For Later Didactic Classification
-
-The following E-stage concepts remain valid candidates for later functional-domain handling:
-
-- `&&&05` — Evidence State and Validation Boundary, status intended as Red.
-- `&&%04` — Source, Frozen, and Installed Execution Context, status intended as Red.
-- `&%%06` — Packaging and Installation Artifact Lifecycle, status intended as Red.
-- `%%%06` — Build-Time, Runtime, and Installer-Time Dependency, status intended as Red.
-
-No concept was promoted to Green.
-
-## Existing Concepts Reinforced By Implementation Evidence
-
-- `&&&01` Responsibility Boundary: application behavior, packaging collection, installer placement, validation evidence, and Main/human acceptance stayed separate.
-- `&&&03` Naming as Data Contract: evidence-state vocabulary was used strictly.
-- `&&&04`, `&&%03`, `%%%02`: shutdown cleanup became an evidence-driven bounded correction.
-- `%%%01`: initialization, migration/default settings, and seeding were separated in production packaging.
-- `%%%05`: `schema.sql`, `seed.sql`, `market.sqlite`, WAL/SHM, and startup logs received concrete runtime classifications.
-- `&%%05`: workflow atomicity remained inherited debt and was not treated as a packaging concept.
-
-## Glossary Candidates
-
-Later glossary derivation may include:
-
-- frozen application
-- installed application
-- packaging artifact
-- installer artifact
-- validation boundary
-- build-time dependency
-- runtime dependency
-- installer-time dependency
-
-Tool names such as PyInstaller and Inno Setup should remain project examples, not standalone canonical concepts.
+- Evidence-state vocabulary was kept separate: `configured`, `built`, `launched`, `installed`, `validated`, `accepted`, `blocked`, and `unknown` were not collapsed into one another.
+- The compiled installer was treated as an artifact, not as installation evidence.
+- Installation was treated as distinct from workflow validation.
+- Automated workflow validation was treated as distinct from Main/human acceptance.
+- Build-time, installer-time, runtime, and user-data concerns remained observable as separate contexts.
+- The fresh-production Register failure demonstrated the difference between sample seed data and required structural defaults.
+- The correction inserted structural defaults only and preserved the no-sample-products/no-sample-purchases production policy.
+- Shutdown/reopen, reinstall, uninstall retention, and reinstall recovery were validated as lifecycle stages rather than assumed from a successful build.
 
 ## Evidence Observed
 
-- Source/static validation passed.
-- Standard-library validation tests passed.
-- Frozen one-folder distribution built.
-- Frozen app launched twice against isolated user data.
-- Production first-launch database had no sample business rows.
-- Startup diagnostic log creation was validated by test.
-- Shutdown cleanup required and received a narrow `MainWindow` correction.
-- Installer compilation was blocked by missing `ISCC.exe`.
-- Installed lifecycle validation remains pending.
+- `python -m compileall app main.py` passed.
+- `python -m unittest discover -s tests` passed with 5 tests.
+- Frozen runtime rebuilt.
+- Installer compiled after the per-user `ISCC.exe` discovery correction.
+- Clean per-user install completed.
+- Start Menu shortcut launch created the production user database.
+- Register-equivalent workflow, Lists projection, History projection, and Settings evidence were validated through installed user data.
+- Close/reopen, same-version reinstall, uninstall retention, and reinstall recovery were validated.
+- SmartScreen behavior remains `unknown` for human-visible execution because silent/programmatic execution did not surface a prompt.
 
-## Files Modified Through E
+## Didactic Boundaries Preserved
 
-None in the final materialization state.
+- No permanent Didactic files were edited.
+- No KANBAN IDs were added.
+- No glossary entries were promoted.
+- No concept-map relationships were rewritten.
+- Tool names remained examples in evidence rather than canonical concepts.
 
-## Conflicts Or Duplicates
+## Remaining Didactic Follow-Up
 
-No duplicate KANBAN ID was permanently introduced because permanent Didactic files were restored and left unchanged.
-
-## Suggested Didactic Follow-Up
-
-Didactic Chat should decide whether and how to materialize the four Red concepts into permanent Didactic memory after reviewing this report and G evidence.
+Didactic Chat may later classify whether Sprint 02 evidence should reinforce existing concepts around evidence boundaries, execution contexts, artifact lifecycle, and structural defaults. Codex did not perform that classification.
