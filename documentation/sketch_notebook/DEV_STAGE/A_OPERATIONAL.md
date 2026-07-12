@@ -1,159 +1,181 @@
-# Main Synthesis Summary
+# Operational State of Union — Cycle 07 Sprint 04
 
-Cycle 07 Sprint 02 should operationally treat Flutter/Dart as the accepted planning basis for one maintained Windows/Android/iOS client, not as an already validated toolchain. The future shared beta keeps an application-private local database on every installation, performs catalogue and purchase work offline, and synchronizes immutable purchase aggregates through a favored TypeScript API into Neon Postgres. PySide6 remains the accepted reference and rollback until measured parity; the Flutter client must never embed Python or open the ordinary Cycle 06 database.
+> Role: Operational Chat [O]
+> Status: Temporary functional staging for Main reconciliation
+> Repository: `gus-i-gu/markei`
+> Branch: `cycle-07-mobile-preparation`
+> Accepted baseline: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
+> Inspected remote head: `faf62fff1b3b9266934a8295891fd386e7d36371`
+> Date: 2026-07-12
+> Classification vocabulary: proposed, provisional, accepted, implemented, validated, host-unvalidated, blocked, deferred
 
-The smallest useful Sprint 03 experiment is Windows-first plus Android: establish one pinned Flutter workspace, run deterministic Dart fixtures, create a fresh isolated SQLite database, atomically register one multi-item-capable Purchase containing one Purchase Item and its pending event, close/reopen, then exercise a local TypeScript/Postgres two-device protocol harness. iOS must remain explicitly unvalidated until the same lifecycle and plugin gates run on macOS/Xcode.
+## 1. Recovered Main State
 
-Drift is the leading persistence candidate for evaluation because it advertises Android/iOS/Windows, transactions, migrations, generated typing, and tests. `sqflite_common_ffi` is a lower-level retained candidate, especially for desktop and unit-test compatibility. `flutter_secure_storage` is a candidate for refresh credentials across the three targets, but its platform behavior, Windows packaging, Android backup settings, logout, upgrade, and reinstall semantics remain assumptions.
+Cycle 06 remains accepted and closed. Its Python/PySide6 Windows beta, one-folder distribution, per-user installer, external SQLite data, recovery evidence, and ordinary user database are protected. They remain the runnable behavioral reference, rollback boundary, and future migration source; nothing in Sprint 04 authorizes Flutter to open or convert that database.
 
-# Accepted Planning Direction
+Cycle 07 Sprint 03 Unit 01 is closed. The repository now contains an additive Flutter/Dart foundation, a fresh Drift schema, Dart domain and application boundaries, account-private catalogue concepts, an atomic Purchase/Purchase Item/event/queue transaction, versioned semantic JSON examples, and local unit evidence. Recorded execution used Flutter 3.44.6 and Dart 3.12.2; `flutter analyze` passed, nine Flutter tests passed, and five Python regression tests passed. Those results validate source-level and local-database behavior only.
 
-The report accepts, without implementation:
+Sprint 04 planning is active; implementation is inactive pending new D/E/F and human approval for exact host changes. Main’s accepted order is local-client correctness before synchronization: fix device sequencing, establish Unicode-safe versioned identity, harden contracts, implement the minimal multi-item Purchase interface and local history, prove close/reopen, then obtain Windows build/run evidence. Android build must be attempted when tooling is available, but full Android execution is not required for Sprint 04 acceptance. TypeScript API, Postgres/Neon, authentication, and real synchronization remain deferred.
+
+## 2. Hierarchical Recovery Path
+
+Recovery followed PRI-O and PMC-01, then the MSU-02 route:
+
+`AGENTS.md → INDEX.md → PROMPT_COLLECTION.md/MSU-02 → latest J reconciliation → 00_PROJECT_STATE.md → latest 05_SESSION_LOG segment → active 06_SESSION_SCHEME.md → operational/10_OPERATIONAL_STATE.md → G_OPS_CODEX.md → bounded repository inspection`.
+
+The Operational checkpoint was sufficient for the permanent-domain state. No read of `04_TODO.md`, `11_OPERATIONAL_RECORD.md`, or `12_OPERATIONAL_MODEL.md` was necessary: exact Sprint 04 defects and human decisions were more current in J and 06, while this task does not promote permanent memory.
+
+## 3. Repository Surfaces Inspected
+
+Protected Python beta evidence included root and application entrypoints, `app/core` models/contracts/services/repository/database/configuration boundaries, `app/database/schema.sql`, PySide6 dependency declaration, PyInstaller specification, and Python regression evidence. Its database manager resolves bundled schema separately from writable `%LOCALAPPDATA%/Markei`, configures SQLite foreign keys/WAL, performs idempotent column/table/default migrations, and exposes an explicit destructive reset function that must not be invoked during Flutter work.
+
+Flutter evidence included `pubspec.yaml` and lockfile; `lib/main.dart`; the current one-label `MarkeiApp`; handwritten catalogue, identity, quantity, money, purchase, store, sync, analytics, use-case, Drift schema, and repository sources; local tests; and generated Android/iOS/Windows topology. Generated Drift and platform files were identified but not reviewed line by line.
+
+Contract evidence included the three readable `contracts/shared_beta/v1` JSON documents. They coordinate examples but are not complete wire contracts and presently have no JSON Schema validation.
+
+## 4. Operational Current State of Union
+
+### Protected Python beta
+
+The desktop beta is **accepted** and previously **validated** on Windows. Its run boundary remains `python main.py`; its package boundary is PyInstaller plus the existing installer/recovery procedure. The application database is persistence-specific and mutable at `%LOCALAPPDATA%/Markei/market.sqlite`. Repository methods commit individual writes, while database startup performs additive migrations. Operationally, this is a functioning reference, not a schema for Flutter reuse.
+
+Regression cost remains: every Sprint 04 source unit must run the Python suite and prove the ordinary database path is neither opened nor changed. Because running the Python application can initialize or migrate the ordinary database, validation should use isolated test configuration where available and treat manual beta launch as a deliberate gate, not incidental setup.
+
+### Flutter client
+
+The Flutter project is **implemented** as a foundation and dependencies are locked. The app entrypoint is real, but presentation is only a static scaffold label; no user-visible Purchase workflow is implemented. Drift creates `markei_shared_beta.sqlite` in the platform application-support directory and enables foreign keys. Fresh creation and temporary-file close/reopen are **validated**; upgrade, failed-migration recovery, packaged path behavior, termination/relaunch, and concurrent lifecycle behavior are **host-unvalidated**.
+
+The Purchase repository correctly groups account/store/product/Purchase/Items/event/pending-queue work in one Drift transaction and rollback evidence exists. However, it upserts a Device with `nextSequence: 1` before every allocation. Repeated registration can therefore reuse sequence 1. Monotonic device order is **defective**, not implemented. The schema also lacks an explicit account/device/sequence uniqueness gate.
+
+Current Product persistence stores normalized name and brand but not separate display name, display brand, or the new user-designable opaque Product code. Normalization uses a `\w`-based policy whose Portuguese/Unicode behavior is unproven. The deterministic Product identifier is UUID-shaped but its standards/version contract and cross-language reproducibility are unvalidated.
+
+### Host and toolchain
+
+Flutter/Dart source tests were previously reproducible with the recorded SDK versions. Windows target files are generated, but Windows build/run is **blocked** on the inspected host by the missing Visual Studio 2022 Desktop development with C++ workload, MSVC tools, Windows SDK, and CMake integration. Android is **blocked** by the absent Android SDK/emulator/device setup. iOS is **host-unvalidated** and necessarily blocked on this Windows host until macOS/Xcode.
+
+Tool installation is not authorized by this exploration. The forthcoming D/E/F must name exact installations, versions/components, commands, scope, expected evidence, and stop/rollback behavior. General permission to “install Flutter tools” is insufficient.
+
+## 5. Agreement with J, 00, 05, and 06
+
+Repository truth agrees with Main continuity that Flutter coexists additively with PySide6, Drift owns a fresh isolated store, local transaction and tests exist, and platform targets remain unrun. It also confirms the reported sequence reset, shallow contract examples, static UI, missing cloud stack, and protected Cycle 06 boundary.
+
+The previous A report is stale because it describes Sprint 02 planning and proposes a Sprint 03 experiment that has already been partly materialized. This report supersedes that staging without changing permanent Operational memory.
+
+One documentation drift remains in earlier portions of 00/06 that still describe Flutter physical implementation or D/E/F as not started; their appended Sprint 03 closure/Sprint 04 sections explicitly supersede those historical passages. Recovery must use the latest temporal section.
+
+## 6. Drift, Defects, Contradictions, and Stale Documentation
+
+- **Defective:** Device upsert can reset `nextSequence`; no repeated `1,2,3` proof or explicit sequence uniqueness.
+- **Defective/provisional:** `\w` normalization may damage accented Portuguese identity; no normalization migration rehearsal.
+- **Provisional:** Product ID format lacks fixed cross-language and standards evidence.
+- **Missing:** user-designable opaque Product code and separate immutable record identity are not represented in current Flutter persistence.
+- **Missing:** display name and brand are not stored separately from normalized identity.
+- **Incomplete:** JSON examples omit executable type/range/nullability/additional-property/version rules and complete expected payloads.
+- **Host-unvalidated:** Windows, Android, and iOS generated projects have not been built or run.
+- **Untested:** Drift schema upgrade, interrupted migration, backup/restore, and failure recovery.
+- **Missing:** Purchase UI, history/projection screen, process termination/relaunch evidence, and actionable user error handling.
+- **Deferred:** authentication, secure token storage, TypeScript API, Postgres/Neon, upload/download, cursor bootstrap, and second-device synchronization.
+- **Stale staging:** former A still treated Drift and Flutter as candidates rather than implemented Sprint 03 foundations.
+
+## 7. Human Decisions Already Supplied
+
+These are requirements for Sprint 04 planning, not empirical validation:
+
+1. The private account catalogue exposes a user-designable opaque Product code.
+2. That code is distinct from the immutable internal Product record identity.
+3. A future central Product catalogue may assign a system-controlled UUID against the versioned Name + Brand + Package Quantity identification set; Sprint 04 must not collapse that future identity into the user code.
+4. Sprint 04 adopts JSON Schema while retaining readable JSON examples.
+5. Windows build and run are required.
+6. Android build is attempted when tooling is available; full Android execution is not required for Sprint 04 acceptance.
+7. Tool installation may be authorized only by forthcoming D/E/F with exact scope and validation.
+
+## 8. Questions Requiring Main or Human Resolution
+
+- What uniqueness and edit policy applies to the opaque user Product code within one account: required or optional, case-sensitive or normalized, reusable after retirement, and collision behavior?
+- Does Sprint 04 retain the current deterministic account-private Product ID temporarily, or replace it with a random immutable internal UUID while reserving deterministic UUID semantics for a future central catalogue?
+- Which Unicode normalization form, case-fold policy, punctuation/whitespace rules, and normalization-version migration are authoritative?
+- Which JSON Schema draft and validator command are canonical, and which examples must be valid versus intentionally invalid?
+- What exact Windows host modifications may D_OPS authorize, and is a clean-machine/package gate inside Sprint 04 or later?
+- If Android tooling is unavailable, what evidence constitutes the precise accepted blocker: `flutter doctor -v`, SDK discovery, device list, and failed build transcript?
+- What minimum visible history/projection is sufficient: raw registered Purchases, calculated totals, or a named rebuildable projection?
+- What backup/recovery rule applies before the first Drift schema upgrade test?
+
+## 9. Recommended Next Bounded Materialization Scope
+
+Sprint 04 should remain one local, Windows-first vertical slice:
+
+1. Correct device creation/allocation and add repeated, rollback, close/reopen, and uniqueness tests.
+2. Define Unicode-safe normalization v2 fixtures, preserve display fields, and introduce the distinct opaque user Product code without confusing it with immutable record identity.
+3. Add JSON Schema files plus readable valid/invalid catalogue, Purchase, and event examples; validate them locally.
+4. Wire the existing application/repository boundary into a minimal responsive Flutter flow: create/select Store and Product, stage at least two Items, review totals, register atomically, display success and local Purchase history.
+5. Terminate and reopen the application and prove facts, pending event, sequence, and displayed history persist.
+6. Run locked analysis/tests and Python regressions.
+7. Build and run Windows after explicitly authorized host setup.
+8. Attempt Android debug build only when approved tooling is present; otherwise record the exact host blocker.
+
+Do not combine TypeScript/Postgres work with this slice. Correct local events are a prerequisite for synchronization, and separating the units keeps failure diagnosis and rollback bounded.
+
+## 10. Explicit Non-Goals
+
+No authentication, secure-storage integration, API, Postgres/Neon, real synchronization, background work, editing/deletion, catalogue merge/alias, global catalogue materialization, household sharing, legacy import, ordinary database conversion, PySide6 retirement, app-store publication, production packaging claim, broad analytics expansion, or iOS acceptance.
+
+## 11. Evidence Matrix
+
+| Claim | Classification | Source |
+| --- | --- | --- |
+| Cycle 06 Python/PySide6 beta remains protected | accepted/validated | 00, 06, J, G; Python database/package surfaces |
+| Flutter/Dart is the shared-client basis | accepted | 00, 06, latest J |
+| Flutter foundation and Drift schema exist | implemented | `clients/markei_flutter`, G |
+| Analysis and local tests passed | validated | G_OPS_CODEX |
+| Atomic Purchase/Items/event/queue transaction | implemented/validated | repository source and local tests |
+| Device sequence is monotonic | defective, not accepted | `local_purchase_repository.dart` |
+| Unicode identity is stable | provisional | Product source and J |
+| Product user code exists | proposed/required, not implemented | human decision; schema inspection |
+| JSON Schema governs contracts | accepted for Sprint 04, not implemented | human decision; contracts inspection |
+| Windows build/run works | blocked | G and 06 host prerequisites |
+| Android build works | blocked/conditional | G and 06 |
+| iOS works | host-unvalidated | generated project only |
+| Flutter DB is isolated from Cycle 06 DB | implemented/local evidence | distinct paths and G |
+| Drift upgrade/recovery is safe | host-unvalidated | schemaVersion 1/onCreate only |
+| TypeScript API/Neon sync exists | deferred | 00, 06, G, repository topology |
+
+## 12. Proposed D/E/F Gates
+
+### D_OPS_STAGE
+
+D_OPS should pin Flutter 3.44.6/Dart 3.12.2 or explicitly authorize an upgrade; list exact Visual Studio workload/components and any Android components; require pre/post `flutter doctor -v`; forbid unscoped installs; name all commands, expected exits, data paths, logs, and stop conditions; require no ordinary Cycle 06 database access; require Windows build/run and lifecycle evidence; define conditional Android build evidence; and require a changed-file audit.
+
+Proposed command sequence, to execute only after authorization:
 
 ```text
-Flutter + Dart shared client
-TypeScript synchronization API favored
-Neon Postgres favored
-verified-email identity → immutable account UUID
-account-private reusable catalogue
-Purchase aggregate → one or more Purchase Items
-append-only purchase.registered synchronization
-versioned Dart analytics
-PySide6 preserved until parity
-no embedded Python runtime
+cd clients/markei_flutter
+flutter doctor -v
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+flutter build windows
+flutter run -d windows
+python -m unittest discover -s tests
+flutter devices
+flutter build apk --debug
 ```
 
-Packaged catalogue identity normalizes product name, brand, `PACKAGED` mode, package amount, and explicit dimension/unit. Bulk identity uses name, brand, and `BULK`. Exact normalization may reuse; similarity only warns and requires a user choice. Package/brand changes create new identities. Quantity remains dimensionally explicit—mass, volume, and count are never converted into each other. Currency and integer minor-unit amounts remain explicit.
+The Android commands are conditional on authorized available tooling. D_OPS must define how to capture the app-private database path, close/reopen result, sequence values, JSON Schema validation output, and original database isolation without exposing user data.
 
-A Purchase is locally atomic with all items and one pending synchronization event. The first UI may collect one item, but storage and fixtures must prove the multi-item-capable aggregate boundary. Raw catalogue/purchase/item facts are authoritative; projections and versioned analytics are rebuildable.
+### E_DDC_STAGE
 
-# Flutter/Dart Host and Toolchain Requirements
+E should bind each new concept to observable evidence: opaque user code versus immutable record ID versus future central-catalogue UUID; Unicode normalization and version migration; JSON Schema validation; aggregate transaction; durable monotonic sequence; lifecycle persistence; generated project versus executed platform. It must not change KANBAN maturity merely because code is written.
 
-Windows development requires a pinned Flutter SDK/Dart version, Git, editor tooling, and `flutter doctor` evidence. Windows desktop additionally requires Visual Studio’s Desktop development with C++ workload and the supported Windows SDK/toolchain. Android requires Android Studio or equivalent SDK management, platform SDK, build-tools, command-line tools, emulator/hardware acceleration, accepted licenses, JDK compatibility, ADB, and either an emulator image or physical debug device. Official setup routes are distinct: [Flutter Windows setup](https://docs.flutter.dev/platform-integration/windows/setup) and [Android setup](https://docs.flutter.dev/platform-integration/android/setup).
+### F_DSN_STAGE
 
-iOS is a separate host boundary: macOS, compatible Xcode, Xcode command-line tools, CocoaPods/Swift Package Manager as required by plugins, Simulator or provisioned device, signing identity, and Apple project configuration. Windows/Android success proves no iOS compatibility. [Flutter iOS setup](https://docs.flutter.dev/platform-integration/ios/setup).
+F should name the exact authorized Flutter files and schema/fixture paths, settle Product identity/code fields and invariants, preserve dependency direction, define sequence uniqueness and allocation ownership, choose JSON Schema draft/validator boundaries, define the minimal projection, and prohibit source changes outside the local slice. It must keep Flutter storage physically separate and avoid API/cloud topology.
 
-Windows packaging later requires a release build, bundled native/plugin DLLs, runtime dependency inspection, installer identity, signing/reputation planning, clean-machine install, user-data path verification, upgrade/uninstall behavior, and immediate reopen. App-store publication is excluded.
+## 13. Operational Stop Conditions
 
-Pin `pubspec.lock` for the application and record Flutter channel/version, Dart version, Android Gradle/JDK/SDK versions, Visual Studio toolset, Xcode version, plugin versions, and API Node/package-manager versions. CI should use locked dependencies, fail on unexpected lock changes, run static analysis and tests, and build from a clean cache periodically. Untested compatibility between any pinned combination is an **assumption**.
+Stop materialization if D/E/F disagree on Product identity, code uniqueness, normalization version, schema ownership, or permitted files; if host installation scope is vague; if the ordinary Cycle 06 database may be opened; if a migration can silently reset data; if sequence correction lacks rollback/reopen proof; if JSON Schema and examples diverge; if UI bypasses the application transaction; if Windows cannot build/run after the authorized prerequisites; or if scope expands into cloud synchronization or PySide6 retirement.
 
-# Local Persistence and Secure Storage
+## 14. Handoff to Main
 
-Candidate A, Drift, is favored for the experiment. Its package documentation advertises SQLite, transactions, schema migrations, generated type safety, Android/iOS/Windows, and test support. [Drift package](https://pub.dev/packages/drift). Required validation includes generated-code reproducibility, decimal/minor-unit representation, foreign keys, unique normalized identity constraints, transactions, migration upgrades, release-mode native library inclusion, concurrent reads, close/reopen, and lifecycle interruption.
-
-Candidate B, `sqflite_common_ffi`, advertises Windows plus Android/iOS and in-memory unit testing. Its documentation warns that desktop path selection should use an explicit application path and describes native SQLite packaging concerns. [sqflite_common_ffi](https://pub.dev/packages/sqflite_common_ffi). It remains useful as a simpler comparison, not a selected production layer.
-
-Database path resolution must use the Flutter platform’s application-support/data directory and an environment-specific filename. The experiment asserts that this path differs from Cycle 06 `%LOCALAPPDATA%/Markei/market.sqlite`. It must neither copy nor migrate that file. Legacy import is later, explicit, read-only-first, backed up, deterministic, and reversible.
-
-`flutter_secure_storage` advertises Android/iOS/Windows platform storage and documents Android cipher/backup requirements and iOS Keychain accessibility. [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage). Store refresh tokens or equivalent long-lived credentials there; keep access tokens memory-bounded where practical. Never store Postgres credentials, API secrets, or auth management keys in the client. Test locked-device behavior, backup/restore, reinstall, logout/delete, token rotation, corrupted entry recovery, and plugin upgrade. Cross-platform support is **assumed until packaged builds pass**.
-
-Flutter lifecycle validation must cover cold start, inactive/background/paused/detached transitions where applicable, foreground resume, OS process termination, and reopened database/token state. Correctness must derive from transactional durability, not from receiving a graceful shutdown callback.
-
-# TypeScript API and Neon Environment
-
-Local development services are: Flutter/Dart tests with two isolated device databases; TypeScript API process; locked Node/package manager; runtime JSON-schema validation; disposable local Postgres; migration runner; fake/test OIDC issuer; and captured structured logs. Node’s built-in runner is a plausible protocol-test basis, but framework/test selection remains open. [Node test runner](https://nodejs.org/api/test.html).
-
-The API owns token verification, account authorization, runtime payload validation, event idempotency, device-sequence policy, cursor allocation/download, per-event transactions, protocol versions, stable errors, and diagnostics. Clients contain no privileged Neon URL.
-
-After local Postgres passes, repeat against a non-production Neon project/branch and role. Use a pooled connection for ordinary web/API requests and a direct controlled connection for migrations, dumps/restores, or tools needing session behavior, matching Neon’s current guidance. [Neon pooling](https://neon.com/docs/connect/connection-pooling). Separate local, CI/test, staging, and production auth applications, URLs, roles, databases, API deployments, secrets, logs, and retention. No external provisioning occurs in this restaging.
-
-# Cross-Language Contracts and Fixtures
-
-Dart and TypeScript must exchange canonical JSON fixtures independent of either runtime’s internal classes. One versioned fixture package/directory should contain:
-
-- event envelope schema and stable error codes;
-- catalogue normalization cases;
-- packaged/bulk product cases;
-- Purchase with one and multiple item lines;
-- explicit quantity dimension/unit;
-- currency and integer minor-unit money;
-- expected event UUID/device sequence/cursor behavior;
-- expected local projections;
-- analytics identifier/version and result.
-
-Canonical JSON rules must specify field names, nullability, UUID text form, integer ranges, decimal serialization, UTC/business timestamps, enum values, unknown-field policy, schema/protocol version, and deterministic normalization. Dart decodes, validates, re-encodes, and compares fixtures; TypeScript does the same with runtime validation. Golden JSON should be byte-stable only where canonicalization is explicitly defined; semantic equality is otherwise the gate.
-
-Dart unit tests own pure normalization, identity, aggregate, projection, and versioned analytics. Database tests own transactions/migrations. Flutter widget/integration tests own staging and lifecycle behavior. API/Postgres tests own authorization, append/cursor semantics, and failure recovery. Python is only a fixture/reference source during parity comparison.
-
-Logs correlate `request_id`, `batch_id`, `event_id`, device UUID, pseudonymous account identifier, device sequence, cursor range, protocol/app/analytics versions, latency, retry class, and sanitized outcome. Tokens, database URLs, verification codes, and sensitive notes are redacted.
-
-# Platform Validation Matrix
-
-| Gate | Windows | Android | iOS |
-| --- | --- | --- | --- |
-| Clean toolchain | Flutter doctor + VS C++/SDK captured | SDK/JDK/ADB/emulator/device captured | macOS/Xcode/signing captured |
-| Build/run | Debug and release app launch | Emulator and physical-device debug/release-relevant launch | Explicitly unvalidated until macOS/Xcode |
-| Fresh local DB | App-private path and schema | App-private path and schema | Later identical gate |
-| Catalogue exact normalization | Packaged equivalence reuses ID | Same fixture result | Later same fixture |
-| Similarity warning | Warning; no automatic merge | Same | Later |
-| Packaged/bulk | Distinct identity rules pass | Same | Later |
-| Atomic purchase | Purchase + items + pending event commit/rollback together | Same | Later |
-| Close/reopen | Facts, cursor, queue persist | After process kill/relaunch | Later lifecycle test |
-| Projection parity | Golden catalogue/list facts match | Match Windows | Later |
-| Analytics parity | Analytic ID/version/result match fixture | Match Windows | Later |
-| Secure token storage | Packaged plugin test | Backup/logout/rotation test | Keychain test later |
-| Cycle 06 isolation | Original path/hash untouched | No access route | No access route |
-
-# Synchronization Failure Matrix
-
-| Scenario | Pass condition |
-| --- | --- |
-| Offline pending event | Local aggregate/event persists with no API |
-| Retry after lost response | Identical UUID/content returns prior per-event acceptance; one server event |
-| Conflicting duplicate UUID | Rejected with stable error; accepted event unchanged |
-| Device-sequence gap | Rejected and missing earlier sequence requested |
-| Cursor download | Ordered account-scoped bounded page; opaque next cursor |
-| Download interruption | Events and cursor both commit or neither commits |
-| Second-device bootstrap | Cursor zero pages rebuild same authoritative facts/projections |
-| Cross-account request | Token/account mismatch reads and writes nothing |
-| Malformed/version event | Stable validation/protocol error; no cursor allocation |
-| API/Postgres restart | Durable append/cursor recover; client retry succeeds |
-| Multi-event upload | Per-event transactional results; one failure does not corrupt others |
-| Local close/reopen | Queue, applied IDs, cursor, facts and versions persist |
-
-# Migration and Rollback
-
-Flutter-local migrations are ordered, versioned, tested from empty and from every supported prior beta schema. Before migration, close competing connections and create a recoverable backup where the platform permits. Migration failure must leave either the old valid schema/data or a recoverable copy; it must never silently reset user data.
-
-API/Neon migrations are owned by the API boundary. CI applies them to fresh Postgres and representative prior schemas. Deployment order must preserve backward protocol compatibility: expand schema, deploy compatible API, migrate/backfill if required, then remove old fields only after all supported clients no longer depend on them. Ordinary API uses pooled connections; migrations use controlled direct access.
-
-Rollback means application/API rollback plus forward corrective migration by default; destructive down migrations are not assumed safe. Neon branching/restore may support rehearsal/recovery, but does not replace migration tests.
-
-Cycle 06 migration remains deferred. Preserve PySide6 binaries, schema documentation, installer evidence, and original database. A later importer reads a copied backup, deterministically maps legacy IDs/units/money into new UUID facts, produces a report, and never mutates the source.
-
-# Development Cost
-
-Flutter concentrates client UI, lifecycle, persistence access, networking, analytics, and tests in Dart across three targets. Its upfront cost is learning Dart/Flutter, establishing responsive desktop/mobile patterns, selecting plugins, native toolchains, and recreating proven Python behavior through fixtures. Cost grows if Windows plugins lag mobile, native packaging fails, secure storage differs, or iOS issues appear late.
-
-Tauri retains TypeScript familiarity and offers Windows/mobile distribution, but adds Rust, IPC/security capabilities, WebView behavior, and platform/mobile plugin evaluation. Its official prerequisites include Rust, C++/WebView2 on Windows, and separate Android/iOS toolchains. [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/).
-
-React Native plus React Native Windows retains React/TypeScript and native components, but Windows is an additional implementation/package with release alignment, native project/toolchain, module-compatibility, and upgrade responsibilities. Current RNW documentation shows a distinct Windows dependency/project initialization route. [React Native Windows](https://microsoft.github.io/react-native-windows/docs/getting-started/).
-
-Flutter is favored because one client framework/language better matches the product goal. This does not prove lower total cost. The alternatives remain controls if Flutter fails essential SQLite, secure storage, accessibility, packaging, or lifecycle gates.
-
-# Proposed Sprint 03 Experiment
-
-After D/E/F authorization only:
-
-1. pin Flutter/Dart and TypeScript/Node environments;
-2. define shared JSON schemas and golden fixtures;
-3. evaluate Drift first on Windows and Android;
-4. create two fresh app-private local stores;
-5. pass exact/similar and packaged/bulk catalogue cases;
-6. atomically register one one-item Purchase using a multi-item contract plus pending event;
-7. close/reopen and rebuild versioned projections/analytics;
-8. run a local TypeScript API with disposable Postgres and fake account tokens;
-9. prove retry, gap, cursor, bootstrap, cross-account, restart, and correlation logs;
-10. build/run Windows and Android;
-11. verify Cycle 06 database path/hash untouched;
-12. record iOS as blocked/unvalidated pending macOS/Xcode, then later repeat there.
-
-Do not provision Neon until local protocol and migration gates pass. The experiment ends before broad UI, legacy import, publication, or PySide6 retirement.
-
-# Stop Conditions
-
-Stop if Flutter cannot produce reproducible Windows and Android builds; selected SQLite or secure-storage plugins fail a required target; aggregate/event atomicity cannot be guaranteed; normalization differs across platforms; similarity auto-merges; retry duplicates; gaps are silently accepted; cursor advances without applied facts; another account’s data is exposed; credentials enter client/logs; migrations risk silent reset; original Cycle 06 data is reachable; or scope expands into editing/deletion, global catalogue, household sharing, background/realtime sync, production provisioning, app-store work, or embedded Python.
-
-# Handoff to Main
-
-Main should reconcile Drift-first persistence, secure-storage verification, cross-language canonical fixtures, platform-specific toolchain gates, and the local protocol harness as the smallest future evidence unit. Flutter/Dart is accepted for planning; Windows/Android compatibility remains assumed until built, and iOS remains explicitly unvalidated until macOS/Xcode evidence. Keep Tauri and React Native Windows as cost controls, TypeScript at the API boundary, Neon after local proof, PySide6 as rollback, and D/E/F postponed until Sprint 03 scope is authorized.
+A is now current enough for Sprint 04 synthesis. Main should reconcile the user Product-code decision, internal/future UUID distinction, JSON Schema choice, Windows-required/Android-conditional acceptance, and exact tool-install authority into new D/E/F. Operationally, the cheapest defensible next unit is the corrected and schema-hardened local Flutter Purchase flow, proven on Windows with Cycle 06 isolation; Android is an attempted build when tooling exists, while TypeScript/Postgres and iOS remain later boundaries.
