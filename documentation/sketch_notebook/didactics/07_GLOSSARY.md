@@ -267,3 +267,36 @@ A platform-security or reputation observation distinct from application correctn
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+# Sprint 03 Local-Evidence Retrieval
+
+These notes derive from the canonical evidence boundary recorded in `02_KANBAN.md`.
+
+## Local Implementation Evidence
+**KANBAN IDs:** `&&&06`, `&&&10`, `&&%05`, `&%%07`–`&%%12`, `&%%15`–`&%%17`, `%%%07`  
+Dart/Drift tests now exercise the local catalogue, Purchase aggregate, immutable local event, pending queue, dimensional quantity, minor-unit money, persistence, rollback, and minimal analytics registry. This is local unit-test evidence, not platform or learner validation.
+
+## Versioned Semantic Fixture
+**KANBAN IDs:** `&%%08`, `&%%09`, `&%%11`, `&%%14`  
+A human-readable cross-language example containing inputs, expectations, or required fields. Current JSON fixtures coordinate meaning but do not yet specify a complete wire protocol, schema validation, or Dart/TypeScript parity.
+
+## Offline Queue Preparation
+**KANBAN ID:** `&%%12`  
+Atomic creation of a durable pending-event row beside local facts. It does not prove upload, server acceptance, retry deduplication, cursor download, or synchronization.
+
+## Generated Code
+**KANBAN IDs:** `%%%07`, `&%%02`  
+Source produced from reviewed schema/configuration and tooling. Drift database code and Flutter platform runners are regeneration outputs; their existence does not equal handwritten domain design or platform validation.
+
+## Host-Unvalidated Platform Target
+**KANBAN ID:** `%%%07`  
+A generated platform project not yet built or run on the required host. Android, Windows, and iOS remain host-unvalidated in Sprint 03 Unit 01.
+
+## Provisional Device Ordering
+**KANBAN ID:** `&%%13`  
+The intended monotonic device sequence and cursor responsibility is not implemented reliably: repeated registration may reset sequence allocation, and no server cursor exists.
+
+## Local Event Versus Synchronization
+**KANBAN IDs:** `&%%11`, `&%%12`, `&%%14`, `&&&09`  
+A persisted local append-only event and queue are prerequisites for synchronization. They are not evidence of an API, server idempotency, cursor application, cross-device convergence, authentication, or authorization.
+
