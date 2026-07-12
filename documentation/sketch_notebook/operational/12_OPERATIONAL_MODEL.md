@@ -228,3 +228,40 @@ Update this model only when stable Operational behavior or reusable validation r
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+# Generated-Source and Cross-Platform Evidence Rules
+
+## Generated-source ownership
+
+Generated source is not reviewed as if every generated line were handwritten. Operational ownership is:
+
+```text
+review generator inputs, schema and configuration
+→ pin generator/runtime dependencies
+→ regenerate cleanly
+→ verify no unexplained diff
+→ run static analysis, tests and target builds
+```
+
+Committed lockfiles record resolved dependency state. Build outputs and local runtime databases remain excluded unless a separate artifact policy explicitly owns them.
+
+## Target generation is not platform validation
+
+Creating platform project directories proves only that scaffolding was generated. A platform claim requires its target host/toolchain, successful build, launch, lifecycle behavior, persistence behavior, and relevant packaged-plugin validation. Evidence from one platform does not validate another.
+
+## Durable monotonic sequence rule
+
+A per-device sequence used for synchronization must be allocated durably, must not reset during ordinary registration, and must be uniquely constrained within its account/device responsibility. Repeated-operation and recovery tests are required before ordering depends on it.
+
+## Versioned canonical identity rule
+
+When normalized identity affects stable identifiers across runtimes:
+
+- display text remains separately preserved;
+- normalization is explicitly versioned;
+- Unicode, locale, whitespace, punctuation, dimension/unit, and canonical numeric rules are specified;
+- fixed fixtures prove equivalent output across participating runtimes;
+- rule changes require a migration policy rather than silent reinterpretation.
+
+## Contract-example boundary
+
+Human-readable JSON examples coordinate semantics but do not become a complete wire contract until required types, ranges, nullability, enums, unknown-field behavior, timestamp/decimal form, version compatibility, valid/invalid examples, and runtime validation are defined and tested.
