@@ -104,3 +104,48 @@ Recovery route:
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+# Cycle 07 Sprint 03 Operational Checkpoint
+
+## Current evidence
+
+```text
+Sprint 03 Unit 01: materialized
+Flutter SDK: installed, 3.44.6 stable
+Dart: 3.12.2
+Flutter/Dart client foundation: implemented
+Drift local schema/generated source: implemented
+shared_beta/v1 JSON examples: implemented but incomplete
+flutter analyze: passed
+flutter test: 9 passed
+Python unittest: 5 passed
+Windows build/run: host-blocked
+Android build/run: host-blocked
+iOS build/run: host-unavailable
+TypeScript API/auth/Neon/synchronization: not implemented
+Sprint 04: not authorized
+```
+
+## Implemented and locally validated
+
+- additive Flutter client coexists with the preserved PySide6 beta;
+- domain models remain independent from widgets and Drift;
+- PACKAGED/BULK, dimensional quantity, minor-unit money, Purchase aggregate, Purchase Items, pending event, and analytics version structures exist;
+- Purchase facts, Items, immutable local event, and pending queue entry commit in one Drift transaction;
+- invalid Item rollback and temporary-file close/reopen passed;
+- Drift is an implemented foundation dependency, not proof of platform compatibility.
+
+## Defects and unvalidated boundaries
+
+- device allocation likely resets `nextSequence`; monotonic ordering is not accepted;
+- Unicode/Portuguese-safe normalization is unproven;
+- deterministic Product ID is cross-language and UUID-contract unvalidated;
+- Purchase/event JSON examples are not a complete wire specification;
+- fresh schema creation passed, but schema upgrade/recovery did not;
+- Windows lacks Visual Studio C++ workload; Android SDK is absent; iOS lacks macOS/Xcode;
+- Store identity/deduplication, user Purchase UI, cloud sync, authentication, API, Postgres/Neon, legacy import, and parity remain absent.
+
+## Next bounded sequence
+
+Main orientation favors the local shared-client vertical slice first, beginning with sequence correction and contract hardening, then minimal UI, visible projections, close/reopen, and Windows/Android execution. The local synchronization harness remains the following candidate.
+
+No implementation is authorized until Sprint 04 D/E/F is approved.
