@@ -1,338 +1,222 @@
-# A_OPERATIONAL — Cycle 06
+# A_OPERATIONAL — Cycle 06 Sprint 02
 
-> Status: Complete compressed functional stage
+> Status: Complete compact Operational delta
 > Role: Operational Chat [O]
 > Branch: `sketch-notebook-recovery`
-> Authority: analysis for Main reconciliation only
-> Main stage: `documentation/sketch_notebook/[M]_STAGE/J_[M]_STAGE.md`
+> Authority: Main reconciliation input only
+> Milestone: Fully executable and installable Windows primary beta
 
 ## Main Synthesis Summary
 
-Markei already has the core source/frozen boundary required for a Windows beta: a PyInstaller one-folder configuration, a PowerShell build script, external writable data under `%LOCALAPPDATA%/Markei`, frozen-resource resolution, a version-resource file, and four public desktop surfaces. However, the recovery branch is only **configured**. No contemporary Cycle 06 evidence proves that the executable was built, launched outside the build context, installed, exercised, closed, reopened, upgraded, uninstalled, or reinstalled.
+Sprint 01 already established a configured, built, and launched one-folder frozen runtime. Sprint 02 does not need another packaging redesign. Its operational task is to cross the remaining evidence boundaries: resolve Inno Setup, compile and inspect the installer, exercise an ordinary per-user installation, validate principal workflows and immediate reopen, then prove retention through reinstall, uninstall, and recovery.
 
-Five issues must be reconciled before D/E/F. First, `Markei.spec` and `scripts/build_windows.ps1` duplicate packaging authority and both bundle `seed.sql`; the seed contains defaults plus a real store and example Rice product. Second, the Windows version file exists but is not connected to the spec, and no icon is configured. Third, dependency versions and a supported builder Python are not fixed. Fourth, inspected entrypoints lack a top-level persistent startup-diagnostic boundary. Fifth, the exact current installer definition was not located; historical Cycle 05 claims therefore remain historical evidence, not current configuration proof.
+The repository route is concrete. `scripts/build_installer.ps1` requires `dist\Markei\Markei.exe`, resolves `ISCC.exe` from an explicit `-ISCCPath`, `ISCC_PATH`, or the two normal Inno Setup 6 installation locations, compiles `installer\Markei.iss`, and expects `dist\installer\Markei-Setup-0.1.0-x64.exe`. The installer is configured for lowest-privilege per-user placement under `%LOCALAPPDATA%\Programs\Markei`, a Start Menu shortcut, optional desktop shortcut, and no removal of `%LOCALAPPDATA%\Markei` user state.
 
-The application creates four page-owned service/repository/SQLite chains. Local close capability exists, but deterministic application-wide shutdown and immediate database reopen remain unvalidated. Multi-step receipt and deletion workflows also commit in parts; this is a confirmed structure but not yet a proven beta failure.
+No current evidence justifies an implementation correction. The immediate route is validation-first: provide Inno Setup 6, rebuild the frozen distribution, compile, inspect, and run the lifecycle in a dedicated Windows test account. A dedicated account is preferred over redirecting only environment variables because the installer and shortcuts use Windows per-user shell locations. It protects ordinary user data while preserving realistic Start Menu, uninstall-registration, and Local AppData behavior.
 
-Main must obtain decisions on production seed content, uninstall data retention, beta identity, shortcuts, and whether shutdown or transaction risks require implementation changes before beta. The recommended first materialization boundary is narrow: establish one authoritative build configuration, implement accepted seed and identity decisions, add startup diagnostics and installer configuration, then add only the focused validation assets needed to prove source, frozen, installed, workflow, and lifecycle gates.
+Codex can execute static tests, frozen rebuild, compiler discovery, installer compilation, hashes, file inspection, and some scripted install-state checks when desktop access permits. Human interaction remains required for installer UI, SmartScreen/antivirus observations, Start Menu usability, the four application workflows, visible close/reopen behavior, and final acceptance. Any failure must be classified before a correction is staged. The beta remains `installed: blocked`, `validated: partial`, and `accepted: no` until all acceptance gates pass.
 
-## Current Operational Baseline
+## Inherited Evidence
 
-Runtime:
-
-```text
-main.py → app.main.main() → MainWindow
-→ Register / Lists / History / Settings
-→ ProductService → Repository → SQLite
-```
-
-The live database is configured at `%LOCALAPPDATA%/Markei/market.sqlite`; `schema.sql` and optional `seed.sql` are loaded from repository resources in source mode and from the PyInstaller resource base in frozen mode.
-
-Current evidence status:
+Do not repeat or reopen Sprint 01 findings unless drift appears:
 
 ```text
-source/frozen path separation     configured
-PyInstaller one-folder build      configured
-current frozen artifact           unknown
-installer definition              unknown
-installed lifecycle               unvalidated
-Cycle 06 beta                     not accepted
+configured: yes
+built: yes
+launched: yes — frozen isolated launch and immediate reopen
+installed: blocked
+validated: partial
+accepted: no
 ```
 
-Four pages each construct a `ProductService`, `Repository`, connection, and cursor. Repository and service close methods exist; one composition-level shutdown owner is not established. Repository mutations commit individually, so complete receipt and deletion/recalculation workflows are not atomic.
+Validated evidence includes source compilation, five standard-library tests, a clean one-folder build, schema-only first launch, resource exclusions, startup-log creation, bounded shutdown correction, closure of four page-owned repositories, and frozen immediate reopen. The built executable was reported at `dist\Markei\Markei.exe` with SHA256 `E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B`.
+
+The previous installer attempt was blocked solely because `ISCC.exe` was unavailable. No compiled installer or installed-lifecycle evidence exists.
 
 ## Essential Evidence Index
 
-| ID | File or evidence | Why it matters |
+| ID | File or evidence | Sprint 02 relevance |
 | -- | -- | -- |
-| E1 | `Markei.spec` | Defines `main.py` one-folder packaging; includes schema and seed, uses console and UPX, but no version or icon. |
-| E2 | `scripts/build_windows.ps1` | Defines the repository build command and independently repeats resource inclusion. |
-| E3 | `app/core/database.py` | Owns frozen-resource lookup, external user-data path, automatic optional seed execution, migration, and reset. |
-| E4 | `app/database/seed.sql` | Contains settings plus category, store, and example Rice business data. |
-| E5 | `build/markei_version_info.txt` and `app/core/config.py` | Define version `0.1.0`, but executable integration is absent from E1. |
-| E6 | `app/main.py` and `main.py` | Define startup; no inspected persistent top-level exception diagnostic exists. |
-| E7 | `app/desktop/main_window.py`, page constructors, Repository/Service close APIs | Establish four public surfaces and distributed connection ownership. |
-| E8 | Operational checkpoints and Cycle 06 scheme | Preserve historical frozen-build evidence as non-contemporary and require full installed lifecycle validation. |
+| E1 | `installer/Markei.iss` | Defines per-user placement, identity, file source, shortcuts, output name, and configured preservation behavior. |
+| E2 | `scripts/build_installer.ps1` | Defines compiler discovery, prerequisites, compile invocation, and expected artifact path. |
+| E3 | `Markei.spec` | Confirms the installer input is the schema-only windowed one-folder runtime. |
+| E4 | `scripts/build_windows.ps1` and `requirements-build.txt` | Provide the reproducible frozen rebuild route and observed build dependencies. |
+| E5 | `tests/test_release_configuration.py` | Checks package policy, installer source policy, identity, diagnostics, and schema-only first launch. |
+| E6 | `DEV_STAGE/G_OPS_CODEX.md` | Records successful Sprint 01 gates, executable hash, shutdown correction, and the `ISCC.exe` blocker. |
+| E7 | Main continuity and Operational checkpoint | Establish the remaining lifecycle route and prohibit status inflation. |
 
-Additional inspected files: `requirements.txt`, `requirements-dev.txt`, `app/core/repository.py`, `app/core/services.py`, `app/desktop/ui/pages/register_page.py`, `00_PROJECT_STATE.md`, `06_SESSION_SCHEME.md`, `operational/10_OPERATIONAL_STATE.md`, `operational/04_TODO.md`, and `operational/12_OPERATIONAL_MODEL.md`.
+## Installer Toolchain Route
 
-## Build and Installation Gaps
+### Prerequisite and resolution
 
-Finding:
-The branch has two packaging-control surfaces that can drift: E1 and E2 both define the entrypoint and bundled SQL resources.
+Provide Inno Setup 6 so that `ISCC.exe` is available by one repository-supported route, in this precedence order:
 
-Status:
-observed
+1. explicit parameter:
+   ```powershell
+   .\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
+   ```
+2. environment variable:
+   ```powershell
+   $env:ISCC_PATH = "C:\path\to\ISCC.exe"
+   .\scripts\build_installer.ps1
+   ```
+3. automatic discovery under either:
+   ```text
+   %ProgramFiles(x86)%\Inno Setup 6\ISCC.exe
+   %ProgramFiles%\Inno Setup 6\ISCC.exe
+   ```
 
-Impact:
-materialization input
+Before compilation, confirm the path exists and capture the compiler version. Missing compiler remains a `toolchain prerequisite` blocker, not an installer defect.
 
-Evidence:
-E1, E2
+### Build and compile
 
-Finding:
-Both packaging surfaces include `seed.sql`, and initialization executes it whenever present. The configured beta would therefore create example business data unless policy or implementation changes.
-
-Status:
-observed
-
-Impact:
-beta blocker
-
-Evidence:
-E1, E2, E3, E4
-
-Finding:
-Version metadata exists but is not attached to E1; no icon is configured. The spec defaults to a console executable and enables UPX without contemporary validation.
-
-Status:
-observed
-
-Impact:
-materialization input
-
-Evidence:
-E1, E5
-
-Finding:
-`requirements.txt` and `requirements-dev.txt` declare PySide6 and PyInstaller without versions, and no supported builder Python version is encoded.
-
-Status:
-observed
-
-Impact:
-materialization input
-
-Evidence:
-additional dependency files
-
-Finding:
-The exact contemporary `.iss` installer file and installer compile script were not located through bounded branch-qualified inspection. Historical claims cannot establish current installer configuration.
-
-Status:
-unresolved
-
-Impact:
-beta blocker
-
-Evidence:
-E8
-
-Finding:
-The source/frozen resource and writable-data split is already implemented, but generated resource inclusion, Qt plugin collection, working-directory independence, and data exclusion remain unvalidated.
-
-Status:
-observed
-
-Impact:
-validation input
-
-Evidence:
-E1, E2, E3
-
-Immediately required repository commands are limited to:
+From the repository root on `sketch-notebook-recovery`:
 
 ```powershell
-python -m compileall app main.py
+python -m unittest discover -s tests
 .\scripts\build_windows.ps1
+.\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
 ```
 
-Detailed clean-build, artifact-inspection, and installer commands belong in D_OPS_STAGE after the authoritative packaging and installer files are selected.
+Expected input:
 
-## Required Validation Gates
+```text
+dist\Markei\Markei.exe
+```
 
-| Gate | Required evidence | Current status |
-| ---- | ----------------- | -------------- |
-| Source integrity | imports compile; isolated DB initializes/migrates; four public pages launch | unvalidated in Cycle 06 |
-| Frozen runtime | clean one-folder build; launch outside repository/build working directory; schema and Qt plugins found; approved seed behavior; external DB; no live DB/WAL/SHM bundled | configured, unvalidated |
-| Installer compilation | exact installer source and compiler recorded; installer builds with approved identity and file set | blocked by unresolved topology/toolchain |
-| Clean installation | install in ordinary per-user environment; launch from installed entrypoint without Python/source checkout | unvalidated |
-| Installed workflow | Register write; Lists and History refresh; Settings/store workflow; normal close and persistence | unvalidated |
-| Lifecycle | immediate reopen; no release-blocking DB lock; accepted upgrade/uninstall/reinstall and retained-data behavior | unvalidated |
-| Release evidence | matching A/B/C, J, D/E/F, G/H/I and recorded human validation | pending |
+Expected output:
 
-## Operational Risks
+```text
+dist\installer\Markei-Setup-0.1.0-x64.exe
+```
 
-Finding:
-Application composition distributes four long-lived SQLite ownership chains. Local close methods exist, but normal Qt closure has not proven that all four close deterministically.
+### Artifact inspection
 
-Status:
-unresolved
+Record compiler path/version, command exit code, artifact path, byte size, timestamp, and SHA256. Verify Windows file properties and installer-visible identity agree with `Markei`, `0.1.0`, publisher `Markei`, and x64. Inspect the packaged source set or installed files to confirm the installer consumes `dist\Markei` and does not introduce source files, tests, `seed.sql`, `market.sqlite`, WAL/SHM, logs, caches, or development residue.
 
-Impact:
-beta blocker if immediate reopen or file cleanup fails; otherwise validation input
+A compiled artifact advances the state to `installer built`; it does not establish `installed` or lifecycle `validated`.
 
-Evidence:
-E7, E8
+## Installed Lifecycle Test Route
 
-Finding:
-Receipt registration and deletion/recalculation span multiple committed mutations, allowing partial durable state after injected failure.
+### Safe test environment
 
-Status:
-observed
+Use a dedicated ordinary Windows test account with no existing Markei state. Before starting, record whether these paths exist:
 
-Impact:
-validation input; beta blocker only if Main/Design/Human reject demonstrated failure behavior
+```text
+%LOCALAPPDATA%\Programs\Markei
+%LOCALAPPDATA%\Markei
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Markei
+```
 
-Evidence:
-E7, E8
+Do not delete or repurpose the ordinary user’s Markei directory. Preserve a copy of the dedicated account’s test database before destructive lifecycle transitions.
 
-Finding:
-Startup failures can occur before MainWindow appears, but inspected entrypoints expose no persistent log or actionable top-level dialog.
+### Clean install and launch
 
-Status:
-observed
+1. Run `dist\installer\Markei-Setup-0.1.0-x64.exe` interactively.
+2. Confirm per-user destination and no administrator requirement.
+3. Leave the optional desktop shortcut unselected for the primary route; test it separately if selected.
+4. Confirm installed program files exist under `%LOCALAPPDATA%\Programs\Markei`.
+5. Confirm the Start Menu entry exists.
+6. Launch only from the Start Menu, with no active development shell, Python command, or repository working directory.
+7. Record process start, visible MainWindow, and any startup log or error dialog.
 
-Impact:
-materialization input
+### Principal workflow evidence
 
-Evidence:
-E6
+Exercise a small, uniquely identifiable dataset:
 
-Finding:
-Unpinned build dependencies, duplicate packaging definitions, stale output, missing Qt plugins, or UPX behavior can produce a builder-specific artifact that is not reproducible.
+1. Settings: create or edit a test store and save settings.
+2. Register: register one identifiable product and purchase.
+3. Lists: verify the product appears in the appropriate current projection.
+4. History: verify the purchase appears with the expected values.
+5. Return to Settings and confirm saved values remain visible.
 
-Status:
-inferred
+Capture the entered identifiers and observed results, not just screenshots of an open window.
 
-Impact:
-materialization and validation input
+### Close, reopen, and persistence
 
-Evidence:
-E1, E2
+Close through the normal window control. Immediately relaunch from the Start Menu. Confirm no database-lock or startup error appears and that the store, product, purchase, Lists projection, History entry, and settings persist. Record `%LOCALAPPDATA%\Markei\market.sqlite` existence and modification time. Installed shutdown is `validated` only after this installed-context route passes; Sprint 01 frozen evidence is insufficient.
 
-Finding:
-External database placement supports preservation but does not prove upgrade, uninstall, or reinstall behavior.
+### Reinstall, uninstall, and recovery
 
-Status:
-observed
+Run the same-version installer again and confirm program files are replaced or repaired without losing the test dataset. If a compatible version change is staged later, repeat with the same AppId and verify the existing database opens.
 
-Impact:
-beta blocker until lifecycle evidence exists
+Uninstall through Windows Installed Apps or the registered Markei uninstaller. Confirm program files and shortcuts are removed, then separately verify `%LOCALAPPDATA%\Markei\market.sqlite` remains. External placement and absence of installer deletion directives are only configuration evidence; direct post-uninstall inspection is required.
 
-Evidence:
-E3, E8
+Reinstall the same compatible package, launch from Start Menu, and verify the retained test dataset reappears without manual database copying. Capture before/after database hash or a query-based record summary when practical; hashes may change during normal SQLite access, so semantic row evidence remains required.
 
-## Decisions Required
+## Human Validation Boundary
 
-Decision:
-What belongs in production first-launch data?
+Codex may execute or automate:
 
-Options:
-A. Exclude `seed.sql` and let schema/migration create only required defaults.
-B. Split production defaults from demo/development data and package only the production resource.
-C. Retain the current seed, explicitly accepting category, store, settings, and Rice data.
+- compiler discovery and version capture;
+- standard-library tests and frozen rebuild;
+- installer compilation;
+- artifact hashing and file-set inspection;
+- scripted existence checks for program, shortcut, and data paths;
+- database row queries before and after lifecycle transitions;
+- unattended steps only when they do not hide required human observations.
 
-Domain recommendation:
-B, or A if migration already owns all mandatory defaults; do not ship example business data implicitly.
+Human validation is required for:
 
-Required owner:
-Human / Design / Main
+- installer wizard, destination, and privilege behavior;
+- SmartScreen prompts and antivirus detections or absence thereof;
+- Start Menu and optional desktop shortcut usability;
+- visible launch without development tooling;
+- Register, Lists, History, and Settings workflow correctness;
+- normal close and immediate reopen behavior;
+- acceptance of retained-data behavior;
+- final beta acceptance.
 
-Deadline:
-before D/E/F
+Unsigned reputation warnings must be recorded as Windows reputation/security observations, not automatically classified as application defects.
 
-Decision:
-What happens to `%LOCALAPPDATA%/Markei` during uninstall?
+## Failure Classification
 
-Options:
-A. Preserve by default.
-B. Preserve by default with an explicit optional removal choice.
-C. Remove automatically.
+Classify the first failing gate before changing files:
 
-Domain recommendation:
-B for controlled beta, provided installer behavior is testable; otherwise A is operationally safer.
+| Class | Examples |
+| -- | -- |
+| toolchain prerequisite | `ISCC.exe` missing or inaccessible |
+| installer configuration defect | compile error, wrong output, shortcut or uninstall registration absent |
+| packaging defect | missing executable, Qt plugin, schema, or forbidden bundled data |
+| installed runtime defect | installed executable fails before workflows begin |
+| application workflow defect | Register, Lists, History, or Settings behaves incorrectly only after launch |
+| data-retention defect | data lost or overwritten during reinstall, uninstall, or recovery |
+| Windows reputation/security observation | SmartScreen warning or antivirus action |
+| human acceptance failure | technically passing artifact rejected for observable beta usability |
 
-Required owner:
-Human / Design / Main
+Stop dependent gates after a failure and retain the original evidence.
 
-Deadline:
-before D/E/F
+## Potential Bounded Corrections
 
-Decision:
-What is the accepted beta identity?
+No correction is presently authorized. After a demonstrated failure, Main may stage only the smallest relevant change, such as:
 
-Options:
-A. Retain `Markei`, version `0.1.0`, executable `Markei.exe`, and define publisher/installer/AppId.
-B. Approve a different beta version or naming set.
+- compiler-path or actionable-error correction in `build_installer.ps1`;
+- output-name/path synchronization between the wrapper and `.iss`;
+- a narrow Inno Setup file, shortcut, identity, or uninstall-registration correction;
+- a missing packaged runtime/resource correction in `Markei.spec`;
+- an installed-only startup diagnostic correction;
+- an installed shutdown correction only if the existing `MainWindow.closeEvent()` route fails in the installed context;
+- a workflow correction only for a reproducible beta-blocking workflow failure;
+- a retention correction only if direct lifecycle evidence contradicts the accepted preserve-data policy.
 
-Domain recommendation:
-Use one approved identity source propagated to application, executable, and installer.
+Do not use Sprint 02 failures to authorize broad service/repository, transaction, schema, migration, UI, or composition redesign.
 
-Required owner:
-Human / Main / Design
+## Acceptance Gates
 
-Deadline:
-before D/E/F
-
-Decision:
-Which packaging surface is authoritative?
-
-Options:
-A. `Markei.spec`, with the PowerShell script invoking it.
-B. Command-line arguments in the PowerShell script, with generated spec treated as output.
-
-Domain recommendation:
-A, because version, icon, datas, console mode, and later hooks need one reviewable source.
-
-Required owner:
-Main, informed by Operational evidence
-
-Deadline:
-before D/E/F
-
-Decision:
-Does the installer create a desktop shortcut?
-
-Options:
-A. Start Menu only.
-B. Start Menu plus optional desktop shortcut.
-C. Both unconditionally.
-
-Domain recommendation:
-B.
-
-Required owner:
-Human / Design / Main
-
-Deadline:
-before D/E/F
-
-Decision:
-Must shutdown ownership or workflow transactions change before beta?
-
-Options:
-A. Validate current behavior first and patch only demonstrated release blockers.
-B. Require composition-owned shutdown and/or workflow transactions before artifact validation.
-
-Domain recommendation:
-A; current structure establishes risk, not failure.
-
-Required owner:
-Main / Design / Human, based on Operational evidence
-
-Deadline:
-before beta acceptance; implementation decision before D/E/F only if preemptive correction is chosen
-
-## Recommended First Materialization Boundary
-
-The first D_OPS_STAGE should be limited to:
-
-1. make `Markei.spec` the single packaging source and make the build script invoke it;
-2. implement the accepted production seed decision;
-3. attach approved version metadata and icon, produce diagnostic-console and final-windowed modes, and disable UPX unless explicitly validated;
-4. pin or otherwise record the supported Python, PySide6, and PyInstaller build environment;
-5. add persistent startup exception diagnostics;
-6. locate/repair or create the bounded Inno Setup definition and compile script with accepted identity, shortcuts, and retention behavior;
-7. add focused tests or probes for resource discovery, external DB placement, package exclusions, shutdown/immediate reopen, and installed lifecycle evidence.
-
-Do not combine this boundary with broad application refactoring. Build and installation validation should follow in later execution steps but remain part of the same Cycle 06 milestone.
-
-## Explicit Deferrals
-
-Deferred outside Cycle 06:
-mobile, backend/API, synchronization, authentication, cloud persistence, broad service/repository decomposition, unrelated UI redesign, broad schema redesign, complete migration-framework replacement, one-file packaging, automatic updates, rollback infrastructure, and production signing unless controlled-beta execution is blocked without it.
+| Gate | Required evidence | Current state |
+| -- | -- | -- |
+| Compiler | Inno Setup 6 path and version captured | blocked |
+| Installer artifact | compile succeeds; identity, contents, size, hash inspected | blocked |
+| Clean installation | ordinary per-user install and registered shortcuts | blocked |
+| Installed launch | Start Menu launch without Python/source checkout | blocked |
+| Workflows | Register, Lists, History, Settings pass with recorded data | blocked |
+| Installed close/reopen | immediate reopen with no retained lock and persisted data | blocked |
+| Reinstall/upgrade | compatible replacement preserves and opens data | blocked |
+| Uninstall retention | program removed; `%LOCALAPPDATA%\Markei` retained | blocked |
+| Reinstall recovery | retained compatible data reopens after reinstall | blocked |
+| Windows observations | SmartScreen/antivirus behavior recorded | pending |
+| Acceptance | Main/human explicitly accepts the complete lifecycle | pending |
 
 ## Main Handoff
 
-Main can proceed to J reconciliation once Didactic and Design stages are available. The Operational position is: Markei has a credible source/frozen data boundary and useful packaging inputs, but no current accepted release artifact. D/E/F must first resolve seed, retention, identity, shortcut, packaging-authority, installer-topology, and risk-treatment decisions. The smallest sound implementation stage should repair and unify packaging/installer configuration and diagnostics, then require evidence through source, frozen, installer, installed workflow, immediate-reopen, and lifecycle gates. No status beyond **configured** is currently justified.
+Operational finds no new policy decision and no justified preemptive source change. Main should define Sprint 02 as one validation-centered materialization unit: make Inno Setup available, compile and inspect the installer, add only safe evidence automation needed for a dedicated Windows test account, execute the complete installed lifecycle, and patch only a failed beta gate. The critical separation is maintained: configured installer source is not a compiled artifact; a compiled artifact is not installation; installation is not lifecycle validation; validation is not acceptance. Until the dedicated-account route passes, the current status remains `installed: blocked`, `validated: partial`, and `accepted: no`.
