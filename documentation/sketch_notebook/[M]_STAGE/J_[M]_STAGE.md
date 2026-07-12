@@ -1396,3 +1396,376 @@ D/E/F: postponed
 ```
 
 The next action is domain-memory reconciliation and Didactic KANBAN promotion, followed by Main-root continuity refresh. Framework or schema implementation requires a later explicit authorization.
+
+
+---
+
+# 17. Sprint 02 Consolidated Resolution — Flutter/Dart Shared-Client Basis
+
+## 17.1 Supersession statement
+
+Human/Main now establishes Flutter/Dart as the primary development basis for the new shared Markei client.
+
+This supersedes section 16.9 only where it named TypeScript as the primary shared-client exploration language.
+
+The reconciled language boundary is:
+
+```text
+Shared Windows / Android / iOS client
+    Flutter + Dart
+
+Custom synchronization API
+    TypeScript favored
+
+Shared cloud persistence
+    Neon Postgres favored
+
+Accepted Cycle 06 desktop beta
+    Python + PySide6 preserved as reference and rollback
+
+Python → Dart continuity
+    language-neutral contracts
+    deterministic fixtures
+    migration evidence
+    behavioral parity
+
+Not accepted
+    embedded Python runtime
+    Python/Dart or Python/TypeScript client IPC bridge
+```
+
+Flutter/Dart is a planning architecture decision. Framework scaffolding, application implementation, infrastructure creation, and D/E/F remain unauthorized.
+
+## 17.2 Why Dart/Flutter is favored
+
+The product objective is one maintained application behavior across Windows, Android, and iOS. Flutter provides one client framework and language for:
+
+- responsive desktop/mobile presentation;
+- local composition and use cases;
+- application-private persistence;
+- pending synchronization queue;
+- authenticated HTTP client;
+- local projections;
+- versioned analytics;
+- platform lifecycle coordination;
+- shared tests and fixtures.
+
+Dart introduces a new learning surface but removes the architectural cost of coordinating TypeScript, Python, IPC, and multiple client shells. Platform-specific integrations may still require native code and separate platform tooling; Flutter does not eliminate Android SDK, Windows build, macOS/Xcode, secure-storage, packaging, or plugin-validation work.
+
+## 17.3 Client transition strategy
+
+The transition remains additive:
+
+```text
+1. Preserve Cycle 06 PySide6 beta and original user data.
+2. Define language-neutral contracts and deterministic fixtures.
+3. Build Flutter against a fresh isolated local database.
+4. Reproduce the reduced Register + projection workflow.
+5. Add local event queue and synchronization protocol.
+6. Validate Windows and Android parity.
+7. Validate iOS separately through macOS/Xcode.
+8. Design deterministic legacy import.
+9. Keep PySide6 rollback until human/Main parity acceptance.
+10. Replace/demote PySide6 only after evidence.
+```
+
+No direct opening, copying, or destructive conversion of the ordinary Cycle 06 database is authorized.
+
+## 17.4 Reusable catalogue resolution
+
+The first shared beta uses an account-private reusable catalogue.
+
+Packaged product identity set:
+
+```text
+normalized product name
++
+normalized brand
++
+PACKAGED mode
++
+normalized package amount
++
+explicit package unit/dimension
+```
+
+Bulk product identity set:
+
+```text
+normalized product name
++
+normalized brand
++
+BULK mode
+```
+
+Rules:
+
+- brand or packaged-size changes create a distinct Product ID;
+- exact normalized equivalence may reuse automatically;
+- unit normalization may make `350 g` and `0.350 kg` equivalent;
+- fuzzy textual similarity produces an advisory warning and user choice;
+- similarity never causes automatic merge;
+- products remain account-private;
+- global catalogue deduplication, manual merge, aliases, and spelling correction are deferred;
+- deterministic account-scoped Product UUID derivation remains favored for fixture evaluation.
+
+## 17.5 Purchase aggregate resolution
+
+Domain shape:
+
+```text
+Account
+├── Catalogue Product
+├── Store
+└── Purchase
+    └── one or more Purchase Items
+        └── reference Catalogue Product
+```
+
+Planning workflow:
+
+```text
+stage Purchase
+→ create purchase UUID and occurrence timestamp
+→ select/create Store
+→ add Purchase Items
+→ resolve Product ID or identification set
+→ exact match / similarity warning / create
+→ record commercial observations
+→ atomically commit Purchase + Items + pending sync event
+```
+
+The first UI may guide one item at a time, but the contract supports multiple items.
+
+One `purchase.registered` event containing immutable item lines is favored. The purchase aggregate is atomic. A network upload request may contain multiple purchase events and return per-event transactional results.
+
+## 17.6 Historical-integrity resolution
+
+Product identity fields are immutable in the first beta. A changed name, brand, or packaged-size identity creates a new Product ID. Purchase Items retain their original Product ID and commercial observations.
+
+Broad duplicated catalogue snapshots are not required initially because accepted identity records are not rewritten.
+
+Future optional relations may express:
+
+```text
+product B supersedes product A
+product A and B belong to one analytical family
+```
+
+These relations support shrinkflation and longitudinal analytics but remain deferred.
+
+## 17.7 Quantity and money resolution
+
+Stored quantity is dimensionally explicit:
+
+```text
+measurement_kind
+    MASS | VOLUME | COUNT
+
+measurement_unit
+    KG | L | UNIT
+
+normalized_amount
+    fixed precision
+    displayed with three decimals
+```
+
+Markei never assumes `1 L = 1 kg`. Package amount and purchased amount are separate.
+
+Stored money is explicit:
+
+```text
+account default currency
+purchase currency code
+integer minor-unit amounts
+```
+
+The interface may infer territorial/default currency and avoid repeated input. Persisted facts retain currency code; store location is not the sole historical currency authority.
+
+Candidate authoritative price facts:
+
+- currency;
+- line total in minor units;
+- package count;
+- normalized purchased amount/unit;
+- promotion observation.
+
+Package price, normalized measure price, price-change rates, personalized inflation/deflation indicators, store comparisons, and forecasts remain derived analytics.
+
+## 17.8 Versioned Dart analytics resolution
+
+The shared client owns a versioned Dart analytics registry.
+
+Initial planning form:
+
+```text
+lib/analytics/
+    analytics_registry.dart
+    price_change.dart
+    normalized_price.dart
+    purchase_interval.dart
+    fixtures/
+```
+
+A smaller first implementation may begin in one Dart file, but semantic ownership is the analytics module.
+
+Rules:
+
+- every analytic has a stable identifier and version;
+- a released/used version does not change meaning;
+- improved formulas create a new version;
+- services/use cases select analytics by identifier;
+- reproducible cached/persisted results record algorithm version when needed;
+- raw purchase facts remain authoritative;
+- Git preserves source chronology;
+- analytical projections are rebuildable.
+
+## 17.9 Synchronization resolution
+
+Planning semantics:
+
+```text
+event UUID
+    identity and idempotent retry
+
+device UUID + monotonic sequence
+    per-installation creation order
+
+client occurrence timestamp
+    purchase/business time
+
+opaque account-scoped server cursor
+    incremental accepted-event download order
+```
+
+Policies:
+
+- sequence gaps are rejected/requested;
+- identical event UUID/content returns prior acceptance;
+- same event UUID with different content is rejected;
+- second device bootstraps from cursor zero in bounded pages;
+- Purchase event is atomic;
+- upload batch uses per-event results;
+- downloaded events and cursor advance commit together locally;
+- API authorization is mandatory;
+- RLS remains defense-in-depth evaluation;
+- editing/deletion conflict resolution remains deferred.
+
+## 17.10 Cloud and API resolution
+
+Favored boundary:
+
+```text
+Flutter client
+→ authenticated custom synchronization API
+→ Neon Postgres
+```
+
+The API owns:
+
+- access-token validation;
+- account/device authorization;
+- runtime payload validation;
+- idempotent event append;
+- device-sequence policy;
+- cursor allocation/download;
+- protocol versions;
+- server transactions;
+- stable errors;
+- diagnostics.
+
+Neon owns managed Postgres persistence, roles, constraints, migrations, and recovery facilities. It does not define synchronization semantics.
+
+TypeScript is favored for the API/protocol harness because of its JSON validation, Postgres/Neon ecosystem, hosting options, and separation from the Dart client through language-neutral protocol contracts. Python remains a possible API fallback but is not the primary shared-client runtime.
+
+Verified email remains required. Provider selection remains open. Immutable internal account UUID—not email—owns data.
+
+## 17.11 Reduced first synchronized slice
+
+```text
+verified sign-in on device A
+→ account UUID and device UUID
+→ fresh Flutter-local database
+→ account-private catalogue lookup/create
+→ one Purchase containing one Purchase Item
+→ local atomic commit and pending event
+→ authenticated API upload
+→ idempotent Neon append and account cursor
+→ device B sign-in/bootstrap from cursor zero
+→ transactional event application
+→ same catalogue/purchase projection
+→ retry proves no duplicate
+→ cross-account request proves isolation
+→ close/reopen proves local persistence
+→ Cycle 06 data remains untouched
+```
+
+Explicitly deferred:
+
+- purchase editing/deletion;
+- product merge/alias workflow;
+- household sharing;
+- complex conflict resolution;
+- realtime/background sync;
+- global catalogue;
+- full settings sync;
+- broad schema redesign;
+- product-family/supersession UI;
+- production analytics suite;
+- app-store/public release;
+- PySide6 retirement.
+
+## 17.12 Restaging questions
+
+A/B/C must now refine:
+
+### Operational
+
+- Flutter/Dart tooling for Windows, Android, and iOS;
+- local SQLite and secure-storage candidates;
+- TypeScript API harness and Neon environment route;
+- Dart/TypeScript fixture exchange;
+- build, lifecycle, sync, migration, and rollback validation;
+- development cost for Flutter versus retained alternatives.
+
+### Didactic
+
+- Dart language and Flutter framework distinctions;
+- widget/composition/lifecycle concepts;
+- typed immutable models;
+- identity, catalogue, purchase aggregate, event, idempotency, cursor, and eventual consistency;
+- money/quantity dimensional modeling;
+- versioned analytics;
+- KANBAN promotion under the human-authorized design-stage rule.
+
+### Design
+
+- Flutter client layers and composition root;
+- local persistence schema responsibilities;
+- catalogue/product/purchase/purchase-item contracts;
+- deterministic identity normalization;
+- purchase event envelope;
+- Dart analytics registry;
+- TypeScript sync API contract;
+- Neon logical schema;
+- legacy import/migration mapping;
+- explicit parity acceptance for PySide6 transition.
+
+## 17.13 Current authorization state
+
+```text
+Flutter/Dart shared-client basis: accepted for planning
+TypeScript custom API: favored
+Neon Postgres: favored
+reusable catalogue model: provisionally accepted
+purchase aggregate: provisionally accepted
+quantity/money representation: provisionally accepted
+versioned analytics: provisionally accepted
+sync semantics: provisionally accepted
+KANBAN promotion: allowed through Didactic protocol
+client/API/schema implementation: not authorized
+external infrastructure: not authorized
+D/E/F: postponed
+next step: A/B/C restaging
+```
