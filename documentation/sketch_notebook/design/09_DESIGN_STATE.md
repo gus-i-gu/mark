@@ -1,37 +1,28 @@
 # 09_DESIGN_STATE.md
 
-> Version: 0.1-recovery
+> Version: 0.2-cycle06
 > Status: Active Checkpoint
 > Persistence Class: Checkpoint
 > Knowledge Class: Design State
 > Authority: Design Chat [D]
-> Scope: Low-cost recovery surface for the current Markei architectural state
-> Sources: `01_ARCHITECTURE.md`, `14_MODEL_OVERVIEW.md`, `DEV_STAGE/C_DESIGN.md`
+> Scope: Low-cost recovery surface for the current Cycle 06 Design state
+> Sources: `01_ARCHITECTURE.md`, `14_MODEL_OVERVIEW.md`, `DEV_STAGE/G_OPS_CODEX.md`, `DEV_STAGE/I_DSN_CODEX.md`, `[M]_STAGE/J_[M]_STAGE.md`
 
 ---
 
 # Current Milestone
 
-The Design domain has completed its first recovery repopulation cycle.
+Cycle 06 remains focused on one milestone:
 
-```text
-implementation inspection
-→ Main reconciliation
-→ canonical architecture rebuilt
-→ derivative model overview rebuilt
-→ historical cycle retrospective staged
-→ Design checkpoint rebuilt
-```
+> Produce and validate a fully executable and installable Windows primary beta of Markei.
 
-The current milestone is **architectural recovery and stabilization**, not feature expansion.
-
-No new packaging, mobile, backend, synchronization, or installer architecture is currently accepted.
+The first bounded materialization unit is complete, but the milestone is not closed.
 
 ---
 
 # Current Architecture
 
-Markei is a layered local desktop monolith:
+Markei remains a layered local desktop monolith:
 
 ```text
 Desktop UI
@@ -45,190 +36,169 @@ Database Manager
 SQLite
 ```
 
-Stable ownership:
+Packaging and installation remain deployment concerns around this application boundary. No broad business, persistence, schema, or composition redesign was introduced.
 
-| Area | Current owner |
-| --- | --- |
-| Qt rendering, controls, navigation and dialogs | Desktop pages and widgets |
-| Application workflows, validation, calculations and projections | `ProductService` |
-| SQL, row mapping and persistence operations | `Repository` |
-| Database paths, initialization, configuration and additive migration | `app.core.database` |
-| Persistent facts and relationships | SQLite |
+---
 
-Public desktop surfaces:
+# Cycle 06 Deployment State
+
+Accepted current status:
 
 ```text
-Register
-Lists
-History
-Settings
+packaging boundary materialized
+frozen runtime built and launched
+resource/user-state boundary partially validated
+startup diagnostics validated by test
+shutdown correction validated in focused and frozen checks
+installer source configured
+installer compilation blocked
+installed lifecycle unvalidated
+beta not accepted
 ```
 
-Storage, Shortage, and Market are Lists modes rather than separate public pages.
-
----
-
-# Domain Model Snapshot
+Evidence classification:
 
 ```text
-Category 1 ─── * Product
-Product  1 ─── * Purchase
-Store    1 ─── * Purchase, optional
+configured: yes
+built: yes
+launched: yes — frozen isolated launch and reopen
+installed: blocked
+validated: partial
+accepted: no
 ```
-
-`Purchase` is the historical receipt record.
-
-`Product` contains editable identity and metadata plus cached current and analytical summaries derived from Purchase history.
-
-`ProductService.recalculate_product()` is the centralized producer of calculated Product state.
-
-Promotion persistence exists in the schema, but Promotion is not classified as an active application capability.
 
 ---
 
-# Current Structural Constraints
+# Accepted Boundaries
 
-## Lifecycle
+## Packaging
 
-Each principal page currently constructs its own service, repository, and SQLite connection.
+- `Markei.spec` is the authoritative one-folder PyInstaller definition.
+- `scripts/build_windows.ps1` invokes the spec rather than duplicating package composition.
+- Production packaging includes `schema.sql`.
+- Production packaging excludes `seed.sql`, live databases, WAL/SHM, logs, tests, caches, and development residue.
+
+## User state
+
+- `%LOCALAPPDATA%/Markei/market.sqlite` is retained writable user data.
+- WAL/SHM files are transient writable companions.
+- `%LOCALAPPDATA%/Markei/logs/startup.log` is generated writable diagnostics.
+- External placement supports retention but does not prove uninstall or reinstall preservation.
+
+## Startup
+
+- Root `main.py` remains the launcher adapter and owns the outer startup-diagnostic boundary.
+- `app.main.main()` remains responsible for Qt application construction.
+
+## Shutdown
+
+- Four pages continue to own four service/repository/connection chains.
+- Focused validation initially demonstrated that distributed cleanup alone left the isolated SQLite file open.
+- `MainWindow.closeEvent()` now idempotently coordinates closure of all four page-owned services.
+- Local service/repository close responsibility remains intact.
+- This is a bounded lifecycle correction, not a composition-root redesign.
+
+## Installer and identity
+
+Configured release identity:
 
 ```text
-RegisterPage → ProductService → Repository → connection
-ListsPage    → ProductService → Repository → connection
-HistoryPage  → ProductService → Repository → connection
-SettingsPage → ProductService → Repository → connection
+Markei
+Markei.exe
+0.1.0
+Publisher: Markei
+Stable AppId: {9F5F5C2A-43EA-4CF0-9C25-FF9E7BB57D3A}
 ```
 
-Local close capability exists, but application-wide shutdown ownership remains implicit.
-
-## Transactions
-
-Repository mutation methods commit independently.
-
-Receipt registration and purchase deletion are multi-commit workflows and are not atomic across the full user action.
-
-## Facade breadth
-
-`ProductService` currently acts as the broad application facade.
-
-`Repository` currently acts as the broad persistence facade.
-
-Their breadth is accepted current state, not a permanent decomposition decision.
-
-## Contracts and projections
-
-Source contracts record important invariants but do not cover the complete concrete runtime surface.
-
-Service-produced dictionaries currently function as UI-facing view models.
-
----
-
-# Failed Precedent Cycle
-
-The previous main-branch recovery sequence closed Cycle 04 with coherent Product View, History, Lists, analytics, and Settings boundaries, but retained operational verification debt.
-
-Cycle 05 then widened rapidly from post-cycle verification into mobile planning and Windows packaging preparation.
-
-The `cycle 5.0 outburst mode` commit rewrote all three functional stages, the Main reconciliation reference, and the session scheme together. This created a cycle-control failure:
+Configured installer policy:
 
 ```text
-unresolved Cycle 04 verification
-+
-broad mobile planning
-+
-packaging architecture proposal
-+
-simultaneous A/B/C and Main-stage replacement
-=
-insufficiently controlled promotion surface
+per-user installation
+Start Menu shortcut
+optional desktop shortcut
+preserve %LOCALAPPDATA%/Markei by default
 ```
 
-The failed cycle does **not** prove that Markei's layered architecture failed.
-
-Its durable lesson is:
-
-> A new cycle must establish one active milestone, preserve inherited verification debt, separate current facts from future targets, and reconcile domain outputs before replacing shared coordination surfaces.
-
-Packaging and mobile architecture from that cycle remain historical proposals, not current canon.
+These installer behaviors are configured, not installed or lifecycle-validated.
 
 ---
 
-# Recovery Status
+# Validated Evidence
+
+The following evidence is accepted for the bounded materialization:
+
+- source/static compilation passed;
+- five standard-library release tests passed;
+- one-folder frozen runtime built;
+- frozen runtime launched and reopened from an isolated profile;
+- first launch created schema/default settings without sample business rows;
+- distribution included `schema.sql` and excluded `seed.sql`, live DB, WAL/SHM, and startup logs;
+- startup log path and content creation were validated;
+- shutdown correction closed all four repositories and released the isolated database directory.
+
+---
+
+# Remaining Blocked Lifecycle Gates
 
 ```text
-01_ARCHITECTURE.md    populated and canonical
-14_MODEL_OVERVIEW.md  populated and derivative
-09_DESIGN_STATE.md    rebuilt and active
-03_DECISION_LOG.md    intentionally empty
+provide Inno Setup / ISCC.exe
+→ compile installer
+→ inspect installer artifact
+→ clean per-user install
+→ launch from Start Menu without Python/source checkout
+→ exercise Register / Lists / History / Settings
+→ close and immediate reopen
+→ verify retained data
+→ test compatible reinstall or upgrade
+→ uninstall
+→ verify preservation policy
+→ reinstall and recover retained data
+→ human acceptance
 ```
 
-The current checkpoint is derived from the recovered canon plus the staged commit retrospective.
-
-The observational file remains empty until a later explicit action records this completed repopulation cycle as accepted design history.
+No compiled installer artifact currently exists.
 
 ---
 
-# Active Design Questions
+# Current Open Risks
 
-1. Should application services and repositories remain page-local or move under an explicit composition root?
-2. Which object should own deterministic application shutdown?
-3. Which workflows require service-level transaction boundaries?
-4. Should `ProductService` remain one application facade or be decomposed by capability?
-5. Should Repository remain one persistence facade?
-6. Should contracts become complete substitutable interfaces or remain responsibility declarations?
-7. Should dictionary projections become typed view models?
-8. Where should presentation formatting live?
-9. Should migration become an explicit versioned startup process?
-10. Is Promotion persistence active, deferred, or stale?
-11. Should `pages.order` be consumed, migrated, or retired?
-12. Is Product's combined editable/cache role the long-term domain model?
-
-These questions are unresolved. They must not be read as approved refactor instructions.
+1. Installed program placement, shortcuts, and uninstall registration remain unvalidated.
+2. Default data preservation through uninstall/reinstall remains configured but unproven.
+3. Compatible upgrade/reinstall behavior against retained SQLite state remains unvalidated.
+4. Human principal-workflow acceptance remains outstanding.
+5. Workflow atomicity remains inherited product/design debt and was not changed.
 
 ---
 
-# Operational Validation Dependencies
+# Explicit Deferrals
 
-Design state still depends on operational evidence for:
+Outside Cycle 06:
 
-- deterministic closure of all page-owned connections;
-- failure behavior inside multi-commit workflows;
-- packaged schema and seed inclusion;
-- user-data preservation through installation and upgrade;
-- first-weekday operational-month period-end correctness;
-- Settings save feedback, store editing, dependent refresh, and broad desktop regression behavior.
-
-Until validated, these remain implementation risks or watch points rather than accepted architectural failures.
-
----
-
-# Next Design Actions
-
-1. Keep the current canon stable while operational validation proceeds.
-2. Reconcile any new runtime evidence against this checkpoint.
-3. Do not reopen packaging or mobile architecture without a separately scoped cycle.
-4. Require one explicit milestone and bounded acceptance criteria before future Design staging.
-5. Populate `03_DECISION_LOG.md` only after an explicit decision or accepted recovery event is authorized.
+- composition-root or dependency-injection redesign;
+- ProductService/Repository decomposition;
+- workflow transaction redesign unless separately evidenced and reconciled;
+- schema redesign or migration ledger;
+- mobile, backend/API, synchronization, authentication, and cloud persistence;
+- auto-update, signing, rollback framework, and one-file packaging;
+- optional uninstall data-deletion UX;
+- broad UI/navigation redesign.
 
 ---
 
 # Recovery Route
 
-For rapid recovery, read this file first.
-
-Then use:
-
 ```text
-Architecture overview
-    design/14_MODEL_OVERVIEW.md
+Rapid current state
+    → this file
+
+Compact architecture map
+    → design/14_MODEL_OVERVIEW.md
 
 Exact accepted architecture
-    design/01_ARCHITECTURE.md
+    → design/01_ARCHITECTURE.md
 
-Temporary retrospective evidence
-    DEV_STAGE/C_DESIGN.md
-
-Accepted design history
-    design/03_DECISION_LOG.md
-    currently empty
+Chronology and rationale
+    → design/03_DECISION_LOG.md
 ```
+
+The next Design checkpoint update should follow installer compilation and installed-lifecycle evidence, not configuration alone.
