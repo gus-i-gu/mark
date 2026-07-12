@@ -1,121 +1,143 @@
 # 10_OPERATIONAL_STATE.md
 
-> Version: Cycle 06 checkpoint 0.4
+> Version: Cycle 07 Sprint 01 checkpoint 0.5
 > Status: Active operational checkpoint
 > Persistence Class: Checkpoint
 > Knowledge Class: Operational
-> Branch: `sketch-notebook-recovery`
+> Branch: `cycle-07-mobile-preparation`
 > Canonical source: `operational/12_OPERATIONAL_MODEL.md`
 > Active work source: `operational/04_TODO.md`
+> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md`
 
 ---
 
-# 1. Current Cycle 06 State
+# 1. Current Cycle State
 
-Cycle 06 Sprint 02 crossed the installer and installed-runtime boundary.
+Cycle 06 is accepted and closed for the controlled Windows primary-beta boundary. The previous checkpoint's pending-acceptance language was inherited drift; it does not reopen the cycle.
 
-```text
-configured: validated
-built: validated
-launched: validated — frozen and installed shortcut launch
-installed: validated — automated per-user lifecycle
-validated: partial-to-strong technical evidence
-accepted: no
-```
+Cycle 07 mobile preparation is active. Sprint 01 investigation is complete and has produced reconciled Operational, Didactic, and Design evidence without application modification, mobile-framework initialization, tool installation, or access to ordinary desktop user data.
 
-Markei is technically release-candidate ready for controlled beta review, but the beta is not accepted or closed. Human-visible UI walkthrough, interactive installer/security observation, and final Main/human acceptance remain pending.
-
-# 2. Validated Current-Branch Evidence
-
-The following gates have current evidence:
-
-- Inno Setup 6.7.3 installed per user and discovered by `scripts/build_installer.ps1`;
-- source compilation and five standard-library release tests;
-- rebuilt one-folder frozen runtime;
-- compiled installer artifact;
-- per-user installation under `%LOCALAPPDATA%\Programs\Markei`;
-- Start Menu shortcut creation and installed executable launch;
-- external database creation under `%LOCALAPPDATA%\Markei`;
-- structural defaults `F / General` and `1 / Default Store`;
-- zero sample products and purchases on fresh production initialization;
-- Register-equivalent ProductService persistence;
-- expected Lists, History, and Settings projection evidence;
-- installed close and immediate reopen;
-- same-version reinstall with retained data;
-- uninstall with retained database;
-- reinstall with retained-data recovery.
-
-Artifact evidence:
+Current status:
 
 ```text
-frozen executable
-    dist\Markei\Markei.exe
-    SHA256 E13E276139E5F680D91A9816FC79776EB9837CA901C2DEBCF6B9CFAF8594A282
-
-installer
-    dist\installer\Markei-Setup-0.1.0-x64.exe
-    SHA256 122A772D66BBE7D5522EF2262E7E89D6D2E332B6318135BB25D55A27F75F4623
-    size 34,448,651 bytes
+Cycle 06: accepted and closed
+Cycle 07: active investigation
+Sprint 01: complete
+primary strategic candidate: native/cross-platform client with explicit contracts and fixtures
+bounded challenger: time-boxed Python-native Android experiment
+framework selection: none
+implementation authorization: none
+D/E/F: postponed
+backend, authentication, synchronization: deferred
 ```
 
-# 3. Evidence Boundaries
+# 2. Preserved Operational Evidence
 
-Automated lifecycle validation used the current ordinary Windows user. Existing Markei data was backed up and restored. This evidences ordinary per-user install semantics, but not dedicated clean-account isolation.
+Markei contains reusable behavior but is not presently a portable application.
 
-Register, Lists, History, and Settings were technically validated through the installed database and the same ProductService path used by the application. A complete human-visible UI walkthrough remains pending.
+Likely reusable evidence includes:
 
-Defender was enabled and the binaries were unsigned. No SmartScreen prompt was observed during silent/programmatic execution. Human-visible SmartScreen behavior remains `unknown`.
+- Python domain models and vocabulary;
+- validation, calculation, date, quantity, and status rules;
+- purchase and inventory workflow meanings;
+- SQLite schema semantics and structural defaults as reference;
+- deterministic desktop behavior as a fixture source.
 
-# 4. Bounded Sprint 02 Corrections
+Current coupling includes:
 
-Two direct failures produced bounded corrections:
+- `ProductService` constructing the concrete `Repository`;
+- repository construction opening concrete SQLite lifecycle behavior;
+- desktop/Windows-shaped user-data and resource paths;
+- service projections containing presentation labels and grouping;
+- incomplete abstract contracts relative to used repository methods;
+- multi-step workflows crossing separately committed mutations.
+
+No mobile runtime, Android/iOS package, sandbox database, lifecycle persistence, semantic-parity suite, accessibility behavior, or distribution route has been demonstrated.
+
+# 3. Reconciled Pathways
+
+## Operational pathway — bounded Python-native Android experiment
+
+A time-boxed Python-native Android experiment remains the cheapest direct test of one narrow question:
+
+> Can existing Python behavior run correctly inside a mobile package with an isolated app-private database?
+
+Its apparent low initial cost comes from direct reuse of Python models, calculations, services, repository behavior, and potentially SQLite schema handling. It could expose packaging or runtime incompatibility before a second implementation is undertaken.
+
+That initial economy is not proof of low total cost. It becomes expensive if the experiment requires broad construction refactoring, custom binary recipes, repeated SDK/NDK/JDK/WSL troubleshooting, framework-specific lifecycle work, weak accessibility or platform integration, separate iOS adaptation, or continued debugging across Python, native packaging, and device layers. A successful Android package would not establish iOS feasibility or long-term maintainability.
+
+Operational classification:
 
 ```text
-ISCC.exe not discovered
-→ add per-user Inno Setup path to build_installer.ps1
-→ installer compile passed
-
-fresh production Register foreign-key failure
-→ add idempotent structural category/store defaults
-→ tests, build, workflow, and lifecycle rerun passed
+bounded challenger
+useful only with a fixed question, time limit, pass gates, and stop conditions
+not selected
+not authorized
 ```
 
-The Inno Setup `x64` deprecation warning is non-blocking maintenance debt.
+## Design pathway — native/cross-platform client with contracts and fixtures
 
-# 5. Artifact Repository Drift
+The current strategic preference is a maintained native/cross-platform client that reuses Markei's behavior through explicit, language-neutral contracts and deterministic fixtures rather than assuming direct Python runtime reuse.
 
-The current branch contains:
+Its initial cost is higher: a new language/framework may need to be learned; Android and iOS SDKs and packaging must be configured; business behavior and persistence must be implemented in the client; and semantic-parity tests must be constructed. Android may be developed from Windows-supported tooling, while iOS build, signing, simulator/device, and distribution validation still require a macOS/Xcode boundary.
+
+That initial architecture can reduce later cost when contracts separate business facts from presentation formatting, fixtures prevent silent drift, mobile lifecycle and local persistence have explicit owners, transaction behavior is designed once for the mobile client, and conventional platform tooling makes debugging, accessibility, navigation, packaging, and long-term dependency maintenance more predictable.
+
+Operational classification:
 
 ```text
-dist/installer/Markei-Setup-0.1.0-x64.exe
+primary strategic candidate
+favored by human/Main planning direction
+not empirically proven
+framework not selected
+implementation not authorized
 ```
 
-G incorrectly describes this artifact as generated but uncommitted. Operational policy is that generated release binaries should be delivered through an approved release/artifact channel rather than retained as ordinary source files. Removal and ignore-rule materialization require a separate authorized cleanup; this documentation pass leaves the artifact unchanged.
+# 4. Development-Cost Boundary
 
-# 6. Remaining Gates
+Development cost is not only the number of files required to launch the first screen.
 
-```text
-interactive installer wizard observation
-→ human-visible Register / Lists / History / Settings walkthrough
-→ human-visible normal close and immediate reopen
-→ human-visible SmartScreen / antivirus observation
-→ human acceptance for controlled beta use
-→ Main closure
-```
+It includes:
 
-A dedicated-account rerun is not automatically blocking unless current-user backup/restore evidence is later judged ambiguous.
+- initial setup and learning;
+- direct source reuse versus behavior reimplementation;
+- mobile SDK, emulator/device, packaging, signing, and distribution work;
+- debugging across application runtime and native toolchain boundaries;
+- separate Android and iOS host requirements;
+- contract, fixture, and semantic-parity testing;
+- suspend/resume, terminate/relaunch, migration, file-lock, backup, and uninstall behavior;
+- dependency upgrades and maintenance across the product's lifetime.
 
-Workflow atomicity remains inherited Operational debt and was not changed.
+The Python-native pathway is cheaper only if its reuse remains direct and its mobile-specific seams stay narrow. The Design pathway is worth its greater entry cost only if explicit contracts and conventional mobile ownership prevent duplicate ambiguity, reduce cross-platform surprises, and support a maintained product rather than a one-off demonstration.
 
-# 7. Recovery Route
+These are planning assumptions. Later execution evidence must measure them.
+
+# 5. Required Future Evidence
+
+Before any framework selection or D/E/F activation, Main/human direction should define:
+
+1. language-neutral behavior scenarios and deterministic expected results;
+2. the mobile-local storage and ordinary-desktop-data isolation invariant;
+3. one atomic registration workflow;
+4. Android host/toolchain prerequisites for the candidate route;
+5. the distinct macOS/Xcode boundary for iOS;
+6. clean build, install, cold-launch, write/read, suspend/resume, terminate/relaunch, and persistence gates;
+7. semantic-parity gates against shared fixtures;
+8. stop conditions for the Python-native challenger;
+9. decision criteria for accepting a maintained client architecture.
+
+Approach D remains excluded unless accounts, multi-device state, household collaboration, or synchronization become demonstrated requirements.
+
+# 6. Scope and Recovery
+
+No implementation is authorized. D/E/F remain postponed. Do not initialize a framework, install a toolchain, modify source, open the ordinary desktop database, create a backend, or claim framework acceptance from documentation evidence.
+
+Recovery route:
 
 ```text
 1. Read this checkpoint.
-2. Read 04_TODO.md for remaining human and cleanup work.
-3. Read 12_OPERATIONAL_MODEL.md for stable rules and artifact policy.
-4. Read 11_OPERATIONAL_RECORD.md for Sprint 01/02 chronology and hashes.
-5. Read J_[M]_STAGE.md or G_OPS_CODEX.md only for reconciliation detail.
-6. Inspect source only when these surfaces are insufficient or drift is suspected.
+2. Read 04_TODO.md for active evidence gaps and later gates.
+3. Read 11_OPERATIONAL_RECORD.md for Cycle 07 observations and preserved pathway tension.
+4. Read J_[M]_STAGE.md for cross-domain reconciliation and authorization status.
+5. Read 12_OPERATIONAL_MODEL.md only when stable Operational rules are required.
 ```
-
-Refresh this checkpoint when human acceptance, SmartScreen observation, artifact cleanup, or Cycle 06 closure changes state.
