@@ -1,6 +1,6 @@
 # PROMPT_COLLECTION.md
 
-> Version: 0.4
+> Version: 0.5
 > Status: Active Methodology Prompt Register
 > Persistence Class: Canonical / Operational
 > Knowledge Class: Methodological
@@ -81,7 +81,8 @@ Rules:
 | `PDR-O` | Operational Permanent Reconciliation | Reconcile latest J + A/G into Operational memory |
 | `PDR-A` | Didactic Permanent Reconciliation | Reconcile latest J + B/H into Didactic memory |
 | `PDR-D` | Design Permanent Reconciliation | Reconcile latest J + C/I into Design memory |
-| `MSU-01` | Main State-of-Union Review | Reconcile J, 00/05/06, A/B/C, and bounded repository truth before a new phase |
+| `MSU-01` | Main State-of-Union Review | Main read-only reconciliation after domain staging exists |
+| `MSU-02` | Functional State-of-Union Exploration | O/A/D recover from J + 00/05/06, inspect application truth, and write A/B/C staging |
 
 ---
 
@@ -646,7 +647,146 @@ A separate invoking instruction must name exact writable files and authorize the
 
 ---
 
-# 16. Maintenance Rule
+# 16. MSU-02 — Functional State-of-Union Exploration
+
+```text
+Run MSU-02 as one functional chat: Operational [O], Didactic [A], or Design [D].
+
+Initialize through the matching PRI prompt and run PMC-01. Run PMC-02 only when routing, authority, knowledge-state, or promotion confidence is uncertain or possibly stale.
+
+Purpose:
+At the beginning of a sprint or investigation phase, recover Main orientation, inspect the current application repository through one functional competence, and produce the corresponding temporary A/B/C stage for later Main reconciliation.
+
+This is functional exploration before D/E/F. It is not Main synthesis, permanent promotion, or implementation.
+
+Resolve and verify:
+- repository: gus-i-gu/markei;
+- active branch from the invoking task or 06_SESSION_SCHEME.md;
+- current remote branch head and baseline ancestry;
+- paired role and stage:
+  [O] → DEV_STAGE/A_OPERATIONAL.md
+  [A] → DEV_STAGE/B_DIDACTIC.md
+  [D] → DEV_STAGE/C_DESIGN.md.
+
+Primary recovery — required:
+
+1. Read the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+2. Read 00_PROJECT_STATE.md.
+3. Read only the latest relevant segment of 05_SESSION_LOG.md.
+4. Read the active forward checkpoint in 06_SESSION_SCHEME.md.
+5. State the recovered cycle, sprint, accepted state, human decisions, open defects, deferred work, and current authority boundary.
+
+Hierarchical descent — only when required:
+
+Read the role checkpoint first:
+- [O] operational/10_OPERATIONAL_STATE.md;
+- [A] didactics/08_CONCEPT_MAP.md;
+- [D] design/09_DESIGN_STATE.md.
+
+Read other permanent-domain files only when:
+- the checkpoint is stale, contradictory, or insufficient;
+- exact canonical, derived, observational, or maturity history is necessary;
+- J or Main-root continuity explicitly points to unresolved domain knowledge.
+
+Report which insufficiency justified every deeper permanent read. Do not update permanent files during MSU-02.
+
+Repository exploration — required and read-only:
+
+Inspect both preserved and new application boundaries where relevant:
+
+- Python/PySide6 beta under app/ and its tests, entrypoints, database boundary, and dependency/configuration surfaces;
+- Flutter/Dart client under clients/markei_flutter/;
+- shared contract examples/schema under contracts/;
+- manifests, lockfiles, application entrypoints, handwritten domain/application/infrastructure source, schema definitions, and tests;
+- Git changed-file/topology evidence relevant to the active sprint.
+
+Do not read generated files line by line unless generator drift is the direct subject. Distinguish handwritten source, generated source, build output, local data, fixtures, and documentation.
+
+Role-specific exploration:
+
+Operational [O]:
+- environment and toolchain prerequisites;
+- reproducible commands;
+- build/run/test state;
+- runtime and persistence paths;
+- database isolation, migrations, rollback, lifecycle, packaging, blockers, and cost;
+- exact evidence required for the next materialization.
+
+Didactic [A]:
+- concepts currently represented in source/tests;
+- planning concepts versus implemented examples;
+- language/framework/dependency knowledge newly required;
+- misleading equivalences or terminology;
+- learner-evidence gaps and KANBAN implications without changing maturity;
+- smallest teaching boundary for the next unit.
+
+Design [D]:
+- responsibility and dependency boundaries;
+- domain models, identifiers, invariants, transaction ownership, schema responsibilities, and contract shapes;
+- implemented topology versus intended architecture;
+- defects, drift, alternatives, reversibility, and development-cost tradeoffs;
+- design questions that D/E/F must resolve.
+
+Evidence classification:
+
+For each claim use:
+- proposed;
+- provisional;
+- accepted;
+- implemented;
+- validated;
+- host-unvalidated;
+- blocked;
+- deferred.
+
+Required report structure in the paired A/B/C stage:
+
+1. Header: role, cycle, sprint, branch, inspected head, date, and sources.
+2. Recovered Main state.
+3. Hierarchical-recovery path and deeper reads with justification.
+4. Repository surfaces inspected.
+5. Role-specific current state of union.
+6. Agreement with J/00/05/06.
+7. Drift, defects, contradictions, and stale documentation.
+8. Human decisions already supplied.
+9. Questions requiring Main or human resolution.
+10. Recommended next bounded materialization scope.
+11. Explicit non-goals.
+12. Evidence matrix: claim, classification, source.
+13. Proposed D/E/F gates relevant to the role.
+14. Final concise handoff to Main.
+
+Write authority:
+
+MSU-02 invocation authorizes replacing the active contents of exactly one paired temporary stage:
+- [O] may write only A_OPERATIONAL.md;
+- [A] may write only B_DIDACTIC.md;
+- [D] may write only C_DESIGN.md.
+
+The stage must describe the current investigation and supersede stale earlier staging while preserving important contrary findings inside the new report.
+
+MSU-02 does not authorize:
+- source, test, fixture, schema, dependency, or generated-file changes;
+- running installation, provisioning, migration, packaging, or destructive commands;
+- J, 00, 05, 06, D/E/F, G/H/I, methodology, or permanent-domain edits;
+- KANBAN maturity changes;
+- architecture acceptance outside Design recommendation;
+- implementation.
+
+Before writing, report the exact paired stage path. After writing:
+- inspect the diff;
+- confirm only that stage changed;
+- commit the single stage when the invocation targets the shared GitHub branch;
+- pull/rebase safely if the remote advanced;
+- push without force;
+- report commit SHA, stage path, inspected head, deeper reads, unresolved questions, and clean status.
+
+MSU-02 outputs A/B/C for subsequent MSU-01 Main review and J reconciliation.
+```
+
+---
+
+# 17. Maintenance Rule
 
 This file should change when:
 
