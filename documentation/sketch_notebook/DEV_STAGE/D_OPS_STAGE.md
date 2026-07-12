@@ -1,369 +1,304 @@
-# D_OPS_STAGE — Cycle 06 Windows Primary Beta
+# D_OPS_STAGE — Cycle 06 Sprint 02 Final Desktop Validation
 
 > Status: Main-approved materialization stage
 > Authority: Main Chat [M]
 > Branch: `sketch-notebook-recovery`
-> Source: `[M]_STAGE/J_[M]_STAGE.md`
+> Inputs: `A_OPERATIONAL.md`, `B_DIDACTIC.md`, `C_DESIGN.md`
 > Codex report target: `DEV_STAGE/G_OPS_CODEX.md`
 
 ## 1. Objective
 
-Materialize the first bounded Cycle 06 release-enablement unit. Produce recoverable packaging and installer sources, enforce the accepted resource/data boundary, add startup diagnostics, and create focused validation assets. Do not broaden the task into application redesign.
+Complete the remaining Cycle 06 milestone gates without reopening Sprint 01 architecture or packaging decisions.
 
-Current evidence status before execution:
-
-```text
-configured
-```
-
-Do not report `built`, `installed`, `validated`, or `accepted` without matching evidence.
-
-## 2. Accepted Policies
-
-Implement exactly these policies:
+Current inherited state:
 
 ```text
-Production seed:
-    exclude app/database/seed.sql from the production package
-    retain it as a development/test fixture
-
-Production schema:
-    include app/database/schema.sql
-
-Writable user data:
-    %LOCALAPPDATA%/Markei
-    preserve during uninstall
-
-Identity:
-    display name Markei
-    executable Markei.exe
-    version 0.1.0
-    publisher Markei
-    one stable installer AppId
-    Windows x64 primary beta
-
-Packaging:
-    one-folder
-    Markei.spec is authoritative
-    distributable build is windowed
-    UPX disabled unless a later report proves it safe
-
-Shortcuts:
-    Start Menu required
-    desktop shortcut optional through an installer task
-
-Shutdown:
-    validate current behavior first
-    patch only a demonstrated release blocker
+configured: yes
+built: yes
+launched: yes — frozen
+installed: blocked
+validated: partial
+accepted: no
 ```
 
-## 3. Required Repository Inspection Before Editing
-
-Read the current versions of:
+Sprint 02 must:
 
 ```text
-Markei.spec
-scripts/build_windows.ps1
-main.py
-app/main.py
-app/core/config.py
-app/core/database.py
-app/database/schema.sql
-app/database/seed.sql
-build/markei_version_info.txt
-requirements.txt
-requirements-dev.txt
-app/desktop/main_window.py
+provide Inno Setup / ISCC.exe
+→ rebuild the frozen runtime
+→ compile and inspect the installer
+→ install in an ordinary per-user Windows environment
+→ launch from the Start Menu without Python or source checkout
+→ exercise Register / Lists / History / Settings
+→ close and immediately reopen
+→ verify persistence
+→ test same-version reinstall or compatible upgrade
+→ uninstall and verify retained user data
+→ reinstall and recover retained data
+→ record SmartScreen / antivirus observations
+→ produce evidence for Main/human acceptance
 ```
 
-Search the branch for existing:
+This is one validation-centered materialization unit. Do not perform speculative corrections before a gate fails.
 
-```text
-*.iss
-installer compile scripts
-*.ico
-release/build documentation
-startup log helpers
-packaging tests
-```
+## 2. Mandatory Bootstrap
 
-If a suitable current installer or icon exists, repair/reuse it. Do not create duplicate authorities. If no icon exists, do not invent or generate a binary icon; leave the default executable icon and report the absence as non-blocking for the controlled beta.
+Before implementation or validation:
 
-## 4. Packaging Materialization
+1. read repository `AGENTS.md` completely;
+2. read `documentation/sketch_notebook/INDEX.md`;
+3. follow the full methodology sequence indicated there;
+4. recover state from `00_PROJECT_STATE.md`, `06_SESSION_SCHEME.md`, and `[M]_STAGE/J_[M]_STAGE.md`;
+5. read D/E/F as one coherent authority set.
 
-### 4.1 `Markei.spec`
+If a Main-stage naming conflict appears, `J_[M]_STAGE.md` is the active file.
 
-Make `Markei.spec` the single reviewable packaging authority.
+## 3. Accepted Boundaries — Do Not Reopen
 
-Required behavior:
+Preserve:
 
-- entrypoint is root `main.py`;
-- one-folder output name is `Markei`;
-- include `app/database/schema.sql` at the runtime path expected by `app.core.database`;
-- exclude `app/database/seed.sql`;
-- attach `build/markei_version_info.txt` or a repaired equivalent to the executable;
-- use a windowed distributable executable;
-- disable UPX;
-- do not bundle any `market.sqlite`, `*.sqlite-wal`, `*.sqlite-shm`, logs, caches, tests, sample data, or repository build residue;
-- preserve Qt/PySide6 collection required by a clean build;
-- keep configuration explicit and minimal.
+- `Markei.spec` as authoritative one-folder packaging source;
+- `scripts/build_windows.ps1` as invocation wrapper;
+- `installer/Markei.iss` as installer authority;
+- `scripts/build_installer.ps1` as compile wrapper;
+- schema-only production package;
+- exclusion of `seed.sql`, live DB, WAL/SHM, logs, tests, caches, and source residue;
+- per-user installation under `%LOCALAPPDATA%\Programs\Markei`;
+- retained user state under `%LOCALAPPDATA%\Markei`;
+- identity `Markei` / `Markei.exe` / `0.1.0` / publisher `Markei` / stable AppId;
+- Start Menu shortcut required;
+- desktop shortcut optional;
+- launcher-owned startup diagnostics;
+- current `MainWindow.closeEvent()` service-close coordination.
 
-A diagnostic console build may be supported through a separate deliberate option or second spec only if it does not become a competing production authority. Prefer one spec with a controlled parameter/environment input only when the implementation remains easy to reproduce.
+## 4. Toolchain and Build Route
 
-### 4.2 `scripts/build_windows.ps1`
-
-Refactor the script so it invokes `Markei.spec` rather than repeating `--add-data`, name, entrypoint, and topology arguments.
-
-The script must:
-
-- run from the repository root regardless of caller working directory;
-- fail fast if Python, PyInstaller, or the spec is missing;
-- provide a clean-build option or clean by default;
-- remove only generated build/release output, never user data;
-- invoke PyInstaller through the active Python interpreter;
-- identify the resulting distribution path;
-- support a production windowed build;
-- avoid embedding seed or database files through command-line duplication;
-- return a failing exit code when the build fails.
-
-Do not add unrelated build-system frameworks.
-
-### 4.3 Build dependency record
-
-Create or repair one bounded build dependency surface, such as:
-
-```text
-requirements-build.txt
-```
-
-It must record the supported build dependencies needed for Cycle 06, including PyInstaller and the PySide6 version used by the successful contemporary build. Do not guess unsupported versions.
-
-Procedure:
-
-1. inspect the active environment and existing dependency declarations;
-2. use compatible versions available to the execution environment;
-3. after a successful build, record exact versions used;
-4. if no successful build is possible, leave clearly bounded compatible constraints or document the unresolved pin in G rather than fabricating success.
-
-Record the builder Python version in release/build documentation or a generated evidence file committed only if it is stable project guidance.
-
-## 5. Identity Materialization
-
-Coordinate these values:
-
-```text
-APP_NAME = Markei
-VERSION = 0.1.0
-executable = Markei.exe
-publisher = Markei
-```
-
-Repair `build/markei_version_info.txt` as needed so its executable/product/file descriptions and numeric/string versions agree with `app/core/config.py`.
-
-Avoid introducing multiple manually divergent version declarations when a small generated step or documented synchronization check can keep them aligned. Do not redesign the whole configuration system solely to deduplicate one beta value.
-
-Generate and commit one stable installer AppId if none exists. The value must remain unchanged across compatible upgrades and must be documented in the installer source. Do not regenerate it on each build.
-
-## 6. Startup Diagnostics
-
-Add an outer startup diagnostic boundary at the executable entrypoint.
-
-Requirements:
-
-- catch unhandled startup exceptions that occur before normal UI operation;
-- write an inspectable UTF-8 log under a writable per-user path, preferably `%LOCALAPPDATA%/Markei/logs/startup.log`;
-- create the log directory safely;
-- include timestamp, exception type, message, and traceback;
-- avoid placing logs under installed program files;
-- avoid suppressing a nonzero/failing startup result;
-- where Qt is safely available, show a concise visible error telling the user where the log is; otherwise stderr is acceptable for diagnostic mode;
-- preserve normal successful startup behavior.
-
-Keep the boundary in `main.py` or a small dedicated startup-diagnostics helper. Do not move business logic into the launcher.
-
-Add focused tests for path selection and log creation where practical without requiring an interactive desktop.
-
-## 7. Installer Materialization
-
-Locate a current `.iss` first. If none exists, create a bounded installer source under a clear path such as:
-
-```text
-installer/Markei.iss
-```
-
-Also add a compile wrapper such as:
-
-```text
-scripts/build_installer.ps1
-```
-
-The installer definition must:
-
-- consume the built one-folder distribution rather than source files;
-- install per-user unless current evidence requires otherwise;
-- avoid requiring administrator privileges for ordinary installation;
-- install application files into a normal per-user program location;
-- create a Start Menu shortcut;
-- expose an optional desktop-shortcut task;
-- register uninstall information;
-- use the accepted name, version, publisher, executable name, and stable AppId;
-- preserve `%LOCALAPPDATA%/Markei` during uninstall;
-- never install a live database, WAL, SHM, logs, source tree, tests, or seed fixture;
-- support same-AppId compatible reinstall/upgrade replacement of program files;
-- fail clearly if the frozen distribution is absent.
-
-The compile wrapper must:
-
-- locate `ISCC.exe` through an explicit parameter, environment variable, or common installed locations;
-- fail with an actionable message if unavailable;
-- invoke the installer source;
-- report the generated installer path;
-- return failure on compile error.
-
-Do not implement optional user-data deletion UI in Cycle 06.
-
-## 8. Validation Assets
-
-Add the smallest maintainable validation assets needed to prove the following gates.
-
-### Gate A — static/source integrity
-
-- `python -m compileall app main.py` passes;
-- configuration identity is internally consistent;
-- production spec includes schema and excludes seed/live/transient data;
-- installer source consumes only the frozen distribution.
-
-### Gate B — clean frozen build
-
-- clean one-folder build completes;
-- expected executable exists;
-- `schema.sql` exists at the expected runtime resource path;
-- `seed.sql`, `market.sqlite`, WAL, SHM, and sample business data are absent;
-- build dependency versions and Python version are recorded;
-- executable launches from a working directory outside the repository and build directory;
-- first launch creates/reuses `%LOCALAPPDATA%/Markei/market.sqlite`.
-
-### Gate C — first-launch database state
-
-Using an isolated temporary/local-app-data root where safely supported, prove:
-
-- schema initializes;
-- required structural/default settings exist;
-- sample store/product/purchase/category fixture rows are absent;
-- repeated open does not duplicate defaults or overwrite user settings.
-
-Never point automated validation at an ordinary user's real Markei database.
-
-### Gate D — shutdown and reopen
-
-Prove through focused instrumentation or an isolated smoke test:
-
-- normal application closure reaches all intended page/service/repository cleanup paths;
-- no cleanup exception is raised;
-- the database can be reopened immediately;
-- the isolated data directory can be removed after closure when Windows semantics permit.
-
-If this gate passes, do not change shutdown architecture.
-
-If it fails, add only the smallest correction in the existing desktop composition boundary, preferably a `MainWindow`-owned close coordination path that idempotently closes each page/service/repository. Re-run the gate and report both failure and correction evidence.
-
-Do not perform a composition-root or dependency-injection redesign.
-
-### Gate E — installer compilation
-
-When Inno Setup is available:
-
-- compile the installer;
-- record compiler path/version;
-- inspect resulting artifact name and metadata;
-- report cryptographic hash if practical.
-
-If `ISCC.exe` is unavailable, report Gate E as `blocked`; do not claim installation validation.
-
-### Gate F — installed lifecycle
-
-When environment access permits, validate:
-
-```text
-fresh install
-→ Start Menu launch without Python/source checkout
-→ Register workflow
-→ Lists and History refresh/read
-→ Settings/store workflow
-→ close
-→ immediate reopen
-→ persistence check
-→ same-version reinstall or compatible upgrade
-→ uninstall
-→ %LOCALAPPDATA%/Markei retained
-→ reinstall
-→ retained data opens
-```
-
-Capture paths, command/output, screenshots or logs where available, and exact data-state observations.
-
-Codex must not label the beta `accepted`; acceptance remains Main/human responsibility.
-
-## 9. Required Tests and Commands
-
-Use repository-supported commands where possible. At minimum attempt and report:
+Provide Inno Setup 6 and resolve `ISCC.exe` through one supported route:
 
 ```powershell
-python -m compileall app main.py
-python -m pytest
-.\scripts\build_windows.ps1
+.\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
+```
+
+or:
+
+```powershell
+$env:ISCC_PATH = "C:\path\to\ISCC.exe"
 .\scripts\build_installer.ps1
 ```
 
-Adjust test invocation only to the repository's actual test topology. Do not hide failing tests.
+or normal Inno Setup 6 installation discovery.
 
-For each command report:
+Record:
 
-```text
-command
-working directory
-environment/Python version
-exit status
-essential output
-classification
+- compiler path;
+- compiler version;
+- builder Python version;
+- PyInstaller and PySide6 versions;
+- working branch;
+- exact commands and exit codes.
+
+Run at minimum:
+
+```powershell
+python -m compileall app main.py
+python -m unittest discover -s tests
+.\scripts\build_windows.ps1
+.\scripts\build_installer.ps1 -ISCCPath "C:\path\to\ISCC.exe"
 ```
 
-## 10. Prohibited Changes
+Attempt `python -m pytest` only if pytest is available; absence must be reported, not hidden.
 
-Do not implement:
+Expected artifacts:
 
-- mobile/backend/API/synchronization/authentication/cloud work;
-- broad ProductService or Repository decomposition;
-- workflow transaction redesign unless an ordinary beta validation exposes a blocking defect and Main has not prohibited the narrow correction;
-- general migration framework or schema-version ledger;
-- broad schema redesign;
-- unrelated UI/visual redesign;
+```text
+dist\Markei\Markei.exe
+dist\installer\Markei-Setup-0.1.0-x64.exe
+```
+
+## 5. Installer Artifact Gate
+
+After compilation, record:
+
+- artifact path;
+- size;
+- timestamp;
+- SHA256;
+- installer-visible name, version, publisher, architecture;
+- compiler command result.
+
+Verify the installer consumes `dist\Markei` and does not introduce:
+
+```text
+seed.sql
+market.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.log
+__pycache__
+*.pyc
+tests
+source tree
+```
+
+A compiled installer is `built`, not `installed` or lifecycle `validated`.
+
+## 6. Safe Installed-Lifecycle Environment
+
+Prefer a dedicated ordinary Windows test account with no previous Markei state.
+
+Before installation, record whether these exist:
+
+```text
+%LOCALAPPDATA%\Programs\Markei
+%LOCALAPPDATA%\Markei
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Markei
+```
+
+Do not use or delete the ordinary user’s real Markei data. Preserve a copy of the dedicated account’s database before destructive lifecycle transitions.
+
+## 7. Clean Installation and Installed Launch
+
+1. Run the compiled installer interactively.
+2. Confirm per-user destination and no administrator requirement.
+3. Confirm installed files under `%LOCALAPPDATA%\Programs\Markei`.
+4. Confirm Start Menu shortcut creation.
+5. Test optional desktop shortcut separately when selected.
+6. Launch from the Start Menu only, without Python, repository checkout, or development working directory.
+7. Confirm visible MainWindow and all four public surfaces.
+8. Record any startup log, dialog, SmartScreen warning, or antivirus action.
+
+## 8. Principal Workflow Gate
+
+Use a unique test dataset and record semantic values, not only screenshots:
+
+1. Settings: create or edit one uniquely named test store and save settings.
+2. Register: register one unique product and purchase.
+3. Lists: confirm the product appears in the expected projection.
+4. History: confirm the purchase appears with expected values.
+5. Settings: confirm saved values remain visible.
+
+A workflow failure must be classified before any source correction.
+
+## 9. Installed Close, Reopen, and Persistence Gate
+
+Close through the normal window control and immediately relaunch from the Start Menu.
+
+Verify:
+
+- no retained database lock;
+- no startup error;
+- test store, product, purchase, Lists projection, History entry, and settings persist;
+- `%LOCALAPPDATA%\Markei\market.sqlite` exists;
+- installed-context cleanup is successful.
+
+Sprint 01 frozen evidence cannot substitute for this installed-context gate.
+
+## 10. Reinstall, Uninstall, and Recovery Gates
+
+### Same-version reinstall
+
+Run the same installer again. Confirm program files are repaired/replaced and the existing dataset remains available.
+
+### Uninstall
+
+Uninstall through Windows Installed Apps or the registered uninstaller. Confirm:
+
+- installed program files removed;
+- shortcuts removed;
+- `%LOCALAPPDATA%\Markei\market.sqlite` retained.
+
+### Reinstall recovery
+
+Reinstall the same compatible package, launch from Start Menu, and confirm the retained dataset reappears without manual database copying.
+
+Use semantic row evidence before and after transitions. Hashes may supplement but not replace data-content checks.
+
+## 11. Human Validation Boundary
+
+Codex may automate:
+
+- compiler discovery and version capture;
+- static tests and builds;
+- installer compilation;
+- hashes and file-set inspection;
+- scripted path checks;
+- database queries;
+- silent actions only where they do not hide required observations.
+
+Human evidence is required for:
+
+- installer wizard and privilege behavior;
+- SmartScreen/antivirus observations;
+- Start Menu and desktop-shortcut usability;
+- visible installed launch;
+- Register, Lists, History, and Settings correctness;
+- normal close and immediate reopen;
+- retention-policy acceptance;
+- final beta acceptance.
+
+Codex must not declare `accepted`.
+
+## 12. Failure Classification and Correction Authority
+
+Classify the first failing gate as one of:
+
+```text
+toolchain prerequisite
+installer configuration defect
+packaging defect
+installed runtime defect
+application workflow defect
+data-retention defect
+Windows reputation/security observation
+human acceptance failure
+```
+
+Stop dependent gates after a failure and preserve original evidence.
+
+Only after direct failure evidence may Codex make the smallest relevant correction in:
+
+- `scripts/build_installer.ps1`;
+- `installer/Markei.iss`;
+- `Markei.spec`;
+- launcher diagnostics;
+- existing resource/writable-path handling;
+- current `MainWindow` shutdown coordination;
+- a narrowly reproduced beta-blocking workflow;
+- focused validation assets.
+
+Re-run the failed gate and all dependent gates after correction.
+
+## 13. Prohibited Scope
+
+Do not introduce:
+
+- composition-root or dependency-injection redesign;
+- ProductService/Repository decomposition;
+- transaction redesign unless separately reconciled after a demonstrated blocker;
+- schema redesign or migration ledger;
+- mobile, backend/API, synchronization, authentication, or cloud work;
 - one-file packaging;
-- automatic updating;
-- rollback framework;
-- production signing;
-- optional uninstall data deletion UX;
-- generated sample business data in production.
+- auto-update, signing, rollback framework;
+- broad UI redesign;
+- optional uninstall data-deletion UX;
+- unrelated cleanup.
 
-## 11. `G_OPS_CODEX.md` Report Contract
+## 14. G Report Contract
 
-Write a concise report containing:
+Replace `DEV_STAGE/G_OPS_CODEX.md` with a concise Sprint 02 report containing:
 
-1. exact files created/modified/deleted;
-2. final packaging and installer topology;
-3. accepted policies implemented;
-4. exact commands and results;
-5. artifact paths and hashes where available;
-6. evidence status for Gates A–F;
-7. first-launch database row/state summary;
-8. startup diagnostic evidence;
-9. shutdown/reopen evidence and whether a code correction was required;
-10. installer/lifecycle evidence or exact blocker;
-11. deviations from D and reasons;
-12. unresolved risks;
-13. confirmation that no prohibited scope was introduced.
-
-Use only:
+1. files changed and why;
+2. toolchain versions and compiler path;
+3. commands, working directory, and exit results;
+4. frozen and installer artifact paths, sizes, and SHA256 hashes;
+5. installed path and shortcut evidence;
+6. workflow dataset and observed results;
+7. close/reopen and persistence evidence;
+8. reinstall, uninstall-retention, and recovery evidence;
+9. SmartScreen/antivirus observations;
+10. every failure, classification, correction, and rerun;
+11. human-validation items completed or still pending;
+12. evidence status using only:
 
 ```text
 configured
@@ -371,8 +306,12 @@ built
 launched
 installed
 validated
+accepted
 blocked
 unknown
 ```
 
-Do not write permanent Operational memory.
+13. remaining blockers;
+14. confirmation that prohibited scope was not introduced.
+
+Do not modify permanent Operational memory, Main-root files, or methodology files.

@@ -1,16 +1,16 @@
-# F_DSN_STAGE — Cycle 06 Windows Primary Beta
+# F_DSN_STAGE — Cycle 06 Sprint 02 Final Desktop Validation
 
 > Status: Main-approved Design materialization stage
 > Authority: Main Chat [M]
 > Branch: `sketch-notebook-recovery`
-> Source: `[M]_STAGE/J_[M]_STAGE.md`
+> Inputs: `A_OPERATIONAL.md`, `B_DIDACTIC.md`, `C_DESIGN.md`
 > Codex report target: `DEV_STAGE/I_DSN_CODEX.md`
 
 ## 1. Objective
 
-Materialize the accepted Cycle 06 release boundaries into the permanent Design memory after implementation evidence is available. Preserve the current application architecture and record only the beta-critical deployment, identity, resource, and lifecycle decisions accepted by Main.
+Validate that the compiled installer and installed Windows lifecycle preserve the accepted Markei architecture and deployment boundaries.
 
-This stage does not authorize broad redesign.
+Sprint 02 does not authorize a new architecture. It authorizes only evidence-triggered, beta-bounded corrections when a directly observed gate fails.
 
 ## 2. Accepted Architecture Preserved
 
@@ -24,356 +24,232 @@ Desktop UI
 → SQLite
 ```
 
-Packaging and installation are deployment concerns around this application. They do not become new business or persistence layers.
+Packaging and installation remain deployment concerns around this application. They do not own business workflows, SQL, migration semantics, or user-created state.
 
-Accepted responsibility direction:
+## 3. Boundaries That Must Remain Stable
 
-```text
-Application entrypoint
-    constructs and starts Markei
-    owns inspectable startup diagnostics
+Do not reopen without contradictory installed-lifecycle evidence:
 
-Application/database code
-    locates bundled resources
-    creates writable user directories and state
-    initializes and migrates SQLite
+- `main.py` is the launcher adapter and outer startup-diagnostic boundary;
+- `app.main.main()` constructs the Qt application;
+- `Markei.spec` owns one-folder frozen composition;
+- `scripts/build_windows.ps1` invokes the spec;
+- `installer/Markei.iss` owns placement, identity, shortcuts, and uninstall registration;
+- `scripts/build_installer.ps1` owns compiler discovery and invocation;
+- `schema.sql` is bundled read-only application content;
+- `seed.sql` is excluded from production;
+- `%LOCALAPPDATA%\Markei\market.sqlite` is retained writable user data;
+- WAL/SHM are transient writable companions;
+- startup logs are generated under `%LOCALAPPDATA%\Markei\logs`;
+- identity is `Markei` / `Markei.exe` / `0.1.0` / publisher `Markei` / stable AppId;
+- Start Menu shortcut is required;
+- desktop shortcut is optional;
+- `MainWindow.closeEvent()` coordinates final idempotent closure of four page-owned services.
 
-PyInstaller specification
-    collects the executable runtime and approved read-only resources
+## 4. Expected Installed Boundary
 
-Installer
-    places replaceable program files
-    registers identity, shortcuts, and uninstall behavior
-    does not own workflows, SQL, migration meaning, or user-created data
-
-Main/human acceptance
-    decides whether evidence is sufficient for primary beta status
-```
-
-## 3. Authorized Permanent Design Files
-
-After Codex materializes D and evidence is available, update only:
+The installer may place only replaceable program content under the per-user program directory:
 
 ```text
-documentation/sketch_notebook/design/01_ARCHITECTURE.md
-documentation/sketch_notebook/design/14_MODEL_OVERVIEW.md
-documentation/sketch_notebook/design/09_DESIGN_STATE.md
-documentation/sketch_notebook/design/03_DECISION_LOG.md
+Markei.exe
+collected Python / PySide6 / Qt runtime files
+schema.sql
+approved static assets
+version metadata
 ```
 
-Do not update these files with claims unsupported by actual G evidence.
-
-## 4. Canonical Release-Boundary Decisions
-
-### 4.1 Packaged runtime boundary
-
-Record canonically:
+It must not install or treat as replaceable program content:
 
 ```text
-root main.py
-    packaged launcher adapter
-
-app.main.main()
-    canonical Qt application-construction function
-
-Markei.spec
-    authoritative one-folder packaging definition
-
-scripts/build_windows.ps1
-    operational invocation wrapper, not an independent package definition
+market.sqlite
+*.sqlite-wal
+*.sqlite-shm
+seed.sql
+startup.log
+tests
+caches
+source tree
 ```
 
-The packaged runtime includes executable code, required Python/Qt runtime components, `schema.sql`, approved static assets, and executable metadata.
+The installed executable must launch without Python, a source checkout, repository working directory, or development environment.
 
-The packaged runtime excludes `seed.sql` for production, live databases, WAL/SHM companions, generated logs, tests, development fixtures, and repository/build residue.
+Resource lookup must continue to find packaged `schema.sql`; writable-path lookup must continue to use `%LOCALAPPDATA%\Markei`.
 
-If D execution proves a different exact packaging file path, use the materialized path but preserve this ownership model.
+## 5. Shortcut and Identity Boundary
 
-### 4.2 Resource and writable-state classification
+Installed evidence must verify:
 
-Record:
+- per-user installation under `%LOCALAPPDATA%\Programs\Markei`;
+- stable AppId retained across same-version reinstall and compatible upgrade;
+- Start Menu shortcut launches the installed executable;
+- optional desktop shortcut is created only when selected;
+- application, executable, and installer identity remain synchronized.
 
-| Item | Accepted classification |
+A shortcut failure is primarily an installer registration defect, not an application-architecture failure.
+
+## 6. Lifecycle Interpretation
+
+### Clean installation
+
+Expected:
+
+```text
+compiled installer
+→ per-user program placement
+→ registered uninstall entry
+→ Start Menu shortcut
+→ no user database shipped as program content
+```
+
+### Same-version reinstall
+
+Expected:
+
+```text
+replace or repair program files
++ retain stable AppId
++ retain %LOCALAPPDATA%/Markei
++ reopen compatible existing database
+```
+
+### Compatible beta upgrade
+
+When a compatible version transition is actually exercised:
+
+```text
+stable installer identity
+→ replace program files
+→ retain user state
+→ reopen database
+→ apply current additive compatibility behavior
+```
+
+Cycle 06 does not establish downgrade handling, rollback, incompatible-schema recovery, or a migration ledger.
+
+### Uninstall
+
+Accepted policy:
+
+```text
+remove installed program files and shortcuts
+preserve %LOCALAPPDATA%/Markei by default
+```
+
+This becomes validated only through direct post-uninstall inspection.
+
+### Reinstall after uninstall
+
+Expected:
+
+```text
+reinstall compatible package
+→ launch from Start Menu
+→ reopen retained database
+→ recover principal workflow state
+```
+
+## 7. Installed Shutdown Boundary
+
+Sprint 01 proved source/frozen cleanup after adding bounded `MainWindow` coordination.
+
+Sprint 02 must verify that installed normal closure reaches the same path and permits immediate reopen without retained database lock.
+
+If installed shutdown fails:
+
+1. prove whether `MainWindow.closeEvent()` executed;
+2. identify which page service or repository remained open;
+3. apply only the smallest correction within existing desktop shutdown coordination;
+4. rerun installed close/reopen and dependent lifecycle gates.
+
+Do not introduce a composition root, dependency injection, or shared-lifetime redesign.
+
+## 8. Failure Classification
+
+Use this primary classification before changing source:
+
+| Failure | Design interpretation |
 | --- | --- |
-| `schema.sql` | Bundled read-only replaceable application resource |
-| `seed.sql` | Development/test fixture; excluded from the production beta package |
-| `market.sqlite` | Retained writable user data under `%LOCALAPPDATA%/Markei` |
-| `market.sqlite-wal`, `market.sqlite-shm` | Transient writable companions; never bundled |
-| startup logs | Generated writable diagnostics outside installed program files |
-| settings stored in SQLite | Retained user data |
-| icons and executable resources | Replaceable application content |
-| version metadata | Replaceable release identity content |
+| `ISCC.exe` unavailable | Toolchain prerequisite; no architecture change. |
+| Installer compile error | Correct only `.iss` or compile-wrapper boundary. |
+| Missing runtime file after install | Determine packaging omission versus installer-copy defect. |
+| Broken Start Menu shortcut | Installer registration defect. |
+| Installed app cannot locate `schema.sql` | Packaging/resource-resolution defect. |
+| Installed app writes under program files | Writable-state boundary defect. |
+| Workflow fails only installed | Narrow installed dependency/path/workflow defect. |
+| Database locked after installed close | Existing lifecycle coordination defect. |
+| Data removed by uninstall | Retention-policy defect. |
+| SmartScreen warning without runtime failure | Reputation/security observation. |
+| Human rejects usability | Human-acceptance failure with exact reason. |
 
-External placement is an architectural boundary, not proof of successful preservation. Installed lifecycle evidence is still required.
+## 9. Evidence-Triggered Correction Authority
 
-### 4.3 Production initialization policy
+Only after direct failure evidence may Codex correct:
 
-Record the accepted primary-beta policy:
+- compiler discovery/invocation;
+- installer file inclusion, destination, architecture, identity, shortcut, or uninstall registration;
+- PyInstaller collection of a missing installed dependency/resource;
+- launcher diagnostics for an installed-only startup failure;
+- existing resource or writable-path resolution;
+- current MainWindow shutdown coordination;
+- a narrowly reproduced beta-blocking workflow;
+- focused validation tooling or logs.
 
-```text
-fresh production database
-= schema.sql
-+ structural/default settings supplied by current application initialization/migration
-+ no sample store/product/purchase/category business data
-```
+No speculative correction is authorized.
 
-The current sample-bearing seed remains available only for development or tests unless a future decision reclassifies it.
+## 10. Acceptance Chain
 
-### 4.4 Uninstall retention policy
-
-Record:
-
-```text
-uninstall removes replaceable application files and shortcuts
-uninstall preserves %LOCALAPPDATA%/Markei by default
-reinstall may reuse compatible retained data
-```
-
-Optional user-data deletion UI is deferred.
-
-### 4.5 Release identity contract
-
-Record the minimum Cycle 06 identity:
+The installed boundary is evidenced only when this chain passes:
 
 ```text
-Display name: Markei
-Executable: Markei.exe
-Version: 0.1.0
-Publisher: Markei
-Installer identity: one stable AppId across compatible upgrades
-Primary target: Windows x64 controlled beta
+compiled installer artifact with expected identity
+→ clean per-user installation
+→ correct installed file boundary
+→ Start Menu launch without Python/source checkout
+→ Register / Lists / History / Settings pass
+→ close and immediate reopen pass
+→ persisted data remains correct
+→ same-version reinstall or compatible upgrade preserves data
+→ uninstall removes program files and preserves user state
+→ reinstall recovers retained compatible data
+→ SmartScreen/antivirus observations recorded
+→ Main/human acceptance
 ```
 
-Application version, executable metadata, and installer metadata form one coordinated release contract. They may be stored in tool-specific formats, but divergence is design drift.
+Installer compilation alone does not establish `installed`, `validated`, or `accepted`.
 
-Application version does not by itself prove database compatibility. Cycle 06 validates only fresh installation and compatible existing-data reopen/reinstall paths supported by the current additive compatibility behavior.
+## 11. Explicit Deferrals
 
-### 4.6 Shortcut policy
+Do not introduce:
 
-Record:
-
-```text
-Start Menu shortcut required
-Desktop shortcut optional through an installer task
-```
-
-Shortcut policy belongs to installation UX and does not change application architecture.
-
-### 4.7 Startup diagnostics
-
-Record that the outer executable entrypoint owns making pre-window startup failure inspectable.
-
-Accepted diagnostic boundary:
-
-```text
-unhandled startup exception
-→ writable per-user startup log
-→ concise visible error where safely available
-→ failing process result
-```
-
-Logging must not move into installed program files or business layers.
-
-## 5. Lifecycle Ownership Decision
-
-Record the accepted Cycle 06 decision:
-
-```text
-validate current distributed page/service/repository cleanup first
-```
-
-Current structure remains an implementation fact:
-
-```text
-4 pages
-→ 4 ProductService instances
-→ 4 Repository instances
-→ 4 SQLite connections/cursors
-```
-
-This structure is not canonically declared defective.
-
-Only if G evidence demonstrates missed closure, cleanup exceptions, retained database locks, inability to reopen immediately, or inability to release an isolated database directory may Cycle 06 add a bounded MainWindow/application-owned close coordinator.
-
-If such a correction is materialized, record it as:
-
-```text
-MainWindow/application composition coordinates idempotent closure
-page/service/repository local close responsibility remains intact
-```
-
-Do not promote a new composition root, dependency-injection system, or broad lifetime redesign.
-
-If validation passes without a code change, record that existing cleanup behavior was validated for the tested beta lifecycle without claiming a universal lifetime proof.
-
-## 6. Transaction Boundary
-
-Record no new transaction architecture unless D execution discovers an ordinary beta-blocking defect.
-
-Existing multi-commit workflows remain inherited risk:
-
-```text
-statement commits exist
-workflow atomicity is not guaranteed
-```
-
-Packaging and installation do not alter that fact. Transaction redesign is deferred unless concrete beta evidence requires a separately reconciled narrow correction.
-
-## 7. Upgrade and Reinstall Boundary
-
-Record the bounded Cycle 06 contract:
-
-```text
-same-version reinstall
-    may replace program files
-    must not overwrite retained compatible user data
-
-compatible beta upgrade
-    retains stable installer identity
-    replaces program files
-    opens existing database
-    applies current additive compatibility behavior
-
-uninstall then reinstall
-    preserved user data may be reopened
-```
-
-Incompatible future database formats, downgrade policy, rollback, and a numbered migration framework are outside Cycle 06.
-
-## 8. Model Overview Update
-
-Refresh `14_MODEL_OVERVIEW.md` with a compact deployment map:
-
-```text
-Source tree
-    main.py
-    app/
-    schema resource
-
-Build layer
-    Markei.spec
-    build wrapper
-    frozen one-folder distribution
-
-Install layer
-    Inno Setup source
-    compiled installer
-    installed replaceable program files
-
-User-state layer
-    %LOCALAPPDATA%/Markei/market.sqlite
-    transient WAL/SHM
-    startup logs
-```
-
-Show that installed application files and retained user state are separate sibling concerns around the existing application architecture.
-
-Do not expand the overview into an operational runbook.
-
-## 9. Design Checkpoint Update
-
-Refresh `09_DESIGN_STATE.md` only after G evidence.
-
-The checkpoint must state actual status precisely, for example:
-
-```text
-configured
-built
-launched
-installed
-validated
-blocked
-```
-
-Do not state `accepted` unless Main/human acceptance occurs after G/H/I reconciliation.
-
-Include:
-
-- current Cycle 06 milestone;
-- accepted resource, seed, retention, identity, and shortcut boundaries;
-- materialized packaging/installer paths;
-- startup diagnostic status;
-- shutdown validation outcome;
-- installed lifecycle evidence or blocker;
-- remaining beta risks;
-- explicit deferrals.
-
-## 10. Decision Log Entry
-
-Append an observational Cycle 06 decision entry recording:
-
-1. A/B/C functional reports were reconciled in J;
-2. production excludes sample-bearing seed data;
-3. uninstall preserves `%LOCALAPPDATA%/Markei`;
-4. Markei/0.1.0/Markei.exe/Markei publisher/stable AppId form the first beta identity;
-5. `Markei.spec` is the packaging authority and the build script is an invocation wrapper;
-6. Start Menu is required and desktop shortcut is optional;
-7. shutdown is validate-first with evidence-triggered bounded correction;
-8. broad redesigns remain deferred;
-9. materialization and validation status are reported from G rather than inferred.
-
-The log must distinguish Main acceptance of policy from later evidence of implementation behavior.
-
-## 11. Evidence-Conditional Materialization
-
-Codex must read `G_OPS_CODEX.md` before finalizing permanent Design state.
-
-Use these rules:
-
-```text
-If packaging/installer files were created but not built:
-    record configured only
-
-If frozen build succeeded and launched:
-    record built/launched with exact limits
-
-If installer compile was blocked:
-    record blocker; do not claim installed lifecycle
-
-If installed lifecycle was exercised:
-    record exact tested transitions
-
-If shutdown correction was added:
-    record why and where
-
-If shutdown validation passed unchanged:
-    record validation result without redesign
-```
-
-## 12. Explicit Deferrals
-
-Keep outside Cycle 06 Design canon:
-
-- mobile, backend/API, synchronization, authentication, cloud persistence;
-- automatic updating;
-- production signing unless controlled beta proves it blocking;
-- rollback framework;
-- general migration framework and schema-version ledger;
-- incompatible-version and downgrade strategy;
-- broad schema redesign;
-- ProductService/Repository decomposition;
-- composition-root or dependency-injection redesign;
-- typed view-model conversion;
-- UI/navigation redesign;
-- optional uninstall data-removal UX;
+- composition-root redesign or dependency injection;
+- service/repository lifetime redesign or decomposition;
+- transaction redesign unless a demonstrated blocker is separately reconciled;
+- schema redesign or migration ledger;
+- mobile, backend/API, synchronization, authentication, or cloud persistence;
 - one-file packaging;
-- `pages.order` activation and unrelated deferred design questions.
+- auto-update, signing, rollback framework;
+- optional uninstall data-deletion UX;
+- broad UI/navigation redesign.
 
-## 13. `I_DSN_CODEX.md` Report Contract
+Workflow atomicity remains inherited debt unless ordinary installed testing demonstrates a concrete release blocker.
 
-Report:
+## 12. I Report Contract
 
-1. exact Design files modified;
-2. canonical release boundaries added;
-3. resource/state classifications recorded;
-4. seed and retention policies recorded;
-5. identity and shortcut contract recorded;
-6. startup diagnostic boundary recorded;
-7. shutdown/lifecycle outcome and whether it was evidence-conditional;
-8. model overview changes;
-9. checkpoint evidence status and blockers;
-10. decision-log entry;
-11. explicit deferrals preserved;
-12. confirmation that no unsupported acceptance claim or broad redesign was promoted.
+Replace `DEV_STAGE/I_DSN_CODEX.md` with a concise Sprint 02 report containing:
 
-The report remains observational evidence for Main reconciliation.
+1. whether the accepted deployment boundary was preserved;
+2. compiled installer identity and placement evidence;
+3. installed program-file versus user-state evidence;
+4. Start Menu and optional desktop-shortcut results;
+5. installed resource and writable-path behavior;
+6. installed shutdown/reopen result;
+7. same-version reinstall or compatible upgrade result;
+8. uninstall-retention result;
+9. reinstall-recovery result;
+10. every failed gate, primary classification, bounded correction, and rerun;
+11. SmartScreen/antivirus classification;
+12. remaining unvalidated design boundaries;
+13. explicit deferrals preserved;
+14. confirmation that permanent Design files were not modified.
+
+Use evidence-appropriate states only. Codex must not declare final beta acceptance.
