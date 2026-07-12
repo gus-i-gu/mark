@@ -1,6 +1,6 @@
 # 06_SESSION_SCHEME.md
 
-> Version: Cycle 07 Sprint 04 forward checkpoint 0.4
+> Version: Cycle 07 Android full-implementation forward checkpoint 0.5
 > Status: Active Forward Checkpoint
 > Persistence Class: Forward Checkpoint
 > Knowledge Class: Main / Global
@@ -10,8 +10,8 @@
 > Baseline commit: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
 > Current-state source: `00_PROJECT_STATE.md`
 > Historical source: `05_SESSION_LOG.md`
-> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` sections 19–20
-> Cycle target: complete and execute the first local shared Flutter client workflow without destabilizing the accepted PySide6 beta
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` sections 21–22
+> Cycle target: install, build, run, and validate the local shared Flutter client on Android without destabilizing Windows or the accepted PySide6 beta
 
 ---
 
@@ -776,3 +776,308 @@ human confirms Sprint 04 decisions and host actions
 ```
 
 The local TypeScript/Postgres synchronization harness remains the candidate next sprint or following bounded unit after this exit boundary.
+
+# Cycle 07 Android Full-Implementation Forward Checkpoint
+
+> This section supersedes the earlier Sprint 04 forward plan.
+> Proposed phase label: Cycle 07 Sprint 05.
+> Implementation authority: inactive until new D/E/F.
+
+## 1. Entry state
+
+The Windows local vertical slice exists.
+
+```text
+Flutter domain/application/local persistence: implemented
+Drift schema v2 and migration: tested
+Purchase/History UI: implemented and widget-tested
+Flutter tests: 21 passed
+Python regressions: 5 passed
+Windows release build: passed
+Windows startup smoke: passed
+Windows manual workflow: pending human
+Android project: generated
+Android SDK/toolchain: absent
+Android build/run/lifecycle: not evidenced
+```
+
+## 2. Android milestone
+
+> Establish Android as a fully executed local Markei client: install and validate tooling, build and launch the app, execute the Purchase/History workflow, prove app-private persistence across Android lifecycle events, and preserve Windows/Python regressions.
+
+“Full implementation” at this milestone means debug-development acceptance.
+
+It does not mean Play Store release, production signing, authentication, or synchronization.
+
+## 3. Required toolchain
+
+Fresh D/E/F may authorize installation of:
+
+- latest stable Android Studio supported by the current Flutter stable SDK;
+- Android SDK Platform required by current Flutter guidance;
+- Android SDK Build-Tools;
+- Android SDK Command-line Tools;
+- Android Emulator;
+- Android SDK Platform-Tools;
+- CMake;
+- NDK side-by-side when Flutter/SQLite dependencies require it;
+- one Android emulator system image;
+- OEM USB driver only if a physical Windows-connected device requires it.
+
+The current Flutter Android guide identifies API level 36 and the listed SDK tools as the current setup baseline. D/E/F must recheck actual Flutter/Gradle requirements immediately before installation.
+
+Required license step:
+
+```powershell
+flutter doctor --android-licenses
+```
+
+The human must be allowed to read and accept licenses. Codex must not claim acceptance without the actual command result.
+
+## 4. Installation authority boundary
+
+Android installation is not authorized by this checkpoint alone.
+
+New D/E/F must name:
+
+- installation source;
+- exact packages/components;
+- disk-space and virtualization checks;
+- commands or Android Studio steps;
+- UAC/approval points;
+- license step;
+- expected `flutter doctor -v` result;
+- stop conditions;
+- recovery after partial installation.
+
+Codex may install tools only after the human invokes those D/E/F instructions and approves system prompts.
+
+Do not remove existing SDKs, Visual Studio workloads, Java installations, or unrelated Android Studio configuration.
+
+## 5. Device route
+
+D/E/F should prefer one bounded route and retain the other as fallback.
+
+### Emulator route
+
+Required:
+
+- hardware virtualization available;
+- VM acceleration enabled;
+- one Phone or Tablet virtual device;
+- one compatible x64/ARM64 system image;
+- hardware graphics acceleration;
+- emulator visible through `flutter emulators` and `flutter devices`.
+
+### Physical-device route
+
+Required:
+
+- developer options;
+- USB debugging or wireless debugging;
+- explicit device authorization;
+- OEM USB driver when required;
+- device visible through `flutter devices`.
+
+No rooting, bootloader changes, or device security bypass belongs in scope.
+
+## 6. Android identity corrections
+
+Before acceptance:
+
+1. replace generated `com.example.markei` with a stable human-approved application ID;
+2. set the visible Android label to Markei;
+3. replace fixed `windows-device` composition identity;
+4. generate one persistent platform-neutral local Device UUID;
+5. preserve it across application restart;
+6. keep account identity explicitly local/provisional;
+7. do not present local identity as authentication.
+
+Recommended application-ID candidate:
+
+```text
+com.gusigu.markei
+```
+
+The human must accept or replace this before D/E/F materialization.
+
+Persistent Device identity should be owned locally and tested on both Windows and Android. Exact schema/storage ownership requires Design staging.
+
+## 7. Android build gates
+
+Required commands after setup:
+
+```powershell
+flutter doctor -v
+flutter emulators
+flutter devices
+cd .\clients\markei_flutter
+flutter clean
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+flutter build apk --debug
+flutter run -d <android-device-id>
+```
+
+`flutter clean` is limited to generated Flutter build output. It must not delete source or databases.
+
+Record:
+
+- Flutter/Dart/Java/Gradle/Android versions;
+- selected SDK/API;
+- emulator/device identity without personal data;
+- APK output path and size;
+- build duration;
+- warnings;
+- launch logs;
+- exact blocker when a gate fails.
+
+## 8. Android functional acceptance
+
+Execute on Android:
+
+1. launch Markei;
+2. confirm Purchase and History navigation;
+3. enter Store;
+4. create Product with user Product code;
+5. stage two Items;
+6. verify total;
+7. register Purchase;
+8. open History;
+9. verify Store, total, and item count;
+10. background and resume;
+11. rotate where supported;
+12. exercise Android back behavior;
+13. open/close the keyboard on the narrow form;
+14. terminate the process;
+15. relaunch;
+16. confirm History persists.
+
+Capture failures without exposing Purchase contents beyond controlled test data.
+
+## 9. Android persistence acceptance
+
+Prove:
+
+- database resides in Android app-private storage;
+- no external-storage permission is required;
+- ordinary Windows/Python databases are inaccessible;
+- app restart preserves facts;
+- process termination/relaunch preserves facts;
+- sequence continues monotonically;
+- migration opens safely;
+- uninstall/data-clear behavior is documented as destructive to local-only data;
+- no silent reset follows an ordinary error.
+
+Do not request broad storage permissions.
+
+## 10. Responsive and lifecycle requirements
+
+The current narrow-screen UI must be evaluated for:
+
+- overflow;
+- scrolling;
+- safe areas;
+- keyboard obstruction;
+- focus and validation;
+- tap-target clarity;
+- portrait and landscape;
+- back navigation;
+- background/resume;
+- process recreation.
+
+Fix only defects required for the bounded Purchase/History workflow.
+
+Do not broaden into a full visual redesign.
+
+## 11. Cross-platform regression
+
+After Android changes, rerun:
+
+```powershell
+flutter analyze
+flutter test
+flutter build windows
+python -m unittest discover -s tests
+```
+
+Windows manual acceptance evidence should be recorded when the human completes it.
+
+Android-specific changes must not break Windows composition, database migration, or the Python beta.
+
+## 12. Required reports
+
+Future G/H/I must distinguish:
+
+- tool installed;
+- doctor validated;
+- APK built;
+- emulator/device launched;
+- UI interaction passed;
+- lifecycle passed;
+- persistence passed;
+- Windows regression passed;
+- human-observed versus automated evidence.
+
+Permanent-domain reconciliation follows through PDR2.
+
+## 13. Explicit non-goals
+
+Do not include:
+
+- Play Store publication;
+- production keystore/signing;
+- release-channel deployment;
+- authentication or authorization;
+- TypeScript API;
+- Postgres/Neon;
+- real synchronization;
+- central Product catalogue;
+- legacy import;
+- Product editing/deletion;
+- PySide6 retirement;
+- iOS;
+- broad UI redesign;
+- broad analytics.
+
+## 14. Exit criteria
+
+Android milestone succeeds only when:
+
+```text
+toolchain installed and doctor-green
++ emulator or physical device recognized
++ stable application ID
++ persistent local Device UUID
++ debug APK built
++ app launched on Android
++ two-item Purchase registered
++ History displayed
++ background/resume and back behavior checked
++ process restart preserved data
++ app-private storage confirmed
++ Flutter tests passed
++ Windows build regression passed
++ Python regressions passed
++ G/H/I completed
+```
+
+If no Android device/emulator can run after correct installation, the milestone remains blocked rather than accepted through build-only evidence.
+
+## 15. Methodology route
+
+```text
+human completes/reports Windows manual check
+→ O/A/D run MSU-02 for Android-specific preparation when needed
+→ Main reconciles Android A/B/C
+→ Main writes Android D/E/F
+→ Codex installs/materializes/validates
+→ G/H/I
+→ PDR2 permanent reconciliation
+→ Main closure
+```
+
+TypeScript/Postgres synchronization remains deferred until Android local parity is reconciled.
