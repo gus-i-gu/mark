@@ -10,6 +10,9 @@
 
 ---
 
+<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later.
+
 # 1. Implemented Local Direction
 
 ```text
@@ -151,6 +154,3 @@ Route 1 is a Design recommendation, not materialization authority.
 # 9. Recovery Boundary
 
 Flutter test success establishes local behavior only. It does not validate platform lifecycle, responsive composition, distributed synchronization, cloud architecture, or product parity.
-
-<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later.
