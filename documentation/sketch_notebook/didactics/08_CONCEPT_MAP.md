@@ -162,3 +162,8 @@ protected PySide6 beta
 ## Immediate Learning Boundary
 
 The next Didactic evaluation requires explicit learner explanations or implementation-linked evidence. Architecture discussion and canonical introduction do not change maturity. D/E/F remain postponed.
+
+---
+
+<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
