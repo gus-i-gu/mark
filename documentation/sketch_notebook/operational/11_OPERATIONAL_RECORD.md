@@ -489,3 +489,94 @@ Next Operational evidence target is Sprint 03 preparation: pinned environments, 
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+# Cycle 07 Sprint 03 Unit 01 — Flutter Foundation Materialization
+
+## 2026-07-12 — Environment and materialization
+
+The authorized Sprint 03 Flutter Foundation was materialized on `cycle-07-mobile-preparation`.
+
+Initial host state:
+
+```text
+flutter: unavailable
+dart: unavailable
+Android SDK: unavailable
+Visual Studio C++ desktop workload: unavailable
+macOS/Xcode: unavailable
+```
+
+After human-approved setup:
+
+```text
+Flutter 3.44.6 stable
+revision ee80f08bbf
+Dart 3.12.2
+Windows host detected
+Android/Windows build prerequisites incomplete
+iOS host unavailable
+```
+
+Created implementation surfaces included:
+
+- `clients/markei_flutter/` with Android, iOS, and Windows target directories;
+- handwritten Dart domain/application/infrastructure source;
+- Drift schema and generated `local_database.g.dart`;
+- committed `pubspec.lock`;
+- `contracts/shared_beta/v1/` semantic JSON examples.
+
+## Commands and results
+
+```text
+flutter create                                      passed
+flutter pub get                                     passed
+dart run build_runner build --delete-conflicting-outputs  passed
+dart format                                         passed
+flutter analyze                                     passed, no issues
+flutter test                                        passed, 9 tests
+python -m unittest discover -s tests                passed, 5 tests
+```
+
+The tests evidenced exact packaged/bulk normalization examples, warning-only similarity behavior, dimensional quantity and money structures, atomic Purchase + Items + event + pending queue registration, invalid-item rollback, temporary-file close/reopen persistence, and a minimal analytic registry.
+
+## Generated versus handwritten ownership
+
+```text
+handwritten Dart
+    reviewed directly
+
+Drift-generated Dart and Flutter platform runners
+    reviewed through generator input/configuration
+    plus clean regeneration/build evidence
+
+pubspec.lock
+    committed dependency-resolution evidence
+
+build outputs and local databases
+    generated runtime artifacts, not source truth
+```
+
+## Host limits and skipped scope
+
+Android/iOS/Windows directories were generated but none was built or run. Windows was blocked by the missing Visual Studio desktop workload; Android by the missing SDK; iOS by the non-macOS host. No platform lifecycle claim was established.
+
+TypeScript API, authentication/authorization, Postgres/Neon, actual upload/download, cross-device convergence, legacy import, full Purchase UI, and PySide6 retirement were skipped/deferred.
+
+The Flutter implementation did not discover, open, copy, rename, migrate, hash, or inspect the ordinary Cycle 06 database. Python regression execution produced no tracked database change.
+
+## Evidence-triggered defects and risks
+
+Main reconciliation identified:
+
+1. likely device-sequence reset/reuse on repeated registration;
+2. missing account/device/sequence uniqueness evidence;
+3. `\w`-based normalization risk for accented Portuguese text;
+4. deterministic Product ID without fixed cross-language/RFC contract;
+5. shallow Purchase/event fixtures rather than complete wire schemas;
+6. unrehearsed Drift schema evolution and ambiguous ledger timestamp meaning;
+7. exact-name-only Store reuse and no Store deduplication model.
+
+These remain unresolved. Monotonic ordering, Unicode-safe identity, complete protocol contracts, platform execution, and distributed synchronization must not be described as validated.
+
+## Main route orientation
+
+J §19 favors a local shared-client vertical slice before the synchronization harness, with sequence correction and contract hardening first. This is Main orientation, not Sprint 04 implementation authority.
