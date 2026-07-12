@@ -1,6 +1,6 @@
 # 10_OPERATIONAL_STATE.md
 
-> Version: Cycle 07 Sprint 01 checkpoint 0.5
+> Version: Cycle 07 Sprint 02 Flutter checkpoint 0.6
 > Status: Active operational checkpoint
 > Persistence Class: Checkpoint
 > Knowledge Class: Operational
@@ -13,131 +13,89 @@
 
 # 1. Current Cycle State
 
-Cycle 06 is accepted and closed for the controlled Windows primary-beta boundary. The previous checkpoint's pending-acceptance language was inherited drift; it does not reopen the cycle.
+Cycle 06 remains accepted and closed for the controlled Windows primary beta.
 
-Cycle 07 mobile preparation is active. Sprint 01 investigation is complete and has produced reconciled Operational, Didactic, and Design evidence without application modification, mobile-framework initialization, tool installation, or access to ordinary desktop user data.
-
-Current status:
+Cycle 07 Sprint 02 planning and A/B/C Flutter restaging are complete. Main reconciliation is complete, and permanent-domain reconciliation is active. No application code, Flutter project, TypeScript API, database schema, authentication integration, Neon infrastructure, or D/E/F/G/H/I work has been authorized or produced.
 
 ```text
 Cycle 06: accepted and closed
-Cycle 07: active investigation
-Sprint 01: complete
-primary strategic candidate: native/cross-platform client with explicit contracts and fixtures
-bounded challenger: time-boxed Python-native Android experiment
-framework selection: none
+Cycle 07 Sprint 02 planning: complete
+Flutter A/B/C restaging: complete
+Main reconciliation: complete
+Operational permanent-memory reconciliation: active/completed by this checkpoint
 implementation authorization: none
 D/E/F: postponed
-backend, authentication, synchronization: deferred
+next evidence target: Sprint 03 preparation
 ```
 
-# 2. Preserved Operational Evidence
+# 2. Accepted Planning Decisions
 
-Markei contains reusable behavior but is not presently a portable application.
+Accepted for planning and permanent-domain classification:
 
-Likely reusable evidence includes:
+- Flutter/Dart is the shared Windows/Android/iOS client basis.
+- TypeScript is favored for the synchronization API/protocol harness.
+- Neon Postgres is favored as managed shared persistence.
+- Every installation remains local-first with application-private storage.
+- Account data is owned by immutable account UUID, not email.
+- The first beta uses an account-private reusable catalogue.
+- Purchase is an atomic aggregate containing one or more Purchase Items.
+- One append-only `purchase.registered` event contains immutable item lines.
+- Retry identity uses event UUID; one device uses UUID plus monotonic sequence; downloads use an opaque account-scoped cursor.
+- Downloaded events and cursor advancement commit together locally.
+- Raw facts remain authoritative; projections and Dart analytics are rebuildable and versioned.
+- PySide6 and the original Cycle 06 database remain protected until evidenced parity and human/Main acceptance.
+- No embedded Python runtime or client IPC bridge belongs in the Flutter client.
 
-- Python domain models and vocabulary;
-- validation, calculation, date, quantity, and status rules;
-- purchase and inventory workflow meanings;
-- SQLite schema semantics and structural defaults as reference;
-- deterministic desktop behavior as a fixture source.
+Accepted planning does not mean implemented, packaged, validated, deployed, or production-ready.
 
-Current coupling includes:
+# 3. Provisional and Untested Decisions
 
-- `ProductService` constructing the concrete `Repository`;
-- repository construction opening concrete SQLite lifecycle behavior;
-- desktop/Windows-shaped user-data and resource paths;
-- service projections containing presentation labels and grouping;
-- incomplete abstract contracts relative to used repository methods;
-- multi-step workflows crossing separately committed mutations.
+The following are preferred experiment candidates or definitions requiring fixtures:
 
-No mobile runtime, Android/iOS package, sandbox database, lifecycle persistence, semantic-parity suite, accessibility behavior, or distribution route has been demonstrated.
+- Drift as the first Flutter SQLite candidate;
+- `sqflite_common_ffi` as the retained persistence comparison;
+- `flutter_secure_storage` as a credential-storage candidate;
+- exact Flutter project layout and state/navigation choices;
+- exact TypeScript API framework, Node runtime, hosting platform, and migration tool;
+- authentication provider;
+- Neon role, schema, branching, pooling, limits, and recovery behavior;
+- deterministic Product UUID derivation and normalization versioning;
+- exact decimal scale/ranges, fractional COUNT policy, and currency metadata;
+- RLS as defense in depth;
+- exact parity threshold for PySide6 retirement.
 
-# 3. Reconciled Pathways
+No compatibility claim for these candidates is validated. Windows and Android require empirical build/run evidence. iOS is explicitly unvalidated until macOS/Xcode execution.
 
-## Operational pathway — bounded Python-native Android experiment
+# 4. Next Evidence Target — Sprint 03 Preparation
 
-A time-boxed Python-native Android experiment remains the cheapest direct test of one narrow question:
-
-> Can existing Python behavior run correctly inside a mobile package with an isolated app-private database?
-
-Its apparent low initial cost comes from direct reuse of Python models, calculations, services, repository behavior, and potentially SQLite schema handling. It could expose packaging or runtime incompatibility before a second implementation is undertaken.
-
-That initial economy is not proof of low total cost. It becomes expensive if the experiment requires broad construction refactoring, custom binary recipes, repeated SDK/NDK/JDK/WSL troubleshooting, framework-specific lifecycle work, weak accessibility or platform integration, separate iOS adaptation, or continued debugging across Python, native packaging, and device layers. A successful Android package would not establish iOS feasibility or long-term maintainability.
-
-Operational classification:
+The next bounded evidence unit should prepare, then later execute only if D/E/F authorize:
 
 ```text
-bounded challenger
-useful only with a fixed question, time limit, pass gates, and stop conditions
-not selected
-not authorized
+pinned Flutter/Dart + TypeScript/Node environments
+→ canonical Dart/TypeScript JSON fixtures
+→ fresh isolated local databases for simulated devices A/B
+→ exact normalization and advisory-only similarity behavior
+→ packaged/bulk catalogue identity
+→ atomic Purchase + Items + pending event
+→ close/reopen and projection/analytics rebuild
+→ local TypeScript API + disposable Postgres
+→ retry / sequence-gap / cursor / bootstrap / restart / account-isolation gates
+→ Windows and Android build/run
+→ Cycle 06 database isolation
+→ iOS later through macOS/Xcode
+→ non-production Neon only after local protocol proof
 ```
 
-## Design pathway — native/cross-platform client with contracts and fixtures
+# 5. Scope and Recovery
 
-The current strategic preference is a maintained native/cross-platform client that reuses Markei's behavior through explicit, language-neutral contracts and deterministic fixtures rather than assuming direct Python runtime reuse.
-
-Its initial cost is higher: a new language/framework may need to be learned; Android and iOS SDKs and packaging must be configured; business behavior and persistence must be implemented in the client; and semantic-parity tests must be constructed. Android may be developed from Windows-supported tooling, while iOS build, signing, simulator/device, and distribution validation still require a macOS/Xcode boundary.
-
-That initial architecture can reduce later cost when contracts separate business facts from presentation formatting, fixtures prevent silent drift, mobile lifecycle and local persistence have explicit owners, transaction behavior is designed once for the mobile client, and conventional platform tooling makes debugging, accessibility, navigation, packaging, and long-term dependency maintenance more predictable.
-
-Operational classification:
-
-```text
-primary strategic candidate
-favored by human/Main planning direction
-not empirically proven
-framework not selected
-implementation not authorized
-```
-
-# 4. Development-Cost Boundary
-
-Development cost is not only the number of files required to launch the first screen.
-
-It includes:
-
-- initial setup and learning;
-- direct source reuse versus behavior reimplementation;
-- mobile SDK, emulator/device, packaging, signing, and distribution work;
-- debugging across application runtime and native toolchain boundaries;
-- separate Android and iOS host requirements;
-- contract, fixture, and semantic-parity testing;
-- suspend/resume, terminate/relaunch, migration, file-lock, backup, and uninstall behavior;
-- dependency upgrades and maintenance across the product's lifetime.
-
-The Python-native pathway is cheaper only if its reuse remains direct and its mobile-specific seams stay narrow. The Design pathway is worth its greater entry cost only if explicit contracts and conventional mobile ownership prevent duplicate ambiguity, reduce cross-platform surprises, and support a maintained product rather than a one-off demonstration.
-
-These are planning assumptions. Later execution evidence must measure them.
-
-# 5. Required Future Evidence
-
-Before any framework selection or D/E/F activation, Main/human direction should define:
-
-1. language-neutral behavior scenarios and deterministic expected results;
-2. the mobile-local storage and ordinary-desktop-data isolation invariant;
-3. one atomic registration workflow;
-4. Android host/toolchain prerequisites for the candidate route;
-5. the distinct macOS/Xcode boundary for iOS;
-6. clean build, install, cold-launch, write/read, suspend/resume, terminate/relaunch, and persistence gates;
-7. semantic-parity gates against shared fixtures;
-8. stop conditions for the Python-native challenger;
-9. decision criteria for accepting a maintained client architecture.
-
-Approach D remains excluded unless accounts, multi-device state, household collaboration, or synchronization become demonstrated requirements.
-
-# 6. Scope and Recovery
-
-No implementation is authorized. D/E/F remain postponed. Do not initialize a framework, install a toolchain, modify source, open the ordinary desktop database, create a backend, or claim framework acceptance from documentation evidence.
+No framework initialization, tool installation, database access, infrastructure provisioning, authentication account creation, deployment, source modification, or D/E/F/G/H/I activity is authorized.
 
 Recovery route:
 
 ```text
 1. Read this checkpoint.
-2. Read 04_TODO.md for active evidence gaps and later gates.
-3. Read 11_OPERATIONAL_RECORD.md for Cycle 07 observations and preserved pathway tension.
-4. Read J_[M]_STAGE.md for cross-domain reconciliation and authorization status.
-5. Read 12_OPERATIONAL_MODEL.md only when stable Operational rules are required.
+2. Read 04_TODO.md for Sprint 03 preparation gates.
+3. Read 11_OPERATIONAL_RECORD.md for chronology and candidate evidence boundaries.
+4. Read J sections 17–18 for Main planning acceptance.
+5. Read 12_OPERATIONAL_MODEL.md for stable technology-independent rules.
 ```
