@@ -1,13 +1,13 @@
 # 00_PROJECT_STATE.md
 
-> Version: Cycle 07 Sprint 03 closure / Sprint 04 entry 0.6
+> Version: Cycle 07 Sprint 04 materialization / Android milestone entry 0.7
 > Status: Active Global State Canon-Checkpoint
 > Persistence Class: Canon-Checkpoint
 > Knowledge Class: Main / Global
 > Authority: Main Chat [M]
 > Branch: `cycle-07-mobile-preparation`
 > Baseline: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
-> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md` sections 19–20
+> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md` sections 21–22
 > Scope: Accepted current global state and low-cost recovery entrypoint
 
 ---
@@ -320,3 +320,68 @@ TypeScript/Postgres synchronization remains the following candidate route.
 ## Authority state
 
 Sprint 04 planning is accepted. Implementation remains inactive until the human approves the route/host actions and Main prepares new D/E/F. Cycle 07 remains open.
+
+# Cycle 07 Sprint 04 Materialized State / Android Entry
+
+## Current global truth
+
+Sprint 04 is materially implemented.
+
+```text
+Product user code/internal ID separation: implemented
+normalization v2: implemented/tested
+device sequence correction: implemented/tested
+Drift schema v2 migration: implemented/tested
+shared_beta/v2 schemas/examples: implemented/tested
+multi-item Purchase UI: implemented/widget-tested
+local History UI: implemented/widget-tested
+Flutter tests: 21 passed
+Python regressions: 5 passed
+Windows release build: passed
+Windows startup smoke: passed
+Windows manual interaction: pending human
+Android: SDK absent; build/run not performed
+```
+
+The protected Python/PySide6 source and ordinary database remain unchanged.
+
+## Evidence limits
+
+Windows build and startup do not establish complete interaction, accessibility, responsive, or persistence acceptance. Human verification remains required.
+
+Android and iOS remain platform-unvalidated.
+
+The local event and pending queue are not synchronization.
+
+## Documentation drift
+
+Design and Didactic checkpoints reflect Sprint 04.
+
+The Operational checkpoint is stale and still describes pre-materialization state. G, repository truth, J §22, and this global checkpoint supersede it until PDR2-O is rerun.
+
+## Next accepted direction
+
+The next Cycle 07 milestone is full Android implementation and validation:
+
+```text
+Android tooling installation
+→ SDK/licenses/device readiness
+→ stable application ID
+→ persistent platform-neutral Device identity
+→ debug APK build
+→ emulator/physical-device launch
+→ Purchase/History workflow
+→ Android close/reopen persistence
+→ narrow-layout, keyboard, back, rotation, lifecycle evidence
+→ cross-platform regressions
+```
+
+TypeScript/API/Neon synchronization remains deferred.
+
+## Authority
+
+Android planning is accepted.
+
+Android tool installation and source materialization require fresh Main D/E/F with explicit components, commands, approval gates, data isolation, validation, and rollback/stop conditions.
+
+Cycle 07 remains open.
