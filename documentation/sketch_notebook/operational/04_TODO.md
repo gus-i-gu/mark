@@ -138,3 +138,8 @@ no databases
 no external accounts or infrastructure
 no D/E/F
 ```
+
+---
+
+<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
