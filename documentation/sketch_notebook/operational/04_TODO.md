@@ -1,6 +1,6 @@
 # 04_TODO.md
 
-> Version: Cycle 07 active derivative 0.4
+> Version: Cycle 07 Sprint 03 preparation derivative 0.5
 > Status: Active operational derivative
 > Persistence Class: Derived
 > Knowledge Class: Operational
@@ -13,141 +13,128 @@
 # 1. Fast Recovery Card
 
 ```text
-Cycle 06: accepted and closed
-Cycle 07 investigation: active
-Sprint 01: complete
-strategic preference: native/cross-platform client with explicit contracts and fixtures
-bounded challenger: time-boxed Python-native Android experiment
-framework: not selected
+Flutter/Dart client basis: accepted for planning
+TypeScript API: favored
+Neon Postgres: favored
+Sprint 02 planning/restaging/reconciliation: complete
+experiment dependencies: provisional
 implementation: not authorized
 D/E/F: postponed
+next target: Sprint 03 evidence preparation
 ```
 
-Current work is documentation and evidence preparation. Do not install tools, initialize frameworks, modify application code, or access ordinary desktop data.
+# 2. P0 — Reproducible Environments
 
-# 2. P0 — Specify Common Evidence Before Framework Selection
+Before implementation authorization, specify and pin:
 
-Prepare framework-neutral scenarios and expected results for:
+- Flutter channel/SDK and Dart versions;
+- `pubspec.lock` policy and generated-code reproducibility;
+- Visual Studio C++/Windows SDK requirements;
+- Android SDK, build-tools, JDK, ADB, emulator image and physical-device expectations;
+- TypeScript, Node, package manager and lockfile;
+- disposable Postgres version and migration runner;
+- later macOS/Xcode/iOS version boundary.
 
-- first purchase for a new product;
-- repeat purchase and duration recalculation;
-- Storage/Shortage/Market status transition;
-- invalid receipt rejection;
-- structural category/store defaults;
-- one atomic registration workflow;
-- close/reopen persistence;
-- mobile-local path isolation.
+Capture clean-environment verification commands and failure classifications. Do not install them during this documentation phase.
 
-Separate stable facts and status codes from labels, formatting, navigation, and other presentation ownership. Define how desktop behavior supplies expected fixtures without making current Python abstract classes or UI dictionaries the automatic cross-platform contract.
+# 3. P0 — Canonical Cross-Language Fixtures
 
-Completion evidence:
+Define versioned Dart/TypeScript JSON fixtures for:
+
+- catalogue normalization and deterministic identity;
+- PACKAGED versus BULK products;
+- within-dimension unit equivalence;
+- similarity warning without automatic merge;
+- Purchase with one and multiple Purchase Items;
+- currency and integer minor units;
+- event envelope, UUID, device sequence, account cursor and stable errors;
+- projection output;
+- analytic identifier/version/result.
+
+Specify nullability, enums, canonical decimal serialization, timestamp roles, unknown-field policy, protocol/schema versions, and semantic equality rules.
+
+# 4. P0 — Local Persistence Comparison
+
+Evaluate Drift first and retain `sqflite_common_ffi` as comparison. Required gates:
+
+- fresh application-private database;
+- schema creation and foreign keys;
+- uniqueness for exact normalized identities;
+- transactions and rollback;
+- ordered migrations from representative prior schemas;
+- release-mode native-library packaging;
+- close/reopen after process termination;
+- two isolated device stores;
+- deterministic projection rebuild.
+
+Candidate selection remains provisional until Windows and Android packaged evidence passes.
+
+# 5. P0 — Secure Credential Storage
+
+Evaluate the secure-storage candidate on Windows and Android for:
+
+- create/read/update/delete;
+- locked-device and unavailable-store failures where applicable;
+- token rotation and logout deletion;
+- corrupted entry recovery;
+- application upgrade;
+- backup/restore behavior;
+- reinstall/uninstall behavior;
+- secret redaction in logs.
+
+Repeat on iOS only after macOS/Xcode becomes available. Do not describe package platform metadata as validation.
+
+# 6. P0 — Atomic Local Purchase and Event
+
+Prove in one local transaction:
 
 ```text
-typed inputs
-+ deterministic outputs
-+ validation failures
-+ persistence effects
-+ lifecycle expectations
-+ ordinary-desktop-data isolation
+catalogue resolution/create
++ Purchase
++ one or more Purchase Items
++ pending purchase.registered event
++ device sequence allocation
 ```
 
-# 3. P0 — Compare Development Cost With Evidence
+Inject failure at each boundary. Pass only when all facts persist together or none do. The ordinary Cycle 06 database must remain unreachable and unchanged.
 
-For one plausible Python-native route and one plausible native/cross-platform route, record:
+# 7. P0 — Local TypeScript Protocol Harness
 
-- required host operating systems;
-- language and framework learning surface;
-- pinned runtime and package-manager versions;
-- Android SDK, JDK, build-tools, emulator/device, and packaging prerequisites;
-- macOS, Xcode, simulator/device, signing, and iOS packaging prerequisites;
-- local SQLite or equivalent database dependency;
-- test runners and fixture format;
-- debugging surfaces and log collection;
-- expected maintenance owners and upgrade cadence.
+Prepare a local TypeScript API with fake/test account identities and disposable Postgres. Required protocol gates:
 
-Do not reduce cost comparison to initial source reuse or project scaffolding. Include behavior reimplementation, semantic-parity work, lifecycle failures, native bridges, accessibility, distribution, and long-term dependency maintenance.
+- identical retry returns prior acceptance without duplicate;
+- conflicting content under the same event UUID is rejected;
+- device-sequence gap is rejected and missing sequence requested;
+- cursor download is ordered and account-scoped;
+- download event application and cursor advancement commit together locally;
+- second device bootstraps from cursor zero in bounded pages;
+- API/Postgres restart preserves accepted events/cursors;
+- cross-account read/write is denied;
+- malformed/version-incompatible events produce stable errors;
+- request/batch/event correlation logs redact credentials and sensitive data.
 
-# 4. P0 — Define Later Validation Gates
+# 8. P1 — Platform Evidence
 
-Any later authorized prototype must pass:
+Windows and Android evidence must include clean build, debug/release-relevant launch, local persistence, lifecycle/process-kill reopen, secure storage, fixture parity, protocol interaction, artifact diagnostics, and Cycle 06 isolation.
 
-```text
-clean isolated checkout
-→ captured tool versions
-→ clean build
-→ emulator/device install
-→ cold launch
-→ fresh app-private database
-→ deterministic fixture workflow
-→ expected read projection
-→ background/foreground
-→ terminate/relaunch
-→ persisted result remains
-→ ordinary desktop database untouched
-→ logs and artifact checksum captured
-```
+iOS remains a later independent gate requiring macOS/Xcode, Simulator/device, plugin validation, signing boundary, and the same persistence/security/protocol tests.
 
-Android evidence does not establish iOS feasibility. iOS remains separately gated by a macOS/Xcode environment and the selected framework's signing and deployment route.
+# 9. P1 — Neon Advancement Gate
 
-# 5. P1 — Bound the Python-Native Challenger
+Advance from disposable Postgres to a non-production Neon environment only after local protocol and migration gates pass. Then test TLS, roles, pooled application versus direct migration connections, cold start, transient failure, quotas, logs, migration rehearsal, rollback/recovery, and strict environment separation.
 
-If Main later authorizes the Operational pathway, define before execution:
+Neon remains favored, not validated or provisioned.
 
-- one Android-only question;
-- a fixed time box;
-- the smallest permitted construction/path seam;
-- exact pass/fail evidence;
-- a prohibition on backend introduction;
-- no ordinary desktop database access;
-- stop conditions.
+# 10. Completion Boundary
 
-Stop rather than expand the spike if direct reuse requires broad service/repository redesign, unstable custom packaging, repeated binary-recipe work, unbounded native bridges, or framework limitations that invalidate the maintained mobile-product requirements. Do not treat a launch-only shell as success.
+Sprint 03 preparation is ready for Main when the environment manifest, fixtures, validation matrices, failure injections, migration/rollback route, isolation assertions, and stop conditions can be converted into one bounded D/E/F unit.
 
-# 6. P1 — Bound the Strategic Client Candidate
-
-Before selecting a native/cross-platform framework, compare whether it can support:
-
-- explicit command/result contracts and shared fixtures;
-- offline local persistence and migrations;
-- one atomic registration workflow;
-- Android and iOS lifecycle ownership;
-- accessible navigation and input;
-- deterministic automated tests;
-- device logs and failure diagnosis;
-- conventional debug and release packaging;
-- sustainable dependency upgrades.
-
-A higher initial cost is justified only if these boundaries reduce later semantic drift, platform-specific workarounds, and maintenance uncertainty.
-
-# 7. Deferred and Retained Debt
-
-Deferred until demonstrated requirements activate them:
-
-- backend;
-- authentication;
-- synchronization and conflict resolution;
-- household or multi-device collaboration;
-- desktop/mobile database transfer;
-- release-store publication.
-
-Retained desktop debt remains documented but does not reopen Cycle 06:
-
-- workflow atomicity;
-- public signing/reputation work;
-- generated release-artifact policy;
-- Inno Setup architecture warning;
-- future-version upgrade and broader migration validation.
-
-# 8. Completion Boundary
-
-This Operational documentation phase is complete when Main can decide whether documentation is sufficient or one bounded experiment is necessary, using explicit evidence criteria rather than framework preference alone.
-
-D/E/F may be activated only through later Main/human authorization.
-
-When this file conflicts with stable Operational canon:
+Until then:
 
 ```text
-12_OPERATIONAL_MODEL.md wins
-→ identify derivative drift
-→ refresh 04_TODO.md
+no source implementation
+no tool installation
+no databases
+no external accounts or infrastructure
+no D/E/F
 ```
