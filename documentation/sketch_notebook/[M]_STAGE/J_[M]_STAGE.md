@@ -2659,3 +2659,173 @@ correct sequence
 ```
 
 They must not authorize TypeScript, Postgres/Neon, authentication, real sync, legacy import, Product code editing, central catalogue UUID assignment, or PySide6 retirement.
+
+---
+
+# 22. Cycle 07 Sprint 04 Post-Codex Permanent Reconciliation
+
+> Date: 2026-07-12
+> Branch: `cycle-07-mobile-preparation`
+> Reconciled remote head: `c195ed9b4197927db9c015076159534aa47c88e3`
+> Materialization commit: `bcc9452805ea5eee19f37653dc017fb5f3c78a0c`
+> Sources: G/H/I, PDR2 permanent updates, current checkpoints, and bounded application/Android repository inspection
+> Status: Provisional Main reconciliation accepted for 00/05/06 refresh
+
+## 22.1 Materialized result
+
+Sprint 04 produced a real Windows-local Flutter vertical slice:
+
+- Product user code separated from immutable internal Product identity;
+- normalization v2 with Unicode NFKC and preserved display facts;
+- Product IDs no longer derived from semantic identity;
+- Device sequence reset corrected and uniqueness constrained;
+- Drift schema v2 and a tested v1→v2 migration;
+- versioned v2 JSON Schemas and examples;
+- local catalogue/history query ports;
+- application composition root;
+- multi-item Purchase UI;
+- local Purchase history UI;
+- 21 passing Flutter tests;
+- five passing Python regression tests;
+- successful Windows release build;
+- successful five-second Windows startup smoke.
+
+The Python/PySide6 source and ordinary database remained unchanged.
+
+## 22.2 Evidence boundary
+
+Validated:
+
+```text
+format/analyze
+21 Flutter tests
+5 Python tests
+local Product-code/identity behavior
+Unicode normalization fixtures
+device-sequence behavior
+schema v1→v2 migration test
+JSON Schema structural validation
+widget Purchase/History flow
+Windows release build
+Windows startup smoke
+```
+
+Still required from the human:
+
+- interact with the Windows Purchase form;
+- register a two-item Purchase;
+- inspect History;
+- close and relaunch;
+- confirm persistence and visible behavior.
+
+Windows startup smoke is not complete manual UI acceptance.
+
+Android remains unbuilt and unexecuted because the SDK was absent and Sprint 04 prohibited Android installation.
+
+iOS remains host-unvalidated.
+
+## 22.3 Permanent-domain consistency
+
+Design and Didactic PDR2 checkpoints reflect the Sprint 04 implementation and its evidence limits.
+
+Operational canonical, derived, and observational files contain useful Sprint 04 evidence, but `operational/10_OPERATIONAL_STATE.md` remains stale:
+
+- it cites inspected head `32898f56f76895dc0f23d72cd132bcc24830e740`;
+- it says Sprint 04 implementation has not started;
+- it describes schema v1, 9 Flutter tests, and Windows as blocked.
+
+G, repository truth, Design checkpoint, and Didactic checkpoint supersede those claims.
+
+Resolution:
+
+- Main global continuity uses implementation truth;
+- the stale Operational checkpoint remains a documented recovery defect;
+- Operational Chat must rerun PDR2-O after this J reconciliation and compactly rewrite its current checkpoint;
+- Main does not directly rewrite the domain checkpoint.
+
+## 22.4 Repository findings carried forward
+
+Current implementation still contains bounded provisional areas:
+
+- composition uses fixed `local-account` and `windows-device` identifiers;
+- Android still uses generated `com.example.markei` application ID;
+- Android toolchain, emulator/device, build, runtime, lifecycle, and persistence are unevidenced;
+- Product-code editing/alias/reuse remains absent;
+- Store branch/location identity remains absent;
+- fresh-create ledger time remains source-fixed while upgrade time is runtime UTC;
+- UI responsiveness/accessibility and real Windows interaction remain human-unverified;
+- local event/queue remains preparation, not synchronization.
+
+## 22.5 Next milestone selection
+
+The human selects Android full implementation as the next forward milestone.
+
+The next bounded route is:
+
+```text
+close Windows manual verification
+→ authorize Android tooling installation
+→ install/validate Android Studio + SDK/tooling
+→ establish stable Android application ID
+→ replace Windows-specific Device ID with persistent platform-neutral local Device identity
+→ build debug APK
+→ run on emulator or physical device
+→ execute Purchase/History workflow
+→ verify Android app-private Drift persistence across process restart
+→ validate rotation/back/keyboard/narrow layout
+→ rerun Flutter/Windows/Python regressions
+```
+
+This is a platform-completion milestone, not a synchronization milestone.
+
+## 22.6 Android acceptance boundary
+
+Android full implementation requires:
+
+- latest supported Android Studio;
+- Android SDK platform matching current Flutter guidance;
+- Build-Tools;
+- command-line tools;
+- Emulator;
+- Platform-Tools;
+- CMake and NDK where Flutter tooling requires them;
+- accepted Android SDK licenses;
+- one recognized emulator or physical test device;
+- successful `flutter build apk --debug`;
+- successful `flutter run -d <android-device>`;
+- executed UI workflow;
+- close/reopen persistence;
+- no Cycle 06 access;
+- precise G/H/I evidence.
+
+Installation and license acceptance require explicit future D/E/F scope and user approval at the tool prompts.
+
+## 22.7 Deferred boundary
+
+Still deferred:
+
+- TypeScript API;
+- Postgres/Neon;
+- authentication/authorization;
+- actual upload/download;
+- server cursor and second-device convergence;
+- central Product catalogue;
+- legacy import;
+- editing/deletion;
+- PySide6 retirement;
+- iOS validation;
+- production store signing/release.
+
+## 22.8 Continuation
+
+```text
+Sprint 04 code materialization: complete
+Windows automated evidence: complete
+Windows manual UI acceptance: pending human
+PDR2 permanent reconciliation: complete with Operational checkpoint drift
+Main J reconciliation: complete
+00/05/06 refresh: authorized now
+next milestone: Android full implementation
+new Android D/E/F: not yet written
+Cycle 07: open
+```
