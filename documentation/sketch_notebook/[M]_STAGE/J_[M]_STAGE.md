@@ -1,391 +1,206 @@
-# [M] Post-Promotion Domain Consolidation
+# J_[M]_STAGE — Cycle 06 Main Reconciliation
 
-> Status: Temporary Main synthesis
+> Status: Active Main synthesis
 > Authority: Main Chat [M]
 > Repository: `gus-i-gu/markei`
 > Branch: `sketch-notebook-recovery`
-> Scope: Cross-domain verification after first permanent-domain repopulation and direct source for rebuilding `00_PROJECT_STATE.md`
-> Knowledge state: Reconciled staging; not permanent domain canon
-> Expiry condition: Absorbed into `00_PROJECT_STATE.md`, then retained only until `05_SESSION_LOG.md` and `06_SESSION_SCHEME.md` are rebuilt
+> Inputs: `DEV_STAGE/A_OPERATIONAL.md`, `DEV_STAGE/B_DIDACTIC.md`, `DEV_STAGE/C_DESIGN.md`
+> Knowledge state: Reconciled staging; not permanent canon
+> Milestone: Fully executable and installable Windows primary beta
 
 ---
 
-# 1. Purpose
+## 1. Main Synthesis Summary
 
-The first Sketch Notebook recovery promotion cycle has completed for all three permanent functional domains.
+The three functional domains converge on one bounded Cycle 06 implementation path. Markei's current layered desktop architecture can be packaged without broad redesign. The recovery branch already contains a root launcher, frozen-resource handling, external writable SQLite state, `Markei.spec`, `scripts/build_windows.ps1`, and Windows version metadata. It does not contain contemporary evidence of a built, installed, validated, or accepted beta.
 
-This Main synthesis verifies:
+The first materialization unit will repair and unify release configuration rather than redesign business layers. `Markei.spec` becomes the authoritative packaging definition; the PowerShell build script invokes it. Production packaging excludes the sample-bearing `seed.sql` and includes `schema.sql`. Application files remain replaceable; `%LOCALAPPDATA%/Markei` remains retained writable user state. The first beta keeps the one-folder topology and identity `Markei` / `Markei.exe` / version `0.1.0`. Installer identity must be stable across upgrades. Publisher metadata will use `Markei` unless a later explicit human correction is supplied.
 
-```text
-Operational canon / derivative / checkpoint / history
-+
-Didactic canon / derivative / checkpoint / history
-+
-Design canon / derivative / checkpoint / history
-```
+Startup failures must become inspectable through a writable log outside installed program files. Shutdown structure will be validated before alteration; Codex may add only a bounded MainWindow-owned close path if focused validation demonstrates retained connections, cleanup exceptions, database locks, or failed immediate reopen.
 
-It establishes the global referential state from which `00_PROJECT_STATE.md` may be rebuilt without duplicating the full contents of any domain.
+The Didactic stage will preserve four Red candidates and reinforce existing persistence, cleanup, and atomicity concepts. It will not promote concepts to Green or treat PyInstaller/Inno Setup as concepts.
 
-This file does not replace functional canon. Exact operational rules remain in `operational/12_OPERATIONAL_MODEL.md`; exact didactic concepts remain in `didactics/02_KANBAN.md`; exact architectural rules remain in `design/01_ARCHITECTURE.md`.
+## 2. Reconciled Current Facts
 
----
+Accepted current facts:
 
-# 2. Domain Symmetry Verification
+- runtime boundary remains `Desktop UI → ProductService → Repository → Database Manager → SQLite`;
+- `main.py` is the packaged launcher and delegates to `app.main.main()`;
+- `schema.sql` is a required bundled read-only resource;
+- the live database is writable state under `%LOCALAPPDATA%/Markei`;
+- `market.sqlite`, WAL, SHM, and generated logs must not be bundled;
+- `Markei.spec` and `scripts/build_windows.ps1` currently duplicate packaging authority;
+- both currently include `seed.sql`;
+- the current seed includes structural defaults and sample business data;
+- version `0.1.0` exists in application and Windows metadata but is not yet one coordinated release contract;
+- no current Cycle 06 evidence supports status beyond `configured`;
+- distributed repository cleanup and multi-commit workflows are risks requiring evidence, not proven release failures.
 
-## 2.1 Operational
+## 3. Contradiction Resolution
 
-```text
-Canonical       operational/12_OPERATIONAL_MODEL.md
-Derived         operational/04_TODO.md
-Checkpoint      operational/10_OPERATIONAL_STATE.md
-Observational   operational/11_OPERATIONAL_RECORD.md
-```
+### Packaging-source contradiction
 
-Verified condition:
+Operational found `Markei.spec`; Design reported no recoverable current specification. Direct branch-qualified Main inspection confirms that `Markei.spec` exists, as does `scripts/build_windows.ps1`.
 
-- all four semantic roles are populated;
-- canon defines runtime, persistence, lifecycle, transaction, reset, isolation, and validation rules;
-- TODO reorganizes canon into active validation priorities and command-ready checks;
-- checkpoint exposes the current execution state and recovery route;
-- observational history records the reconstruction sequence, reference-path correction, staging-topology correction, and Cycle 05 retrospective.
-
-Operational domain status: **repopulated and recoverable**.
-
-## 2.2 Didactic
+Resolution:
 
 ```text
-Canonical       didactics/02_KANBAN.md
-Derived         didactics/07_GLOSSARY.md
-Checkpoint      didactics/08_CONCEPT_MAP.md
-Observational   didactics/13_LECTURE_REGISTER.md
+Operational file evidence prevails.
+Markei.spec exists but requires repair.
+The build script exists but must stop independently defining package contents.
 ```
 
-Verified condition:
+### Installer topology
 
-- all four semantic roles are populated;
-- canon contains the fresh recovery concept register across the established marker families;
-- glossary derives concise retrieval terminology from canon;
-- checkpoint separates active, unstable, and next concepts and exposes the project learning spine;
-- observational history records the didactic reconstruction, authoritative-path correction, concept promotion, and failed-cycle learning context.
+No contemporary installer definition was established by the functional reports.
 
-No concept is Green through explicit human learning validation. Repository evidence establishes concept relevance and project accuracy, not learner mastery.
-
-Didactic domain status: **repopulated and recoverable**.
-
-## 2.3 Design
+Resolution:
 
 ```text
-Canonical       design/01_ARCHITECTURE.md
-Derived         design/14_MODEL_OVERVIEW.md
-Checkpoint      design/09_DESIGN_STATE.md
-Observational   design/03_DECISION_LOG.md
+Codex must locate any current branch installer source before creating one.
+If none exists, add one bounded Inno Setup definition and compile wrapper.
+Historical main-branch installer evidence is precedent only.
 ```
 
-Verified condition:
+## 4. Accepted Cycle 06 Decisions
 
-- all four semantic roles are populated;
-- canon defines the current architecture and accepted responsibility boundaries without promoting unresolved redesigns;
-- model overview provides the low-cost structural map;
-- checkpoint records the current stabilization milestone, constraints, dependencies, and open decisions;
-- observational history records investigation, reconciliation, promotion, corrections, and the failed Cycle 05 precedent.
+### 4.1 Production seed policy
 
-Design domain status: **repopulated and recoverable**.
-
----
-
-# 3. Cross-Domain Canonical Convergence
-
-The three domains converge on the following current project baseline.
-
-## 3.1 System form
-
-Markei is a local Python desktop monolith using PySide6 and SQLite.
+Accepted:
 
 ```text
-root main.py
-→ app.main.main()
-→ MainWindow
-→ Register / Lists / History / Settings
-→ ProductService
-→ Repository
-→ app.core.database
-→ SQLite
+Production package includes schema.sql.
+Production package excludes seed.sql.
+Fresh production databases receive only structural defaults supplied by current initialization/migration behavior.
+No named store, category fixture, product fixture, purchase fixture, or demonstration business row is shipped.
 ```
 
-Storage, Shortage, and Market are current Lists modes rather than independent public pages.
+`seed.sql` remains a development/test fixture unless later reclassified.
 
-## 3.2 Responsibility direction
+### 4.2 Uninstall data-retention policy
+
+Accepted for the primary beta:
 
 ```text
-Desktop presentation
-    Qt widgets, input, rendering, navigation, dialogs, refresh coordination
-
-ProductService
-    application workflows, validation, calculations, settings interpretation,
-    stores, and UI-consumable projections
-
-Repository
-    SQL, row/model mapping, persistence operations, individual commits,
-    one connection and cursor per instance
-
-Database Manager
-    resource and user-data paths, initialization, connection configuration,
-    additive compatibility migration, close/reset primitives
-
-SQLite
-    persistent facts and declared relationships
+Uninstall removes installed program files and shortcuts.
+Uninstall preserves %LOCALAPPDATA%/Markei by default.
+No installer UI for optional data deletion is required in Cycle 06.
 ```
 
-Desktop code does not execute SQL. Domain models do not own persistence or complete application workflows.
+This policy must be validated through uninstall and reinstall evidence.
 
-## 3.3 Domain and data model
+### 4.3 Release identity
 
-Active domain representations:
+Accepted minimum contract:
 
 ```text
-Category
-Store
-Product
-Purchase
+Display name: Markei
+Executable: Markei.exe
+Version: 0.1.0
+Publisher: Markei
+Installer identity: one stable AppId retained across compatible upgrades
+Architecture: Windows x64 primary beta
 ```
 
-Relationship spine:
+Application, executable metadata, build output, and installer metadata must not silently diverge. A future branding correction may revise publisher metadata deliberately; it must not block the first controlled beta.
+
+### 4.4 Packaging authority and topology
+
+Accepted:
 
 ```text
-Category 1 ─── * Product
-Product  1 ─── * Purchase
-Store    1 ─── * Purchase, optional
+Markei.spec is the authoritative PyInstaller source.
+scripts/build_windows.ps1 invokes Markei.spec.
+one-folder remains the primary beta topology.
+UPX is disabled unless contemporary validation explicitly supports it.
+A diagnostic console build may exist, but the distributable installed beta is windowed.
 ```
 
-Accepted current interpretation:
+### 4.5 Shortcuts
+
+Accepted:
 
 ```text
-Purchase
-    historical receipt/source record
-
-Product
-    editable identity and metadata
-    + current state
-    + cached analytical summaries derived from Purchase history
+Start Menu shortcut required.
+Desktop shortcut optional through an installer task; not unconditional.
 ```
 
-`ProductService.recalculate_product()` is the centralized producer of calculated Product summary state.
+### 4.6 Shutdown response
 
-Promotion persistence exists in the schema but is not currently promoted as an active end-to-end application capability.
-
-## 3.4 Persistence lifecycle
-
-Bundled resources:
+Accepted:
 
 ```text
-app/database/schema.sql
-app/database/seed.sql
+Validate current cleanup first.
+Do not preemptively redesign lifetime ownership.
+Add a bounded MainWindow/application shutdown correction only if focused evidence fails.
 ```
 
-Writable user state:
+Workflow transaction redesign is not part of the first materialization unit and becomes a beta blocker only if ordinary acceptance testing exposes unacceptable partial state.
+
+## 5. First Materialization Boundary
+
+Codex receives one bounded release-enablement unit:
+
+1. repair `Markei.spec` as authoritative one-folder packaging source;
+2. make `scripts/build_windows.ps1` invoke the spec and support clean diagnostic/windowed builds without duplicating datas;
+3. exclude `seed.sql`, live database files, WAL/SHM, caches, build residue, and development fixtures from production artifacts;
+4. include `schema.sql` and attach version metadata;
+5. add or repair a version-controlled Inno Setup installer definition and compile wrapper;
+6. apply accepted identity, Start Menu shortcut, optional desktop shortcut, and preserve-data uninstall policy;
+7. add writable startup diagnostics at the outer entrypoint;
+8. add focused build/resource/lifecycle validation assets;
+9. validate shutdown and immediate reopen before altering ownership;
+10. if and only if shutdown validation fails, make the smallest desktop-composition correction and report it explicitly.
+
+This unit excludes broad service/repository decomposition, transaction redesign, schema redesign, migration-framework replacement, UI redesign, signing, auto-update, rollback infrastructure, mobile, backend, synchronization, authentication, and cloud work.
+
+## 6. Evidence Vocabulary
+
+Codex and later chats must use only evidence-appropriate states:
 
 ```text
-%LOCALAPPDATA%/Markei/market.sqlite
+configured
+built
+launched
+installed
+validated
+accepted
+blocked
+unknown
 ```
 
-Managed connections use:
+A successful build is not installation. Installation is not workflow validation. Validation is not Main/human acceptance.
+
+## 7. D/E/F Routing
+
+- `DEV_STAGE/D_OPS_STAGE.md` contains executable file changes, commands, validation gates, and G report requirements.
+- `DEV_STAGE/E_DDC_STAGE.md` contains bounded Didactic materialization for four Red candidates and reinforcement notes, without Green promotion.
+- `DEV_STAGE/F_DSN_STAGE.md` contains accepted release boundaries and post-materialization Design evidence requirements.
+
+D/E/F correspond to the same Cycle 06 materialization unit. G/H/I must report only this unit.
+
+## 8. Human Validation Boundary
+
+Codex may build and exercise what its environment supports, but Cycle 06 cannot close without human-observable installed lifecycle evidence on Windows:
 
 ```text
-foreign_keys = ON
-journal_mode = WAL
-synchronous = NORMAL
-row_factory = sqlite3.Row
+compile installer
+→ clean install
+→ Start Menu launch
+→ principal workflows
+→ close
+→ immediate reopen
+→ persistence check
+→ compatible reinstall/upgrade
+→ uninstall
+→ retained-data confirmation
+→ reinstall and recovery
 ```
 
-Initialization creates a missing database from schema and optional seed resources. Existing databases receive additive, idempotent compatibility changes. No numbered migration ledger or schema-version table currently exists.
+SmartScreen and antivirus observations must be recorded without confusing reputation warnings with application correctness.
 
-## 3.5 Lifecycle ownership
+## 9. Main Authorization
 
-Normal MainWindow composition creates:
+Main authorizes D/E/F staging for the bounded unit above.
 
-```text
-4 pages
-→ 4 ProductService instances
-→ 4 Repository instances
-→ 4 SQLite connections and cursors
-```
-
-Local service/repository close capability exists, and page-level cleanup attempts exist. One authoritative composition-level shutdown owner is not established.
-
-This is a confirmed structural condition, not proof of a runtime leak.
-
-## 3.6 Transaction model
-
-Repository mutation methods commit independently.
-
-```text
-receipt registration
-    create/update Product   → commit
-    insert Purchase         → commit
-    recalculate summary     → update Product → commit
-```
-
-Purchase deletion plus recalculation is likewise multi-commit.
-
-The workflows are sequential but not transactionally atomic across the complete user action. Whether workflow-level transactions are required remains a Design/human decision.
-
-## 3.7 Representation flow
-
-```text
-SQLite row
-→ domain model
-→ service projection / view model
-→ Qt rendering
-```
-
-Current projections are dictionary-based and platform-neutral, with some formatting performed by ProductService. Typed view models and alternate formatting ownership remain unresolved refinements.
-
----
-
-# 4. Current Recovery Milestone
-
-```text
-methodology bootstrap
-→ repository structural recovery
-→ A/B/C functional staging
-→ Main reconciliation in J
-→ first domain promotion
-→ operational domain symmetry complete
-→ didactic domain symmetry complete
-→ design domain symmetry complete
-→ post-promotion cross-domain verification complete
-→ 00_PROJECT_STATE rebuild ready
-```
-
-The project is now in **recovery stabilization**, not feature expansion.
-
-No new mobile, backend, synchronization, installer, or packaging architecture is currently accepted as an active implementation milestone.
-
----
-
-# 5. Precedent Cycle 05 Classification
-
-The permanent domains consistently classify the prior Cycle 05 as a mixed artifact outcome and failed methodology-cycle closure.
-
-```text
-artifact outcome
-    useful packaging knowledge
-    reportedly validated one-folder frozen runtime
-    external per-user SQLite state
-    installer configuration begun
-
-cycle outcome
-    failed / incoherent closure
-```
-
-The cycle widened from unresolved Cycle 04 verification into mobile preparation and then Windows packaging. Staging, direction, evidence, and report synchronization did not remain coherent. The installed lifecycle was not completed.
-
-Historical main-branch packaging evidence must not be treated as current recovery-branch runtime validation without direct revalidation.
-
----
-
-# 6. Active Cross-Domain Risks and Open Decisions
-
-## Operational validation required
-
-- deterministic closure of all four page-owned repositories during normal Qt shutdown;
-- exact durable partial states under injected workflow failure;
-- migration idempotence and migration-failure behavior in isolated databases;
-- reset behavior with open connections and WAL/SHM files;
-- schema/seed inclusion and discovery in generated artifacts;
-- production exclusion of sample seed data, live database, and WAL/SHM files;
-- installed upgrade, uninstall, and reinstall preservation behavior;
-- complete human desktop interaction walkthrough.
-
-## Human/Main and Design decisions required
-
-- page-local versus composition-owned services and repositories;
-- authoritative application startup and shutdown owner;
-- workflow-level transaction policy;
-- production seed classification;
-- broad ProductService and Repository facade continuity or decomposition;
-- completeness or simplification of source contracts;
-- dictionary versus typed view models and formatting ownership;
-- additive versus versioned migration strategy;
-- Promotion persistence status;
-- `pages.order` consumption, migration, or retirement;
-- long-term Product editable-state/cache role.
-
-These are not approved refactor instructions.
-
----
-
-# 7. Didactic State
-
-The first recovery KANBAN baseline is populated.
-
-Active concepts include responsibility boundaries, raw versus derived data, naming contracts, packages/modules, dataclasses, application service, repository/persistence adapter, presentation adapter, representation layers, SQLite initialization/migration, PRAGMA configuration, relational integrity, and bundled resource versus writable user data.
-
-Unstable concepts remain:
-
-```text
-resource ownership and lifetime
-context manager and deterministic cleanup
-statement atomicity versus workflow atomicity
-SQLite connection and cursor ownership
-```
-
-No concept is Green until explicit human learning validation occurs.
-
----
-
-# 8. Global Recovery Routing
-
-For global recovery after `00_PROJECT_STATE.md` is rebuilt:
-
-```text
-1. 00_PROJECT_STATE.md
-2. relevant domain checkpoint
-3. relevant derived surface
-4. exact domain canon only when precision is required
-5. observational history only when evolution matters
-6. repository inspection only when implementation truth or drift requires it
-```
-
-Domain checkpoints:
-
-```text
-Operational  operational/10_OPERATIONAL_STATE.md
-Didactic     didactics/08_CONCEPT_MAP.md
-Design       design/09_DESIGN_STATE.md
-```
-
----
-
-# 9. Input Contract for `00_PROJECT_STATE.md`
-
-The rebuilt global state should remain concise and include only:
-
-1. recovery milestone and domain-repopulation completion;
-2. current application and architecture summary;
-3. current operational validation state;
-4. current didactic state;
-5. current methodology/recovery state;
-6. highest cross-domain risks and unresolved decisions;
-7. exact low-cost recovery route;
-8. next Main continuity action: rebuild `05_SESSION_LOG.md`, followed separately by `06_SESSION_SCHEME.md`.
-
-It must not duplicate complete domain canon, long command sets, full concept definitions, or the full Cycle 05 chronology.
-
----
-
-# 10. Temporary Stage Conclusion
-
-The permanent functional domains are mutually coherent and sufficiently complete to support global-state reconstruction.
-
-No blocking canonical contradiction was found among the three domains.
-
-The most important global distinction is:
-
-```text
-current implementation structure is recovered and canonically described
-but
-runtime validation debt and future architecture decisions remain open
-```
-
-`00_PROJECT_STATE.md` may now be rebuilt from this synthesis.
+Main does not yet accept a beta release, permanent domain promotion, or Cycle 06 closure.
