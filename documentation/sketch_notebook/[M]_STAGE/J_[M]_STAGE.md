@@ -1769,3 +1769,252 @@ external infrastructure: not authorized
 D/E/F: postponed
 next step: A/B/C restaging
 ```
+
+
+---
+
+# 18. Flutter Restaging Reconciliation and Permanent-Domain Direction
+
+## 18.1 Main reconciliation result
+
+Operational, Didactic, and Design converge on one planning architecture:
+
+```text
+Flutter/Dart shared client
+→ application-private local persistence
+→ account-private reusable catalogue
+→ atomic Purchase aggregate and pending event
+→ authenticated TypeScript synchronization API
+→ Neon Postgres account-scoped accepted history
+```
+
+Python/PySide6 remains the accepted Cycle 06 client, behavioral reference, migration source, and rollback. Python is not embedded in Flutter. Cross-runtime continuity uses language-neutral JSON contracts, deterministic fixtures, and migration evidence.
+
+No report authorizes application code, physical schemas, external infrastructure, authentication setup, Flutter initialization, or D/E/F.
+
+## 18.2 Accepted planning decisions
+
+Main accepts for permanent-domain classification:
+
+- Flutter/Dart as the shared Windows/Android/iOS client basis;
+- TypeScript as the favored synchronization-API language;
+- Neon Postgres as favored managed shared persistence;
+- progressive Flutter replacement only after evidenced parity;
+- protected PySide6 application and original database until acceptance;
+- account-private reusable Product and Store catalogue;
+- immutable packaged/bulk Product identity rules;
+- exact deterministic normalization and advisory-only fuzzy similarity;
+- Purchase as an atomic aggregate containing one or more Purchase Items;
+- one `purchase.registered` event containing item lines;
+- dimensional MASS/KG, VOLUME/L, COUNT/UNIT representation;
+- explicit currency and integer minor-unit money;
+- authoritative catalogue/purchase/item facts and rebuildable projections;
+- versioned Dart analytics registry;
+- event UUID idempotency;
+- per-device monotonic sequence;
+- account-scoped opaque server cursor;
+- purchase-business occurrence timestamp separate from sync order;
+- per-event upload transactions/results;
+- transactional local event application and cursor advancement;
+- verified email mapped to immutable internal account UUID;
+- custom API as mandatory client/cloud boundary;
+- general editing, deletion, sharing, global catalogue, realtime/background sync, and public release deferred.
+
+## 18.3 Provisional definitions requiring fixture evidence
+
+Main retains as provisional:
+
+### Normalization v1
+
+```text
+Unicode normalization
+trim and collapse whitespace
+locale-independent case rule
+explicit PACKAGED/BULK mode
+within-dimension unit conversion only
+canonical fixed-precision representation
+normalization version embedded in identity derivation
+```
+
+### Deterministic Product UUID
+
+A namespaced, account-scoped UUID derived from the versioned canonical identity string is favored. Acceptance requires fixtures proving Dart/TypeScript/Python equivalence, unit equivalence, Unicode behavior, version migration, and collision handling.
+
+### Purchase payload and snapshots
+
+A Purchase event should carry receipt-level facts, Store bootstrap identity/name, Product identity records required by its Items, and immutable commercial item lines. Broad duplicated Product snapshots remain unnecessary while identity records are immutable. Exact optional fields remain provisional.
+
+### Quantity and currency details
+
+The dimension/unit model is accepted. Exact decimal scale/range, fractional COUNT policy, currency minor-unit metadata, and serialized canonical decimal form remain technical choices.
+
+### RLS
+
+Database row-level security remains defense in depth for evaluation. API authorization is mandatory regardless.
+
+## 18.4 Experiment candidates, not dependencies
+
+Operational evidence identifies:
+
+```text
+Flutter persistence candidate:
+    Drift first
+
+Retained persistence comparison:
+    sqflite_common_ffi
+
+Secure credential candidate:
+    flutter_secure_storage
+
+Local protocol environment:
+    TypeScript API
+    disposable Postgres
+    fake/test identity issuer
+
+Later shared environment:
+    non-production Neon
+```
+
+These are preferred Sprint 03 experiment candidates only. Permanent domain memory must not describe their compatibility as validated or their selection as final.
+
+## 18.5 Validation direction
+
+A future bounded Sprint 03 unit should prove, in order:
+
+1. pinned Flutter/Dart and TypeScript/Node environments;
+2. canonical shared JSON fixtures;
+3. normalization and deterministic identity parity;
+4. fresh Drift-local databases for simulated devices A/B;
+5. packaged/bulk and exact/similarity catalogue behavior;
+6. atomic Purchase + Items + pending event;
+7. close/reopen and projection/analytics rebuild;
+8. local TypeScript API + disposable Postgres;
+9. idempotent retry, sequence gap, cursor paging, bootstrap, restart, and cross-account denial;
+10. Windows and Android build/run;
+11. Cycle 06 database isolation;
+12. iOS explicitly deferred until macOS/Xcode evidence;
+13. non-production Neon only after the local protocol passes.
+
+This remains forward planning. D/E/F are still postponed.
+
+## 18.6 Didactic promotion acceptance
+
+Main accepts the proposed canonical promotion set, subject to final ID recheck immediately before materialization. All new concepts begin Red.
+
+### Foundational
+
+```text
+&&&06 Stable Identity
+&&&07 Authentication
+&&&08 Authorization
+&&&09 Eventual Consistency
+&&&10 Historical Integrity
+```
+
+### Dart-language
+
+```text
+&&%05 Immutable Dart Model
+```
+
+### Project/model
+
+```text
+&%%07 Reusable Catalogue
+&%%08 Product Identification Set and Deterministic Normalization
+&%%09 Purchase Aggregate
+&%%10 Purchase Item
+&%%11 Append-Only Synchronization Event
+&%%12 Offline Queue and Idempotent Delivery
+&%%13 Device Ordering and Synchronization Cursor
+&%%14 Sync Protocol
+&%%15 Dimensional Quantity
+&%%16 Monetary Minor Unit
+&%%17 Versioned Analytic
+```
+
+### Framework/dependency
+
+```text
+%%%07 Flutter Framework and Responsive Widget Composition
+```
+
+Reconciliation constraints:
+
+- Authoritative Fact / Derived Projection remains within `&&&02`;
+- Purchase atomicity extends `&%%05`;
+- Row Ownership is an Authorization example;
+- Composition Root/Lifecycle remain related to existing responsibility/resource concepts until later evidence justifies independent promotion;
+- protocol versioning belongs to Sync Protocol;
+- storage-schema versioning remains related to `%%%01`;
+- no maturity state changes automatically.
+
+## 18.7 Permanent-domain materialization route
+
+### Operational
+
+Update:
+
+- `operational/11_OPERATIONAL_RECORD.md` observationally;
+- `operational/10_OPERATIONAL_STATE.md` as checkpoint;
+- `operational/04_TODO.md` as active derived gates;
+- `operational/12_OPERATIONAL_MODEL.md` only for stable technology-independent validation rules.
+
+Preserve candidate-versus-validated distinctions.
+
+### Didactic
+
+Update:
+
+- `didactics/02_KANBAN.md` with accepted concepts;
+- `didactics/07_GLOSSARY.md` only as derivative;
+- `didactics/08_CONCEPT_MAP.md` with the dependency spine;
+- `didactics/13_LECTURE_REGISTER.md` observationally.
+
+All new concepts begin Red.
+
+### Design
+
+Update:
+
+- `design/03_DECISION_LOG.md` observationally;
+- `design/09_DESIGN_STATE.md` as checkpoint;
+- `design/14_MODEL_OVERVIEW.md` as derived map;
+- `design/01_ARCHITECTURE.md` only with stable accepted planning boundaries, excluding physical schemas and unvalidated plugins.
+
+## 18.8 Remaining open decisions
+
+These remain for Sprint 03 preparation or evidence:
+
+- exact Flutter project/repository layout;
+- Drift versus retained SQLite alternative after experiment;
+- exact secure-storage plugin after packaged validation;
+- Flutter state-management/navigation choices;
+- auth provider;
+- TypeScript API framework/runtime/host;
+- Postgres migration tool;
+- canonical JSON/schema toolchain;
+- exact decimal implementation and ranges;
+- fractional COUNT policy;
+- currency minor-unit metadata source;
+- normalization-version migration;
+- legacy ambiguous-data policy;
+- RLS adoption;
+- event/bootstrap paging limits;
+- device-sequence recovery after local queue corruption;
+- exact parity threshold for PySide6 retirement.
+
+## 18.9 Current state
+
+```text
+Sprint 02 Flutter A/B/C restaging: complete
+Main reconciliation: complete
+permanent-domain updates: authorized next
+KANBAN promotions: accepted, all Red
+Flutter/Dart planning basis: accepted
+TypeScript API and Neon: favored
+experiment dependencies: provisional
+physical schemas and implementation: unauthorized
+D/E/F: postponed
+00/05/06 refresh: after permanent-domain reconciliation
+```
