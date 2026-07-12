@@ -1,6 +1,6 @@
 # 00_PROJECT_STATE.md
 
-> Version: Recovery global state 0.1
+> Version: Cycle 06 global state 0.2
 > Status: Active Global State Canon-Checkpoint
 > Persistence Class: Canon-Checkpoint
 > Knowledge Class: Main / Global
@@ -13,35 +13,30 @@
 
 # 1. Current Milestone
 
-The Sketch Notebook recovery cycle has completed its first permanent-domain reconstruction.
+Cycle 06 has one active milestone:
+
+> Produce and validate a fully executable and installable Windows primary beta of Markei.
+
+Sprint 01 completed the first bounded release-enablement materialization. The milestone remains open because installer compilation and the installed lifecycle have not yet been completed.
+
+Current evidence state:
 
 ```text
-methodology bootstrap
-→ repository structural recovery
-→ A/B/C functional staging
-→ Main reconciliation
-→ Operational domain repopulation
-→ Didactic domain repopulation
-→ Design domain repopulation
-→ cross-domain verification
-→ global state reconstruction
+configured: yes
+built: yes
+launched: yes — isolated frozen launch and immediate reopen
+installed: blocked
+validated: partial
+accepted: no
 ```
 
-All three functional domains now expose canonical, derived, checkpoint, and observational memory.
-
-The current milestone is:
-
-```text
-recovery stabilization and validation preparation
-```
-
-It is not feature expansion. No mobile, backend, synchronization, installer, or new packaging architecture is currently accepted as the active implementation milestone.
+Cycle 06 Sprint 02 is the next bounded session. It must finish the remaining installer and installed-lifecycle gates without introducing a second milestone.
 
 ---
 
-# 2. Current Application State
+# 2. Current Application and Architecture
 
-Markei is a local Python desktop application using PySide6 and SQLite.
+Markei remains a local Python desktop application using PySide6 and SQLite.
 
 ```text
 main.py
@@ -54,177 +49,152 @@ main.py
 → SQLite
 ```
 
-Storage, Shortage, and Market are currently represented as modes inside Lists rather than independent public tabs.
+Storage, Shortage, and Market remain modes inside Lists.
 
-Current responsibility direction:
+Responsibility direction remains:
 
-| Layer | Current responsibility |
+| Layer | Responsibility |
 | --- | --- |
-| Desktop | Qt rendering, input, navigation, dialogs, and refresh coordination |
+| Desktop | Qt rendering, input, navigation, dialogs, refresh coordination, and final page-service shutdown coordination |
 | `ProductService` | Workflows, validation, calculations, settings, stores, and UI-facing projections |
-| `Repository` | SQL, row/model mapping, persistence operations, commits, and one connection/cursor per instance |
-| Database Manager | Paths, initialization, connection configuration, additive migration, close/reset primitives |
+| `Repository` | SQL, row/model mapping, persistence operations, commits, and connection/cursor ownership |
+| Database Manager | Resource and user-data paths, initialization, SQLite configuration, additive compatibility work, and reset primitives |
 | SQLite | Persistent facts and declared relationships |
 
-Desktop code does not execute SQL. Domain models do not own persistence or complete workflows.
+Packaging and installation are deployment concerns around this application boundary. They do not own business workflows, SQL, or user-created state.
 
 ---
 
-# 3. Current Domain and Persistence State
+# 3. Current Release Boundary
 
-Active domain representations:
-
-```text
-Category
-Store
-Product
-Purchase
-```
-
-Relationship spine:
+Production packaging is now materially defined:
 
 ```text
-Category 1 ─── * Product
-Product  1 ─── * Purchase
-Store    1 ─── * Purchase, optional
+Markei.spec
+    authoritative one-folder windowed PyInstaller definition
+    includes schema.sql
+    excludes seed.sql and live/transient user data
+    UPX disabled
+    Windows version resource attached
+
+scripts/build_windows.ps1
+    clean-build invocation wrapper
+
+installer/Markei.iss
+    per-user Windows x64 installer source
+    stable AppId
+    Start Menu shortcut
+    optional desktop shortcut
+    preserves external user data by default
+
+scripts/build_installer.ps1
+    Inno Setup compile wrapper
 ```
 
-`Purchase` is the historical receipt record. `Product` contains editable identity and metadata plus current and cached analytical state derived from Purchase history. `ProductService.recalculate_product()` is the centralized producer of calculated Product summaries.
+Release identity:
 
-Promotion persistence exists in the schema but is not currently classified as an active end-to-end application capability.
+```text
+Display name: Markei
+Executable: Markei.exe
+Version: 0.1.0
+Publisher: Markei
+Installer AppId: {9F5F5C2A-43EA-4CF0-9C25-FF9E7BB57D3A}
+```
 
-Bundled database resources:
+Read-only production resource:
 
 ```text
 app/database/schema.sql
+```
+
+Development/test fixture excluded from production:
+
+```text
 app/database/seed.sql
 ```
 
-Writable user state:
+Writable retained user state:
 
 ```text
 %LOCALAPPDATA%/Markei/market.sqlite
 ```
 
-Managed SQLite connections use foreign-key enforcement, WAL journaling, synchronous `NORMAL`, and `sqlite3.Row`.
+Generated writable diagnostics:
 
-Fresh initialization uses schema and optional seed resources. Existing databases receive additive, idempotent compatibility changes. A numbered migration ledger and schema-version table do not currently exist.
+```text
+%LOCALAPPDATA%/Markei/logs/startup.log
+```
+
+WAL and SHM files remain transient writable companions and must never be bundled.
 
 ---
 
-# 4. Current Lifecycle and Transaction State
+# 4. Validated Sprint 01 Evidence
 
-Normal MainWindow construction creates:
+Current-branch evidence supports:
+
+- source compilation;
+- five standard-library release tests;
+- a successful one-folder PyInstaller build;
+- creation of `dist\Markei\Markei.exe`;
+- isolated frozen launch and immediate reopen;
+- schema-only first launch;
+- zero sample category, store, product, and purchase rows;
+- structural/default settings creation;
+- exclusion of `seed.sql`, live database, WAL/SHM, and startup logs from the distribution;
+- startup-log path and content creation;
+- focused shutdown failure detection;
+- a bounded `MainWindow.closeEvent()` correction;
+- closure of all four page-owned service/repository chains;
+- release of the isolated SQLite directory after close.
+
+Recorded executable evidence:
 
 ```text
-4 pages
-→ 4 ProductService instances
-→ 4 Repository instances
-→ 4 SQLite connections and cursors
+dist\Markei\Markei.exe
+SHA256 E35643F282B612A8080B38C45743697673323F2918589D7869CE4E9839535D1B
 ```
 
-Local service/repository close capability and page-level cleanup attempts exist. One authoritative application-level shutdown owner is not established.
-
-This is a confirmed structural condition, not proof of a runtime resource leak.
-
-Repository mutations commit independently. Receipt registration and purchase deletion/recalculation span multiple commits and are not transactionally atomic across the complete user action.
-
-Whether lifecycle ownership should be centralized and whether workflow-level transactions are required remain Design/human decisions.
+The shutdown correction resolves the focused source/frozen gate. Installed shutdown remains unvalidated.
 
 ---
 
-# 5. Current Operational State
+# 5. Current Domain State
 
-The Operational domain is fully repopulated.
+## Operational
 
-Current highest priorities:
+The Operational domain records a built and partially validated frozen runtime, configured installer source, blocked installer compilation, and unvalidated installed lifecycle.
 
-```text
-P0  protect ordinary user data during validation
-P1  validate deterministic Qt shutdown and closure of all four repositories
-P1  map exact partial states under multi-commit workflow failure
-P1  resolve production seed policy
-P2  validate migration and reset behavior in isolated databases
-P2  revalidate packaged SQL-resource inclusion and discovery
-P2  validate installed data preservation when installer tooling is available
-P2  complete retained human desktop interaction checks
-```
-
-Historical main-branch packaging evidence reports a working one-folder frozen runtime, but it is not contemporary recovery-branch validation. Installer compilation and installed lifecycle validation remained incomplete.
-
-Operational checkpoint:
+Checkpoint:
 
 ```text
 documentation/sketch_notebook/operational/10_OPERATIONAL_STATE.md
 ```
 
----
+## Didactic
 
-# 6. Current Didactic State
+The Didactic domain now includes four canonical Red concepts:
 
-The Didactic domain is fully repopulated with a fresh recovery KANBAN baseline, glossary, concept-map checkpoint, and observational record.
+```text
+&&&05  Evidence State and Validation Boundary
+&&%04  Source, Frozen, and Installed Execution Context
+&%%06  Packaging and Installation Artifact Lifecycle
+%%%06  Build-Time, Runtime, and Installer-Time Dependency
+```
 
-Active learning areas include:
+No concept is Green through explicit human validation.
 
-- responsibility and package boundaries;
-- raw versus derived data;
-- naming as a data contract;
-- dataclasses and domain representations;
-- application service and repository patterns;
-- presentation adapters and view models;
-- SQLite initialization, migration, PRAGMAs, and relational integrity;
-- bundled resources versus writable user data.
-
-Unstable learning areas remain:
-
-- resource ownership and lifetime;
-- deterministic cleanup;
-- connection and cursor ownership;
-- statement atomicity versus workflow atomicity.
-
-No canonical concept is Green through explicit human learning validation. Implementation confidence does not automatically establish learner mastery.
-
-Didactic checkpoint:
+Checkpoint:
 
 ```text
 documentation/sketch_notebook/didactics/08_CONCEPT_MAP.md
 ```
 
----
+## Design
 
-# 7. Current Design State
+The Design domain has absorbed the deployment boundary, schema-only production policy, retained external data, coordinated identity, launcher-owned startup diagnostics, and MainWindow-owned final page-service shutdown coordination.
 
-The Design domain is fully repopulated.
-
-Accepted current architecture:
-
-```text
-Desktop UI
-→ ProductService application facade
-→ Repository persistence facade
-→ Database Manager
-→ SQLite
-```
-
-The present broad ProductService and Repository responsibilities are accepted as descriptions of current concentration, not permanent decomposition decisions.
-
-Open Design questions include:
-
-- page-local versus composition-owned service/repository lifetime;
-- authoritative startup and shutdown owner;
-- workflow transaction policy;
-- service and repository decomposition;
-- complete versus declarative source contracts;
-- dictionary versus typed view models;
-- formatting ownership;
-- additive versus versioned migrations;
-- Promotion status;
-- `pages.order` status;
-- long-term Product editable-state/cache role.
-
-These are unresolved questions, not approved refactor instructions.
-
-Design checkpoint:
+Checkpoint:
 
 ```text
 documentation/sketch_notebook/design/09_DESIGN_STATE.md
@@ -232,74 +202,76 @@ documentation/sketch_notebook/design/09_DESIGN_STATE.md
 
 ---
 
-# 8. Methodology and Recovery State
-
-The methodology bootstrap remains:
+# 6. Remaining Sprint 02 Work
 
 ```text
-INDEX.md
-→ METHOD_FOUNDATIONS.md
-→ FLUX.md
-→ PROMOTION_RULES.md
-→ CHAT_PROTOCOL.md
+provide Inno Setup / ISCC.exe
+→ compile installer
+→ inspect installer artifact
+→ perform clean per-user installation
+→ launch from Start Menu without Python or source checkout
+→ exercise Register / Lists / History / Settings
+→ close and immediately reopen
+→ verify persistence
+→ test compatible reinstall or upgrade
+→ uninstall
+→ verify %LOCALAPPDATA%/Markei preservation
+→ reinstall and recover retained data
+→ record SmartScreen / antivirus observations
+→ obtain human acceptance
 ```
 
-The recovery demonstrated the intended separation among:
-
-```text
-repository evidence
-functional staging
-Main reconciliation
-semantic promotion
-physical materialization
-permanent domain memory
-```
-
-A prior path mismatch around the Main J reference and an extra temporary Operational stage filename were detected and corrected. Exact file paths and authorized stage surfaces remain part of the knowledge-routing contract.
-
-The previous Cycle 05 is globally classified as:
-
-```text
-useful partial artifact outcome
-+
-failed / incoherent methodology-cycle closure
-```
-
-Its durable lesson is to maintain one explicit milestone, preserve inherited validation debt, separate current facts from future targets, and reconcile domain outputs before replacing shared coordination surfaces.
+Sprint 02 may make only narrowly evidenced corrections required to pass these gates.
 
 ---
 
-# 9. Active Global Risks and Decisions
+# 7. Active Risks and Deferrals
 
-## Validation risks
+Active risks:
 
-- shutdown behavior is structurally implicit and not yet directly proven;
-- multi-commit workflows can produce partial durable states;
-- production seed classification remains unresolved;
-- complex migration safety is not established;
-- current-branch generated and installed runtime behavior requires revalidation;
-- prior human UI verification debt remains open.
+- installer toolchain availability;
+- installed placement and shortcut behavior;
+- installed workflow regressions;
+- uninstall/reinstall data preservation;
+- compatible upgrade behavior;
+- Windows reputation and antivirus observations;
+- human workflow acceptance.
 
-## Decision boundaries
+Inherited debt retained outside the first release-enablement correction:
 
-Main/human and Design must decide lifecycle ownership, workflow transaction policy, seed policy, facade decomposition, contract scope, view-model typing, migration strategy, Promotion status, `pages.order`, and long-term Product modeling.
+- workflow-level atomicity across multi-commit user actions;
+- complex migration strategy;
+- broader service/repository decomposition.
 
-No decision above is authorized merely by appearing in this checkpoint.
+Explicitly outside Cycle 06 unless directly beta-blocking:
+
+- mobile;
+- backend/API;
+- synchronization;
+- authentication;
+- cloud persistence;
+- broad schema or UI redesign;
+- composition-root redesign;
+- auto-update;
+- signing;
+- rollback infrastructure;
+- one-file packaging;
+- optional uninstall data-deletion UX.
 
 ---
 
-# 10. Global Recovery Route
+# 8. Global Recovery Route
 
 Use the least expensive sufficient source:
 
 ```text
 1. Read this file for global orientation.
-2. Read the relevant domain checkpoint.
-3. Read the relevant derived surface for task detail.
-4. Read exact domain canon only when precise rules or definitions are required.
-5. Read observational history only when chronology or correction history matters.
-6. Inspect repository implementation only when notebook memory is insufficient,
-   implementation truth is directly relevant, or drift is suspected.
+2. Read 06_SESSION_SCHEME.md for Sprint 02 boundaries and exit criteria.
+3. Read the relevant domain checkpoint.
+4. Read the corresponding derived or canonical file only when detail is required.
+5. Read observational history only for chronology.
+6. Read J_[M]_STAGE.md for the active Sprint 02 coordination prompt.
+7. Inspect source only when notebook memory is insufficient or drift is suspected.
 ```
 
 Domain checkpoints:
@@ -310,7 +282,7 @@ Didactic     didactics/08_CONCEPT_MAP.md
 Design       design/09_DESIGN_STATE.md
 ```
 
-Temporary Main reconciliation surface:
+Active Main staging surface:
 
 ```text
 [M]_STAGE/J_[M]_STAGE.md
@@ -318,17 +290,8 @@ Temporary Main reconciliation surface:
 
 ---
 
-# 11. Next Main Continuity Actions
+# 9. Main Continuity State
 
-The next Main-root files must be rebuilt separately and in order:
+Sprint 01 has been materialized, evidenced through G/H/I, reconciled by Main, and absorbed into all three permanent domains.
 
-```text
-1. 05_SESSION_LOG.md
-2. 06_SESSION_SCHEME.md
-```
-
-`05_SESSION_LOG.md` should preserve the recovery chronology, major corrections, domain repopulation, and accepted reconciliation events without becoming current-state canon.
-
-`06_SESSION_SCHEME.md` should then define the next bounded session, expected recovery files, unresolved decisions, validation priorities, exit criteria, and recovery warnings.
-
-The current `00_PROJECT_STATE.md` rebuild is complete.
+The next authorized coordination unit is Cycle 06 Sprint 02: complete installer compilation and the full installed lifecycle, then reconcile evidence before any claim of beta acceptance or Cycle 06 closure.
