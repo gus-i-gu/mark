@@ -2018,3 +2018,321 @@ physical schemas and implementation: unauthorized
 D/E/F: postponed
 00/05/06 refresh: after permanent-domain reconciliation
 ```
+
+---
+
+# 19. Cycle 07 Sprint 03 Primary Materialization Reconciliation
+
+> Date: 2026-07-12
+> Branch: `cycle-07-mobile-preparation`
+> Materialization commit: `5ef64a1d5b6af6d397d4f3a7aea6d635911be12d`
+> D/E/F authority: Cycle 07 Sprint 03 Flutter Foundation
+> Evidence: `G_OPS_CODEX.md`, `H_DDC_CODEX.md`, `I_DSN_CODEX.md`
+> Status: Primary Main staging for functional-domain review; not yet permanent-domain promotion
+
+## 19.1 Reconciled outcome
+
+Sprint 03 Unit 01 materially implemented the additive Flutter/Dart foundation. This is no longer a paper architecture or empty framework experiment.
+
+Verified repository state:
+
+```text
+existing Python/PySide6 beta preserved
++ Flutter application under clients/markei_flutter
++ Android/iOS/Windows generated targets
++ Dart domain/application/infrastructure boundaries
++ Drift local schema and generated database source
++ shared_beta/v1 JSON fixtures
++ atomic local Purchase registration repository
++ pending purchase.registered event creation
++ catalogue, rollback, persistence, and analytics tests
++ G/H/I evidence
+```
+
+The materialization is one commit ahead of the prior D/E/F head and contains only the authorized Flutter client, shared fixtures, and G/H/I surfaces.
+
+Validation reported by Codex:
+
+```text
+flutter pub get: passed
+Dart generation and formatting: passed
+flutter analyze: passed, no issues
+flutter test: 9 passed
+Python unittest suite: 5 passed
+Android runtime/build: host-blocked
+Windows runtime/build: host-blocked
+iOS runtime/build: host-unavailable
+```
+
+Therefore Main classifies the result as:
+
+- **implemented and unit-tested:** Dart domain rules, local Drift persistence, aggregate transaction, pending-event preparation, close/reopen behavior, minimal analytics registry;
+- **generated but host-unvalidated:** Android, Windows, and iOS platform targets;
+- **not implemented:** user purchase workflow, authentication, TypeScript API, Postgres/Neon, actual upload/download synchronization, cross-device convergence, legacy import, parity, and Python retirement.
+
+Sprint 03 Unit 01 is materially successful but does not complete the Sprint 03 vertical slice or Cycle 07.
+
+## 19.2 Repository-size interpretation
+
+The large file increase is primarily conventional generated material:
+
+- `local_database.g.dart` is Drift-generated database code and should not be manually maintained;
+- `pubspec.lock` records the resolved dependency graph;
+- Android, iOS, and Windows directories contain Flutter platform runners, build descriptions, icons, and metadata;
+- iOS project metadata is especially verbose;
+- the handwritten Markei domain/application/infrastructure source is comparatively bounded.
+
+Large generated files must remain distinguishable from architectural complexity. Their presence is not evidence of equivalent business complexity, but their generator versions and regeneration commands become operational responsibilities.
+
+Domain documentation should record ownership rules:
+
+```text
+handwritten Dart: reviewed directly
+generated Dart/platform files: reviewed through source schema/config + regeneration evidence
+lockfile: committed dependency resolution evidence
+build output and local databases: excluded
+```
+
+## 19.3 Meaning of the JSON contract files
+
+The files under `contracts/shared_beta/v1/` are not database tables and are not user data. Their intended role is to give Dart, future TypeScript, and any migration tooling the same examples and expected semantic outcomes.
+
+The direction is valid, but the current fixtures are only first evidence:
+
+- `catalogue_identity.json` is the strongest fixture and contains inputs plus expected normalized identity;
+- `purchase_aggregate.json` mainly contains scenario counts/totals and does not yet encode complete purchase inputs and expected canonical outputs;
+- `sync_event.json` mainly declares envelope examples and required field names, rather than a complete canonical payload with schema validation;
+- no JSON Schema or equivalent validator currently fixes required types, nullability, ranges, enum values, additional-field behavior, canonical ordering, or version migration;
+- cross-language Dart/TypeScript equivalence has not been executed.
+
+Permanent documentation may call these **versioned semantic fixtures** or **contract examples**, but must not call them a complete protocol specification.
+
+## 19.4 Accepted implementation evidence
+
+The following planning decisions now have local executable evidence:
+
+1. Flutter/Dart can coexist additively with the Python/PySide6 beta.
+2. The new client can own a fresh app-private database rather than reuse the Cycle 06 database.
+3. The domain can remain independent from Flutter widgets and Drift.
+4. Products can be represented as account-private reusable catalogue identities.
+5. PACKAGED and BULK modes can have distinct identity rules.
+6. MASS, VOLUME, and COUNT can remain dimensionally explicit.
+7. KG, L, and UNIT can remain canonical without assuming mass/volume equivalence.
+8. Money can use an explicit ISO currency code and integer minor units.
+9. Purchase can be represented as an aggregate with one or more Items.
+10. Purchase facts, Items, a local immutable event, and a pending queue entry can be committed atomically.
+11. Invalid Item validation can roll back the aggregate.
+12. Local facts and pending events can survive close/reopen.
+13. Analytics can be selected through an identifier/version registry without rewriting raw facts.
+14. Drift is now an implemented local persistence choice for the foundation, not merely a candidate.
+
+These claims remain local and unit-test bounded. Platform lifecycle and distributed behavior are not implied.
+
+## 19.5 Newly exposed design and correctness questions
+
+Functional domains must review these before permanent documentation treats implementation details as settled.
+
+### A. Device-sequence continuity
+
+`registerPurchase` currently upserts the Device with `nextSequence: 1` before allocating a sequence. A repeated registration may reset the counter and reuse sequence 1. The schema also lacks an explicit uniqueness constraint over the account/device/sequence responsibility.
+
+Required disposition:
+
+- classify this as a likely implementation defect;
+- do not promote monotonic device ordering as implemented;
+- require a repeated-purchase test proving sequences 1, 2, 3 without reset;
+- require uniqueness and recovery semantics before the sync protocol relies on the field.
+
+### B. Unicode and locale-safe normalization
+
+The current text normalization uses a regular expression based on `\w`. Its behavior may remove or damage accented letters important to Portuguese product names. No Unicode normalization form, diacritic policy, locale policy, punctuation policy, or cross-language canonical-byte test is yet evidenced.
+
+Required disposition:
+
+- exact normalization v1 remains provisional;
+- preserve display text separately from normalized identity;
+- add Portuguese/Unicode fixtures such as accented names before identity stability is claimed;
+- do not retroactively change identity rules without an explicit normalization-version migration.
+
+### C. Deterministic Product identifier format
+
+The implementation derives a UUID-shaped string from SHA-256 bytes. It is deterministic, but it does not presently demonstrate an RFC UUID version/variant contract or cross-language equivalence.
+
+Required disposition:
+
+- describe it as a deterministic Product identifier candidate;
+- decide whether Markei requires RFC UUID semantics or only a stable opaque identifier;
+- add fixed expected Product-ID values and TypeScript parity before protocol promotion.
+
+### D. Contract completeness
+
+Current purchase and event fixtures are too shallow to serve as complete wire contracts. They prove direction and test coordination, not schema completeness.
+
+Required disposition:
+
+- decide whether Sprint 04 adopts JSON Schema, hand-validated canonical JSON, or another language-neutral schema mechanism;
+- require full valid/invalid payload examples;
+- define types, ranges, nullability, enums, unknown-field behavior, timestamp form, decimal serialization, and version compatibility;
+- retain human-readable fixtures rather than replacing them with generated-only artifacts.
+
+### E. Platform evidence
+
+Platform directories exist, but none has been built or run on the current host. Windows requires the Visual Studio C++ desktop workload; Android requires the SDK/emulator or device; iOS requires macOS/Xcode.
+
+Required disposition:
+
+- no responsive shared-application or lifecycle validation claim yet;
+- Sprint 04 should prioritize at least Windows and Android execution before cloud sync expansion, unless Main explicitly selects the local protocol harness first.
+
+### F. Schema and migration ownership
+
+The Drift schema is version 1 and creates a migration-ledger entry, but no schema upgrade has been rehearsed. The ledger timestamp is source-fixed rather than execution-derived.
+
+Required disposition:
+
+- treat fresh creation as validated;
+- treat schema evolution and migration recovery as unvalidated;
+- review whether the ledger records authored migration identity, execution time, or both;
+- keep legacy Cycle 06 import entirely separate.
+
+### G. Catalogue and Store semantics
+
+Store reuse currently depends on an exact display-name match. Similar Store names, locations, branches, and stable Store identity remain undefined. Product similarity considers mainly Product name and does not constitute a deduplication workflow.
+
+Required disposition:
+
+- preserve warning-only Product similarity;
+- do not claim Store deduplication;
+- carry Store identity/location and Product merge/alias into later bounded design.
+
+## 19.6 Didactic evidence boundary
+
+Executable evidence justifies review of the local concepts, but not automatic KANBAN promotion.
+
+Candidate evidence-bearing concepts:
+
+```text
+&&&06 Stable Identity
+&&&10 Historical Integrity
+&&%05 Immutable Dart Model
+&%%07 Reusable Catalogue
+&%%08 Product Identification Set and Deterministic Normalization
+&%%09 Purchase Aggregate
+&%%10 Purchase Item
+&%%11 Append-Only Synchronization Event
+&%%12 Offline Queue and Idempotent Delivery
+&%%15 Dimensional Quantity
+&%%16 Monetary Minor Unit
+&%%17 Versioned Analytic
+%%%07 Flutter Framework and Responsive Widget Composition
+```
+
+Limits:
+
+- `&%%13 Device Ordering and Synchronization Cursor` has only partial structure and a likely sequence defect;
+- `&%%14 Sync Protocol` has envelope preparation but no server protocol;
+- `&&&07 Authentication`, `&&&08 Authorization`, and `&&&09 Eventual Consistency` remain unimplemented;
+- Flutter framework setup is evidenced, but responsive composition and platform runtime are not;
+- no maturity change occurs until Didactic Chat applies the KANBAN evidence rules.
+
+## 19.7 Sprint 04 candidate routes
+
+Functional chats must assess two bounded next routes without silently combining them.
+
+### Route 1 — Local shared-client vertical slice
+
+```text
+correct identity/sequence defects
+→ strengthen fixtures
+→ minimal Flutter purchase UI
+→ app-private database initialization
+→ catalogue Product selection/creation
+→ Store selection/creation
+→ multi-item Purchase staging
+→ atomic registration
+→ visible local projection/history
+→ close/reopen
+→ Windows and Android build/run
+```
+
+This route provides the clearest user-visible shared-beta progress and platform evidence.
+
+### Route 2 — Local synchronization protocol harness
+
+```text
+correct identity/sequence defects
+→ complete canonical wire fixtures/schema
+→ TypeScript API boundary
+→ disposable local Postgres
+→ fake/test account identity
+→ upload/idempotent retry
+→ sequence-gap rejection
+→ cursor paging/bootstrap
+→ second-device application
+→ cross-account denial
+```
+
+This route advances the selected custom API + Neon architecture but risks building distributed infrastructure before the Flutter client has a validated user workflow.
+
+Primary Main orientation for domain review favors **Route 1 first**, with contract-hardening and sequence correction included at its start. Route 2 remains the likely following unit. This is an orientational preference, not Sprint 04 authorization.
+
+## 19.8 Permanent-domain review route
+
+No permanent document is updated by this J stage. Functional chats should now reconcile the evidence into their existing permanent surfaces.
+
+### Operational review targets
+
+- `operational/04_TODO.md`
+- `operational/10_OPERATIONAL_STATE.md`
+- `operational/11_OPERATIONAL_RECORD.md`
+- `operational/12_OPERATIONAL_MODEL.md`
+
+Emphasize toolchain/runtime blockers, generated-file ownership, validation evidence, sequence defect, Unicode fixture need, platform prerequisites, and Sprint 04 gates.
+
+### Didactic review targets
+
+- `didactics/02_KANBAN.md`
+- `didactics/07_GLOSSARY.md`
+- `didactics/08_CONCEPT_MAP.md`
+- `didactics/13_LECTURE_REGISTER.md`
+
+Apply evidence-based maturity carefully. Explain JSON fixtures as language-neutral contract examples. Preserve the difference between local offline queue preparation and actual synchronization.
+
+### Design review targets
+
+- `design/01_ARCHITECTURE.md`
+- `design/03_DECISION_LOG.md`
+- `design/09_DESIGN_STATE.md`
+- `design/14_MODEL_OVERVIEW.md`
+
+Promote stable local boundaries; preserve physical implementation facts observationally; document the newly exposed correctness questions; compare Sprint 04 routes and provide a recommendation.
+
+## 19.9 Main continuation boundary
+
+After the three domain chats update and push their permanent surfaces:
+
+1. Main reads all changed permanent files.
+2. Main appends a second Sprint 03 reconciliation to J.
+3. Main resolves conflicts and identifies any question needing human definition.
+4. Main refreshes `00_PROJECT_STATE.md`, `05_SESSION_LOG.md`, and `06_SESSION_SCHEME.md`.
+5. Main defines the Cycle 07 Sprint 04 milestone.
+6. D/E/F remain inactive until the human approves the Sprint 04 materialization target.
+
+Current concise state:
+
+```text
+Sprint 03 Unit 01 implementation: materialized
+local Dart/Drift tests: passed
+Python regression tests: passed
+Flutter platform projects: generated
+platform execution: unvalidated
+JSON contracts: useful first fixtures, incomplete protocol specification
+device ordering: likely defect, not accepted
+Unicode normalization: unresolved
+full Flutter user workflow: absent
+sync API/cloud: absent
+domain permanent review: authorized next
+00/05/06 refresh: after domain reconciliation
+Sprint 04: not yet authorized
+```
+
