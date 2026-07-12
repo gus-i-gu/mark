@@ -180,10 +180,6 @@ Inno Setup currently accepts `x64` while warning that it is deprecated in favor 
 
 Technical installed-lifecycle validation does not grant beta acceptance. Final acceptance still requires human-visible installer and principal UI walkthrough evidence, normal close/reopen confirmation, human-visible SmartScreen or antivirus observations, and Main/human approval.
 
-# 13. Canonical Maintenance Rule
-
-Update this model only when stable Operational behavior or reusable validation rules change. Current hashes, command transcripts, temporary blockers, and chronological corrections belong in the record, checkpoint, or TODO.
-
 # 12. Shared-Client Synchronization Safety Rules
 
 These rules are technology-independent and apply to any later shared-client implementation.
@@ -223,3 +219,7 @@ Every supported migration path must be rehearsed against fresh state and represe
 ## 12.7 Accepted desktop-data isolation
 
 New clients and experiments use distinct application-private storage and must not open, copy, mutate, or destructively convert accepted desktop user data without a separately authorized migration procedure. The accepted application and data remain recoverable until explicit parity and migration acceptance.
+
+# 13. Canonical Maintenance Rule
+
+Update this model only when stable Operational behavior or reusable validation rules change. Current hashes, command transcripts, temporary blockers, and chronological corrections belong in the record, checkpoint, or TODO.
