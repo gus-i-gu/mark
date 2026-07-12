@@ -787,3 +787,325 @@ Neon project/schema: not created
 implementation: not authorized
 D/E/F: postponed pending domain planning
 ```
+
+
+---
+
+# 15. Sprint 02 Shared-Beta Reconciliation and Reusable Catalogue Orientation
+
+## 15.1 Main synthesis
+
+The Sprint 02 Operational, Didactic, and Design reports converge on a coherent planning architecture:
+
+```text
+shared cross-platform client
+→ application-private local database
+→ local transaction and pending-event queue
+→ authenticated custom synchronization API
+→ account-scoped append-only event history
+→ Neon Postgres
+```
+
+Each client remains usable offline. The API is not a transparent database tunnel: it owns authentication-token validation, authorization, event validation, idempotency, ordering/cursors, protocol compatibility, transactions, and diagnostics. Neon owns managed shared persistence, not synchronization meaning.
+
+The smallest credible evidence target is a two-device protocol slice before a broad UI rewrite. It must prove local-first registration, safe retry, account isolation, cursor download, transactional local application, deterministic projection rebuild, restart recovery, and protection of the accepted Cycle 06 database.
+
+The human-proposed Reusable Catalogue Perspective is accepted into Main staging as the preferred structural direction for further definition:
+
+> Markei should separate relatively stable household catalogue identities from purchase-specific commercial observations. Purchases reference reusable product identities while retaining the variable facts observed at each acquisition. Historical price and consumption analysis should derive from the sequence of purchase observations rather than duplicated current product state.
+
+This is structural orientation, not a finalized schema or implementation authorization.
+
+## 15.2 Reconciled structural model
+
+The previous Design event draft treats `purchase.registered` as the first synchronized fact and includes product/store bootstrap information in its payload. The reusable-catalogue perspective refines this into three distinct domain roles:
+
+```text
+Catalogue Product
+    relatively stable household identity
+
+Purchase Event
+    one timestamped acquisition/receipt context at one store
+
+Purchase Item
+    one product observation within that purchase
+    with quantity, package, price, promotion, and other commercial facts
+```
+
+Candidate relationship:
+
+```text
+Account
+├── Catalogue Products
+├── Stores
+└── Purchase Events
+    └── Purchase Items
+        └── reference Catalogue Product
+```
+
+This prevents the purchase event from becoming both receipt header and product line. It also preserves a natural path toward one receipt containing several products without requiring that broader UI in the first synchronized slice.
+
+The reduced first slice may still register one purchase with one item. The model should avoid making “one purchase always equals one product” a permanent invariant.
+
+## 15.3 Stable catalogue identity versus historical observation
+
+Candidate stable catalogue facts:
+
+- account-scoped product UUID;
+- preferred product name;
+- brand;
+- package or variant specification;
+- category identity;
+- lifecycle metadata required for synchronization.
+
+Candidate purchase-event facts:
+
+- purchase UUID;
+- account UUID;
+- store UUID;
+- occurrence date/time;
+- optional receipt-level totals or reference;
+- creation/source metadata.
+
+Candidate purchase-item facts:
+
+- purchase-item UUID;
+- purchase UUID;
+- catalogue-product UUID;
+- quantity purchased;
+- measurement/unit;
+- unit price;
+- line total;
+- promotion observation;
+- optional expiration/depletion observation;
+- product/package/store snapshot fields required for historical interpretation.
+
+The exact allocation remains open. “Stable” means relatively reusable, not timeless. Product names, brands, package sizes, categories, and store names can change. Historical meaning must not be silently rewritten when the current catalogue entry changes.
+
+## 15.4 Authoritative facts and projections
+
+The following should remain authoritative candidates:
+
+```text
+catalogue identity facts
+purchase event facts
+purchase-item commercial observations
+accepted synchronization event identities/order
+explicit correction or lifecycle facts when later introduced
+```
+
+The following should normally remain derived:
+
+```text
+average duration
+expected next purchase
+current stock estimate
+Storage / Shortage / Market classification
+price-change percentages
+personalized inflation/deflation indicators
+store comparisons
+expenditure forecasts
+formatted labels and groupings
+```
+
+Derived analytics must be reproducible from accepted facts and versioned calculation rules. They should not be synchronized as competing mutable truth unless later evidence identifies a specific need.
+
+## 15.5 Newly raised architectural questions
+
+The reports introduce the following questions for Main/human definition.
+
+### A. Shared client and migration
+
+1. Which cross-platform client family will eventually own Windows, Android, and iOS?
+2. Will the new client progressively replace PySide6 after parity, as Design recommends?
+3. What evidence constitutes sufficient desktop workflow parity?
+4. How long must the PySide6 beta and original database remain recoverable?
+5. Will the shared client remain in the same repository during transition?
+6. How will current integer/text identities map deterministically to UUIDs?
+7. Will legacy import emit append-only events, or import catalogue/purchase facts through a separate controlled migration route?
+
+### B. Account and catalogue ownership
+
+8. Is the catalogue owned by one account, one future household, or another workspace boundary?
+9. Is a product identity private to an account, or can identities later reference a wider canonical product catalogue?
+10. Does the first beta deliberately avoid global product deduplication?
+11. Can two catalogue products share the same name/brand/package while remaining distinct?
+12. What rules identify “the same product” after spelling, brand, package, or unit changes?
+13. Are category and store reusable account-scoped catalogue entities?
+14. Which email/auth provider subject maps to the immutable internal account UUID?
+
+### C. Product variants and historical snapshots
+
+15. Is package specification part of product identity?
+16. Does changing package size create a new catalogue product/variant?
+17. Which product/store/category values are copied as immutable snapshots into purchase items?
+18. If a catalogue name or brand changes, what should old History rows display?
+19. Are current catalogue corrections allowed before purchase editing exists?
+20. How will aliasing or merging duplicate catalogue entries work later without rewriting history?
+21. Does a purchase event need sufficient bootstrap facts for a second device to create missing catalogue references?
+
+### D. Purchase and purchase-item granularity
+
+22. Is the synchronized domain event `purchase.registered`, `purchase_item.recorded`, or a receipt-level event containing item lines?
+23. Is one receipt/purchase uploaded atomically as one event?
+24. Can one invalid item reject an entire purchase, or may items be accepted independently?
+25. Does the first slice model one purchase with one item while preserving a multi-item contract?
+26. Where do receipt-level store, date, total, discount, and payment facts belong?
+27. How are promotions represented without expanding into a broad pricing engine?
+
+### E. Quantity, price, currency, and analytics
+
+28. What are the canonical representations for quantity and unit?
+29. How are package count, weight/volume, and purchased quantity distinguished?
+30. Are money values stored as integer minor units, fixed-precision decimal, or another representation?
+31. Is currency explicit on every purchase or inherited from account settings?
+32. Is unit price stored, derived from line total/quantity, or both with validation?
+33. Which price basis powers comparison: package price, normalized unit price, line total, or several views?
+34. How are promotion quantities and multi-unit offers preserved historically?
+35. Which time and normalization rules define personalized inflation/deflation calculations?
+36. How are calculation-rule versions recorded when analytics evolve?
+
+### F. Synchronization semantics
+
+37. Is the server cursor global, account-scoped, or partitioned another way?
+38. Are upload batches whole-batch atomic or per-event atomic?
+39. What happens when a device sequence has a gap?
+40. Can a client retry a logically identical event with different content under the same event UUID?
+41. Which stable error codes are required?
+42. How is a second device bootstrapped from cursor zero when event history grows?
+43. Are reference/catalogue events separate from purchase events, or embedded as bootstrap snapshots?
+44. Which corrections will later require compensating events rather than mutation?
+45. Is row-level security required as defense in depth behind mandatory API authorization?
+
+### G. API, authentication, and operations
+
+46. Will the first protocol API use TypeScript or Python?
+47. Which runtime/host provides the smallest reproducible environment?
+48. Which verified-email/OIDC provider supports Windows, Android, and iOS securely?
+49. How are refresh credentials stored on every platform?
+50. What logs are sufficient without exposing tokens or purchase notes?
+51. How are migrations rehearsed and rolled back?
+52. When should local Postgres testing advance to a non-production Neon environment?
+53. What low-cost quotas or cold-start behavior could invalidate the prototype assumptions?
+
+## 15.6 Questions ready for provisional Main definition
+
+The following can be staged now without framework execution:
+
+```text
+catalogue ownership
+    account-scoped for the first beta
+
+global product catalogue
+    deferred
+
+domain shape
+    Catalogue Product → Purchase Event → Purchase Item
+
+first workflow
+    one purchase with one item,
+    contract remains capable of multiple items
+
+historical integrity
+    purchase observations are not rewritten by catalogue edits
+
+client database
+    local-first and application-private
+
+shared database access
+    only through authenticated custom API
+
+account ownership key
+    immutable account UUID, never email string
+
+sync style
+    append-only first slice
+
+duplicate protection
+    event UUID + account-scoped uniqueness
+
+device ordering
+    device UUID + monotonic device sequence
+
+download ordering
+    opaque server-owned cursor
+
+business time
+    client occurrence time retained but not global ordering authority
+
+projections
+    rebuilt deterministically from authoritative facts
+
+backend
+    small custom synchronization API + Neon favored
+
+desktop migration
+    progressive replacement only after parity;
+    PySide6 and original data remain recoverable
+
+editing/deletion
+    deferred
+
+D/E/F
+    postponed
+```
+
+These are planning definitions. Permanent architecture promotion still requires domain-memory classification and human/Main acceptance.
+
+## 15.7 Questions requiring the next definition round
+
+The next Design/Operational/Didactic documentation pass should prioritize:
+
+1. catalogue identity and variant rules;
+2. purchase-event versus purchase-item event granularity;
+3. historical snapshot policy;
+4. quantity/unit/money/currency representation;
+5. minimum multi-item-capable purchase contract;
+6. whole-batch versus per-event atomicity;
+7. device-sequence-gap policy;
+8. server cursor scope;
+9. TypeScript versus Python protocol harness;
+10. authentication provider criteria;
+11. deterministic migration identity mapping;
+12. fixture scenarios for price analytics and projection parity.
+
+No framework, provider, schema, API, or infrastructure should be materialized until Main reconciles this definition round.
+
+## 15.8 Didactic promotion direction
+
+The human has clarified that KANBAN promotion may occur during model-design cycles when relevant concepts are genuinely approached and can be defined with reusable meaning. Implementation evidence is not a prerequisite for concept introduction, although maturity still requires explicit learner evidence.
+
+Didactic may therefore evaluate canonical promotion for:
+
+- Stable Identity;
+- Authentication;
+- Authorization;
+- Append-Only Event;
+- Idempotency;
+- Event Ordering;
+- Synchronization Cursor;
+- Eventual Consistency;
+- Authoritative Fact and Derived Projection, reconciled with existing `&&&02`;
+- Sync Protocol;
+- Offline Queue;
+- Schema and Protocol Versioning;
+- Reusable Catalogue;
+- Purchase Event and Purchase Item;
+- Historical Snapshot.
+
+Promotion must preserve unique concept ownership, marker sequences, prerequisite relationships, and glossary derivation. No maturity color should change automatically.
+
+## 15.9 Current status
+
+```text
+Sprint 02 A/B/C planning reports: received
+Main shared-beta reconciliation: staged
+reusable catalogue perspective: accepted as structural orientation
+shared client + custom API + Neon: favored planning architecture
+first slice: append-only, one purchase / one item, multi-item-capable
+new architectural questions: classified
+KANBAN promotion: permitted through Didactic protocol
+implementation authorization: none
+D/E/F: postponed
+next step: domain documentation and definition round
+```
