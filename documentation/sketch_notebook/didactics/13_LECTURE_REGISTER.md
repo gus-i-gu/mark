@@ -218,3 +218,57 @@ learner mastery: not demonstrated
 
 Cycle 06 remains accepted and closed. Cycle 07 Sprint 01 provides classified portability knowledge and a preferred investigation direction, but not mobile runtime evidence, prototype validation, permanent architecture acceptance, or learner mastery. D/E/F remain postponed.
 
+# Observation 005 — Cycle 07 Sprint 02 Flutter Canonical Promotion
+
+```text
+Date: 2026-07-12
+Branch: cycle-07-mobile-preparation
+Class: model-design canonical promotion
+Sources:
+  [M]_STAGE/J_[M]_STAGE.md sections 17–18
+  DEV_STAGE/A_OPERATIONAL.md
+  DEV_STAGE/B_DIDACTIC.md
+  DEV_STAGE/C_DESIGN.md
+```
+
+Human/Main established Flutter/Dart as the planning basis for the shared Windows, Android, and iOS client. TypeScript remained favored for the custom synchronization API, Neon for managed shared persistence, and the accepted Python/PySide6 beta as reference and rollback. No application, API, schema, provider, infrastructure, or D/E/F implementation was authorized or evidenced.
+
+The model-design discussion genuinely approached stable identity, authentication and authorization, the account-private reusable catalogue, deterministic Product normalization, Purchase aggregation, dimensional quantity and minor-unit money, append-only offline synchronization, eventual consistency, historical integrity, versioned analytics, immutable Dart models, and responsive Flutter composition.
+
+Human clarification established that implementation is not required for canonical concept introduction when a model-design concept has reusable meaning and concrete project manifestation. The Didactic domain therefore promoted:
+
+```text
+&&&06–&&&10
+&&%05
+&%%07–&%%17
+%%%07
+```
+
+All eighteen concepts entered as Red.
+
+Reconciliation prevented duplicate semantic ownership:
+
+- Authoritative Fact / Derived Projection remained an extension of `&&&02`.
+- Purchase atomicity remained an extension of `&%%05`.
+- Row Ownership remained an Authorization example.
+- Composition root and application lifecycle remained related to existing responsibility, ownership, and cleanup concepts.
+- Protocol versioning became part of Sync Protocol.
+- Storage-schema versioning remained related to `%%%01`.
+- Append-only event semantics remained distinct from Dart immutability.
+
+Learning-state decision:
+
+```text
+new canonical concepts: 18
+new concept status: Red
+existing maturity changes: none
+implementation evidence: none
+learner mastery evidence: none
+```
+
+Concept introduction records that the project can now name and teach the model. It does not show that the learner can independently explain, apply, compare, or debug it. Later maturity movement requires explicit learner evidence.
+
+# Current Observation Boundary
+
+The permanent Didactic domain now contains canonical Flutter shared-beta model vocabulary, derived retrieval terminology, and a refreshed checkpoint. Architecture and implementation acceptance remain outside Didactic ownership; D/E/F remain postponed.
+
