@@ -11,146 +11,140 @@
 ---
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later.
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker preserves earlier planning; this segment is the rebuildable current Design map after Sprint 04.
 
-# 1. Implemented Local Direction
-
-```text
-Flutter composition
-→ application / Register Purchase
-→ independent Dart domain
-→ repository boundary
-→ Drift local adapter
-→ fresh application-private SQLite database
-```
+# 1. Current System Map
 
 ```text
-Python/PySide6 beta
-    preserved
-    separate database
-    behavioral reference and rollback
+Protected Python/PySide6 beta
+    Desktop UI → ProductService → Repository → Cycle 06 SQLite
+    separate database; behavior reference and rollback
+
+Flutter local shared client
+    Presentation
+    → application commands/query ports
+    → independent Dart domain
+    → local repository adapters
+    → Drift schema v2
+    → application-private SQLite
+
+Deferred distributed path
+    Flutter sync coordinator
+    → authenticated custom TypeScript API
+    → Neon Postgres
 ```
 
-# 2. Domain Map
+# 2. Local Composition
+
+```text
+MarkeiComposition
+├── LocalDatabase.appPrivate()
+├── PurchaseRegistrationRepository → LocalPurchaseRepository
+├── CatalogueQueryRepository       → LocalQueryRepository
+├── PurchaseHistoryRepository      → LocalQueryRepository
+├── local Account placeholder
+└── local Device placeholder
+```
+
+The placeholders are suitable for the bounded local slice, not accepted production identity or authentication.
+
+# 3. Domain and Identity Map
 
 ```text
 Account
 ├── Device
 ├── Products
+│   ├── immutable internal Product ID
+│   ├── user-designed Product code
+│   ├── display name / brand
+│   └── normalization-v2 exact identity facts
 ├── Stores
 └── Purchases
-    └── Purchase Items
-        └── reference Product
+    └── one or more Purchase Items
+        └── immutable Product reference
 
 Purchase registration
-├── immutable local purchase.registered event
-└── pending queue entry
+├── purchase.registered event
+└── pending-event queue entry
 ```
 
-Products support PACKAGED and BULK identity modes. Purchase is multi-item capable even though no full user workflow exists.
+A future central Product UUID is not present. Exact matching is account-scoped; fuzzy matching warns only.
 
-# 3. Implemented Ownership
+# 4. Authoritative Facts and Projections
 
-| Surface | Current ownership/evidence |
+| Authoritative local facts | Derived/rebuildable views |
 | --- | --- |
-| Flutter app/composition | Generated and analyzable; platform runtime unvalidated |
-| Application port | Coordinates Register Purchase |
-| Dart domain | Catalogue, Store, Purchase, Item, quantity, money, sync envelope, analytics |
-| Drift adapter | Fresh local schema and atomic transaction; implemented/tested |
-| Semantic fixtures | Versioned examples; incomplete as wire contracts |
-| Generated files | Owned through source schema/configuration and regeneration |
-| PySide6 | Preserved accepted beta; not retired |
+| Product internal ID, code, display and normalized identity | similarity warnings |
+| Store reference and display name | catalogue lists |
+| Purchase occurrence, currency, total | recent Purchase history |
+| Purchase Item quantity and line total | normalized prices and later analytics |
+| event envelope, payload, device sequence | synchronization status/projections |
+| raw purchase observations | versioned analytical results |
 
-# 4. Atomic Local Workflow
+JSON Schema validates structural contract shape. Dart domain tests validate cross-field meaning.
+
+# 5. Atomic Registration
 
 ```text
-resolve/create exact Store and Products
-→ validate all Items
-→ insert Purchase and Items
-→ allocate local event metadata
-→ insert purchase.registered
+insert account/sync metadata if needed
+→ insert Device only when absent
+→ resolve Store and exact Products
+→ validate Purchase and Items
+→ persist Purchase and Items
+→ allocate next Device sequence
+→ persist immutable event
 → enqueue pending event
 → commit once
 ```
 
-Invalid Item validation rolls back every write. Local facts and pending events survive close/reopen. No network work exists inside the transaction.
+Account/device/sequence uniqueness guards local ordering. Network activity is absent and pending events are not proof of synchronization.
 
-# 5. Implemented Representation
-
-```text
-Quantity
-    MASS → KG
-    VOLUME → L
-    COUNT → UNIT
-    six-decimal microunits
-    fractional COUNT rejected
-
-Money
-    ISO currency code
-    integer minor units
-
-Analytics
-    stable identifier + version registry
-    raw facts preserved
-```
-
-# 6. Evidence Classification
-
-**Implemented and locally tested:** domain boundaries, Drift fresh creation, catalogue structures, aggregate transaction, rollback, persistence/reopen, queue preparation, minimal analytics.
-
-**Generated but host-unvalidated:** Android, Windows, and iOS targets.
-
-**Not implemented:** purchase UI, authentication, API, Postgres/Neon, actual synchronization, second-device convergence, import, parity.
-
-# 7. Defects and Open Boundaries
+# 6. Local Persistence and Migration
 
 ```text
-device sequence
-    likely reset/reuse defect
-    monotonic ordering not established
+schema v2
+├── account-private Product-code and exact-identity uniqueness
+├── account/device/sequence event uniqueness
+├── display and normalized Product facts
+├── Purchase aggregate tables
+├── pending events and sync metadata
+└── migration ledger
 
-normalization
-    accented/Unicode behavior unsafe or unknown
-    v1 remains provisional
-
-Product identifier
-    deterministic UUID-shaped candidate
-    RFC/cross-language contract absent
-
-fixtures
-    useful examples
-    incomplete protocol schema
-
-migration
-    fresh creation tested
-    upgrade/recovery and legacy import absent
-
-Store
-    exact-name reuse only
-    no deduplication/branch identity
+v1 → v2
+├── preserves Product IDs and Purchase references
+├── adds Product code/display fields
+├── backfills reviewable legacy codes
+└── records the upgrade with runtime UTC time
 ```
 
-# 8. Next Route Comparison
+One upgrade path is validated. General downgrade, corruption recovery, desktop import, and broad migration policy remain open. Fresh-create ledger time is still source-fixed.
+
+# 7. Evidence Boundary
+
+**Validated:** formatting, analysis, 21 Flutter tests, schema validation, device sequencing, v1→v2 migration/reopen, atomic registration, five Python regressions, Windows build, and Windows startup smoke.
+
+**Implemented but incompletely accepted:** minimal Purchase/History UI, multi-item staging, app-private composition, Product code/display model, normalization v2, JSON Schema v2 examples.
+
+**Blocked or host-unvalidated:** manual UI/accessibility acceptance, Android build (SDK absent), Android execution, iOS build/run.
+
+**Deferred:** authentication, API/Neon, actual synchronization, second-device convergence, central catalogue identity, desktop import, editing/deletion, Product-code lifecycle, Store branch identity, and PySide6 retirement.
+
+# 8. Next Design Evidence Route
 
 ```text
-Route 1 — recommended first
-    fix sequence/Unicode
-    strengthen fixtures
-    minimal Flutter Purchase UI
-    local projection/history
-    close/reopen
-    Windows + Android execution
-
-Route 2 — later candidate
-    complete wire contract
-    TypeScript API
-    disposable Postgres
-    idempotency/sequence/cursor
-    second-device and account isolation
+manual Windows workflow and accessibility review
+→ resolve local account/device lifecycle beyond placeholders
+→ define Store and Product-code lifecycle gaps as needed
+→ retain rollback and database isolation
+→ only then stage the bounded synchronization/API evidence slice
 ```
 
-Route 1 is a Design recommendation, not materialization authority.
+The TypeScript/Neon direction remains accepted planning, not implemented architecture.
 
-# 9. Recovery Boundary
+# 9. Recovery Pointers
 
-Flutter test success establishes local behavior only. It does not validate platform lifecycle, responsive composition, distributed synchronization, cloud architecture, or product parity.
+- Canonical rules: `design/01_ARCHITECTURE.md`, sections 16–18.
+- Rationale and chronology: `design/03_DECISION_LOG.md`, Event 16.
+- Current checkpoint: `design/09_DESIGN_STATE.md`.
+- Materialization evidence: `DEV_STAGE/I_DSN_CODEX.md`.
+- Main resolution: `[M]_STAGE/J_[M]_STAGE.md`, section 21.
