@@ -1,6 +1,6 @@
 # 11_OPERATIONAL_RECORD.md
 
-> Version: Cycle 07 observational record 0.3
+> Version: Cycle 07 Sprint 02 observational record 0.4
 > Status: Active observational history
 > Persistence Class: Observational
 > Knowledge Class: Operational
@@ -417,3 +417,70 @@ next work: documentation, contract/fixture specification, and explicit later exp
 ```
 
 No stable Operational rule was promoted into `12_OPERATIONAL_MODEL.md` during this pass. The pathway comparison and cost assumptions remain observational; current state and active evidence gaps were refreshed separately.
+
+
+# 8. Cycle 07 Sprint 02 — Flutter Shared-Beta Planning Reconciliation
+
+## 2026-07-12 — Flutter client-basis supersession
+
+Human/Main established Flutter/Dart as the primary planning basis for the maintained Windows/Android/iOS client. This superseded the earlier TypeScript-client exploration direction only at the client boundary.
+
+TypeScript retained a favored role for the custom synchronization API and protocol harness. Neon Postgres remained favored managed shared persistence. Python/PySide6 remained the accepted Cycle 06 application, reference behavior, legacy migration source, and rollback. No embedded Python runtime or cross-language client IPC bridge was accepted.
+
+## Domain-report reconciliation
+
+Operational, Didactic, and Design restaging converged on:
+
+```text
+Flutter/Dart shared client
+→ application-private local persistence
+→ account-private reusable catalogue
+→ atomic Purchase + Purchase Items + pending event
+→ authenticated TypeScript synchronization API
+→ Neon Postgres accepted account-scoped event history
+```
+
+The reports also preserved language-neutral JSON contracts, deterministic fixtures, immutable event/device/account identities, idempotent retry, per-device ordering, account-scoped cursor download, transactional local application, versioned analytics, and protected Cycle 06 data.
+
+This was planning reconciliation only. No Flutter project, Dart model, TypeScript API, Postgres schema, authentication integration, external account, or infrastructure was created.
+
+## Operational experiment candidates
+
+The first persistence candidate for a later bounded experiment is Drift because its documented feature set aligns with transactions, migrations, typed queries, tests, and the three target platforms. `sqflite_common_ffi` remains a comparison candidate.
+
+`flutter_secure_storage` is a credential-storage candidate for packaged evaluation. Its advertised targets do not establish secure or correct behavior for Markei. Backup, upgrade, logout, reinstall, token rotation, and platform-specific failure behavior remain untested.
+
+The favored local protocol environment is:
+
+```text
+Dart fixtures + two isolated local stores
+TypeScript API
+disposable local Postgres
+fake/test identity issuer
+structured correlation logs
+```
+
+A later Neon test environment is permitted only after local protocol proof.
+
+## Platform validation direction
+
+Windows and Android are the first paired evidence targets because the current development context can address them without claiming iOS parity. Required evidence includes clean build/run, fresh local database, aggregate/event atomicity, close/reopen, secure storage, fixture parity, sync retry/gap/cursor/bootstrap/account isolation, and proof that the Cycle 06 database remains untouched.
+
+iOS remains an explicit macOS/Xcode boundary. No iOS compatibility, plugin behavior, package, signing, Simulator/device, or lifecycle evidence exists.
+
+## Evidence classification
+
+```text
+Flutter/Dart client basis: accepted planning decision
+TypeScript API: favored planning decision
+Neon Postgres: favored planning decision
+Drift: first experiment candidate
+sqflite_common_ffi: retained comparison
+flutter_secure_storage: candidate
+Windows/Android compatibility: assumption until execution
+iOS compatibility: unvalidated pending macOS/Xcode
+implementation/infrastructure evidence: none
+D/E/F: postponed
+```
+
+Next Operational evidence target is Sprint 03 preparation: pinned environments, canonical fixtures, isolated local persistence, atomic Purchase/event, local TypeScript/Postgres protocol failures, Windows/Android execution, Cycle 06 isolation, and later iOS/Neon gates.
