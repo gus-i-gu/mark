@@ -1,13 +1,13 @@
 # 00_PROJECT_STATE.md
 
-> Version: Cycle 07 Sprint 02 closure / Sprint 03 entry 0.5
+> Version: Cycle 07 Sprint 03 closure / Sprint 04 entry 0.6
 > Status: Active Global State Canon-Checkpoint
 > Persistence Class: Canon-Checkpoint
 > Knowledge Class: Main / Global
 > Authority: Main Chat [M]
 > Branch: `cycle-07-mobile-preparation`
 > Baseline: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
-> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md`
+> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md` sections 19–20
 > Scope: Accepted current global state and low-cost recovery entrypoint
 
 ---
@@ -259,3 +259,64 @@ The authoritative forward boundary is `06_SESSION_SCHEME.md`.
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
+
+# Cycle 07 Sprint 03 Closure / Sprint 04 Entry
+
+## Current global state
+
+Sprint 03 Unit 01 is closed as an implemented and locally unit-tested Flutter/Dart foundation.
+
+```text
+accepted Cycle 06 Python/PySide6 beta
++ additive Flutter client
++ independent Dart domain/application boundary
++ Drift fresh local persistence
++ account-private catalogue
++ Purchase/Purchase Item aggregate
++ atomic local event and pending queue
++ rollback and close/reopen tests
++ versioned semantic fixtures
++ permanent-domain reconciliation
+```
+
+Verified evidence:
+
+- Flutter 3.44.6 and Dart 3.12.2;
+- `flutter analyze` passed;
+- nine Flutter tests passed;
+- five Python regression tests passed;
+- ordinary Cycle 06 database remained protected.
+
+Generated but unvalidated: Windows, Android, and iOS target projects.
+
+Not implemented: full Purchase UI, platform runtime/lifecycle, authentication, TypeScript API, Postgres/Neon, actual synchronization, legacy import, parity, or PySide6 retirement.
+
+## Accepted Sprint 04 direction
+
+Sprint 04 targets the local shared-client vertical slice before the synchronization harness:
+
+```text
+correct device sequence
+→ establish Unicode-safe versioned identity
+→ harden contract examples
+→ minimal Flutter multi-item Purchase UI
+→ local history/projection
+→ close/reopen
+→ Windows execution
+→ Android execution or precise host blocker
+```
+
+TypeScript/Postgres synchronization remains the following candidate route.
+
+## Mandatory entry defects
+
+- Device sequence likely resets and is not accepted as monotonic.
+- Portuguese/Unicode normalization is not stable.
+- Product identifier semantics remain provisional.
+- Purchase/event fixtures are not complete wire contracts.
+- Schema upgrade/recovery is untested.
+- Store deduplication is undefined.
+
+## Authority state
+
+Sprint 04 planning is accepted. Implementation remains inactive until the human approves the route/host actions and Main prepares new D/E/F. Cycle 07 remains open.
