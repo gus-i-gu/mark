@@ -2911,3 +2911,228 @@ Deferred: visual redesign, authentication, TypeScript API, Neon/Postgres, actual
 ## 23.6 Authority transition
 
 A/B/C investigation is reconciled. D/E/F now authorize the bounded Sprint 05 materialization described above. Permanent documentation is not updated by this transition. Codex must load the methodology prompt collection and D/E/F, materialize source and host changes within their gates, and replace G/H/I with evidence.
+
+
+---
+
+# 24. Cycle 07 Sprint 05 Post-Codex Primary Reconciliation
+
+> Date: 2026-07-12  
+> Status: provisional Main evidence staging for domain confrontation  
+> Inputs: G/H/I, repository comparison from Sprint 05 D/E/F head, key implementation/tests, and human Android evidence  
+> Branch: `cycle-07-mobile-preparation`  
+> Materialization start: `c2d74e445a6c7819b9c36573f6d63836d990c471`
+
+## 24.1 Main outcome
+
+Sprint 05 materially established an Android-local Markei vertical slice while preserving the shared Flutter architecture, Windows regression path, and protected Python/PySide6 beta.
+
+The strongest supported classification is:
+
+```text
+Android toolchain: installed and doctor-validated
+Android application identity: implemented and APK-validated
+debug APK: built
+emulator: booted
+APK: installed and launched
+app-private Drift database: runtime-observed
+Device UUID v4: implemented, tested, and runtime-observed
+Device sequence continuity: tested and runtime-observed for one registration
+Purchase registration: human-confirmed on emulator
+History/widget phone-width flow: automated Flutter-tested
+Windows Flutter build: regression-validated
+Python tests: regression-validated
+full Android lifecycle/ergonomics: only partially evidenced
+physical device: deferred
+visual design: provisional functional scaffold
+```
+
+Sprint 05 is therefore a successful Android debug-development materialization, but not a production Android release, full device-compatibility claim, or final mobile UI acceptance.
+
+## 24.2 Host and toolchain evidence
+
+G reports:
+
+- selected Flutter SDK `H:\Users\Gus\develop\flutter`;
+- alternate `C:\Users\gusrm\flutter` inspected but not modified;
+- Android Studio 2026.1.1.10 installed;
+- Android SDK at `C:\Users\gusrm\AppData\Local\Android\Sdk`;
+- Platform 36, Build-Tools 36.0.0, Platform-Tools, command-line tools, Emulator, CMake 3.22.1, NDK 28.2.13676358, and API 36 Google APIs x86_64 image installed;
+- licences accepted with human confirmation;
+- AVD `Markei_Sprint05_API36` created and booted;
+- `flutter doctor -v` Android toolchain healthy;
+- Chrome unavailable but outside Sprint 05.
+
+Host-local `android/local.properties` points to the H: Flutter SDK and remains ignored. No SDK deletion or destructive replacement is reported.
+
+## 24.3 Implemented source and architecture
+
+Repository truth confirms:
+
+- namespace/application ID `com.gusigu.markei`;
+- label `Markei`;
+- Kotlin host moved to `com/gusigu/markei/MainActivity.kt`;
+- compile/target SDK 36;
+- shared asynchronous composition bootstrap;
+- new Drift-backed `LocalDeviceIdentityRepository`;
+- removal of production `windows-device` injection;
+- local Account insert-or-ignore before Device bootstrap;
+- UUID v4 creation and reuse;
+- historical non-UUID Device rows preserved but not selected;
+- SafeArea integration;
+- staged BRL total display;
+- phone-width workflow tests;
+- no new Dart dependency;
+- no Drift schema change because schema v2 already owns Device and sequence rows.
+
+The dependency direction remains:
+
+```text
+Android host
+→ Flutter entrypoint/composition
+→ presentation
+→ application/repository ports
+→ Dart domain
+→ Drift local adapters
+→ app-private SQLite
+```
+
+No Android/Kotlin business logic, broad storage permission, cloud work, authentication, or Python modification entered the implementation.
+
+## 24.4 Identity reconciliation
+
+The following responsibilities are now materially distinct:
+
+| Identity | Current Sprint 05 state |
+| --- | --- |
+| Android application ID | `com.gusigu.markei`, implemented |
+| display label | `Markei`, implemented |
+| Account ID | `local-account`, provisional prototype placeholder |
+| Device ID | app-private UUID v4, implemented |
+| Device sequence | persisted per Device row, tested |
+| Product internal ID/user code | unchanged from Sprint 04 |
+| Event/Purchase IDs | unchanged from Sprint 04 |
+| cloud/central identities | deferred |
+
+Runtime database evidence records one UUID v4 Device for `local-account`, `next_sequence = 2`, and one Purchase after the human-confirmed workflow.
+
+## 24.5 Validation evidence
+
+Reported passes:
+
+- format check;
+- `flutter analyze`;
+- 27 Flutter tests;
+- debug APK build;
+- APK badging identity inspection;
+- emulator boot;
+- APK installation;
+- Android process launch;
+- app-private database inspection at the application sandbox;
+- human Purchase registration;
+- Windows release build;
+- five Python unit tests.
+
+New tests cover:
+
+- UUID v4 creation;
+- same-database reopen reuse;
+- distinct fresh-database identities;
+- sequence continuity after reopen;
+- historical non-UUID preservation;
+- phone-width Purchase/History workflow and staged total.
+
+The tests and source inspected support these claims.
+
+## 24.6 Evidence limits
+
+The following remain provisional or partial:
+
+- ADB-driven form entry was blocked by emulator/Gboard/input overlays;
+- the human confirmed Purchase registration, but a complete recorded checklist for keyboard, Back, rotation, background/resume, text scale, and staged-state behavior is absent from G/H/I;
+- process force-stop/relaunch and database inspection provide partial lifecycle evidence, not a complete Android lifecycle matrix;
+- only one emulator configuration is evidenced;
+- no physical device is validated;
+- no Android release build, production signing, installation upgrade path, backup policy, accessibility acceptance, or Play Store lifecycle is evidenced;
+- phone-width widget testing does not establish final visual quality;
+- local event queue remains synchronization preparation only.
+
+Domain chats must not promote these limits into stronger claims.
+
+## 24.7 Repository/report drift
+
+Repository comparison from Sprint 05’s starting head shows two commits and the expected Android/Dart/test/G/H/I changes.
+
+One direct contradiction requires reconciliation:
+
+- G states `clients/markei_flutter/devtools_options.yaml` was preserved and not committed;
+- repository truth shows it as a newly committed three-line DevTools configuration file.
+
+This file is harmless configuration, but the evidence report is inaccurate. Operational reconciliation must record the discrepancy and decide whether the file is intentionally project-owned or should be removed in a later bounded hygiene commit. Main does not delete it during this staging pass.
+
+A second accuracy note: G calls the user workflow “purchase upsert/registration.” Current accepted semantics are Purchase registration; “upsert” should not imply mutable replacement of an existing Purchase unless source evidence explicitly supports that behavior.
+
+## 24.8 Design debt exposed by repository inspection
+
+`LocalDeviceIdentityRepository` searches the first 20 Devices ordered by creation time and reuses the first UUID v4 row. This is sufficient for the present one-installation prototype and is covered by current tests, but it is not yet an explicit durable “current installation Device” relation.
+
+Potential future risks:
+
+- an account with more than 20 older non-UUID rows may fail to find its existing UUID Device and create another;
+- multiple UUID rows have no explicit active/current selection rule beyond earliest creation;
+- concurrent bootstrap uniqueness is not enforced by a dedicated installation key.
+
+This does not reopen Sprint 05 acceptance. Design must classify it as bounded prototype debt and decide before real multi-device synchronization whether to introduce an explicit installation metadata singleton, uniqueness invariant, or another deterministic ownership rule.
+
+## 24.9 Domain confrontation questions
+
+Operational [O] should determine:
+
+- exact accepted host/tool/runtime evidence;
+- whether lifecycle evidence is enough to close Android debug parity or requires one supplemental checklist;
+- correction of the DevTools-file report drift;
+- whether installed SDK/AVD recovery and cleanup commands belong in permanent Operational memory;
+- remaining physical-device and release blockers.
+
+Didactic [A] should determine:
+
+- which Android, Device identity, lifecycle, and evidence-ladder concepts are represented, executed, human-observed, or still unvalidated;
+- whether any maturity transition is supported by learner evidence;
+- how to phrase registration without incorrectly teaching Purchase upsert semantics;
+- which UI/lifecycle distinctions remain Red or provisional.
+
+Design [D] should determine:
+
+- whether current Device selection is accepted only for the local prototype;
+- the future explicit current-installation Device invariant;
+- whether compile/target SDK pinning belongs to stable architecture or operational configuration;
+- whether SafeArea and staged total remain bounded scaffold decisions;
+- what must be resolved before synchronization or a UI/UX sprint.
+
+## 24.10 Proposed next route
+
+Immediate route:
+
+```text
+Main J §24 primary staging
+→ O/A/D confront G/H/I + J + repository through PDR2
+→ permanent domain files and compact checkpoints updated
+→ Main reconciles permanent domain results
+→ 00/05/06 updated
+→ Sprint 05 closure or bounded supplemental Android acceptance
+→ select Sprint 06 objective
+```
+
+A likely later Sprint 06 candidate is UI/UX formalization for the shared Windows/Android client, but it must not be accepted before domain reconciliation determines whether any Android lifecycle supplement is still required.
+
+Cloud synchronization, authentication, Neon/Postgres, central catalogue, legacy import, production signing/release, iOS, and PySide6 retirement remain deferred.
+
+## 24.11 Current authority
+
+- Sprint 05 source materialization: complete.
+- G/H/I evidence: complete with noted drift and limits.
+- J primary reconciliation: complete provisionally.
+- Permanent-domain promotion: not yet performed.
+- 00/05/06 closure update: not yet authorized by this section alone.
+- Additional implementation: inactive.
+- Cycle 07: open.
