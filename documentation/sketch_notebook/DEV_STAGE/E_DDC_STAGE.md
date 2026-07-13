@@ -174,3 +174,174 @@ Replace B with C08-R02 and report:
 - recommendations for revised J and E.
 
 Do not modify permanent Didactic files, product source or another stage.
+
+---
+
+<!-- ENRICHMENT_MARKER:C08-C08-R02-Didactic-2026-07-13 -->
+# Cycle 08 Round C08-R02 — Provisional Didactic Enrichment
+
+> Status: PROVISIONAL — NOT AUTHORIZED FOR CODEX  
+> Purpose: Domain confrontation; no implementation authority  
+> Main source: J C08-R02 reconciliation at `b244f41c9f76baec3123e7584364969bcc7bc588`  
+> Inputs: latest cumulative A/B/C C08-R02 rounds and preceding D/E/F content
+
+## 1. Successive-round classification
+
+Retained:
+
+- Catalogue Product versus Purchase Item;
+- exact equivalence versus advisory similarity;
+- package size/count/total amount distinctions;
+- staged versus registered Item;
+- review versus registration;
+- raw fact versus derived comparison;
+- personal price change versus general inflation;
+- project evidence versus learner evidence.
+
+Corrected:
+
+- Product code is mandatory in current domain/UI, not merely advanced vocabulary;
+- Catalogue list/similarity ports exist, but a user selection journey does not;
+- Store selection/duplicate warning is absent;
+- current UI is MASS-only and BRL/two-decimal;
+- History loading/error currently appears empty;
+- retry language is prospective because idempotency is absent;
+- Device sequence and raw exceptions are current technical leakage, not intended vocabulary.
+
+Newly added:
+
+- explicit labels for current defect versus proposed outcome;
+- Product-code decision as a structural vocabulary decision;
+- Store record identity versus Store recognition;
+- known failure versus unknown outcome;
+- application-local versus restored draft language.
+
+## 2. Current-versus-proposed vocabulary
+
+| Current repository behavior | Proposed product language |
+| --- | --- |
+| Product code mandatory | Product code, with visibility still a human choice |
+| UI always creates new reference | Choose existing Product or create a new Product |
+| advisory warning after staging | Similar Product found; choose existing or create anyway |
+| free-text Store name | Choose or create Store |
+| MASS-only Quantity labels | Package size, packages bought, total amount bought |
+| raw error string | Validation, registration failure, or unknown result |
+| Device sequence in success | Purchase registered locally |
+| History error as empty | Loading, no purchases, failed to load, retry |
+| summary only | Purchase History, then Purchase details |
+| no analytics | Price change in your purchases |
+
+## 3. Required state-language algebra
+
+Later implementation staging must distinguish:
+
+- initial;
+- loading/searching;
+- genuine empty;
+- no exact Product;
+- similar advisory;
+- invalid input;
+- editable draft;
+- review-ready;
+- registering;
+- registered locally;
+- known failure;
+- unknown outcome;
+- retrying identical intent;
+- conflicting retry;
+- failed History load;
+- incompatible comparison;
+- recovered or discarded draft.
+
+Do not promise identical/conflicting retry until Design/Operational evidence establishes SubmissionId behavior.
+
+## 4. Product-code and identity boundary
+
+R03 must confront:
+
+- mandatory visible code;
+- mandatory but visually secondary code;
+- optional code requiring domain/schema/contracts;
+- auto-generated visible code, provisionally discouraged because it risks confusing internal and human identity.
+
+Internal Product UUID, normalization keys, Device, Event and sequence remain hidden from ordinary UI.
+
+## 5. Quantity and Store boundary
+
+Quantity language must follow the selected data truth:
+
+- derive total amount from package size × count;
+- record total as independent observed fact;
+- or show both with consistency explanation.
+
+Store language must distinguish:
+
+- Store record;
+- visible Store name;
+- optional branch/location;
+- similar Store warning;
+- exact reuse.
+
+No ordinary wording may imply that same-name Stores are already normalized or merged.
+
+## 6. Analytics boundary
+
+First comparison should state:
+
+- Product;
+- source Purchases;
+- dates and Stores;
+- currency;
+- dimensional/unit basis;
+- compared price;
+- percentage change;
+- incompatibility reason;
+- algorithm/version in technical explanation, not necessarily primary UI.
+
+Primary candidate remains:
+
+`Price change in your purchases`
+
+“Personal inflation/deflation” remains secondary or deferred.
+
+## 7. Learner evidence requested for C08-R03
+
+Ask the learner to explain or apply:
+
+- Product code versus Product UUID;
+- exact versus similar Product;
+- Store identity versus Store name;
+- package size/count/total amount;
+- staged versus registered Item;
+- atomicity versus idempotency;
+- known failure versus unknown outcome;
+- raw versus derived price data;
+- personal price change versus general inflation.
+
+No KANBAN maturity change follows automatically.
+
+## 8. Decisions Main cannot infer
+
+- Products/My products/Catalogue;
+- code visibility/optionality;
+- quantity model;
+- Store branch language;
+- Review presentation;
+- draft-recovery promise;
+- retry wording;
+- price-change versus personal-inflation wording;
+- export/restore promise.
+
+## 9. Evidence requested from Didactic C08-R03
+
+Report:
+
+- preferred exact UI terms;
+- current defect versus proposed-copy table;
+- existing KANBAN owner for each distinction;
+- genuinely uncovered concepts;
+- learner checks;
+- language consequences of each human alternative;
+- corrections required in J/E.
+
+Codex remains inactive. No Didactic promotion is authorized.
