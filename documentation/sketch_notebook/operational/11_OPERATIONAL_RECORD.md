@@ -668,3 +668,8 @@ The Android SDK and AVD are reproducible from the recorded component/version man
 Preserve the SDK and AVD until the lifecycle supplement is complete. Later recovery or cleanup must inventory installed SDK packages and AVDs first, remove only named components through supported SDK/AVD tooling under explicit authority, and never delete the whole SDK directory or unrelated user configurations merely to reclaim space.
 
 No commands, installations, runtime actions, or source changes were performed by this reconciliation.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
