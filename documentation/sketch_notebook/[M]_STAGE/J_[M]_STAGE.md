@@ -3136,3 +3136,151 @@ Cloud synchronization, authentication, Neon/Postgres, central catalogue, legacy 
 - 00/05/06 closure update: not yet authorized by this section alone.
 - Additional implementation: inactive.
 - Cycle 07: open.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C07-CLOSURE-C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 07 closure and Cycle 08 roadmap entry. The preceding segment preserves Cycle 07 planning, materialization, Codex evidence, and domain confrontation. Content below records Main closure and the next product-development schedule.
+
+# 25. Cycle 07 Permanent Reconciliation, Closure, and Cycle 08–10 Schedule
+
+> Date: 2026-07-12  
+> Status: reconciled Main closure and forward scheduling  
+> Domain sources: current Operational, Didactic, and Design checkpoints plus their PDR2 permanent files  
+> Evidence source: G/H/I and repository truth through J §24
+
+## 25.1 Permanent-domain reconciliation
+
+All three domains completed PDR2 registration.
+
+Operational accepts the Android toolchain, SDK 36 environment, stable application identity, persistent Device UUID, debug APK, emulator launch, app-private persistence observation, human Purchase registration, Windows build, and Python regressions. It retains the incomplete keyboard, Back, rotation, background/resume, text-scale, staged-state, and full cold-relaunch matrix as explicit debt. It also records the committed `devtools_options.yaml` contradiction as later bounded hygiene.
+
+Didactic preserves the evidence ladder and makes no KANBAN maturity change. Android implementation and human execution do not constitute learner mastery. It preserves the distinction between functional scaffold and accepted UI, registration and unsupported upsert semantics, emulator and physical-device evidence, and local queue and synchronization.
+
+Design accepts the shared Flutter architecture, Android host boundary, stable application identity, database-owned Device UUID, and no-schema-change bootstrap. It classifies the first-20 Device scan and lack of an explicit current-installation relation as prototype-only debt that must be resolved before real synchronization.
+
+No permanent domain accepts production release, final UI/UX, authentication, API/Neon, real synchronization, physical-device compatibility, iOS runtime, central catalogue, legacy import, or PySide6 retirement.
+
+## 25.2 Cycle 07 closure boundary
+
+Cycle 07 closes as:
+
+> The shared-client technical-foundation cycle that established an additive Flutter/Dart architecture, reusable local catalogue and Purchase model, Windows and Android debug execution, app-private Drift persistence, stable Android identity, persistent installation Device UUID, local event preparation, and cross-platform regression evidence while preserving the Python/PySide6 beta.
+
+Closure is intentionally narrower than complete Android lifecycle acceptance.
+
+Accepted:
+
+- Flutter/Dart shared client foundation;
+- independent domain/application/repository direction;
+- Drift schema v2 and migration evidence;
+- reusable Product/Store/Purchase structures;
+- multi-item Purchase and History scaffold;
+- Windows human workflow and persistence;
+- Android SDK/toolchain, debug APK, emulator launch, app-private persistence, and human Purchase registration;
+- persistent Device UUID and sequence tests;
+- 27 Flutter tests, Windows build, and five Python regressions;
+- permanent-domain reconciliation.
+
+Carried debt:
+
+- full Android keyboard/Back/rotation/background/text-scale/cold-relaunch checklist;
+- physical-device validation;
+- final UI/UX and accessibility;
+- explicit current-installation Device invariant;
+- DevTools-file ownership hygiene;
+- account/authentication and real synchronization;
+- release signing/distribution.
+
+The missing lifecycle matrix does not invalidate the debug foundation. It becomes a mandatory Cycle 08 product-beta acceptance input and may trigger a bounded correction if real UI work exposes a defect.
+
+## 25.3 Agreed cycle schedule
+
+```text
+Cycle 08 — Shared-Client Product Beta
+Cycle 09 — Synchronized Household Beta
+Cycle 10 — Release Preparation and Controlled Public Beta
+```
+
+### Cycle 08
+
+Transform the technical slice into a coherent local-first product beta on Windows and Android.
+
+Primary capabilities:
+
+- responsive product navigation and interface foundation;
+- visible reusable Catalogue workflow;
+- Product search/reuse and advisory duplicate warning;
+- Store selection/creation;
+- multi-item staging with edit/remove/review;
+- atomic Purchase registration;
+- detailed History;
+- clear validation, empty, success, and failure states;
+- first meaningful personal price-comparison view;
+- local migration/reopen/recovery and backup/export decision;
+- Windows/Android manual acceptance, including carried lifecycle debt.
+
+Synchronization architecture must remain preserved but inactive.
+
+### Cycle 09
+
+Materialize the synchronized household beta:
+
+- verified account and immutable internal Account UUID;
+- TypeScript synchronization API;
+- Neon Postgres behind the API;
+- authenticated upload;
+- idempotent event acceptance;
+- cursor-based download;
+- second-device bootstrap;
+- retry, offline recovery, and convergence evidence.
+
+Initial synchronized facts remain Account, Device, Product, Store, Purchase, Purchase Item, and immutable registration events. Editing, deletion, merge, household sharing, and broader server analytics remain later decisions.
+
+Before Cycle 09 implementation, Design must replace the prototype Device-selection heuristic with an explicit current-installation invariant.
+
+### Cycle 10
+
+Prepare controlled release:
+
+- production authentication and secret handling;
+- privacy/data deletion;
+- export/import and recovery;
+- observability and support;
+- production signing;
+- Android distribution;
+- Flutter Windows packaging;
+- upgrade testing;
+- user documentation;
+- controlled beta cohort and rollback.
+
+## 25.4 Cycle 08 Sprint 01 selection
+
+Cycle 08 Sprint 01 is a definition and investigation sprint:
+
+> Define the shared-client product beta’s user journeys, navigation, responsive information architecture, reusable Catalogue interaction, improved Purchase staging/review, detailed History, and first price-comparison presentation before implementation.
+
+Required A/B/C investigation must inspect current UI/source and permanent knowledge, then propose:
+
+- smallest coherent screen/navigation set;
+- responsive Windows/Android behavior;
+- Catalogue and Store interaction rules;
+- duplicate-warning boundary;
+- staged Item edit/remove/review semantics;
+- History detail and comparison inputs;
+- first analytics formula/presentation boundary;
+- lifecycle and accessibility acceptance;
+- migration/backup implications;
+- exact D/E/F units and non-goals.
+
+No source implementation is active until Main reconciles Cycle 08 A/B/C and writes fresh D/E/F.
+
+## 25.5 Authority
+
+- Cycle 07: closed at the defined technical-foundation boundary.
+- Cycle 08: active in Sprint 01 preparation.
+- Cycle 09 and 10: scheduled, inactive.
+- Cycle 08 source implementation: unauthorized.
+- Permanent-domain updates: complete for Cycle 07.
+- 00/05/06 refresh: authorized and performed in sequence with this reconciliation.
