@@ -1,122 +1,174 @@
-# E_DDC_STAGE — Cycle 08 Codex Language Directive
+# E_DDC_STAGE — Cycle 08 Product-Beta Language Directive
 
 > Cycle: 08 — Shared-Client Product Beta
-> Directive: C08-IMP-01
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED
+> Directive: C08-PB-01
+> Status: ACTIVE — CODEX PRODUCT IMPLEMENTATION AUTHORIZED
 > Authority: explicit human instruction reconciled by Main [M]
-> Scope: user-facing concepts and state language for the active bounded unit
-> Paired directives: `D_OPS_STAGE.md`, `F_DSN_STAGE.md`
-> Temporal control: this directive supersedes the earlier provisional and C08-ACT-01 text in this file
+> Paired directives: `D_OPS_STAGE.md` and `F_DSN_STAGE.md`
+> Control: this directive fully supersedes C08-IMP-01 and every earlier E authorization
 
-## 1. Required product language
+## 1. Product journey
 
-C08-IMP-01 must present current local behavior honestly and consistently.
-
-The active product sequence remains:
+The implemented interface must communicate this complete sequence:
 
 ```text
-stage Purchase Items
+find or create Product
+→ choose or create Store
+→ stage and edit Items
+→ review Purchase
 → register Purchase locally
-→ inspect Purchase History
+→ inspect Purchase History and details
+→ compare compatible personal price observations
 ```
 
-Catalogue reuse, Store selection, review, durable retry and analytics belong to later units and must not be implied by this implementation.
+Do not collapse these stages into one undifferentiated form.
 
-## 2. Controlling vocabulary
+## 2. Controlling terminology
 
-Use these meanings:
-
-| Meaning | Required term or rule |
+| Concept | User-facing term |
 | --- | --- |
-| current entry workflow | Purchase |
-| committed aggregate | registered Purchase |
-| pre-commit line | staged Item |
+| reusable private collection | Products |
+| reusable entry | Product |
+| likely but unconfirmed match | similar Product |
+| pre-registration collection | Purchase draft / Items to register |
+| editable pre-registration line | staged Item |
 | committed line | Purchase Item |
-| local successful result | Purchase registered locally |
-| chronological local records | Purchase History |
-| no records | No purchases yet |
-| unavailable query result | Couldn’t load purchase history |
-| repeat query action | Try again |
-| incomplete/invalid input | field-specific validation message |
-| technical failure | safe product-language failure, never the raw exception |
+| pre-commit confirmation | Review purchase |
+| local commit action | Register purchase |
+| successful local result | Purchase registered locally |
+| chronological records | Purchase History |
+| derived comparison | Price change in your purchases |
+| no compatible pair | Not enough comparable purchases |
+| local persistence boundary | Data is stored on this device |
 
-Capitalization may follow the surrounding UI, but meanings must not drift.
+“Catalogue” may remain in architecture/documentation, but the UI uses **Products**.
 
-## 3. Required state distinctions
+## 3. Product and Store language
 
-### History
+Product code remains required in this beta. Explain it as a user-visible Product reference, never as the internal UUID.
 
-The UI and tests must distinguish:
+The Product flow must distinguish:
 
-1. **Loading** — progress is visible; do not show empty-state copy.
-2. **Empty** — query succeeded and returned no Purchases.
-3. **Failure** — query failed; show safe failure copy and retry when supported.
-4. **Data** — one or more Purchase summaries are visible.
+- use existing Product;
+- create new Product;
+- similar Product found;
+- use this Product;
+- create anyway.
 
-Failure must never be rendered as empty.
+“Similar” is advisory. Do not say “duplicate” unless exact identity is established.
 
-### Purchase registration
+The Store flow must distinguish:
 
-The UI must distinguish:
+- choose Store;
+- create Store;
+- Store name already available for reuse.
 
-1. editable input;
-2. field validation failure;
-3. registration in progress;
-4. locally registered success;
-5. known registration failure.
+Do not claim normalized branch identity, merging or duplicate prevention.
 
-Do not introduce “unknown outcome,” “identical retry,” or “conflicting retry” copy because durable submission identity is outside C08-IMP-01.
+## 4. Quantity and currency boundary
 
-## 4. Prohibited claims and leakage
+Cycle 08 remains explicitly **MASS + BRL** in the active Purchase UI.
 
-Do not expose or claim:
+Use clear labels such as:
 
-- raw exception text;
-- Device UUID, sequence or Event identity;
-- database, Drift or transaction internals;
-- synced, uploaded, cloud-saved or backed-up state;
-- account ownership;
-- duplicate-safe retry;
-- Catalogue or Store identity semantics;
-- official inflation or general market conclusions.
+- package size;
+- packages bought;
+- total amount bought;
+- line total.
 
-“Saved” alone is too broad. Prefer “Purchase registered locally” where the current repository result establishes local success.
+Do not imply that volume, count or arbitrary currencies are currently supported merely because domain types can represent them.
 
-## 5. Accessibility and comprehension
+Normalized quantity and derived unit price are computed representations, not raw receipt facts.
 
-For every touched state:
+## 5. State language
 
-- provide visible text in addition to color or icon differences;
-- keep actions labeled by outcome;
-- maintain meaningful semantics for navigation and progress;
-- avoid technical recovery instructions;
-- preserve legibility under larger text and narrow constraints.
+Every implemented asynchronous or mutating journey must distinguish:
 
-Tests should locate important states through stable semantic text or keys without coupling to incidental layout structure.
+- loading;
+- genuine empty;
+- data/success;
+- field validation;
+- recoverable failure;
+- action in progress.
 
-## 6. Evidence boundary
+History failure must never appear as “no purchases.”
 
-G/H/I and tests may establish that copy and state distinctions were implemented. They do not automatically establish:
+Product search with no match must invite Product creation, not look like a query failure.
 
-- learner mastery;
-- KANBAN maturity promotion;
-- Windows or Android accessibility acceptance;
-- synchronization, backup or production readiness.
+Registration success is shown only after the atomic repository result returns. During submission, the Register action is disabled. Failure retains the draft where current state permits.
 
-No permanent Didactic promotion is authorized in this phase.
+Durable unknown-outcome and identical/conflicting retry language is prohibited because SubmissionId is not implemented.
 
-## 7. Deferred language decisions
+## 6. History and analytics claims
 
-The following remain unresolved and must not be silently selected by Codex:
+History detail must present registered facts: date/time, Store, Items, quantity basis, line totals and Purchase total.
 
-- Catalogue versus Products versus My products;
-- Product-code visibility or optionality;
-- quantity-entry truth;
-- Store branch/location identity;
-- separate review presentation;
-- draft recovery promise;
-- durable retry language;
-- price change versus personal inflation wording;
-- export/restore promise.
+The first analytic is narrowly defined:
 
-A need to decide any item above returns to Main.
+- same Product;
+- same currency;
+- same quantity kind and canonical unit;
+- previous and latest compatible observations;
+- normalized purchased-unit price;
+- percentage change;
+- both source dates and Stores.
+
+Use **Price change in your purchases**.
+
+Do not use “official inflation,” “market inflation,” forecasts or population-level conclusions. “Personal inflation/deflation” remains deferred.
+
+## 7. Failure and privacy boundary
+
+Ordinary UI must not expose:
+
+- exception strings or stack traces;
+- UUIDs;
+- Device sequence;
+- Event/cursor/queue terminology;
+- Drift or database internals;
+- authentication/account claims;
+- synchronization/upload claims;
+- backup claims.
+
+Use concise recovery language and a visible retry action where the operation is safely repeatable.
+
+## 8. Local-data notice
+
+The beta must communicate:
+
+- data is stored locally on this device;
+- synchronization is not active;
+- export/restore is not yet provided;
+- uninstalling or clearing app data may remove local data.
+
+This is an honest boundary, not a backup feature.
+
+## 9. Accessibility and comprehension
+
+Touched flows must:
+
+- expose state through text, not color alone;
+- use descriptive action labels;
+- provide semantic labels for navigation, progress and destructive draft removal;
+- remain understandable at larger text sizes and narrow widths;
+- keep review totals and actions readable without horizontal overflow.
+
+## 10. Evidence boundary
+
+Implementation and tests may establish that these concepts and words are present. They do not automatically establish learner mastery, permanent Didactic promotion, full accessibility acceptance, synchronization, backup or production readiness.
+
+No KANBAN maturity change is authorized.
+
+## 11. Deferred decisions
+
+Do not reopen during C08-PB-01:
+
+- optional Product code;
+- general quantity/currency UI;
+- Store branch identity;
+- process-death draft recovery;
+- durable idempotency wording;
+- personal-inflation terminology;
+- export/restore promise beyond the local-only notice.
+
+A need to change these decisions returns to Main.
