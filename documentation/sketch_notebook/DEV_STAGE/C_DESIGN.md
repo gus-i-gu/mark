@@ -239,3 +239,309 @@ Immediate next writer: Main Chat [M] in `documentation/sketch_notebook/[M]_STAGE
 ---
 
 Status: PROVISIONAL — NOT AUTHORIZED FOR CODEX
+
+<!-- ROUND_MARKER:C08-C08-R02-[D]-2026-07-13 -->
+# Cycle 08 Round C08-R02 — [D] Investigation
+
+> Role: Design Chat [D]
+> Authority: exploratory functional staging only
+> Branch: `cycle-08-shared-client-product-beta`
+> Inspected HEAD: `44b50788952947cfb3d23290192ebb3521d3a816`
+> Ancestry: HEAD equals and therefore descends from the expected starting HEAD
+> Status: PROVISIONAL — NOT AUTHORIZED FOR CODEX
+> Write boundary: append to `C_DESIGN.md` only
+
+## 1. Prompts executed and authority recovered
+
+The complete definitions of `PRI-D`, `PMC-01`, `PMC-02`, `ERI-01`, and `FCA-02` were read and executed from `PROMPT_COLLECTION.md`; prompt names were not used as shorthand substitutes. Root `AGENTS.md` and `INDEX.md` were also recovered. The complete canonical methodology was not reopened because the prompt collection resolved the active routing and authority economically.
+
+Confirmed boundary: Design may inspect architecture and append cumulative evidence to C. J and F remain provisional. No source, test, dependency, schema, generated code, host, permanent memory, methodology, J, D/E/F, G/H/I, or continuity file is writable or executable in this round. Publication of this single append is separately authorized.
+
+Methodology/path drift remains: `INDEX.md` names `J_MAIN_STAGE.md`, while repository authority is `documentation/sketch_notebook/[M]_STAGE/J_[M]_STAGE.md`. `F_DSN_STAGE.md` section 12 says “Replace C”; this is superseded for exploratory rounds by the newer explicit `FCA-02` append-only rule and the current human direction.
+
+## 2. Repository surfaces inspected
+
+Pinned branch reads covered:
+
+- `AGENTS.md`, `INDEX.md`, and `methodology/PROMPT_COLLECTION.md`;
+- latest Cycle 08 portions of `00_PROJECT_STATE.md`, `05_SESSION_LOG.md`, and `06_SESSION_SCHEME.md`;
+- `[M]_STAGE/J_[M]_STAGE.md`, `DEV_STAGE/F_DSN_STAGE.md`, complete prior `DEV_STAGE/C_DESIGN.md`, and `design/09_DESIGN_STATE.md`;
+- `clients/markei_flutter/lib/main.dart` and `lib/app/markei_composition.dart`;
+- `lib/app/markei_app.dart`, `pages/purchase_page.dart`, and `pages/history_page.dart`;
+- application ports in `application/catalogue_queries.dart`, `register_purchase.dart`, and `purchase_history.dart`;
+- domain structures in `domain/catalogue/product.dart`, `product_code.dart`, `domain/store/store.dart`, `domain/purchase/purchase.dart`, `domain/shared/ids.dart`, `quantity.dart`, `money.dart`, and `domain/sync/sync_event.dart`;
+- local adapters and schema in `infrastructure/local/local_database.dart`, `local_device_identity_repository.dart`, `local_purchase_repository.dart`, and `local_query_repository.dart`;
+- `pubspec.yaml`, language-neutral `contracts/shared_beta/v2/**`, Flutter test surfaces, Windows/Android hosts, and the protected Python/PySide6 boundary.
+
+GitHub’s repository search returned no symbol index, so symbol evidence below comes from exact pinned file reads and import traversal, not an assertion that GitHub code search enumerated every generated/test file. Generated Drift ownership remains with `local_database.dart` and build generation; generated output was not treated as a design owner.
+
+## 3. Newly evidenced component, function, and object index
+
+| Classification | Exact structure | New Design evidence and consequence |
+| --- | --- | --- |
+| newly evidenced | `_MarkeiAppState._selectedIndex` and `_refreshSignal` in `app/markei_app.dart` | Shell owns tab selection and an integer invalidation signal for app-state lifetime. `IndexedStack` keeps both page subtrees mounted, so Purchase widget state already survives Purchase↔History tab changes; J/F should not describe tab survival as wholly undefined. It does not prove process restoration. |
+| newly evidenced | `PurchasePage` constructor | Presentation receives `AccountId`, `DeviceId`, registration/query ports, and callback directly. The page is coupled to identity/context and application ports but not Drift. A coordinator can be injected without changing inward dependency direction. |
+| newly evidenced | `_PurchasePageState` controllers, `_items`, `_warnings`, `_bulk`, `_message` | Ten text controllers plus mutable draft/warning/message fields share mounted-page lifetime. `_items` is `List<PurchaseItemDraft>` with no draft-line identity, making stable edit targeting and keyed UI difficult. `_message` conflates validation, failure, warning, and success. |
+| corrected | `_addItem()` in `purchase_page.dart` | Always constructs `NewProductReference`; it never consumes `CatalogueQueryRepository.listProducts` to select `ExistingProductReference`. The repository can reuse an exact new draft, but the UI does not yet offer explicit catalogue reuse. Similarity is calculated before staging but does not block staging or require explicit “existing/create anyway” choice. |
+| newly evidenced | `_productDraft()` and quantity construction | UI hard-codes `MeasurementKind.mass`; `ProductMode.bulk` changes package fields only. Purchased quantity also hard-codes mass. Domain supports MASS/VOLUME/COUNT, but current UI cannot express two of them. |
+| newly evidenced | `_registerPurchase()` | Creates `occurrenceTime` at button invocation and uses fixed BRL. It does not set busy state, disable during the Future, retain a submission identity, or distinguish unknown outcome. Double invocation can reach the repository as two logical registrations. |
+| newly evidenced | `_parseMinorUnits()` | Presentation owns BRL-like two-decimal parsing, whereas `Money` only asserts a three-character currency code. A currency/input policy is missing; general currency support must not be inferred from the value object alone. |
+| corrected | `normalizeProductCode()` in `domain/catalogue/product_code.dart` | Empty Product code throws; the current model makes code mandatory and limits its collapsed form to 1–64 characters. J’s “mandatory, optional, or advanced” is a future policy decision requiring domain/schema/migration work, not merely a UI choice. |
+| newly evidenced | `Product.identityKey` | Exact identity includes account, normalization version, normalized name/brand, mode, and for packaged goods kind/amount/unit. User Product code is independently unique in persistence but is not part of `identityKey`. This dual uniqueness can reject a code collision even when semantic identity differs. |
+| corrected | `isSimilarButNotExact(Product a, Product b)` | After excluding exact, cross-account, and cross-mode pairs, similarity uses only normalized-name edit distance/containment. Brand, measurement kind, and package quantity do not rank or suppress warnings. J/F’s “similar candidates” needs this narrower current-fact wording and a future similarity-policy decision. |
+| newly evidenced | `CatalogueQueryRepository` | `listProducts(AccountId)`, `listStores(AccountId)`, and `similarityWarnings(AccountId, ProductDraft)` are whole-list/query methods. There is no search text, page/cursor, exact-resolution result, or Store-warning contract. A “search surface” is prospective, not materialized. |
+| newly evidenced | `Store` and `Stores` table | Domain Store owns only UUID, AccountId, and displayName. Persistence has primary key `id` but no normalized name or account/name unique key. `_resolveStore()` performs account + case-sensitive `displayName.equals(name)`. Store reuse is therefore exact-string adapter behavior, not stable normalized identity. |
+| newly evidenced | `PurchaseItemDraft` | Immutable value contains `ProductReference`, package count, normalized purchased quantity, and Money; it has no draft ID, validation method, copy/update operation, or product display snapshot. A presentation/application draft line is structurally distinct from this registration input. |
+| retained/evidenced | `Purchase.validate()` and `PurchaseItem.validate()` | Registered aggregate requires at least one Item, positive package count/quantity, nonnegative line total, and matching currency. `totalMinorUnits` derives from Items. These invariants belong to domain facts and should not migrate into widgets. |
+| corrected | `RegisterPurchaseCommand` | It carries free-text `storeName`, not StoreId or a sealed existing/new Store reference. F’s reusable Store picker is feasible, but command and adapter contracts must change to preserve explicit Store identity instead of collapsing selection back to text. |
+| newly evidenced | `LocalPurchaseRepository.registerPurchase()` | One Drift transaction creates/updates account context, resolves Store/Product, inserts Purchase/Items, allocates Device sequence, inserts `purchase.registered`, and enqueues PendingEvent. It returns PurchaseId/EventId/sequence. Atomicity is evidenced structurally; there is no submission lookup/unique key. |
+| newly evidenced | `_resolveProduct()` | `ExistingProductReference` verifies account ownership. `NewProductReference` first reuses exact identity, then rejects normalized code collision, then inserts. This is the correct adapter seam for a future explicit resolution result, but similarity has no authority here. |
+| newly evidenced | `HistoryPage.build()` | `FutureBuilder` maps `snapshot.data == null` to an empty list, so loading and error both render “No purchases registered.” It has no selection/detail action and does not display `occurrenceTime` despite the projection carrying it. |
+| newly evidenced | `LocalQueryRepository.listRecentPurchases()` | Returns at most 50 Purchases ordered by occurrence time and performs one item-count query per Purchase. The fixed limit is not paging; N+1 counts become a volume concern. Detail/observation/comparison ports remain absent. |
+| retained/evidenced | `LocalDatabase` schema v2 | Products uniquely constrain account+normalized code and account+exact identity. SyncEvents uniquely constrain account+Device+sequence. Purchases have no submission identity. Stores lack normalized uniqueness. Migration supports only v1→v2 and throws otherwise. |
+| newly evidenced | `LocalDeviceIdentityRepository.loadOrCreateDeviceId()` | Transaction ensures local account, reads up to 20 Devices ordered by creation, selects first UUIDv4, otherwise creates one. It does not model installation identity, enforce one current Device, or repair multiple valid candidates. |
+
+## 4. Retained C08-R01 conclusions
+
+- The thin entrypoint/composition root and inward presentation→application/domain←infrastructure direction remain sound.
+- Widgets should retain controllers/focus/rendering; workflow state requiring broader lifetime belongs in an application-facing coordinator.
+- Exact Product reuse and advisory similarity are separate; similarity never gains merge authority.
+- Registered Purchase facts remain immutable in the current boundary; draft editing is pre-commit behavior.
+- Drift remains transaction/migration owner; no new state/navigation dependency is required for a first bounded unit.
+- History list/detail/observation/comparison are distinct read responsibilities.
+- Analytics must be versioned and rebuildable from raw facts; incompatibility is a result.
+- Protected Python data remains isolated; Device correction remains mandatory before real synchronization.
+- Cycle 09 authentication/API/Neon/synchronization and Cycle 10 production distribution remain inactive.
+
+## 5. Corrections and superseded claims
+
+1. **Corrected:** draft survival across top-level tabs is not unknown: current `IndexedStack` retains the mounted Purchase page. Background/rotation/process-death semantics remain unevidenced.
+2. **Corrected:** Catalogue is not yet a search surface; it is a whole-list port unused by Purchase UI for existing selection.
+3. **Corrected:** current similarity is name-only advisory logic, not a general Product similarity model.
+4. **Corrected:** Product code is materially mandatory. Making it optional affects normalization, Product construction, nullable/unique columns, migration, contracts, and tests.
+5. **Corrected:** Store currently has record identity but no normalized identity invariant or duplicate-warning mechanism.
+6. **Corrected:** History has an occurrence field in its read model but does not render it; loading/error are incorrectly presented as empty.
+7. **Superseded:** F section 12’s replacement instruction is superseded by FCA-02 append-only staging.
+8. **Retained but narrowed:** “atomic registration” is structurally supported; duplicate-submit idempotency is absent.
+
+## 6. Confrontation with current J
+
+Supported by repository truth:
+
+- J’s carried architecture, Product identity separation, exact/advisory distinction, atomic transaction, raw/derived boundary, Device debt, and Cycle 09/10 deferrals;
+- the need for a coordinator when state lifetime exceeds mounted widget state;
+- the separation of History list/detail/observations/comparison;
+- the atomicity/idempotency distinction and the need for persistence-backed retry identity;
+- no immediate state-management/router package.
+
+J corrections for MJR-03:
+
+- record existing tab-switch survival through `IndexedStack` while leaving broader lifecycle policy open;
+- classify Catalogue search and explicit reuse choice as prospective because only whole-list ports exist and Purchase always creates a NewProductReference;
+- state that Product code is currently mandatory and optionality is schema-bearing;
+- state the exact current similarity predicate (name edit distance/containment only);
+- distinguish Store UUID record identity from absent normalized Store uniqueness;
+- add History’s loading/error-as-empty defect and fixed-50/N+1 projection debt;
+- distinguish a Store picker UI from the required command change away from free-text `storeName`.
+
+No J conclusion is contradicted at the product-direction level, but several provisional statements require these implementation-specific qualifications.
+
+## 7. Confrontation with paired provisional F_DSN_STAGE
+
+Feasible/retained:
+
+- constraints-driven NavigationBar/Rail shell;
+- injected SDK-level coordinator;
+- explicit existing/create-anyway Product choice;
+- Store search/select/create boundary;
+- durable submission UUID and unique local persistence;
+- separate History/analytics ports;
+- schema change isolation and delayed Device hardening.
+
+Required F corrections/enrichment:
+
+- preserve the append-only C rule;
+- recognize current IndexedStack session/tab lifetime;
+- require a draft-line key and explicit coordinator state/result algebra, not merely a moved `List<PurchaseItemDraft>`;
+- add an explicit existing/new Store reference to the future registration boundary;
+- separate Product-code optionality as its own schema-bearing decision;
+- define similarity v1 as current name-only evidence or explicitly authorize a richer pure policy later;
+- require History loading/empty/error states and remove N+1 before volume acceptance;
+- avoid locating submission identity only on Event: Purchase registration idempotency should survive any later event-envelope evolution.
+
+Smallest coherent first implementation boundary remains responsive shell plus explicit presentation state/error model, without schema change. Draft coordinator can follow as a second bounded unit unless Main deliberately combines them.
+
+## 8. Structural additions and alternatives
+
+### 8.1 Responsive shell state
+
+- Problem: navigation control, selected index, and refresh invalidation are embedded in `_MarkeiAppState`.
+- Responsibility: expose semantic destination selection and layout choice independently of NavigationBar/Rail.
+- Owner/layer: presentation shell; affects `markei_app.dart` and page composition.
+- Lifetime: app session; existing IndexedStack page state may be retained deliberately.
+- Direction/persistence: presentation depends inward on existing ports; no persistence/schema impact.
+- Validation: narrow/wide widget tests, destination preservation across resize, focus/Back checks.
+- Cost/alternative: low; keep local StatefulWidget versus introduce router/package. Local SDK state is cheaper and reversible.
+- Status: prospective, suitable first bounded unit.
+
+### 8.2 Purchase draft coordinator and keyed draft lines
+
+- Problem: `_PurchasePageState` conflates input mechanics, staged collection, warnings, result, and submission lifecycle; `PurchaseItemDraft` lacks edit identity.
+- Responsibility: own `DraftLineKey`, staged lines, selected/draft Store, add/replace/remove, totals, review phase, busy/failed/succeeded/unknown result, and submission ID rotation.
+- Owner/layer: application-facing presentation model injected by composition; widgets keep text controllers.
+- Existing structures: `PurchasePage`, `PurchaseItemDraft`, `RegisterPurchaseCommand`, `MarkeiComposition`.
+- Lifetime: app session initially; process restoration explicitly deferred unless human-selected.
+- Direction/persistence: coordinator depends on application ports/domain values; no Drift dependency. No schema for transient draft.
+- Validation: pure coordinator tests plus widget edit/remove/review and tab/resize/background policy evidence.
+- Cost/alternatives: medium; alternative is widget-local list (cheaper now, expensive for edit/review). Highly reversible while package-neutral.
+- Status: prospective; second bounded unit.
+
+### 8.3 Explicit Product resolution workflow
+
+- Problem: UI always creates `NewProductReference`; warnings do not require a decision.
+- Responsibility: list/filter Products, evaluate exact/similar candidates, return explicit existing/create-anyway choice.
+- Owner/layer: application query/use-case boundary plus presentation picker; domain retains normalization/similarity purity.
+- Existing structures: `CatalogueQueryRepository`, `ProductSimilarityWarning`, `ExistingProductReference`, `_addItem()`, `LocalQueryRepository`.
+- Lifetime: picker/search session; no durable state until registration.
+- Direction/persistence: query port inward; existing Product schema can support exact reuse. Search indexes/paging are optional until measured.
+- Validation: exact reuse, similar warning, create-anyway, account isolation, larger lists.
+- Cost/alternatives: medium; client filtering is cheapest for bounded catalogue, repository search is scalable. Reversible port extension.
+- Status: prospective; do not call current list port “search.”
+
+### 8.4 Store reference and identity policy
+
+- Problem: reusable Store selection collapses into free-text `storeName`; duplicate behavior is case-sensitive.
+- Responsibility: sealed existing/new Store reference in registration and an explicit normalization/branch policy.
+- Owner/layer: application command + Store domain policy + local adapter.
+- Existing structures: `RegisterPurchaseCommand.storeName`, `Store`, `Stores`, `_resolveStore()`, `listStores()`.
+- Lifetime: selected Store in draft; Store fact durable after registration.
+- Direction/persistence: inward reference type; likely normalized Store fields and account-scoped unique/index constraint.
+- Migration: schema v3 candidate must derive normalized values, detect collisions, and require a human ambiguity policy; never silently merge.
+- Validation: case/Unicode normalization, duplicate advice, existing/new selection, migration collision fixtures.
+- Cost/alternatives: medium-high. Keeping exact displayName is cheapest but perpetuates duplicate identity. Optional branch label adds future flexibility at higher UI/schema cost.
+- Reversibility: picker is reversible; destructive identity merging is not. Preserve UUIDs.
+- Status: unresolved/prospective; human decision required before schema instructions.
+
+### 8.5 Local registration idempotency
+
+- Problem: `_registerPurchase()` and repository can create two Purchases for one repeated intent.
+- Responsibility: client-generated SubmissionId created when a draft becomes submit-ready; canonical content fingerprint; identical retry returns stored result, conflicting reuse fails.
+- Owner/layer: coordinator creates/retains ID; application command carries it; infrastructure enforces uniqueness inside the registration transaction.
+- Existing structures: `RegisterPurchaseCommand`, `PurchaseRegistrationResult`, `Purchases`, `SyncEvents`, `registerPurchase()`.
+- Lifetime: submission intent through confirmed result/retry across restart; durable on registration.
+- Direction/persistence: no outward dependency; requires submission column/attempt responsibility and unique constraint.
+- Migration: schema v3 candidate; existing Purchases need nullable legacy submission identity or deterministic backfill that cannot imply retry equivalence. Prefer nullable legacy plus unique non-null behavior.
+- Validation: concurrent/double call, restart retry, identical content, conflicting content, transaction rollback, sequence/event count.
+- Cost/alternatives: medium-high. Busy flag is low-cost UX only; using EventId alone couples business idempotency to sync envelope. Separate SubmissionId is clearer and reversible.
+- Status: prospective; schema-bearing unit separate from shell.
+
+### 8.6 History detail, observation, and comparison
+
+- Problem: fixed-50 summary, N+1 counts, no details, and loading/error collapse.
+- Responsibility: typed list state; joined/paged summary; Purchase detail; Product observation stream; pure versioned comparison result.
+- Owner/layer: application projection ports and local query adapter; pure analytic domain/application service.
+- Existing structures: `PurchaseHistoryRepository`, `PurchaseHistoryEntry`, `HistoryPage`, `listRecentPurchases()`, Purchase/Item/Product tables.
+- Lifetime: refreshable view state; analytics derived, not durable initially.
+- Direction/persistence: widgets consume projections. Indexes may be needed on Purchase account/time and Item product/purchase after query measurement; no analytic cache initially.
+- Migration: index-only/schema migration possible; no raw-fact rewrite.
+- Validation: loading/empty/error, list/detail consistency, paging, query count/performance, currency/dimension incompatibility, algorithm-version fixtures.
+- Cost/alternatives: medium. One joined detail projection is cheaper than generic analytics infrastructure. Reversible ports.
+- Status: prospective for later Cycle 08 unit.
+
+### 8.7 Product-code policy
+
+- Problem: human decision asks whether code is optional, but domain/persistence currently require it for new Products.
+- Responsibility: decide whether code is household-visible mandatory identity aid or optional lookup metadata.
+- Owner/layer: human product decision, then Product domain/application/schema.
+- Existing structures: `ProductDraft.userCode`, `normalizeProductCode()`, Product fields, Products nullable code columns with application-level requirement, unique account+normalized code.
+- Lifetime/persistence: durable Product fact if present.
+- Migration: optionality needs nullable domain type/serialization/fixtures; existing values remain. No destructive backfill.
+- Validation: empty/duplicate/Unicode/legacy code behavior and recognition usability.
+- Cost/alternatives: retaining mandatory is lowest development cost; optional is moderate and improves entry simplicity; auto-generated visible code risks confusing internal and human identity.
+- Reversibility: mandatory→optional is easier than optional→mandatory for accumulated records.
+- Status: human decision required; separate from responsive unit.
+
+## 9. Likely dependency, schema, and migration consequences
+
+- Responsive shell, explicit async states, and an app-session draft coordinator require no new dependency or schema.
+- Store normalization/branch identity, durable SubmissionId, Product-code optionality, and performance indexes are distinct schema decisions and should not be bundled automatically.
+- Any next schema version must extend the explicit v1→v2 migration strategy rather than rely on silent recreation; generated Drift output follows handwritten schema authority.
+- History ports require query changes before schema changes; measure joined/paged queries first.
+- No router/state package is justified by current evidence. No analytics cache is justified. No Python database access is permitted.
+
+## 10. Validation and evidence requirements
+
+Design requests, without claiming Operational execution:
+
+- widget evidence for constraints-driven shell, destination/state preservation, explicit loading/empty/error, edit/remove/review;
+- pure tests for coordinator transitions, draft-line identity, exact/similar/create-anyway choices, comparison compatibility and version;
+- repository transaction tests for identical/conflicting/concurrent SubmissionId, one Purchase/Event/sequence effect, and restart retry;
+- migration fixtures for every accepted schema choice, including Store collisions and nullable legacy submissions;
+- query-plan/count and bounded-volume evidence before adding indexes or caching;
+- Windows/Android evidence for resize/rotation, keyboard, Back, background/resume, cold relaunch, and chosen draft lifetime;
+- regressions proving Python/PySide6 source/data isolation and unchanged shared-beta contract meaning.
+
+## 11. Cross-domain consequences
+
+- Operational: distinguish current tab retention from unevidenced lifecycle restoration; test unknown registration outcome and query counts; separate schema-bearing units.
+- Didactic: Product code is currently mandatory; “similar” currently means name proximity only; “No purchases” must not cover loading/error; Store name is not stable identity; atomic and idempotent remain distinct.
+- Main: group prospective structures by shell, draft, Product resolution, Store identity, idempotency, History/analytics, and Product-code policy rather than one UI block.
+- Future sync: SubmissionId may remain client/business identity, while EventId remains envelope identity; do not collapse them without an explicit protocol decision.
+
+## 12. Human decisions still required
+
+1. Destination topology: Purchase/Catalogue/History with Store picker is the Design-preferred minimum; confirm Catalogue top-level and Store picker-only.
+2. Draft lifetime: Design recommends app-session survival across tabs/resize/background, but not process-death restoration in the first unit. Confirm.
+3. Product code: retain mandatory for Cycle 08 or accept separate optionality migration?
+4. Store identity: normalized name plus optional branch/location label, or normalized name only?
+5. Review: explicit phase in the same editable staged flow is cheaper than a separate route; confirm.
+6. SubmissionId: accept a durable UUID distinct from EventId and PurchaseId?
+7. Identical-content fingerprint: which occurrence-time value is frozen when the submit intent is created?
+8. First comparison: Design recommends normalized purchased-unit price for same Product, currency, kind, and canonical unit; confirm package-size-change presentation.
+9. Backup/restore and installation–Device timing remain unresolved as in R01/J/F.
+
+## 13. Recommendations for J restaging
+
+MJR-03 should retain R01’s product spine but append the exact corrections in sections 5–6. It should classify current tab survival, mandatory Product code, name-only similarity, absent Store normalization, free-text Store command, History state collapse, and fixed-50/N+1 behavior as repository facts. It should group schema-bearing choices separately and preserve explicit human ownership.
+
+Recommended provisional priority:
+
+```text
+shell/state semantics without schema
+→ draft coordinator and explicit review without persistence
+→ Product/Store resolution contracts
+→ isolated SubmissionId migration
+→ History detail/observation/comparison
+→ recovery/backup/Device hardening
+```
+
+## 14. Recommendations for next F enrichment
+
+MDE-04 should append, not replace, a Design enrichment that:
+
+- corrects the C append instruction;
+- maps exact current symbols and newly evidenced limitations;
+- accepts SDK-only shell/coordinator as the smallest reversible candidates;
+- treats Store identity, Product-code optionality, SubmissionId, and performance indexes as separate decisions/migrations;
+- introduces `DraftLineKey` and explicit async/result states conceptually without inventing final filenames;
+- requires an existing/new Store reference before a Store picker can preserve identity;
+- keeps SubmissionId distinct from EventId provisionally;
+- requests the exact human decisions above;
+- remains `PROVISIONAL — NOT AUTHORIZED FOR CODEX`.
+
+## 15. Exact next route
+
+```text
+C08-R02 C append published
+→ complete C08-R02 A/B/C publication
+→ Main runs MJR-03
+→ Main appends grouped J reconciliation
+→ Main runs MDE-04
+→ Main appends provisional D/E/F enrichment
+→ renewed O/A/D confrontation as required
+→ explicit final human/Main activation
+→ Codex only after controlling D/E/F are activated
+```
+
+No implementation, promotion, dependency, schema, host, or Codex authority is created by this append.
+
