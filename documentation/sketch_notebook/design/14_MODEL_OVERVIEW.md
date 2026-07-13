@@ -151,3 +151,8 @@ optional bounded Android lifecycle/ergonomics supplement
 - Checkpoint: `design/09_DESIGN_STATE.md`.
 - Evidence: `DEV_STAGE/I_DSN_CODEX.md`.
 - Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, §24.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
