@@ -532,3 +532,77 @@ The following remain provisional, blocked, or deferred rather than canonical com
 - Purchase editing/deletion;
 - Android/iOS validation and public release;
 - PySide6 retirement.
+
+
+# 19. Sprint 05 Accepted Android and Local Device Boundaries
+
+## 19.1 Android host boundary
+
+Android is a platform host for the shared Flutter client:
+
+```text
+Android application host
+→ Flutter entrypoint and asynchronous composition
+→ presentation
+→ application commands/query ports
+→ platform-independent Dart domain
+→ local repository adapters
+→ Drift application-private SQLite
+```
+
+Kotlin and Android configuration own package hosting, launch metadata, system integration, and build inputs. They do not own Product, Purchase, Event, Device sequence, analytics, repository transactions, or synchronization semantics.
+
+The stable Android application ID is `com.gusigu.markei`; it owns installation/update identity and application-sandbox continuity. The visible label is `Markei`. Neither is an Account, Device, Product, Purchase, Event, or signing identity.
+
+Compile/target SDK, NDK, Java, Gradle, emulator, and Android Studio versions are Operational build configuration. Controlled pinning does not become canonical domain architecture.
+
+## 19.2 App-private Device identity
+
+One app-private local database owns one Device UUID v4 for the current prototype installation and the sequence ledger attached to that Device row.
+
+Stable rules:
+
+- Device identity is created before event-producing commands are composed;
+- it is persisted and reused across ordinary close/reopen;
+- separate fresh databases receive distinct identities;
+- it is not derived from hardware, platform name, application ID, Account, email, or cloud identity;
+- it is not presentation-owned or user-editable;
+- sequence allocation remains attached to its Device row and inside the Purchase transaction;
+- uninstall/data-clear may remove Device identity with the local database;
+- historical Device rows and their event ownership are not destructively rewritten.
+
+The Account remains the provisional `local-account` placeholder. Correcting Device identity does not implement authentication or multi-account ownership.
+
+## 19.3 Schema and historical ownership
+
+Sprint 05 required no Drift schema migration. Existing schema v2 already models Device ID, Account ownership, next sequence, creation time, and event uniqueness by Account/Device/sequence. Architecture changes require schema changes only when persisted responsibilities or invariants cannot be represented safely by the existing schema.
+
+Historical non-UUID Device rows remain valid historical persistence facts. They are not silently converted or selected as the prototype’s new Device, because conversion could detach prior sequence/event meaning from its original identifier.
+
+## 19.4 Prototype selection versus future invariant
+
+The implemented repository scans the first 20 Account Devices ordered by creation time and reuses the earliest UUID v4. This is accepted only as a bounded single-installation prototype heuristic; it is not canonical multi-device selection behavior.
+
+Before synchronization or realistic multiple-Device history, the local model must explicitly identify the current installation’s Device:
+
+```text
+one local installation identity record
+→ references exactly one Device row
+→ bootstrap is idempotent under concurrency
+→ sequence ledger belongs to that selected Device
+→ historical Devices remain independently addressable
+```
+
+The physical table/constraint design and migration are not accepted yet. They require evidence about device registration, account transition, restore/reinstall, concurrent bootstrap, and synchronization semantics.
+
+## 19.5 Functional scaffold and evidence boundary
+
+`SafeArea` and the staged Purchase total are bounded functional-scaffold decisions. They improve inset safety and workflow observability without accepting a final design system, navigation model, state-management framework, accessibility treatment, or visual language.
+
+Validated Android evidence is limited to debug APK build, one API 36 emulator launch/install, application-sandbox database observation, Device bootstrap, and human-confirmed Purchase registration. Phone-width widget tests validate the tested layout/workflow only.
+
+Keyboard, Back, rotation, background/resume, larger text, full lifecycle recovery, physical devices, accessibility, production signing/release, and final visual quality remain partial, host-unvalidated, blocked, or deferred. A supplemental Android pass may close a bounded lifecycle/ergonomics checklist. Broad UI/UX formalization remains a separate future sprint.
+
+## 19.6 Preserved transition
+
+Windows Flutter build and Python regression evidence remain intact. The ordinary Cycle 06 database remains isolated and PySide6 remains recoverable. Android enablement does not authorize synchronization, authentication, cloud storage, import, iOS implementation, or PySide6 retirement.
