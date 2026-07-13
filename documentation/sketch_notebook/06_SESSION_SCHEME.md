@@ -1081,3 +1081,247 @@ human completes/reports Windows manual check
 ```
 
 TypeScript/Postgres synchronization remains deferred until Android local parity is reconciled.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C07-CLOSURE-C08-S01-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 07 is closed at the shared-client technical-foundation boundary. The checkpoint below controls Cycle 08 Sprint 01. Earlier Android directives remain evidence/history and do not authorize new work.
+
+# Cycle 08 Sprint 01 — Shared-Client Product Beta Definition
+
+## 1. Active objective
+
+Define the product and interaction basis for a coherent local-first Windows/Android beta before UI implementation.
+
+```text
+current functional Flutter scaffold
+→ user journeys
+→ responsive information architecture
+→ Catalogue and Store interaction
+→ improved Purchase staging/review
+→ detailed History
+→ first personal price-comparison presentation
+→ acceptance and migration/backup boundaries
+→ Main reconciliation
+→ later D/E/F
+```
+
+Sprint 01 is investigation and staging. It does not authorize source implementation.
+
+## 2. Product promise
+
+The Cycle 08 beta should let a household:
+
+- build and reuse a private Product catalogue;
+- select or create Stores;
+- stage, inspect, correct, and atomically register a multi-item Purchase;
+- recover detailed Purchase History;
+- compare personal Product price observations across Purchases;
+- use the same coherent interface model on Windows and Android;
+- retain local operation without an account or network.
+
+The interface must express these ideas in ordinary language without requiring knowledge of Product UUIDs, event queues, Drift, or synchronization architecture.
+
+## 3. Sprint 01 investigation units
+
+### A. Navigation and responsive shell
+
+Define:
+
+- smallest screen/navigation set;
+- desktop and mobile navigation behavior;
+- narrow/wide layout breakpoints as evidence candidates, not arbitrary device branding;
+- safe areas, keyboard, Back, focus, larger text, scrolling, and empty/loading/error behavior;
+- how the carried Android lifecycle debt will be checked during implementation.
+
+### B. Catalogue workflow
+
+Define:
+
+- browse/search existing Products;
+- select by user code or visible identity;
+- create when no exact Product exists;
+- packaged versus bulk presentation;
+- advisory similarity/duplicate warning;
+- explicit human choice without automatic merge;
+- whether and how Product corrections are deferred.
+
+### C. Store workflow
+
+Define:
+
+- Store browse/search/select/create;
+- minimum Store facts;
+- duplicate warning;
+- branch/location boundary;
+- correction and deletion deferrals.
+
+### D. Purchase staging and review
+
+Define:
+
+- add existing or new Product;
+- package amount/unit, purchased amount, package count, and line total presentation;
+- staged Item list;
+- edit/remove/cancel;
+- running total;
+- review before commit;
+- atomic registration;
+- success/failure/retry behavior;
+- prevention of partial or duplicate commits.
+
+### E. History and comparison
+
+Define:
+
+- Purchase list and detail;
+- Store/date/total/item presentation;
+- Product price observation history;
+- comparison inputs and selected time intervals;
+- first personal price-change/inflation/deflation explanation;
+- distinction between raw facts and derived analytics;
+- no forecasting in the first unit.
+
+### F. Local beta hardening
+
+Define:
+
+- fresh install and migration cases;
+- larger catalogue/history evidence;
+- export/backup decision;
+- recovery after local failure;
+- privacy-safe diagnostics;
+- Windows/Android acceptance;
+- explicit current-installation Device debt and the point at which it must be corrected.
+
+## 4. Recommended Cycle 08 sprint schedule
+
+```text
+Sprint 01 — product/UI definition and A/B/C investigation
+Sprint 02 — responsive interface foundation
+Sprint 03 — Catalogue, Store, and Purchase workflow
+Sprint 04 — detailed History and first price-comparison analytics
+Sprint 05 — local beta hardening and Windows/Android acceptance
+```
+
+Main may revise these units after Sprint 01 A/B/C. They are not implementation authority.
+
+## 5. Required role investigations
+
+Operational [O]:
+
+- current run/build/test/recovery paths;
+- UI validation tooling and manual-device matrix;
+- data-volume, migration, export/backup, and failure-recovery gates;
+- cost and reproducibility of Windows/Android product-beta testing;
+- carried lifecycle and DevTools hygiene debt.
+
+Didactic [A]:
+
+- user-facing vocabulary for Catalogue, Product identity, package/purchased quantity, Purchase review, History, and price change;
+- concepts required to explain responsive behavior and derived analytics;
+- risks of misleading inflation/upsert/similarity language;
+- learner and usability evidence boundaries;
+- no KANBAN promotion without learner evidence.
+
+Design [D]:
+
+- navigation and presentation responsibilities;
+- Catalogue/Store/Purchase/History/analytics boundaries;
+- responsive composition and state ownership;
+- raw facts versus projections;
+- first price-comparison algorithm/version boundary;
+- explicit installation-Device invariant timing;
+- alternatives, reversibility, and development cost.
+
+## 6. A/B/C required output
+
+Run the appropriate role initialization and MSU-02 from `PROMPT_COLLECTION.md`.
+
+Each domain must:
+
+1. recover J §25, 00, latest 05 segment, and this checkpoint;
+2. read its compact permanent checkpoint first;
+3. inspect current Flutter UI/application/domain/persistence/test surfaces;
+4. preserve Cycle 07 accepted architecture and evidence;
+5. replace only its paired A/B/C stage;
+6. propose exact Cycle 08 product-beta scope, gates, non-goals, and unresolved human questions;
+7. commit/push only the paired stage.
+
+## 7. Explicit non-goals
+
+Sprint 01 must not implement:
+
+- widgets, themes, navigation, state packages, or schema changes;
+- authentication or authorization;
+- TypeScript API or Neon;
+- upload/download or real synchronization;
+- production signing/distribution;
+- central/shared catalogue;
+- automatic Product merge;
+- legacy import;
+- iOS;
+- PySide6 retirement;
+- forecasting;
+- broad analytics beyond defining the first price-comparison boundary.
+
+## 8. Cycle 08 product-beta exit direction
+
+The cycle should eventually evidence:
+
+```text
+coherent responsive navigation
++ usable private Catalogue
++ Store selection/creation
++ staged Item edit/remove/review
++ atomic Purchase registration
++ detailed History
++ first personal price comparison
++ clear validation/empty/error states
++ migration/reopen/recovery
++ backup/export decision
++ Windows and Android manual acceptance
++ carried lifecycle checklist
++ synchronization contracts preserved
+```
+
+## 9. Forward cycles
+
+Cycle 09 — Synchronized Household Beta:
+
+- verified account;
+- immutable Account UUID;
+- TypeScript synchronization API;
+- Neon Postgres;
+- idempotent upload;
+- cursor download;
+- second-device bootstrap;
+- offline retry and convergence.
+
+Cycle 10 — Release Preparation:
+
+- production authentication/secrets;
+- privacy and deletion;
+- export/import and recovery;
+- observability/support;
+- production signing;
+- Android distribution;
+- Flutter Windows packaging;
+- upgrade testing;
+- documentation and controlled beta.
+
+These cycles are scheduled but inactive.
+
+## 10. Current authority
+
+```text
+Cycle 07: closed
+Cycle 08: active
+Sprint 01: definition/investigation
+A/B/C: authorized through role-specific MSU-02 invocation
+J reconciliation after A/B/C: pending
+D/E/F: not written
+implementation: inactive
+Cycle 09/10: scheduled, inactive
+```
