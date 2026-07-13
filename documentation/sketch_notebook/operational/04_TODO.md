@@ -143,69 +143,71 @@ no D/E/F
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
-# Cycle 07 Sprint 04 — Active Operational Gates
+# Cycle 07 Sprint 05 — Remaining Operational Gates
 
-> Reconciled at implementation head `32898f56f76895dc0f23d72cd132bcc24830e740`
-> Authority: planning accepted in J §21; execution awaits new D/E/F
+> Inspected head: `ca53097b346ae42b216188dabc56a6eef45b051c`
+> Evidence: `DEV_STAGE/G_OPS_CODEX.md`
+> Main classification: J §24
+> Implementation: inactive pending reconciliation/authority
 
-## P0 — Safe host preflight
+## P0 — Supplemental Android lifecycle checklist
 
-- pin or explicitly revise Flutter 3.44.6 and Dart 3.12.2;
-- authorize only the exact Visual Studio 2022 Native Desktop workload/components;
-- capture `flutter doctor -v` before and after host change;
-- do not install Android tooling in this unit;
-- if Android tooling already exists, capture `flutter devices` and attempt a debug build;
-- keep iOS deferred to macOS/Xcode.
+Run on the existing `Markei_Sprint05_API36` emulator with controlled data and without clearing app data:
 
-## P0 — Sequence and schema-v2 migration
+- confirm the Purchase form remains usable with the keyboard open and closed;
+- confirm focused/invalid fields remain visible;
+- record Android Back behavior from Purchase and History;
+- rotate portrait→landscape→portrait and record committed and unsaved staged state;
+- background/resume and verify no duplicate or partial registration;
+- test at least default and enlarged text scale for blocking overflow;
+- register a controlled Purchase, confirm History, force-stop/terminate, relaunch, and confirm History again;
+- register a second Purchase and verify the same Device UUID and monotonic sequence;
+- record pass/fail, human-observed versus tool-observed evidence, screenshots/log references where permitted, and any bounded defect.
 
-- stop Device registration from overwriting existing `nextSequence`;
-- add account/device/sequence uniqueness;
-- prove 1, 2, 3 across repeated registration and close/reopen;
-- rehearse Drift v1→v2 from fresh and representative v1 stores;
-- preserve Product and Purchase references and pending events;
-- backfill temporary account-unique legacy Product codes without inventing meaning;
-- record migration execution using runtime time;
-- prove failed migration leaves prior state or a recoverable copy.
+A source correction is not authorized by this checklist alone. If a failure requires code, stop and route a bounded Main patch.
 
-## P0 — Product identity and contract gates
+## P0 — Close the evidence wording
 
-- preserve display name and brand;
-- create immutable UUID-v4 internal IDs for new Products;
-- add required account-scoped user Product code and normalized uniqueness key;
-- implement normalization v2 using NFKC, case conversion, whitespace collapse, documented punctuation, and accent preservation;
-- retain v1 identities without silent reinterpretation;
-- create `contracts/shared_beta/v2/` with Draft 7 schemas and readable valid/invalid examples;
-- run Dart structural validation and separate domain-invariant tests.
+- use “Purchase registration,” never “Purchase upsert,” unless update-or-insert behavior is later implemented;
+- distinguish phone-width widget coverage from Android lifecycle evidence;
+- distinguish database-row persistence from human-visible History-after-restart;
+- retain emulator-only and debug-only qualifications.
 
-## P0 — Local user workflow and lifecycle
+## P1 — DevTools configuration disposition
 
-- replace the foundation label with the bounded multi-item Purchase form;
-- use the existing application/repository transaction rather than widget-owned SQL;
-- show success/error state and local history with ID, time, Store, currency, total, and item count;
-- prove application-support database path, termination/relaunch, sequence persistence, facts, queue, and history;
-- verify the ordinary Cycle 06 database remains untouched.
+Main/human must decide one later hygiene action for `clients/markei_flutter/devtools_options.yaml`:
 
-## P0 — Required validation
+1. retain and document it as intentional shared DevTools configuration; or
+2. remove it and, if appropriate, ignore future local generation.
+
+Do not alter it during permanent reconciliation. Any hygiene commit must inspect whether editor/DevTools workflows regenerate it and must update G-style scope reporting accurately.
+
+## P1 — Host recovery and storage inventory
+
+Before cleanup or reproduction, record:
 
 ```text
-flutter doctor -v
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-dart format --output=none --set-exit-if-changed .
-flutter analyze
-flutter test
-flutter build windows
-flutter run -d windows
-python -m unittest discover -s tests
+selected Flutter SDK revision
+Android SDK root
+installed SDK package list
+AVD list and definition
+license/doctor result
+measured SDK, AVD, Gradle-cache, and build-output sizes
 ```
 
-Record versions, exit results, generated-source diff, database paths, lifecycle observations, and changed-file scope. Windows build and launch are required. Android is a conditional build attempt only when tooling already exists.
+Preserve the current SDK and AVD until lifecycle evidence closes. Later cleanup must be separately authorized and remove only named SDK packages/AVDs through supported tools. Do not delete `C:\Users\gusrm\AppData\Local\Android\Sdk`, alternate Flutter clones, unrelated AVDs, or IDE settings wholesale.
 
-## Deferred
+## Deferred validation
 
-Authentication, secure token storage, TypeScript API, Postgres/Neon, real synchronization, central catalogue assignment, Product-code editing/retirement, legacy import, iOS, production packaging, and PySide6 retirement remain deferred.
+- physical Android device;
+- additional emulator/API/device classes;
+- Android release build and production signing;
+- install/upgrade/backup/restore/data-clear lifecycle;
+- formal accessibility and final visual acceptance;
+- Play Store;
+- iOS;
+- authentication, API, Postgres/Neon, and real synchronization.
 
-## Stop conditions
+## Closure boundary
 
-Stop on ambiguous tool-install scope, Cycle 06 database access, migration data loss, sequence reuse, schema/example divergence, UI bypass of the transaction boundary, unexplained generated diffs, Windows build/run failure after authorized prerequisites, or expansion into deferred work.
+Sprint 05 can close as Android debug-development parity only after the supplemental lifecycle checklist is recorded or Main explicitly narrows acceptance with the remaining items carried as named debt. Physical-device and release evidence remain later gates either way.
