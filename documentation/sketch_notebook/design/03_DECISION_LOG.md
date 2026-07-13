@@ -796,3 +796,8 @@ Automated ADB form entry was blocked by emulator input overlays/Gboard behavior,
 The Device repository adds a small local infrastructure seam without new package or schema cost and remains reversible independently of UI, API, or cloud work. Deferring an explicit installation singleton avoids premature migration work now, but carries deliberate debt that becomes unsafe once multiple Devices or concurrent bootstrap are realistic.
 
 Deferred: physical-device validation, full lifecycle matrix, production signing/release, backup policy, authentication, API/Neon, real synchronization, central catalogue, import, broad UI redesign, iOS, and PySide6 retirement.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
