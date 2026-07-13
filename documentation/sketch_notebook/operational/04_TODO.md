@@ -211,3 +211,8 @@ Preserve the current SDK and AVD until lifecycle evidence closes. Later cleanup 
 ## Closure boundary
 
 Sprint 05 can close as Android debug-development parity only after the supplemental lifecycle checklist is recorded or Main explicitly narrows acceptance with the remaining items carried as named debt. Physical-device and release evidence remain later gates either way.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
