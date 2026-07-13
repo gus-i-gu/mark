@@ -319,3 +319,8 @@ A materialization report's changed-file claim must be checked against the commit
 ## Workflow terminology
 
 Operational reports name the executed domain operation. Current Markei behavior registers a new immutable Purchase aggregate. “Purchase upsert” is unsupported unless implementation explicitly provides update-or-insert semantics for Purchase identity.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
