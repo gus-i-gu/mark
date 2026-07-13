@@ -398,3 +398,52 @@ learner evidence: absent
 # Current Observation Boundary
 
 Sprint 04 closes several local correctness and platform-evidence gaps from Sprint 03, but it does not prove distributed synchronization or learner mastery. The next learner work is to explain the three Product identities, structural schema versus semantic invariants, local atomic delivery preparation versus synchronization, and why Windows validation does not generalize automatically to Android or iOS.
+
+---
+
+# Observation 008 — Cycle 07 Sprint 05 Android Execution Evidence
+
+> Date: 2026-07-12  
+> Branch: `cycle-07-mobile-preparation`  
+> Inspected implementation head: `ca53097b346ae42b216188dabc56a6eef45b051c`  
+> Sources: `DEV_STAGE/H_DDC_CODEX.md`, Main J §24, `DEV_STAGE/B_DIDACTIC.md`, `DEV_STAGE/E_DDC_STAGE.md`, current source/tests/Android configuration, and human-observed emulator evidence  
+> Class: post-materialization Didactic reconciliation
+
+Sprint 05 moved Android from generated target scaffolding to executed debug-development evidence. The Flutter SDK and Android SDK were separately identified; Android Studio supplied the Android tooling environment; an API 36 emulator booted; a debug APK was built, installed, and launched. The APK identifies the application as `com.gusigu.markei` with display label `Markei`.
+
+The implementation replaced the production `windows-device` placeholder with a Drift-owned local UUID v4. Automated tests demonstrate creation in a fresh database, reuse after close/reopen, distinct UUIDs for distinct databases, sequence continuation after reopen, and preservation of historical non-UUID rows. Runtime database inspection observed one UUID Device row, one Purchase, and the sequence advanced to 2.
+
+The human confirmed Purchase registration on the emulator. This is interaction evidence for creating a new immutable Purchase and its related local facts. It is not evidence that an existing Purchase can be replaced or “upserted”; current repository source creates a fresh Purchase UUID and inserts the Purchase. The local append-only event and pending queue remain synchronization preparation, not upload, server acknowledgement, cursor application, or convergence.
+
+Evidence ladder reached:
+
+```text
+Flutter SDK selected
+→ Android SDK/toolchain recognized
+→ licences accepted
+→ emulator online
+→ debug APK built
+→ APK installed
+→ Flutter app launched
+→ Purchase registration human-observed
+→ app-private database inspected
+→ persistence/sequence partly observed
+```
+
+The evidence does not complete the full lifecycle matrix. Phone-width widget tests exercise layout constraints and the Purchase/History path, but they are not real Android evidence for keyboard behavior, Back, rotation, background/resume, text scaling, process recreation, or visual quality. Force-stop/relaunch and database inspection provide partial persistence evidence. One emulator does not establish physical-device compatibility.
+
+The UI remains a functional scaffold. SafeArea, scrolling, staged total, and navigation are bounded usability work, not accepted visual design or accessibility certification. Authentication, authorization, server synchronization, physical-device validation, production signing/release, and iOS remain deferred or unvalidated.
+
+Maturity decision:
+
+```text
+new concepts: none
+existing maturity changes: none
+source/test/host evidence: strengthened
+human-observed project execution: present
+explicit learner concept evidence: absent
+```
+
+# Current Observation Boundary
+
+Sprint 05 validates an Android debug-development slice and a persistent installation-local Device identity. The next learner boundary is to explain the evidence ladder, identity taxonomy, lifecycle distinctions, registration semantics, and the difference between emulator evidence and broader device compatibility.
