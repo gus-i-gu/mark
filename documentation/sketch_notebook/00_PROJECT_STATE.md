@@ -385,3 +385,75 @@ Android planning is accepted.
 Android tool installation and source materialization require fresh Main D/E/F with explicit components, commands, approval gates, data isolation, validation, and rollback/stop conditions.
 
 Cycle 07 remains open.
+
+
+---
+
+# Cycle 07 Closure / Cycle 08 Product-Beta Entry
+
+> Main reconciliation: J §25  
+> Status: active global checkpoint  
+> Date: 2026-07-12
+
+## Current global state
+
+Cycle 07 is closed at the shared-client technical-foundation boundary.
+
+```text
+Cycle 06 Python/PySide6 Windows beta: accepted and protected
+Cycle 07 Flutter/Dart shared foundation: accepted
+Windows Flutter local workflow: human-validated
+Android debug toolchain/build/install/launch: validated
+Android Purchase registration and app-private persistence: human/runtime evidenced
+persistent installation Device UUID: implemented and tested
+Flutter tests: 27 passed
+Windows Flutter build: passed
+Python regressions: 5 passed
+final UI/UX and production distribution: not accepted
+authentication/API/Neon/synchronization: deferred
+```
+
+Cycle 07’s closure does not claim complete Android lifecycle, physical-device coverage, final accessibility, production signing, or public release. Keyboard, Back, rotation, background/resume, larger text, staged-state, and complete cold-relaunch behavior remain mandatory product-beta evidence in Cycle 08.
+
+The current Device lookup is accepted only for the bounded prototype. Before real multi-device synchronization it requires an explicit current-installation relation and uniqueness/concurrency policy.
+
+## Active cycle
+
+Cycle 08 — Shared-Client Product Beta.
+
+Objective:
+
+> Convert the validated Windows/Android technical slice into a coherent local-first beta centred on reusable Catalogue interaction, improved Purchase registration, detailed History, responsive interface foundations, and one meaningful personal price-comparison view.
+
+Cycle 08 priorities:
+
+1. product journeys and responsive information architecture;
+2. Catalogue search/reuse and advisory duplicate warning;
+3. Store selection/creation;
+4. staged Item edit/remove/review;
+5. atomic Purchase registration and detailed History;
+6. validation, empty, success, and failure states;
+7. first personal price-comparison analytics;
+8. migration, reopen, recovery, and backup/export decision;
+9. Windows and Android manual acceptance.
+
+Cloud synchronization remains architecturally preserved but inactive.
+
+## Forward schedule
+
+- Cycle 08: local shared-client product beta and UI/UX formalization.
+- Cycle 09: account, TypeScript API, Neon, upload/download, cursor bootstrap, and convergence.
+- Cycle 10: production hardening, signing, distribution, privacy, recovery, and controlled public beta.
+
+## Current sprint and authority
+
+Cycle 08 Sprint 01 is active as definition/investigation only.
+
+It must produce Operational, Didactic, and Design staging for Main reconciliation. No Cycle 08 implementation, dependency addition, schema change, or host installation is currently authorized.
+
+Read next:
+
+1. `06_SESSION_SCHEME.md` latest checkpoint;
+2. current domain checkpoint;
+3. J §25;
+4. repository UI/application source when the investigation requires it.
