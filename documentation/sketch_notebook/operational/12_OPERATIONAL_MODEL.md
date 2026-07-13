@@ -324,3 +324,38 @@ Operational reports name the executed domain operation. Current Markei behavior 
 
 <!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
 > Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
+
+# Cycle 08 Product-Beta Operational Rules
+
+## Evidence separation for shared-client targets
+
+For each target, classify independently:
+
+```text
+source implemented
+→ automated tests validated
+→ artifact built
+→ process manually launched
+→ principal workflow manually accepted
+→ lifecycle matrix accepted
+→ release/distribution accepted
+```
+
+A Windows release build does not establish manual Windows runtime acceptance. A failed Android build caused by a missing host Java configuration leaves Android host-unvalidated; it is not an application failure and does not validate the target.
+
+## Presentation-path coverage rule
+
+Responsive widget evidence must state which width and workflow were exercised. Shell/empty-state coverage at phone width does not validate a long scroll-form registration path unless that path is executed at the same constraints. Manual host smoke remains separately required.
+
+## Session mitigation versus durable idempotency
+
+Disabling submission while one mounted request is in flight prevents ordinary repeated taps only. It does not establish safe retry after restart, an unknown outcome, or two equivalent command instances. Durable idempotency requires an accepted identity, uniqueness, identical/conflicting retry rules, persistence, and restart/concurrency tests.
+
+## Generated validation-artifact rule
+
+Python `__pycache__` and `.pyc` files are generated runtime artifacts, not source. Validation must not intentionally publish them as implementation. If already tracked, repository truth and the materialization report must record them; cleanup and ignore-policy changes require a bounded authorized hygiene change rather than silent deletion during reconciliation.
+
+## Existing-reference edit regression rule
+
+When a draft line references an existing durable Product, editing presentation fields must preserve that reference unless the user explicitly chooses replacement. Tests must cover existing Product selection, edit, save, review, and registration without accidental conversion to an empty/new Product draft.
+

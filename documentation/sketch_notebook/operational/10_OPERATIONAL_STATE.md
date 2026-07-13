@@ -167,3 +167,77 @@ No additional implementation is active. Read `04_TODO.md` for the lifecycle chec
 
 <!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
 > Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
+
+# Cycle 08 C08-PB-01 Operational Checkpoint
+
+> Branch: `cycle-08-shared-client-product-beta`
+> Inspected implementation head: `fb3b7f21e007e383e5951f4bb67b95d283f7a6fc`
+> Directive head: `4f5ef21cb0d31f5efbf386b3e51cff15c543a802`
+> Evidence: `DEV_STAGE/G_OPS_CODEX.md`
+> Orientation: latest `[M]_STAGE/J_[M]_STAGE.md`
+> Preparation: `DEV_STAGE/A_OPERATIONAL.md`
+
+## Current classification
+
+Implemented:
+
+- responsive Purchase/Products/History shell;
+- Product search/create and advisory existing/create-anyway paths;
+- existing/new Store references;
+- session-only keyed Purchase draft with edit/remove/review;
+- safe product-facing loading/empty/error copy;
+- detailed History and compatible same-Product price change;
+- mounted-session in-flight submission guard;
+- existing atomic Drift Purchase transaction.
+
+Validated:
+
+- 6 focused widget tests;
+- format, 34 files unchanged;
+- Flutter analysis, no issues;
+- 31 Flutter tests;
+- Windows release artifact build;
+- 5 Python regressions.
+
+Host-unvalidated:
+
+- Android APK for this materialization: missing Java/`JAVA_HOME`;
+- Android runtime and lifecycle;
+- physical Android devices;
+- iOS.
+
+Blocked or defective:
+
+- no manual Windows runtime smoke;
+- phone-width long-form registration not covered;
+- transient Product-success copy not asserted;
+- existing-Product edit from the similarity-selection path does not reliably preserve its Product reference;
+- tracked Python `__pycache__`/`.pyc` artifacts require bounded hygiene;
+- busy-state duplicate prevention is not durable idempotency.
+
+Deferred:
+
+- Store identity hardening;
+- export/restore and corruption recovery;
+- performance budgets;
+- production signing/distribution;
+- authentication/API/Neon/synchronization;
+- PySide6 retirement.
+
+## Evidence boundary
+
+Windows build success is not Windows manual acceptance. Android remains host-unvalidated rather than failed at product level. Automated width-specific coverage does not imply lifecycle or device acceptance.
+
+## Authority and next route
+
+No source correction, host mutation, or implementation is active. Read `04_TODO.md` for ordered gates. A bounded Main stage is required before correcting the existing-Product edit defect, repository hygiene, or host configuration.
+
+## Recovery pointers
+
+1. this checkpoint;
+2. `04_TODO.md` — remaining gates;
+3. `12_OPERATIONAL_MODEL.md` — stable evidence rules;
+4. latest `11_OPERATIONAL_RECORD.md` — chronology;
+5. G — materialization transcript;
+6. A and latest J — intended scope and Main orientation.
+

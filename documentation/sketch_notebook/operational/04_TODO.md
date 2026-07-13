@@ -216,3 +216,79 @@ Sprint 05 can close as Android debug-development parity only after the supplemen
 
 <!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
 > Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
+
+# Cycle 08 C08-PB-01 — Remaining Operational Gates
+
+> Branch: `cycle-08-shared-client-product-beta`
+> Inspected implementation head: `fb3b7f21e007e383e5951f4bb67b95d283f7a6fc`
+> Evidence: `DEV_STAGE/G_OPS_CODEX.md`
+> Paired staging: `DEV_STAGE/A_OPERATIONAL.md`
+> Authority: permanent reconciliation complete; source work inactive
+
+## P0 — Existing-Product edit defect
+
+Route a bounded source/test correction for the existing-Product draft edit path:
+
+- reproduce through similar-Product “Use this Product”;
+- edit the staged line;
+- preserve `ExistingProductReference`;
+- save, review, and register;
+- assert no empty/new Product draft is created;
+- rerun focused and complete Flutter suites.
+
+## P0 — Host validation
+
+1. Configure or recover the approved Java/JDK environment without installing or deleting tools implicitly.
+2. Rerun `flutter build apk --debug`; keep Android host-unvalidated until it passes.
+3. Perform a manual Windows release launch and Purchase/Products/History smoke.
+4. Run Android launch and lifecycle checks only after a successful artifact build and recognized target.
+5. Preserve automated, build, manual runtime, lifecycle, and physical-device classifications separately.
+
+## P0 — Widget-path completion
+
+Add or extend evidence for:
+
+- phone-width long-form Purchase registration;
+- existing Product edit/save path;
+- transient Product-creation success copy;
+- loading/empty/error/retry states;
+- draft retention across destination changes;
+- larger text, keyboard/focus, overflow, and Back behavior.
+
+## P1 — Repository hygiene
+
+In a separate authorized commit:
+
+- inventory tracked `__pycache__` and `.pyc`;
+- confirm they are generated;
+- remove only those artifacts;
+- add/verify ignore policy;
+- rerun Python regressions;
+- verify no handwritten or user-data file is removed.
+
+## P1 — Product-beta hardening
+
+Still required:
+
+- bounded Catalogue/History volume and query-cost evidence;
+- migration-failure/no-silent-reset recovery;
+- export/restore decision and restore evidence if called backup;
+- Store duplicate/identity policy;
+- durable idempotency decision;
+- Device-installation relation timing;
+- Windows/Android manual acceptance matrix.
+
+## Deferred
+
+Authentication/API/Neon/synchronization, iOS, production signing/distribution, physical-device breadth, PySide6 retirement, forecasting, and broad analytics remain deferred.
+
+## Next route
+
+```text
+Operational/Didactic/Design permanent reconciliation
+→ Main evidence reconciliation
+→ bounded defect/host-validation staging if authorized
+→ Codex correction and G/H/I
+→ renewed PDR2
+```
+
