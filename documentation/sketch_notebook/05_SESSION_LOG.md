@@ -669,3 +669,8 @@ Cycle 10 — release preparation and controlled public beta
 Cycle 08 Sprint 01 begins as definition/investigation. Its task is to define the responsive navigation and user journeys for Catalogue, Store, staged Purchase review, detailed History, and first personal price-comparison analytics while preserving the local-first and future synchronization boundaries.
 
 No Cycle 08 source implementation was authorized in this session.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
