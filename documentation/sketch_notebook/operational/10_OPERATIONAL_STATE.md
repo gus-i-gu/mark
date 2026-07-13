@@ -104,56 +104,61 @@ Recovery route:
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
-# Cycle 07 Sprint 04 Operational Checkpoint
+# Cycle 07 Sprint 05 Operational Checkpoint
 
 > Branch: `cycle-07-mobile-preparation`
-> Inspected implementation head: `32898f56f76895dc0f23d72cd132bcc24830e740`
-> Evidence: `DEV_STAGE/G_OPS_CODEX.md`
-> Staging: `DEV_STAGE/A_OPERATIONAL.md`
-> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` §21
+> Inspected head: `ca53097b346ae42b216188dabc56a6eef45b051c`
+> Codex evidence: `DEV_STAGE/G_OPS_CODEX.md`
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md` §24
+> Preparation staging: `DEV_STAGE/A_OPERATIONAL.md`
 
-## Current truth
+## Implemented and validated
 
 ```text
-Cycle 06 Python/PySide6 beta: accepted, validated, protected
-Sprint 03 Flutter foundation: implemented and locally validated
-Flutter/Dart: 3.44.6 / 3.12.2 recorded
-Drift local schema: version 1 implemented
-analysis/tests: passed (9 Flutter, 5 Python)
-atomic Purchase/Items/event/queue: locally validated
-Windows target: generated, build/run blocked
-Android target: generated, SDK/device absent
-iOS target: generated, host-unvalidated
-Sprint 04 implementation: not started
+Cycle 06 Python/PySide6 beta: accepted and protected
+Flutter/Dart SDK: H: path selected and doctor-evidenced
+Android Studio/SDK 36/tool components: installed
+Android licenses/toolchain: doctor-validated
+application ID/label: com.gusigu.markei / Markei
+persistent app-private Device UUID: implemented and tested
+Flutter tests: 27 passed
+debug APK: built and identity-inspected
+API-36 emulator: booted
+APK: installed and launched
+app-private Drift database: runtime-observed
+Purchase registration: human-confirmed
+Windows Flutter build: passed
+Python regressions: 5 passed
 ```
 
-## Accepted Sprint 04 planning
+Repository truth supports the source, test, identity, APK, emulator, database, Windows, and Python claims. The local event queue remains synchronization preparation only.
 
-- local shared-client workflow precedes the synchronization harness;
-- new internal Product IDs use UUID v4 and remain distinct from required account-private user Product codes;
-- normalization v2 preserves display text and uses Unicode NFKC with versioned identity rules;
-- contracts advance additively to `shared_beta/v2`, JSON Schema Draft 7, and readable examples;
-- Drift advances through a rehearsed v1→v2 migration without rewriting existing Product references;
-- Windows build/run is required;
-- Android tooling installation is not authorized; attempt a build only if tooling already exists;
-- PySide6 and ordinary Cycle 06 data remain protected.
+## Partial, contradictory, and deferred
 
-## Defective, blocked, and deferred
+Partial: force-stop/relaunch and database inspection provide meaningful persistence evidence, but the required keyboard, Back, rotation, background/resume, text-scale, staged-state, and human-visible History-after-restart matrix is incomplete. One emulator is evidenced; no physical device is validated.
 
-Defective/unimplemented: Device upsert can reset sequence; no sequence uniqueness; no user Product code/display fields; Unicode-safe normalization absent; schemas absent; UI remains a foundation label; migration recovery untested.
+Contradiction: G says `devtools_options.yaml` was not committed; repository truth shows it added. It is harmless empty-extension configuration, but intentional ownership is unresolved and deferred to bounded hygiene.
 
-Blocked/host-unvalidated: Windows requires the Visual Studio Native Desktop workload; Android SDK/device is absent; iOS requires macOS/Xcode.
+Deferred: physical device, Android release/signing/upgrade/backup/accessibility/Play Store, iOS, authentication, TypeScript API, Postgres/Neon, real synchronization, central catalogue, legacy import, editing/deletion, and PySide6 retirement.
 
-Deferred: authentication, TypeScript API, Postgres/Neon, real synchronization, central catalogue mapping, code editing/retirement, legacy import, production packaging, iOS validation, and PySide6 retirement.
+## Current operational decision
 
-## Next valid route and authority
+A supplemental Android lifecycle checklist is required before ordinary Sprint 05 closure because J §23 acceptance explicitly named those behaviors. The checklist is evidence-first and authorizes no source change. Main may instead narrow closure explicitly and carry every missing gate as debt.
 
-Main may write new D/E/F for sequence correction, schema v2 migration, Product identity separation, normalization v2, v2 schemas/examples, minimal Flutter Purchase UI/history, Windows setup/build/run, conditional Android build, Python regression, and Cycle 06 isolation. No implementation or host mutation is authorized by this checkpoint.
+Use “Purchase registration”; “Purchase upsert” is unsupported.
+
+## Host recovery
+
+The selected Flutter SDK, Android SDK root, component versions, system image, and AVD are recorded in G/Record. Exact storage cost is unknown because it was not measured. Preserve the environment until the lifecycle supplement closes; cleanup requires inventory, explicit authority, and named-component removal.
+
+## Authority and next route
+
+No additional implementation is active. Read `04_TODO.md` for the lifecycle checklist and hygiene/recovery gates. If the checklist exposes a defect, stop for Main routing. After evidence closure, Main may close Sprint 05 and select the next objective.
 
 ## Recovery pointers
 
-1. Read this checkpoint first.
-2. Read `04_TODO.md` for ordered executable gates.
-3. Read `12_OPERATIONAL_MODEL.md` for stable safety rules.
-4. Read the latest entry in `11_OPERATIONAL_RECORD.md` for chronology.
-5. Read G for command evidence, A for contrary findings, and J §21 for accepted resolution.
+1. This checkpoint — compact current truth.
+2. `04_TODO.md` — active lifecycle, hygiene, and recovery gates.
+3. `12_OPERATIONAL_MODEL.md` — stable evidence/recovery rules.
+4. Latest `11_OPERATIONAL_RECORD.md` entry — command and contradiction chronology.
+5. G — Codex transcript; J §24 — Main classification; A/D — intended gates.
