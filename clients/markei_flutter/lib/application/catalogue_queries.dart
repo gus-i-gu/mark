@@ -7,6 +7,8 @@ abstract interface class CatalogueQueryRepository {
 
   Future<List<Store>> listStores(AccountId accountId);
 
+  Future<Product> createProduct(AccountId accountId, ProductDraft draft);
+
   Future<List<ProductSimilarityWarning>> similarityWarnings(
     AccountId accountId,
     ProductDraft draft,

@@ -172,40 +172,45 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
     RegisterPurchaseCommand command,
     DateTime now,
   ) async {
-    final name = command.storeName.trim();
-    if (name.isEmpty) {
-      throw ArgumentError('Store display name is required.');
-    }
-    final existing =
-        await (_db.select(_db.stores)..where(
-              (table) =>
-                  table.accountId.equals(command.accountId.value) &
-                  table.displayName.equals(name),
-            ))
-            .getSingleOrNull();
-    if (existing != null) {
-      return domain_store.Store(
-        id: StoreId(existing.id),
-        accountId: command.accountId,
-        displayName: existing.displayName,
-      );
-    }
-    final store = domain_store.Store(
-      id: StoreId(_uuid.v4()),
-      accountId: command.accountId,
-      displayName: name,
-    );
-    await _db
-        .into(_db.stores)
-        .insert(
-          StoresCompanion.insert(
-            id: store.id.value,
-            accountId: command.accountId.value,
-            displayName: store.displayName,
-            createdAt: now,
-          ),
+    switch (command.storeReference) {
+      case ExistingStoreReference(:final storeId):
+        final existing =
+            await (_db.select(_db.stores)..where(
+                  (table) =>
+                      table.accountId.equals(command.accountId.value) &
+                      table.id.equals(storeId.value),
+                ))
+                .getSingleOrNull();
+        if (existing == null) {
+          throw ArgumentError('Existing Store does not belong to account.');
+        }
+        return domain_store.Store(
+          id: StoreId(existing.id),
+          accountId: command.accountId,
+          displayName: existing.displayName,
         );
-    return store;
+      case NewStoreReference(:final displayName):
+        final name = displayName.trim();
+        if (name.isEmpty) {
+          throw ArgumentError('Store display name is required.');
+        }
+        final store = domain_store.Store(
+          id: StoreId(_uuid.v4()),
+          accountId: command.accountId,
+          displayName: name,
+        );
+        await _db
+            .into(_db.stores)
+            .insert(
+              StoresCompanion.insert(
+                id: store.id.value,
+                accountId: command.accountId.value,
+                displayName: store.displayName,
+                createdAt: now,
+              ),
+            );
+        return store;
+    }
   }
 
   Future<domain.Product> _resolveProduct(

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../application/catalogue_queries.dart';
 import '../../application/purchase_history.dart';
@@ -11,9 +12,10 @@ import 'local_database.dart';
 
 class LocalQueryRepository
     implements CatalogueQueryRepository, PurchaseHistoryRepository {
-  const LocalQueryRepository(this._db);
+  LocalQueryRepository(this._db, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
 
   final LocalDatabase _db;
+  final Uuid _uuid;
 
   @override
   Future<List<domain.Product>> listProducts(AccountId accountId) async {
@@ -46,6 +48,76 @@ class LocalQueryRepository
           ),
         )
         .toList(growable: false);
+  }
+
+  @override
+  Future<domain.Product> createProduct(
+    AccountId accountId,
+    domain.ProductDraft draft,
+  ) async {
+    final now = DateTime.now().toUtc();
+    final product = domain.createProductFromDraft(
+      accountId: accountId,
+      draft: draft,
+      uuid: _uuid,
+    );
+    await _db
+        .into(_db.localAccounts)
+        .insertOnConflictUpdate(
+          LocalAccountsCompanion.insert(
+            id: accountId.value,
+            defaultCurrencyCode: 'BRL',
+            createdAt: now,
+          ),
+        );
+    final exact =
+        await (_db.select(_db.products)..where(
+              (table) =>
+                  table.accountId.equals(accountId.value) &
+                  table.exactIdentityKey.equals(product.identityKey),
+            ))
+            .getSingleOrNull();
+    if (exact != null) {
+      return _productFromRow(exact);
+    }
+    final code =
+        await (_db.select(_db.products)..where(
+              (table) =>
+                  table.accountId.equals(accountId.value) &
+                  table.normalizedUserProductCode.equals(
+                    product.userProductCode.normalizedKey,
+                  ),
+            ))
+            .getSingleOrNull();
+    if (code != null) {
+      throw ArgumentError('Product code already exists in this account.');
+    }
+    await _db
+        .into(_db.products)
+        .insert(
+          ProductsCompanion.insert(
+            id: product.id.value,
+            accountId: product.accountId.value,
+            userProductCode: Value(product.userProductCode.displayValue),
+            normalizedUserProductCode: Value(
+              product.userProductCode.normalizedKey,
+            ),
+            normalizationVersion: product.normalizationVersion,
+            displayName: Value(product.displayName),
+            displayBrand: Value(product.displayBrand),
+            normalizedName: product.normalizedName,
+            normalizedBrand: product.normalizedBrand,
+            mode: product.mode.name.toUpperCase(),
+            measurementKind: product.measurementKind.name.toUpperCase(),
+            packageAmount: Value(product.packageQuantity?.decimalText),
+            packageUnit: Value(
+              product.packageQuantity?.unit.name.toUpperCase(),
+            ),
+            exactIdentityKey: product.identityKey,
+            createdAt: now,
+          ),
+        );
+    return product;
   }
 
   @override
@@ -86,28 +158,151 @@ class LocalQueryRepository
           ..limit(50);
 
     final rows = await query.get();
-    final entries = <PurchaseHistoryEntry>[];
+    final purchaseIds = rows
+        .map((row) => row.readTable(_db.purchases).id)
+        .toList(growable: false);
+    final counts = <String, int>{};
+    if (purchaseIds.isNotEmpty) {
+      final countRows =
+          await (_db.selectOnly(_db.purchaseItems)
+                ..addColumns([
+                  _db.purchaseItems.purchaseId,
+                  _db.purchaseItems.id.count(),
+                ])
+                ..where(_db.purchaseItems.purchaseId.isIn(purchaseIds))
+                ..groupBy([_db.purchaseItems.purchaseId]))
+              .get();
+      for (final row in countRows) {
+        counts[row.read(_db.purchaseItems.purchaseId)!] =
+            row.read(_db.purchaseItems.id.count()) ?? 0;
+      }
+    }
+    return rows
+        .map((row) {
+          final purchase = row.readTable(_db.purchases);
+          final store = row.readTable(_db.stores);
+          return PurchaseHistoryEntry(
+            purchaseId: PurchaseId(purchase.id),
+            storeName: store.displayName,
+            occurrenceTime: purchase.occurrenceTime,
+            currencyCode: purchase.currencyCode,
+            totalMinorUnits: purchase.totalMinorUnits,
+            itemCount: counts[purchase.id] ?? 0,
+          );
+        })
+        .toList(growable: false);
+  }
+
+  @override
+  Future<PurchaseDetail?> getPurchaseDetail(
+    AccountId accountId,
+    PurchaseId purchaseId,
+  ) async {
+    final purchaseRows =
+        await (_db.select(_db.purchases).join([
+              innerJoin(
+                _db.stores,
+                _db.stores.id.equalsExp(_db.purchases.storeId),
+              ),
+            ])..where(
+              _db.purchases.accountId.equals(accountId.value) &
+                  _db.purchases.id.equals(purchaseId.value),
+            ))
+            .get();
+    if (purchaseRows.isEmpty) {
+      return null;
+    }
+    final purchase = purchaseRows.single.readTable(_db.purchases);
+    final store = purchaseRows.single.readTable(_db.stores);
+    final itemRows =
+        await (_db.select(_db.purchaseItems).join([
+                innerJoin(
+                  _db.products,
+                  _db.products.id.equalsExp(_db.purchaseItems.productId),
+                ),
+              ])
+              ..where(_db.purchaseItems.purchaseId.equals(purchase.id))
+              ..orderBy([OrderingTerm.asc(_db.products.displayName)]))
+            .get();
+    final items = itemRows
+        .map((row) {
+          final item = row.readTable(_db.purchaseItems);
+          final product = row.readTable(_db.products);
+          return PurchaseDetailItem(
+            productId: ProductId(product.id),
+            productName: product.displayName ?? product.normalizedName,
+            productBrand: product.displayBrand ?? product.normalizedBrand,
+            productCode: product.userProductCode ?? 'legacy',
+            packageCount: item.packageCount,
+            measurementKind: item.measurementKind,
+            purchasedAmount: item.purchasedAmount,
+            purchasedUnit: item.purchasedUnit,
+            currencyCode: item.currencyCode,
+            lineTotalMinorUnits: item.lineTotalMinorUnits,
+          );
+        })
+        .toList(growable: false);
+    return PurchaseDetail(
+      entry: PurchaseHistoryEntry(
+        purchaseId: PurchaseId(purchase.id),
+        storeName: store.displayName,
+        occurrenceTime: purchase.occurrenceTime,
+        currencyCode: purchase.currencyCode,
+        totalMinorUnits: purchase.totalMinorUnits,
+        itemCount: items.length,
+      ),
+      items: items,
+    );
+  }
+
+  @override
+  Future<PriceChangeResult> priceChangeForProduct(
+    AccountId accountId,
+    ProductId productId,
+  ) async {
+    final rows =
+        await (_db.select(_db.purchaseItems).join([
+                innerJoin(
+                  _db.purchases,
+                  _db.purchases.id.equalsExp(_db.purchaseItems.purchaseId),
+                ),
+                innerJoin(
+                  _db.stores,
+                  _db.stores.id.equalsExp(_db.purchases.storeId),
+                ),
+              ])
+              ..where(
+                _db.purchases.accountId.equals(accountId.value) &
+                    _db.purchaseItems.productId.equals(productId.value),
+              )
+              ..orderBy([OrderingTerm.desc(_db.purchases.occurrenceTime)]))
+            .get();
+    final observations = <ProductPriceObservation>[];
     for (final row in rows) {
+      final item = row.readTable(_db.purchaseItems);
       final purchase = row.readTable(_db.purchases);
       final store = row.readTable(_db.stores);
-      final itemCount =
-          await (_db.selectOnly(_db.purchaseItems)
-                ..addColumns([_db.purchaseItems.id.count()])
-                ..where(_db.purchaseItems.purchaseId.equals(purchase.id)))
-              .map((row) => row.read(_db.purchaseItems.id.count()) ?? 0)
-              .getSingle();
-      entries.add(
-        PurchaseHistoryEntry(
-          purchaseId: PurchaseId(purchase.id),
+      final kind = _measurementKind(item.measurementKind);
+      final unit = _canonicalUnit(item.purchasedUnit);
+      observations.add(
+        ProductPriceObservation(
+          productId: ProductId(item.productId),
           storeName: store.displayName,
           occurrenceTime: purchase.occurrenceTime,
-          currencyCode: purchase.currencyCode,
-          totalMinorUnits: purchase.totalMinorUnits,
-          itemCount: itemCount,
+          currencyCode: item.currencyCode,
+          measurementKind: kind,
+          purchasedUnit: unit,
+          purchasedMicrounits:
+              domain_quantity.NormalizedQuantity.fromDecimalString(
+                kind: kind,
+                unit: unit,
+                decimal: item.purchasedAmount,
+              ).microunits,
+          lineTotalMinorUnits: item.lineTotalMinorUnits,
         ),
       );
     }
-    return entries;
+    return compareLatestCompatibleObservations(observations);
   }
 
   domain.Product _productFromRow(Product row) {
@@ -149,5 +344,23 @@ class LocalQueryRepository
               decimal: row.packageAmount!,
             ),
     );
+  }
+
+  domain_quantity.MeasurementKind _measurementKind(String value) {
+    return switch (value) {
+      'MASS' => domain_quantity.MeasurementKind.mass,
+      'VOLUME' => domain_quantity.MeasurementKind.volume,
+      'COUNT' => domain_quantity.MeasurementKind.count,
+      _ => throw StateError('Unknown measurement kind $value.'),
+    };
+  }
+
+  domain_quantity.CanonicalUnit _canonicalUnit(String value) {
+    return switch (value) {
+      'KG' => domain_quantity.CanonicalUnit.kg,
+      'L' => domain_quantity.CanonicalUnit.l,
+      'UNIT' => domain_quantity.CanonicalUnit.unit,
+      _ => throw StateError('Unknown purchased unit $value.'),
+    };
   }
 }
