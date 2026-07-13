@@ -457,3 +457,8 @@ Read next:
 2. current domain checkpoint;
 3. J §25;
 4. repository UI/application source when the investigation requires it.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
