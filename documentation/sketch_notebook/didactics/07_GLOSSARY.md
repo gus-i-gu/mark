@@ -305,3 +305,8 @@ SafeArea, scrolling, staged total, and navigation support the bounded workflow. 
 ## Evidence Is Not Mastery
 **KANBAN IDs:** all referenced concepts  
 Source representation, passing tests, host execution, and human-observed application use strengthen project evidence. Maturity changes require explicit learner evidence such as explanation, comparison, or transfer.
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
