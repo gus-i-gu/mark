@@ -613,3 +613,59 @@ flutter build windows
 Record visible pass/fail separately from automated smoke evidence.
 
 The human selected full Android implementation as the next milestone. Android installation and execution require new D/E/F.
+
+
+# Cycle 07 Sprint 05 and Cycle Closure — Android Debug Foundation
+
+> Date: 2026-07-12  
+> Main reconciliation: J §§24–25  
+> Sprint 05 staging head: `c2d74e445a6c7819b9c36573f6d63836d990c471`
+
+Codex installed and configured the Android toolchain, converged the active Flutter SDK on the deliberate H: installation, established `com.gusigu.markei`, replaced the production `windows-device` placeholder with a Drift-backed UUID v4 Device, built and launched a debug APK on an API 36 emulator, and preserved Windows/Python regression evidence.
+
+Evidence:
+
+```text
+Flutter SDK: H:\Users\Gus\develop\flutter
+Android SDK: C:\Users\gusrm\AppData\Local\Android\Sdk
+Android Studio: 2026.1.1.10
+API/target: 36
+AVD: Markei_Sprint05_API36
+flutter analyze: passed
+Flutter tests: 27 passed
+debug APK: built
+APK install/launch: passed
+Android app-private database: observed
+human Android Purchase registration: confirmed
+Device UUID/sequence: persisted and evidenced
+Windows Flutter build: passed
+Python regressions: 5 passed
+```
+
+PDR2 reconciled all twelve permanent domain files. No Didactic maturity changed.
+
+Permanent reconciliation retained:
+
+- incomplete keyboard, Back, rotation, background/resume, text-scale, staged-state, and complete cold-relaunch evidence;
+- no physical-device validation;
+- current UI as a functional scaffold;
+- prototype-only first-20 Device lookup and missing explicit installation relation;
+- committed `devtools_options.yaml` despite G’s contrary report;
+- Purchase registration as the accepted term, not unsupported upsert;
+- local queue as synchronization preparation only.
+
+Main closed Cycle 07 at the shared-client technical-foundation boundary. The incomplete lifecycle matrix is carried into Cycle 08 product-beta acceptance rather than promoted as complete.
+
+# Cycle 08 Entry — Shared-Client Product Beta
+
+The human accepted the forward schedule:
+
+```text
+Cycle 08 — local shared-client product beta and UI/UX formalization
+Cycle 09 — synchronized household beta with account/API/Neon
+Cycle 10 — release preparation and controlled public beta
+```
+
+Cycle 08 Sprint 01 begins as definition/investigation. Its task is to define the responsive navigation and user journeys for Catalogue, Store, staged Purchase review, detailed History, and first personal price-comparison analytics while preserving the local-first and future synchronization boundaries.
+
+No Cycle 08 source implementation was authorized in this session.
