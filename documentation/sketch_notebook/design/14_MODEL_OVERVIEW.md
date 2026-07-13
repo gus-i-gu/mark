@@ -11,17 +11,17 @@
 ---
 
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker preserves earlier planning; this segment is the rebuildable current Design map after Sprint 04.
+> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above preserves earlier planning; this segment is the rebuildable current Design map after Sprint 05.
 
 # 1. Current System Map
 
 ```text
 Protected Python/PySide6 beta
-    Desktop UI → ProductService → Repository → Cycle 06 SQLite
-    separate database; behavior reference and rollback
+    separate Cycle 06 SQLite; behavior reference and rollback
 
-Flutter local shared client
-    Presentation
+Windows / Android Flutter hosts
+    → shared Flutter entrypoint and composition
+    → presentation
     → application commands/query ports
     → independent Dart domain
     → local repository adapters
@@ -30,121 +30,124 @@ Flutter local shared client
 
 Deferred distributed path
     Flutter sync coordinator
-    → authenticated custom TypeScript API
+    → authenticated TypeScript API
     → Neon Postgres
 ```
 
-# 2. Local Composition
+Android/Kotlin hosts Flutter only; it owns no business or persistence semantics.
 
-```text
-MarkeiComposition
-├── LocalDatabase.appPrivate()
-├── PurchaseRegistrationRepository → LocalPurchaseRepository
-├── CatalogueQueryRepository       → LocalQueryRepository
-├── PurchaseHistoryRepository      → LocalQueryRepository
-├── local Account placeholder
-└── local Device placeholder
-```
+# 2. Identity Ownership
 
-The placeholders are suitable for the bounded local slice, not accepted production identity or authentication.
-
-# 3. Domain and Identity Map
-
-```text
-Account
-├── Device
-├── Products
-│   ├── immutable internal Product ID
-│   ├── user-designed Product code
-│   ├── display name / brand
-│   └── normalization-v2 exact identity facts
-├── Stores
-└── Purchases
-    └── one or more Purchase Items
-        └── immutable Product reference
-
-Purchase registration
-├── purchase.registered event
-└── pending-event queue entry
-```
-
-A future central Product UUID is not present. Exact matching is account-scoped; fuzzy matching warns only.
-
-# 4. Authoritative Facts and Projections
-
-| Authoritative local facts | Derived/rebuildable views |
+| Identity | Owner and current state |
 | --- | --- |
-| Product internal ID, code, display and normalized identity | similarity warnings |
-| Store reference and display name | catalogue lists |
-| Purchase occurrence, currency, total | recent Purchase history |
-| Purchase Item quantity and line total | normalized prices and later analytics |
-| event envelope, payload, device sequence | synchronization status/projections |
-| raw purchase observations | versioned analytical results |
+| Android application ID | `com.gusigu.markei`; installation/update/sandbox identity |
+| Android label | `Markei`; presentation metadata |
+| Account | `local-account`; provisional prototype placeholder |
+| Device | database-owned UUID v4; created before composition completes |
+| Device sequence | `devices.next_sequence`; allocated inside Purchase transaction |
+| Product | immutable internal ID + user Product code + normalized identity facts |
+| Purchase / Item | immutable local aggregate identities and facts |
+| Event | UUID plus Account/Device/sequence envelope |
+| central/cloud identity | deferred |
 
-JSON Schema validates structural contract shape. Dart domain tests validate cross-field meaning.
-
-# 5. Atomic Registration
+# 3. Device Bootstrap
 
 ```text
-insert account/sync metadata if needed
-→ insert Device only when absent
-→ resolve Store and exact Products
+main() awaits MarkeiComposition.appPrivate()
+→ open LocalDatabase.appPrivate()
+→ LocalDeviceIdentityRepository.loadOrCreateDeviceId(local-account)
+→ insert Account if absent
+→ find reusable UUID v4 Device or create one
+→ inject DeviceId into shared composition
+→ event-producing commands become available
+```
+
+Tests establish creation, close/reopen reuse, distinct fresh-database IDs, sequence 1→2 continuity, and historical non-UUID preservation.
+
+# 4. Prototype Debt
+
+Current selection scans the first 20 Account Devices by creation time and chooses the earliest UUID v4.
+
+```text
+acceptable now
+    bounded single-installation prototype
+
+not acceptable for synchronization
+    no explicit current-installation relation
+    first-20 truncation
+    ambiguous multiple-UUID selection
+    no dedicated concurrent-bootstrap uniqueness
+```
+
+Future requirement: one installation metadata record references exactly one Device, bootstrap is idempotent under concurrency, and historical Devices remain separate.
+
+# 5. Persistence and Schema
+
+Schema v2 already owns Account, Device, sequence, Product, Store, Purchase/Items, Event, pending queue, sync metadata, and migration ledger. Sprint 05 changed bootstrap behavior, not persisted shape, so no schema migration was required.
+
+Historical non-UUID Device rows remain untouched. Android runtime observed the SQLite database inside `com.gusigu.markei` application-private storage. Local queue/event preparation remains distinct from synchronization.
+
+# 6. Purchase Transaction
+
+```text
+resolve/create Store and Product references
 → validate Purchase and Items
-→ persist Purchase and Items
-→ allocate next Device sequence
-→ persist immutable event
+→ persist aggregate
+→ allocate sequence for injected Device
+→ persist purchase.registered event
 → enqueue pending event
 → commit once
 ```
 
-Account/device/sequence uniqueness guards local ordering. Network activity is absent and pending events are not proof of synchronization.
-
-# 6. Local Persistence and Migration
+# 7. Functional Scaffold
 
 ```text
-schema v2
-├── account-private Product-code and exact-identity uniqueness
-├── account/device/sequence event uniqueness
-├── display and normalized Product facts
-├── Purchase aggregate tables
-├── pending events and sync metadata
-└── migration ledger
-
-v1 → v2
-├── preserves Product IDs and Purchase references
-├── adds Product code/display fields
-├── backfills reviewable legacy codes
-└── records the upgrade with runtime UTC time
+Purchase / History navigation
++ SafeArea
++ scrollable phone-width form
++ staged BRL total
++ atomic registration
++ visible History
 ```
 
-One upgrade path is validated. General downgrade, corruption recovery, desktop import, and broad migration policy remain open. Fresh-create ledger time is still source-fixed.
+These are implemented functional-scaffold decisions, not final UI/UX. SafeArea owns inset avoidance; staged total exposes aggregate feedback. Broad visual hierarchy, accessibility, navigation refinement, and design-system work remain later.
 
-# 7. Evidence Boundary
+# 8. Evidence Boundary
 
-**Validated:** formatting, analysis, 21 Flutter tests, schema validation, device sequencing, v1→v2 migration/reopen, atomic registration, five Python regressions, Windows build, and Windows startup smoke.
+**Validated:** 27 Flutter tests, analysis, debug APK, identity badging, API 36 emulator boot/install/launch, Android sandbox database observation, Device bootstrap/sequence tests, human Purchase registration, Windows build, and five Python tests.
 
-**Implemented but incompletely accepted:** minimal Purchase/History UI, multi-item staging, app-private composition, Product code/display model, normalization v2, JSON Schema v2 examples.
+**Partial:** Android lifecycle/ergonomics, keyboard, Back, rotation, background/resume, larger text, and accessibility.
 
-**Blocked or host-unvalidated:** manual UI/accessibility acceptance, Android build (SDK absent), Android execution, iOS build/run.
+**Deferred:** physical device, release signing/store, backup policy, authentication, API/Neon, synchronization, central catalogue, import, broad UI/UX, iOS, and PySide6 retirement.
 
-**Deferred:** authentication, API/Neon, actual synchronization, second-device convergence, central catalogue identity, desktop import, editing/deletion, Product-code lifecycle, Store branch identity, and PySide6 retirement.
-
-# 8. Next Design Evidence Route
+# 9. Configuration Boundary
 
 ```text
-manual Windows workflow and accessibility review
-→ resolve local account/device lifecycle beyond placeholders
-→ define Store and Product-code lifecycle gaps as needed
-→ retain rollback and database isolation
-→ only then stage the bounded synchronization/API evidence slice
+architectural
+    stable application/sandbox identity
+    shared dependency direction
+    database-owned Device and sequence ownership
+    app-private persistence
+
+operational configuration
+    compile/target SDK 36
+    NDK, Java, Gradle
+    Android Studio, emulator, SDK tools
 ```
 
-The TypeScript/Neon direction remains accepted planning, not implemented architecture.
+# 10. Next Design Route
 
-# 9. Recovery Pointers
+```text
+optional bounded Android lifecycle/ergonomics supplement
+→ Main closes Sprint 05 evidence
+→ choose later UI/UX formalization or another accepted milestone
+→ resolve explicit installation-Device invariant before real synchronization
+```
 
-- Canonical rules: `design/01_ARCHITECTURE.md`, sections 16–18.
-- Rationale and chronology: `design/03_DECISION_LOG.md`, Event 16.
-- Current checkpoint: `design/09_DESIGN_STATE.md`.
-- Materialization evidence: `DEV_STAGE/I_DSN_CODEX.md`.
-- Main resolution: `[M]_STAGE/J_[M]_STAGE.md`, section 21.
+# 11. Recovery Pointers
+
+- Canonical: `design/01_ARCHITECTURE.md`, sections 16–19.
+- Observational: `design/03_DECISION_LOG.md`, Event 17.
+- Checkpoint: `design/09_DESIGN_STATE.md`.
+- Evidence: `DEV_STAGE/I_DSN_CODEX.md`.
+- Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, §24.
