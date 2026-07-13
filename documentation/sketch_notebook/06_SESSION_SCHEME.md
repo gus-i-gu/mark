@@ -1325,3 +1325,8 @@ D/E/F: not written
 implementation: inactive
 Cycle 09/10: scheduled, inactive
 ```
+
+---
+
+<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
+> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
