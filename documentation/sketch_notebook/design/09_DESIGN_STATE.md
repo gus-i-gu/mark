@@ -13,95 +13,103 @@
 <!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
 > **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above preserves prior checkpoints. This is the single current Design checkpoint.
 
-# Cycle 07 Sprint 04 Design Checkpoint
+# Cycle 07 Sprint 05 Design Checkpoint
 
 > Branch: `cycle-07-mobile-preparation`  
-> Inspected implementation head: branch state containing Sprint 04 Codex report and J section 21  
 > Evidence: `DEV_STAGE/I_DSN_CODEX.md`  
-> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, section 21  
-> Pre-materialization Design intent: `DEV_STAGE/C_DESIGN.md`
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, §24  
+> Intent/directive: `DEV_STAGE/C_DESIGN.md`, `DEV_STAGE/F_DSN_STAGE.md`  
+> Repository truth: Android host, async composition, Device repository, Drift v2, tests, and functional scaffold
 
 ## Current architecture
 
-Cycle 06 remains accepted, protected, and recoverable. Sprint 04 extends the isolated Flutter/Dart client into a local Windows-executed vertical slice without opening or converting the ordinary PySide6 database.
+Sprint 05 established an Android-local debug slice without changing the accepted shared-client direction:
 
 ```text
-Flutter presentation
+Windows / Android Flutter hosts
+→ shared entrypoint and asynchronous composition
+→ presentation
 → application commands/query ports
 → independent Dart domain
 → local repository adapters
-→ Drift schema v2
-→ application-private SQLite
+→ Drift schema v2 / application-private SQLite
 ```
 
-The composition root owns database and adapter construction. Widgets own no SQL or durable transaction. Python remains outside the Flutter runtime.
+Android/Kotlin remains a host. It owns no Product, Purchase, Event, sequence, analytics, or repository behavior. Cycle 06 Python/PySide6 and its database remain protected and recoverable.
 
 ## Implemented and validated
 
-- Product internal ID and user Product code are distinct; new internal IDs use UUID v4.
-- Product codes are required, display-preserving, normalized, and account-scoped unique.
-- normalization v2 preserves accented Portuguese text and separates display from normalized facts;
-- Purchase remains a one-or-more Item aggregate;
-- registration atomically writes catalogue references, Purchase/Items, device sequence, immutable event, and pending queue entry;
-- Device creation no longer resets sequence; account/device/sequence uniqueness exists;
-- Drift v1→v2 migration preserves Product IDs/references and backfills reviewable legacy codes;
-- JSON Schema Draft 7 validates versioned v2 structures; Dart tests own semantic invariants;
-- minimal Purchase/History navigation, multi-item staging, local submission, and visible history exist;
-- formatting, analysis, 21 Flutter tests, five Python tests, Windows build, and Windows startup smoke passed.
+- Android namespace/application ID: `com.gusigu.markei`; label: `Markei`;
+- Flutter embedding v2 and minimal `FlutterActivity` host;
+- asynchronous composition loads Device identity before event-producing commands;
+- database-owned UUID v4 replaces production `windows-device` injection;
+- UUID persists across reopen; fresh databases differ;
+- sequence continues 1→2 for the persisted Device;
+- historical non-UUID Device rows are preserved and not reused;
+- no schema migration was needed because Drift v2 already owns Device and sequence fields;
+- `SafeArea` and staged BRL total extend the functional scaffold;
+- 27 Flutter tests and analysis passed;
+- debug APK built; identity badging passed;
+- API 36 emulator boot/install/launch passed;
+- Android app-private database and Device/Purchase facts were observed;
+- human Android Purchase registration was confirmed;
+- Windows build and five Python regressions passed.
+
+## Accepted Design boundaries
+
+- stable application ID owns Android installation/update and sandbox continuity;
+- application label is presentation metadata, not identity;
+- Account remains the provisional `local-account` placeholder;
+- Device is an app-private UUID v4 with sequence attached to its database row;
+- Device is not hardware-, platform-, Account-, email-, or application-ID-derived;
+- Product, Purchase, Item, Event, and catalogue identity rules remain unchanged;
+- compile/target SDK 36 and host tool versions are Operational configuration, not domain architecture;
+- SafeArea and staged total are bounded scaffold choices, not final UI acceptance;
+- local queue/event preparation is not synchronization.
+
+## Prototype-only debt
+
+`LocalDeviceIdentityRepository` scans only the first 20 Account Devices by creation time and selects the earliest UUID v4. This is acceptable for the bounded single-installation prototype only.
+
+Before real synchronization or multiple-Device history, Design requires an explicit current-installation relation with exactly one referenced Device, idempotent concurrent bootstrap, uniqueness protection, and preserved historical Devices. Exact physical schema and migration remain open.
 
 ## Evidence limits
 
 ```text
 validated
-    local domain/persistence/migration/contract tests
-    Windows build and five-second startup smoke
+    debug Android build and one emulator execution
+    sandbox persistence observation
+    Device bootstrap/reopen/sequence tests
+    human Purchase registration
+    Windows/Python regression
 
-implemented but not fully accepted
-    minimal UI and local history
-    schema v2 as one controlled upgrade
-    local account/device placeholder composition
+partial or host-unvalidated
+    keyboard and Back behavior
+    rotation and background/resume
+    larger text and accessibility
+    complete force-stop/cold-relaunch matrix
+    physical device compatibility
 
-blocked or host-unvalidated
-    manual UI/accessibility review
-    Android build — SDK absent; installation prohibited
-    Android execution
-    iOS build/run
+not accepted/deferred
+    final UI/UX
+    production signing/release/store
+    backup policy
+    authentication/API/Neon/synchronization
+    central catalogue/import/iOS/PySide6 retirement
 ```
 
-A generated platform target is not platform validation. A pending event queue is not synchronization. Structural schema validation is not cross-language semantic parity.
-
-## Accepted Design boundaries
-
-- Flutter/Dart remains the future shared-client basis with inward dependencies.
-- Local persistence is application-private and offline-first.
-- User Product code is distinct from immutable relational Product identity.
-- Versioned exact Product identity uses normalized catalogue facts; fuzzy matching warns only.
-- Purchase and its Items commit as one local aggregate with one prepared append-only event.
-- PySide6 and its database remain protected until parity and human/Main acceptance.
-- TypeScript API and Neon remain favored planning boundaries, not implemented components.
-
-## Provisional, defective, or incomplete
-
-- the fixed local account/device identifiers are not production identity or authentication;
-- Store exact-name reuse is not branch/location identity or deduplication;
-- Product-code editing, alias, retirement, and reuse policy is absent;
-- fresh-create migration-ledger time remains source-fixed, while upgrade time is runtime UTC;
-- one v1→v2 migration does not establish general downgrade, recovery, or import policy;
-- manual Windows workflow, responsive behavior, and accessibility remain unevidenced;
-- Android/iOS feasibility remains incomplete.
-
-## Deferred
-
-Authentication/authorization, TypeScript API, Neon/Postgres, actual upload/download synchronization, server cursor allocation, second-device convergence, central Product catalogue identity, legacy desktop import, editing/deletion, background/realtime sync, public release, and PySide6 retirement.
+Automated ADB form entry was blocked by emulator input overlays, while manual registration passed. Phone-width widget tests do not establish final visual quality or complete Android lifecycle behavior.
 
 ## Next valid route
 
-Main should reconcile Sprint 04 evidence and decide whether the next bounded unit is manual Windows acceptance/correction or the first local synchronization/API harness. Any API, auth, Neon, Android-tool installation, import, or retirement work requires fresh Main/human authority through D/E/F.
+Main may close Sprint 05 if current debug-development evidence is sufficient, or authorize one bounded supplemental Android checklist for keyboard, Back, rotation, background/resume, larger text, and cold relaunch. Broad UI/UX formalization must remain a later sprint. The explicit installation-Device invariant must be resolved before real synchronization.
+
+Additional implementation remains inactive until Main/human authority is expressed through fresh D/E/F.
 
 ## Recovery pointers
 
-- Canonical: `design/01_ARCHITECTURE.md`, sections 16–18.
-- Derived map: `design/14_MODEL_OVERVIEW.md`, current post-marker segment.
-- Observational history: `design/03_DECISION_LOG.md`, Event 16.
-- Codex evidence: `DEV_STAGE/I_DSN_CODEX.md`.
-- Main decision: `[M]_STAGE/J_[M]_STAGE.md`, section 21.
+- Canonical: `design/01_ARCHITECTURE.md`, §§16–19.
+- Derived: `design/14_MODEL_OVERVIEW.md`, current post-marker segment.
+- Observational: `design/03_DECISION_LOG.md`, Event 17.
+- Evidence: `DEV_STAGE/I_DSN_CODEX.md`.
+- Main: `[M]_STAGE/J_[M]_STAGE.md`, §24.
