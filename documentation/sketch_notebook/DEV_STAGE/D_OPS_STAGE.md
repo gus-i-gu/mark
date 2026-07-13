@@ -1,36 +1,173 @@
-# D_OPS_STAGE — Cycle 08 Codex Operational Directive
+# D_OPS_STAGE — Cycle 08 Product-Beta Operational Directive
 
 > Cycle: 08 — Shared-Client Product Beta
-> Directive: C08-IMP-01
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED
+> Directive: C08-PB-01
+> Status: ACTIVE — CODEX PRODUCT IMPLEMENTATION AUTHORIZED
 > Authority: explicit human instruction reconciled by Main [M]
 > Branch: `cycle-08-shared-client-product-beta`
-> Paired directives: `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
+> Inputs: cumulative C08-R01/R02 A/B/C, J C08-R02, and repository investigation
+> Paired directives: `E_DDC_STAGE.md` and `F_DSN_STAGE.md`
 > Evidence outputs: `G_OPS_CODEX.md`, `H_DDC_CODEX.md`, `I_DSN_CODEX.md`
-> Temporal control: this directive supersedes the earlier provisional and C08-ACT-01 text in this file
+> Control: this directive fully supersedes C08-IMP-01 and every earlier D authorization
 
-## 1. Authorized outcome
+## 1. Required outcome
 
-Codex shall materialize one bounded, reversible implementation unit:
+Codex shall implement a demonstrable Cycle 08 shared-client product beta, not a documentation or refactoring-only exercise.
 
-**C08-IMP-01 — responsive application shell plus explicit presentation states.**
+The finished beta must expose these connected user journeys:
 
-The completed unit must:
+1. responsive navigation among **Purchase**, **Products**, and **History**;
+2. private reusable Product catalogue browsing and search;
+3. existing Product selection, new Product creation, and advisory similar-Product choice;
+4. existing Store selection or Store creation during Purchase;
+5. multi-Item Purchase staging;
+6. staged Item editing and removal;
+7. explicit Purchase review before registration;
+8. atomic local Purchase registration with in-flight duplicate-tap prevention;
+9. detailed Purchase History;
+10. first personal price comparison from compatible observations;
+11. distinct loading, empty, validation, success, and failure states;
+12. honest local-data, recovery, and backup boundaries;
+13. Windows/Android-oriented responsive and lifecycle validation within available hosts.
 
-1. preserve the currently implemented Purchase and History destinations;
-2. render navigation according to available width rather than host platform;
-3. preserve the selected destination while the layout changes;
-4. preserve the current mounted Purchase draft behavior across destination changes;
-5. distinguish loading, genuine empty, failure and data states in History;
-6. keep Purchase registration feedback semantically distinct from validation and failure;
-7. remove raw exceptions and Device identity/sequence from ordinary user-facing copy touched by this unit;
-8. add focused tests for the behavior above.
+Source implementation and focused tests are the primary deliverable. D/E/F or G/H/I editing alone is not completion.
 
-This directive authorizes the Flutter source and test edits strictly necessary for that outcome.
+## 2. Main product decisions for this implementation
 
-## 2. Mandatory preflight
+To unblock materialization, Main selects the lowest-risk choices supported by repository truth:
 
-Before source edits, Codex must:
+| Decision | Controlling choice |
+| --- | --- |
+| destinations | Purchase, Products, History |
+| Catalogue UI term | Products; “Catalogue” remains architectural documentation language |
+| Store placement | picker within Purchase; no top-level Store destination |
+| Product code | remains mandatory in Cycle 08 |
+| quantity/currency | retain explicit MASS and BRL beta boundary; do not imply general support |
+| draft lifetime | current app-session/mounted lifetime; no process-death persistence |
+| review | explicit inline phase in the Purchase flow |
+| registration safety | existing atomic transaction plus disabled/in-flight submit guard |
+| durable idempotency | deferred; no false identical-retry guarantee |
+| first comparison | latest versus previous compatible observation for the same Product |
+| comparison basis | normalized purchased-unit price, same currency/dimension/canonical unit |
+| analytics wording | “Price change in your purchases” |
+| Store identity | existing Store UUID/display name; selection is explicit, creation warns on exact-name reuse |
+| export/restore | no false backup claim; expose a clear local-only data boundary |
+| Device correction | no Cycle 08 schema change; remains a hard Cycle 09 entry gate |
+
+These choices avoid new packages and schema migrations while delivering the core product journey.
+
+## 3. Existing implementation to reuse
+
+Codex must extend, not replace, the evidenced foundation:
+
+- `MarkeiComposition.appPrivate()`;
+- `MarkeiApp`, its selected destination state and mounted-page preservation;
+- `CatalogueQueryRepository.listProducts()`, `listStores()`, and `similarityWarnings()`;
+- `ExistingProductReference` and `NewProductReference`;
+- `PurchaseItemDraft`;
+- `RegisterPurchaseCommand`;
+- atomic `LocalPurchaseRepository.registerPurchase()`;
+- `PurchaseHistoryRepository` and `LocalQueryRepository`;
+- existing Money, Quantity, Product identity and similarity rules;
+- Drift v2/app-private storage;
+- existing Flutter and Python regressions.
+
+If an earlier Codex run already changed responsive/state code, inspect its diff and retain compatible work. Do not redo it for cosmetic restructuring.
+
+## 4. Bounded implementation sequence
+
+### Unit 1 — Responsive product shell and state foundation
+
+Implement:
+
+- shared semantic destinations for Purchase, Products and History;
+- constraint-driven compact/wide navigation;
+- selected destination and mounted Purchase draft preservation;
+- explicit dependency-free presentation-state types;
+- safe loading/empty/error/success rendering.
+
+Acceptance:
+
+- all three destinations reachable in compact and wide layouts;
+- selection survives resize;
+- existing Purchase draft survives destination changes and resize;
+- errors are not rendered as empty or raw exception text.
+
+### Unit 2 — Products and complete Purchase staging
+
+Implement:
+
+- Products list with local search/filter;
+- Product empty/loading/error/data states;
+- Product selection from Purchase;
+- new Product entry using the current mandatory code and current identity facts;
+- advisory similar-Product candidates before creation;
+- explicit “use existing” or “create anyway” choice;
+- Store list/select/create within Purchase;
+- multiple stable draft lines;
+- edit and remove;
+- running total;
+- inline review phase;
+- cancel/back-to-edit behavior;
+- in-flight registration guard;
+- successful local registration refresh/reset behavior.
+
+Acceptance:
+
+- selecting an existing Product sends `ExistingProductReference`;
+- creating sends `NewProductReference`;
+- similarity never silently merges;
+- exact existing Store selection retains Store identity through the application boundary where current contracts permit;
+- Store creation remains explicit;
+- draft edit/remove targets stable lines;
+- review reflects final staged facts;
+- one user submit action reaches one registration call while in flight;
+- atomic repository behavior remains unchanged.
+
+If preserving selected Store identity requires replacing free-text `storeName` with a dependency-free existing/new Store reference, that application-contract change is authorized. Persistence schema changes are not.
+
+### Unit 3 — Detailed History and first comparison
+
+Implement:
+
+- History list with occurrence time, Store, total and Item count;
+- Purchase detail view with registered Items and relevant Product/quantity/price facts;
+- application query records/ports and local adapter queries needed for detail;
+- removal or bounded batching of the current N+1 Item-count behavior;
+- Product observation query using current persisted facts;
+- pure/versioned compatible-observation comparison;
+- “Price change in your purchases” presentation;
+- explicit incompatible/insufficient-data states.
+
+Acceptance:
+
+- loading, empty, failure and data are distinct;
+- detail facts match the registered Purchase;
+- widgets do not traverse Drift rows;
+- comparison uses the same Product, currency, quantity kind and canonical unit;
+- latest and previous compatible observations are ordered by occurrence time;
+- result identifies both observations and percentage change;
+- one observation or incompatible facts return explanation, not a fabricated value;
+- no analytics cache or schema change.
+
+### Unit 4 — Beta acceptance and boundary completion
+
+Implement or document in-product where appropriate:
+
+- local-only data notice;
+- no synchronization/backup promise;
+- safe startup/query/registration failure language;
+- responsive overflow and larger-text corrections;
+- keyboard/focus/Back behavior on touched flows;
+- Android portrait/landscape and Windows narrow/wide checks where hosts exist;
+- background/resume and restart checks;
+- protected Python boundary regression.
+
+This unit is not production release work.
+
+## 5. Mandatory preflight
+
+Before edits:
 
 ```text
 git status --short --branch
@@ -39,129 +176,78 @@ git pull --ff-only
 git rev-parse HEAD
 ```
 
-Then:
+Then load `AGENTS.md`, `INDEX.md`, `PROMPT_COLLECTION.md`, run `PRI-CODEX` and `PMC-01`, and read all three controlling D/E/F directives.
 
-- load `AGENTS.md`, `INDEX.md` and `PROMPT_COLLECTION.md`;
-- run `PRI-CODEX` and `PMC-01`;
-- run `PMC-02` only if routing, authority, FLUX or promotion remains uncertain;
-- read all three active D/E/F directives;
-- inspect only the source/tests needed to establish implementation truth;
-- report existing worktree changes before editing.
+Codex must report:
 
-Stop if the required branch is not active, the pull is not fast-forwardable, unrelated work cannot be preserved, or D/E/F conflict.
+- existing source changes, especially any prior C08-IMP-01 work;
+- exact starting HEAD;
+- proposed files for the next unit;
+- tests to be added before beginning that unit.
 
-## 3. Writable implementation surface
+Preserve unrelated human changes. Never reset, clean, stash, discard or overwrite them.
 
-Codex may modify:
+## 6. Validation
 
-- the Flutter application shell/composition surface;
-- the existing Purchase and History presentation surfaces touched by C08-IMP-01;
-- small presentation-only state types required by those surfaces;
-- focused Flutter unit/widget tests;
-- generated files only when an existing repository command legitimately regenerates them;
-- G/H/I after source materialization and validation.
-
-Codex must keep handwritten and generated ownership explicit.
-
-## 4. Required operational behavior
-
-### Responsive shell
-
-- Use one semantic destination model.
-- Use a compact navigation treatment below a locally defined constraint breakpoint.
-- Use a wide navigation treatment at or above that breakpoint.
-- Keep the breakpoint as one named presentation constant.
-- Test immediately below and at/above the breakpoint.
-- Preserve destination selection and mounted page state across resize.
-
-### Presentation states
-
-History must show distinct states for:
-
-- loading;
-- no registered Purchases;
-- failed load with a safe retry path when supported by the current surface;
-- loaded Purchase summaries.
-
-Purchase registration must not display a successful result before repository success is known. Existing validation errors must remain distinguishable from registration failure.
-
-### User-facing safety
-
-Ordinary copy must not expose:
-
-- exception strings or stack details;
-- Device UUID or Device sequence;
-- Drift/database terminology;
-- synchronization, upload or backup claims.
-
-## 5. Validation gates
-
-Run the narrowest focused tests during implementation, then the available baseline:
+Run focused tests after each unit. At the end run available baseline checks:
 
 ```text
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test
-```
-
-Also attempt, when the host supports them:
-
-```text
 flutter build windows
 flutter build apk --debug
 python -m unittest discover -s tests
 ```
 
-A command not runnable on the host must be reported as **host-unvalidated**, never passed.
+Use existing repository commands and dependencies only. Unsupported host commands are **host-unvalidated**, not passed.
 
-Acceptance requires:
+Minimum test coverage:
 
-- focused responsive-shell tests;
-- destination-preservation test;
-- Purchase-draft preservation regression;
-- History loading/empty/failure/data tests;
-- touched Purchase result/copy tests;
-- no unrelated source changes;
-- no regression to the protected Python beta.
+- compact/wide navigation and resize preservation;
+- Products list/search/empty/error;
+- existing/new/similar/create-anyway Product paths;
+- Store select/create;
+- stable multi-line add/edit/remove;
+- review and back-to-edit;
+- double-tap/in-flight guard;
+- atomic failure retaining a recoverable draft;
+- History list/detail and query failure;
+- comparison compatible/incompatible/insufficient data;
+- safe copy without exception or Device leakage;
+- current Flutter suite and Python regressions.
 
-## 6. Prohibited changes
+## 7. Prohibitions and stop conditions
 
-C08-IMP-01 does not authorize:
+Not authorized:
 
-- new packages, dependency versions or tool installation;
-- schema, migration or persistence-model changes;
-- new top-level Catalogue or Store destinations;
-- draft coordinator or durable draft work;
-- Product resolution, Product-code policy or Store identity work;
-- SubmissionId or durable idempotency;
-- History detail, observations or analytics;
-- backup/restore or Device redesign;
+- new dependencies, dependency upgrades or tool installation;
+- Drift schema/version/migration changes;
+- optional Product code;
+- normalized Store/branch uniqueness;
+- durable SubmissionId/idempotency;
+- persisted drafts;
+- Device schema/invariant changes;
 - authentication, API, Neon or synchronization;
-- Python/PySide6 source or database changes;
-- deletion, reset, stash, cleanup or overwrite of unrelated work;
-- commit or push unless the invoking Codex instruction separately grants publication authority.
+- export/restore implementation;
+- Python/PySide6 source/database changes;
+- registered Purchase editing/deletion;
+- forecasting or general inflation claims;
+- iOS, signing or distribution;
+- unrelated architecture refactoring.
 
-Encountering one of these needs is a stop condition and must return to Main.
+Stop only when the next required behavior cannot be implemented without one of these prohibited changes. Report the exact blocker and continue with independent authorized units when safe.
 
-## 7. Evidence and handoff
+## 8. Evidence and completion
 
-After implementation, Codex must write exact evidence:
+G/H/I are written after material implementation, not instead of it.
 
-- **G**: environment, commands, results, failures, host limits and changed-file inventory;
-- **H**: implemented state language, copy boundaries and unresolved teaching claims;
-- **I**: final responsibility map, dependency direction, state ownership and deviations.
+Each report must name:
 
-Evidence must distinguish implemented, test-validated, host-validated, host-unvalidated, blocked and deferred claims.
+- implemented files and behavior;
+- tests and exact command results;
+- host-validated versus host-unvalidated claims;
+- deviations and blockers;
+- remaining Cycle 08 work.
 
-## 8. Later-unit boundary
-
-The gathered Cycle 08 work supports later bounded units, but they are not activated by this directive:
-
-1. draft coordinator and explicit review;
-2. Product reuse/resolution and Store selection;
-3. isolated durable submission identity;
-4. History detail and Product observations;
-5. first versioned personal price comparison;
-6. recovery/export and installation-Device hardening.
-
-Each later unit requires a new Main D/E/F activation after its human decisions and schema/dependency consequences are resolved.
+C08-PB-01 is complete only when the connected product journey can be previewed through the implemented Flutter UI and the available automated evidence passes.
