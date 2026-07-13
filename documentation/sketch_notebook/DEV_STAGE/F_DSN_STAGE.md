@@ -437,3 +437,40 @@ Design C08-R03 should provide:
 No candidate is accepted merely because it appears here.
 
 Codex remains inactive.
+
+
+---
+
+<!-- CODEX_ACTIVATION_MARKER:C08-ACT-01-Design-2026-07-13 -->
+# Cycle 08 — Codex Activation C08-ACT-01
+
+> Status: ACTIVE — AUTHORIZED FOR CODEX IMPLEMENTATION
+> Authority: explicit Main/human authorization on 2026-07-13
+> Scope: bounded Unit 1 only — responsive shell and typed presentation states
+> Supersedes: earlier “Codex remains inactive” and “not authorized” statements only for the scope defined below
+
+## Authorized design boundary
+
+Codex may implement:
+
+1. one shared semantic destination model for the destinations already present in the application;
+2. constraint-driven narrow/wide navigation presentation using existing Flutter SDK facilities;
+3. preservation of selected destination across layout changes;
+4. typed presentation-state handling for loading, empty, error and success on touched current surfaces;
+5. focused unit/widget tests and the minimum composition changes required by this unit.
+
+The existing destination set is preserved in this unit. Adding Catalogue or Stores as new top-level destinations requires a later Main decision and activation.
+
+## Architecture constraints
+
+Preserve the current inward dependency direction:
+
+`presentation → application/domain ← infrastructure`
+
+Do not introduce a router/state-management/UI package. Do not move database behavior into widgets. Do not combine this unit with draft coordination, Product resolution, Store reference, SubmissionId, History detail/analytics, backup/recovery or Device hardening.
+
+## Exit and handoff
+
+Codex must keep the change reversible and bounded, report exact files and tests, and write the corresponding G/H/I implementation evidence. Any need for schema, dependency or excluded architectural work returns to Main for a new D/E/F activation.
+
+This latest activation marker controls Codex authority for F.
