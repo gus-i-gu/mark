@@ -963,3 +963,31 @@ Canonical limits remain:
 - A future central Product UUID is not the user Product code or current local Product record UUID and remains deferred.
 
 No KANBAN status changes. Implementation evidence is not learner evidence.
+
+# Cycle 07 Sprint 05 Android Evidence Reconciliation
+
+> Evidence sources: `DEV_STAGE/H_DDC_CODEX.md`, Main J §24, current source/tests/Android configuration, and human-observed emulator workflow  
+> Evidence class: implemented, automated-test evidenced, host-executed, and selectively human-observed  
+> Maturity effect: none
+
+Sprint 05 strengthens project manifestations of `&&&06 Stable Identity`, `&%%09 Purchase Aggregate`, `&%%11 Append-Only Synchronization Event`, `&%%12 Offline Queue and Idempotent Delivery`, `&%%13 Device Ordering and Synchronization Cursor`, `&&&10 Historical Integrity`, and `%%%07 Flutter Framework and Responsive Widget Composition`.
+
+Stable distinctions now evidenced in the project:
+
+- Android application ID identifies the installed package/sandbox; display label names it to the user.
+- `local-account` is a provisional local data-owner placeholder, not authentication.
+- the Device ID is a database-owned installation-local UUID v4 reused across reopen; it is not the package name, emulator serial, hardware identity, Account ID, Product identity, Purchase ID, or Event UUID.
+- Device sequence orders events within one Device; it is not event identity or a server cursor.
+- Product user code, local Product UUID, semantic identification facts, Purchase UUID, and Event UUID retain separate responsibilities.
+- Purchase registration creates a new immutable Purchase aggregate. No supported Purchase-upsert/replacement semantics are evidenced.
+
+Canonical evidence limits:
+
+- phone-width widget execution is automated Flutter evidence, not real Android lifecycle or final visual-design validation;
+- emulator build/install/launch/interaction evidence does not establish physical-device compatibility;
+- process restart/database inspection is partial lifecycle/persistence evidence; the complete keyboard, Back, rotation, background/resume, text-scale, and process-recreation matrix remains provisional;
+- local event and pending queue persistence remain synchronization preparation only;
+- responsive functional scaffold evidence does not establish accepted UI/UX or accessibility quality;
+- authentication, authorization, eventual consistency, complete Sync Protocol behavior, production Android release, physical-device validation, and iOS remain unimplemented, host-unvalidated, or deferred as applicable.
+
+No KANBAN status changes. Human-observed application use is project evidence; no explicit learner explanation or transfer evidence supports a maturity transition.
