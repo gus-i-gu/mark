@@ -363,3 +363,48 @@ Report:
 D may become more exact only after A C08-R03 reports repository/test evidence and the high-impact human choices are narrowed.
 
 Codex remains inactive.
+
+
+---
+
+<!-- CODEX_ACTIVATION_MARKER:C08-ACT-01-Operational-2026-07-13 -->
+# Cycle 08 — Codex Activation C08-ACT-01
+
+> Status: ACTIVE — AUTHORIZED FOR CODEX IMPLEMENTATION
+> Authority: explicit Main/human authorization on 2026-07-13
+> Scope: bounded Unit 1 only — responsive shell and typed presentation states
+> Supersedes: earlier “Codex remains inactive” and “not authorized” statements only for the scope defined below
+
+## Authorized operational scope
+
+Codex may now:
+
+- verify and work only on `cycle-08-shared-client-product-beta`;
+- modify the Flutter client source and tests required for bounded Unit 1;
+- implement constraint-driven narrow/wide navigation while preserving destination selection;
+- distinguish loading, empty, error and success presentation states where Unit 1 touches existing Purchase/History surfaces;
+- replace raw exception and Device-sequence user copy where required by this unit;
+- run the existing repository validation, analysis, test and build commands;
+- materialize G/H/I evidence for this bounded unit.
+
+## Required gates
+
+Before editing, Codex must load the complete methodology through `INDEX.md` and `PROMPT_COLLECTION.md`, execute the Codex initialization prompts, verify branch/HEAD/worktree safety, and record baseline evidence.
+
+Completion requires focused tests plus the existing Flutter test/analyze checks that are available in the host. Platform build evidence must be reported truthfully; unavailable host evidence is not a pass.
+
+## Exclusions and stop conditions
+
+This activation does not authorize:
+
+- new dependencies or tool installation;
+- schema or migration changes;
+- Product-code, Store-identity, SubmissionId, durable-draft or Device redesign;
+- authentication, API, Neon or synchronization;
+- Python/PySide6 beta or its database;
+- backup/restore, analytics, or later bounded units;
+- silent deletion, reset, stash, cleanup or overwrite of unrelated work.
+
+Codex must stop and return to Main if Unit 1 requires an excluded change, the branch/worktree is unsafe, or repository truth contradicts D/E/F.
+
+This latest activation marker controls Codex authority for D.
