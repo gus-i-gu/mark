@@ -1104,7 +1104,7 @@ not promoted
 
 # Event 21 — Cycle 09 Sprint 02 Permanent Design Promotion
 
-Sequence: FLX-PRM-04  
+Sequence: FLX-PRM-04
 Evidence boundary: C/F/I, post-Codex J, target references 01–05, handwritten source/tests in `5ddff3c…1d81797`; generated Drift derived only.
 
 ## Claim transitions
