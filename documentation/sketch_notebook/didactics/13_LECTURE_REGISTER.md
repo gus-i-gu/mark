@@ -457,3 +457,50 @@ Sprint 05 validates an Android debug-development slice and a persistent installa
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+---
+
+# Observation 009 — Intermid Recovery ProductReference Edit Evidence
+
+```text
+Date: 2026-07-14
+Branch: intermid-cycle-recovery
+Inspected head: 84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8
+Materialization commit: 409e5f1e013a282165efd5f31bed17a396ad6543
+Class: post-materialization Didactic reconciliation
+Sources:
+  DEV_STAGE/B_DIDACTIC.md
+  DEV_STAGE/E_DDC_STAGE.md
+  DEV_STAGE/H_DDC_CODEX.md
+  [M]_STAGE/J_MAIN_STAGE.md §20–25
+```
+
+The existing-Product staged-Item edit regression demonstrates a stable project distinction: the staged line retains its original `ProductReference` and Product label while package count, purchased quantity, unit, and line total remain editable Item values.
+
+Repository evidence shows `_editingReference` and `_editingProductLabel` captured from the staged line and reused by `_saveEditedLine()`. The focused regression registers the edited Item, asserts the original Product ID, confirms the changed Item values, and confirms that the Product row count remains one.
+
+Recorded validation at materialization time:
+
+- focused app widget suite: 7 passed;
+- full Flutter suite: 32 passed;
+- Flutter analysis: no issues;
+- no final blocker.
+
+Evidence limits:
+
+- the regression directly exercises `ExistingProductReference`;
+- preservation of `NewProductReference` follows from the shared source path but lacks its own focused regression;
+- widget/in-memory evidence is not platform, restart, migration, or release acceptance;
+- project implementation and test evidence are not learner-maturity evidence.
+
+Maturity decision:
+
+```text
+new canonical concept: none
+existing maturity changes: none
+project distinction evidence: strengthened
+explicit learner explanation or transfer evidence: absent
+```
+
+The next learner check is to explain why a Product reference identifies the reusable catalogue subject while quantity and price belong to the transaction Item, and to predict the failure caused by rebuilding identity from current form selection.
