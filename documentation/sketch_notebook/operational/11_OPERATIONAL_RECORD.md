@@ -719,3 +719,45 @@ No permanent reconciliation command rebuilt, launched, installed, migrated, or m
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+## 2026-07-14 — Intermid Recovery existing-Product edit correction
+
+Sequence: `FLX-PRM-04`  
+Implementation commit: `409e5f1e013a282165efd5f31bed17a396ad6543`  
+Reconciliation baseline: `84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8`  
+Evidence: `DEV_STAGE/G_OPS_CODEX.md`, latest `J_MAIN_STAGE.md` post-Codex reconciliation, repository source and widget regression
+
+The bounded D/E/F unit corrected the staged-line edit path for an existing Product. Edit state now retains the original `ProductReference` and Product label while package count, purchased quantity/unit, and line total remain editable. Saving reuses the retained existing Product identity; the regression asserts that registration keeps the original Product ID and does not create a duplicate Product row.
+
+Observed materialization scope:
+
+```text
+clients/markei_flutter/lib/app/pages/purchase_page.dart
+clients/markei_flutter/test/app/markei_app_test.dart
+DEV_STAGE/G_OPS_CODEX.md
+DEV_STAGE/H_DDC_CODEX.md
+DEV_STAGE/I_DSN_CODEX.md
+```
+
+Recorded command outcomes from G:
+
+```text
+dart format touched Dart files                 passed
+flutter test test/app/markei_app_test.dart    passed: 7 tests
+flutter test                                  passed: 32 tests
+flutter analyze                               passed: no issues
+```
+
+Intermediate focused-test failures occurred while shaping the regression and were resolved before final validation. They are development chronology, not final blockers.
+
+PRC-01 disposition:
+
+- existing-Product edit defect: prior defective state superseded; corrected implementation accepted;
+- existing-Product identity retention: validated by the named widget/repository regression;
+- edited Item values and absence of duplicate Product: validated within the in-memory widget integration boundary;
+- generic `ProductReference` retention for new-Product lines: implemented by source structure, but not separately regression-validated;
+- Windows, Android, iOS, file-backed restart/migration, manual workflow, lifecycle, packaging, release, and distribution acceptance: unchanged and not established by this unit;
+- schema, migration, dependency, synchronization, transaction-failure infrastructure, and generated-artifact behavior: unchanged.
+
+No source, host, schema, migration, dependency, or permanent non-Operational surface was changed during this reconciliation.
