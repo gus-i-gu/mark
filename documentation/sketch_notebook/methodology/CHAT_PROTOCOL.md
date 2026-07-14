@@ -401,7 +401,143 @@ This minimizes repeated token usage while preserving continuity.
 
 ---
 
-# 7. Protocol Evolution
+# 7. Sequence-Aware Communication Protocol
+
+Every substantial report should identify its controlling FLUX Sequence Protocol.
+
+Required header:
+
+~~~text
+Sequence:
+Role:
+Round or unit:
+Branch:
+Baseline / inspected HEAD:
+Authority:
+Writable surfaces:
+Evidence boundary:
+~~~
+
+The purpose is not ceremonial formatting. It prevents an exploratory report from being mistaken for implementation authority, a pruning report from being mistaken for promotion, or a Codex report from being mistaken for canon.
+
+## 7.1 Ordinary Sequence Communication
+
+FLX-ORD-01 reports should be bounded and terminal.
+
+Functional reports state:
+
+- current evidence;
+- domain interpretation;
+- contradictions;
+- recommendation;
+- exact requested materialization outcome.
+
+Main reports state:
+
+- accepted objective;
+- controlling D/E/F;
+- writable and prohibited scope;
+- validation and stop conditions.
+
+Codex reports state:
+
+- physical changes;
+- commands and evidence;
+- deviations;
+- unresolved risks.
+
+Promotion reports state:
+
+- semantic classification;
+- permanent destinations;
+- checkpoint and Main-continuity effects.
+
+## 7.2 Investigative Sequence Communication
+
+FLX-INV-02 uses cumulative round reports.
+
+A/B/C begin with the round delta:
+
+- newly inspected;
+- retained by reference;
+- corrected;
+- superseded;
+- contradicted;
+- unresolved;
+- prospective;
+- deferred.
+
+J groups the three perspectives by project structure, preserves provenance, and avoids copying full domain reports.
+
+Provisional D/E/F act as the active domain cache for the next round. Each file states what was retained, changed, rejected, and still requested.
+
+Each round ends with:
+
+- performance improvement achieved;
+- narrower next question;
+- evidence still missing;
+- human decisions;
+- exit readiness.
+
+No investigative output may imply Codex authority unless a separate activation states it explicitly.
+
+## 7.3 Pruning Sequence Communication
+
+FLX-PRN-03 reports by semantic role rather than file order.
+
+For each affected file, state:
+
+- semantic role;
+- canonical owner;
+- content retained;
+- content pruned, summarized, referenced, regenerated, or corrected;
+- history disposition;
+- current recovery pointer.
+
+Do not describe deletion volume as success by itself. Success is lower recovery cost with preserved meaning and ownership.
+
+The checkpoint report is written last and states one current recovery state.
+
+## 7.4 Promotion/Reconciliation Communication
+
+FLX-PRM-04 reports claims, not merely edits. Use PROMOTION_RULES.md PRC-01 as the minimum semantic cache.
+
+For each material claim, use:
+
+~~~text
+Claim:
+Prior state:
+Evidence:
+Evidence boundary:
+Contradiction:
+Semantic owner:
+Target role:
+Resulting state:
+History disposition:
+~~~
+
+Distinguish accepted, implemented, validated, host-unvalidated, blocked, deferred, superseded, and contradicted.
+
+A file list without semantic classification is not a complete promotion report.
+
+## 7.5 Handoff Communication
+
+Every sequence transition ends with the FLUX Sequence Handoff Envelope.
+
+The outgoing role points to detailed evidence rather than reproducing it.
+
+The receiving role reports:
+
+- what was recovered;
+- what remains uncertain;
+- whether the proposed next sequence is valid;
+- whether authority is sufficient.
+
+When two reports disagree, preserve both claims, name the evidence conflict, and route the decision to the semantic owner or human/Main authority. Do not manufacture consensus through blended wording.
+
+---
+
+# 8. Protocol Evolution
 
 Protocols are expected to mature throughout project development.
 
