@@ -907,3 +907,15 @@ Not concluded:
 9. Should Sprint 02 first authorize an evidence/reproduction pass, or freeze a combined functional-and-aesthetic implementation unit?
 
 Recommended next handoff: Main should reconcile this observation with Design/Didactic Sprint 02 evidence, secure accessible copies or structured inventories of screenshots 1–10, freeze the nine decisions above, then prepare bounded D/E/F. No implementation authority is implied by this record.
+
+---
+
+## 2026-07-14 — Cycle 09 Sprint 02 permanent Operational promotion
+
+`FLX-PRM-04`; ancestry `4bf2e52d9d3e23437c4da1d8bb05e2402e189dd5`; implementation `5ddff3c5..1d817972`. Repository reconciliation only; application commands were not rerun.
+
+Promoted: schema v4; mandatory immutable Product codes; Account-scoped `@001...` Person and `#001...` Payment Method sequences; optional labels; manual occurrence; exact Product-code autofill; same-unit BULK read-only calculation; Catalogue selection/details; History select-all/detail access; narrow Lists language repair.
+
+Inherited evidence: migration tests 3, repository tests 6, application focused tests 5, app widgets 7, full Flutter suite 43, clean analysis, five protected Python tests, Windows release build and bounded hidden launch. Android was host-blocked by absent Java.
+
+Boundaries: Windows is not manually/visually accepted; Android, manual accessibility/keyboard/screen reader and native sharing remain unvalidated; PDF/export is fallback; Lists lacks target composition; History double-click focuses detail rather than toggling selection; visual convergence and oversized-page debt remain open.
