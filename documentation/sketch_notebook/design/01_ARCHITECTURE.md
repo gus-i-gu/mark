@@ -674,3 +674,48 @@ The edit correction does not decide or imply:
 - authentication, API/Neon, upload/download, convergence, or synchronization.
 
 These remain independent Design decisions with separate evidence, reversibility, and migration consequences.
+
+# 21. Cycle 09 Local Product and Database Expansion Boundaries
+
+## 21.1 Current local topology
+
+```text
+responsive Flutter presentation
+→ application commands, query ports, read models and typed failures
+→ independent Dart Product/Purchase/quantity/reference semantics
+← local repository adapters
+→ handwritten Drift schema v3 and migrations
+→ application-private SQLite
+```
+
+Composition owns database/adapters; presentation owns destination, draft, History selection and temporary feedback; application owns descriptors, lookups, references/preferences, projections and export DTOs; domain owns normalization v3, dimensional quantity and nullable BULK package-count meaning; repositories own translation, transactions, migration and queries. Generated Drift code is derived only.
+
+## 21.2 Schema v3 and identity
+
+Schema v3 adds People, PaymentMethods and AccountPreferences; nullable Person/Payment Method Purchase references; and nullable BULK package count. Optional references preserve history.
+
+Normalization v3 retains Product UUID, Account-scoped code and exact-identity uniqueness, and collision-preflight migration. Legacy null codes are backfilled, but handwritten Product-code columns remain nullable. New commands require codes; database-level NOT NULL is not accepted.
+
+People/PaymentMethods currently constrain `(accountId, normalizedNickname, active)`. This also limits archived duplicates, so active-only nickname uniqueness remains contradicted and requires correction.
+
+## 21.3 Projections, lookup and details
+
+Storage/Shortage/Market/All are transient `personal-cycle-v1` projections from registered facts; no List aggregate/cache is persisted. They are personal estimates, not factual inventory.
+
+Exact code and normalized-identity lookup are application/repository responsibilities. Catalogue substring filtering does not expose those exact operations; presentation remains partial.
+
+Product detail is ProductId-bound and Drift-free. The Catalogue detail card is implemented, while a shared adaptive route/pane/sheet across Catalogue and Purchase remains deferred.
+
+## 21.4 BULK pricing
+
+BULK uses null package count as not-applicable. Authoritative price facts remain amount plus integer-minor-unit line total; unit price is derived. The authorized price-per-unit input and half-up total derivation is not implemented because Purchase still asks for Line total. No competing price truth is persisted, but completion is contradicted.
+
+## 21.5 Export and sharing
+
+Selected-Purchase DTOs support deterministic CSV and PDF bytes without Purchase mutation. Native sharing is absent: History writes fixed temporary files and asks for manual sharing. Save destination/cancellation, temporary-file lifecycle and OS share adapter remain deferred.
+
+## 21.6 Evidence and correction boundary
+
+Repository evidence is pinned to `e37cb700feeca4001cc7835b584c46bb81926af3`; reported local tests, analysis, Windows build/launch and migration/reopen evidence do not establish Android, native share, complete manual/accessibility, injected migration failure or release acceptance.
+
+Independent corrections remain: active-only nickname uniqueness, BULK price-per-unit UI, exact-lookup UI, adaptive details, complete failure presentation, native save/share, and remaining History selection conveniences.
