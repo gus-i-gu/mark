@@ -380,3 +380,287 @@ other domain stages: untouched
 Codex: inactive
 next authority: Main/human reconciliation
 ```
+
+---
+
+# C09-R01 — Cycle 09 Local Product and Database Expansion: Design Investigation
+
+Sequence: FLX-INV-02 — Investigative Sequence
+Role: Design Chat [D]
+Round or unit: C09-R01
+Branch: intermid-cycle-recovery
+Baseline / inspected remote branch: required ancestor `801e3940c972bac88b039e18357dbe006e94760a`; GitHub comparison reported the branch 23 commits ahead, 0 behind, with that commit as merge base
+Authority: human Cycle 09 investigative prompt; staging only
+Writable surfaces: `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
+Evidence boundary: GitHub inspection of current notebook, Flutter/Dart application/domain, Drift schema/migration, repositories, queries and pages. No local checkout was available; no tests, commands, platform, file-backed or manual validation are claimed.
+Next handoff: Main reconciliation and provisional D/E/F cache; Codex inactive
+
+## 1. Round delta
+
+### Newly inspected
+
+- responsive shell, navigation selection and `IndexedStack`;
+- composition-root and adapter lifetime;
+- Products, Purchase and History state boundaries;
+- catalogue, registration, History/detail and price-comparison ports/results;
+- Product normalization/identity and fixed-scale quantity types;
+- Drift v2 schema, v1→v2 migration, foreign keys, unique keys and generated-code boundary;
+- local query translation and bounded History reads;
+- current global/forward/Design checkpoints, latest active J, C and I evidence.
+
+### Retained
+
+```text
+Flutter presentation
+→ application commands/query ports
+→ independent Dart domain
+← local repository adapters
+→ Drift v2 / app-private SQLite
+```
+
+Python/PySide6 and its database remain isolated. Draft/edit state is presentation-owned; registered facts and local event preparation are transaction-owned. SyncEvent/PendingEvent is not synchronization.
+
+### Corrected/clarified
+
+- Cycle 09 is the second local product-beta expansion, not an account/API/Neon cycle.
+- A normalization-versioned exact Product key already exists and is Account-scoped unique.
+- visible Product code is already separate from internal UUID and normalized unique, though legacy columns remain nullable.
+- quantity domain supports kg/g/L/ml/un through KG/L/UNIT normalization, but parses dot decimals only and rejects fractional COUNT.
+- Products UI currently fixes new Products to MASS despite broader domain capacity.
+- History owns one selected Purchase detail, not multi-row selection/export.
+- History summaries are capped at 50; no measured evidence justifies cache or broad index work.
+- current user messages are catch-all presentation strings, not typed application failures.
+
+### Contradicted
+
+- no manually authored List aggregate or “new immediate list”;
+- Product identification is not operation idempotency;
+- Settings UI does not own Person/PaymentMethod identity;
+- generic key/value settings cannot safely own historical foreign references;
+- clearer messages alone do not justify a database error table;
+- double-click alone cannot own selection or detail access.
+
+### Unresolved/prospective/deferred
+
+Unresolved: cycle formula/threshold; Product correction policy; normalization collisions; legacy null handling; export contract; PDF/share behavior; reference lifecycle; measured query/index need.
+
+Prospective: Home/navigation, Lists read models, export ports/DTOs, adaptive Product details, typed Person/PaymentMethod records, typed failures and presentation decimal parsing.
+
+Deferred: auth/API/Neon/sync, registered Purchase mutation, manual Lists, split payments, multiple people, production release, active Analytics/Household, persisted drafts and SubmissionId unless separately selected.
+
+## 2. Current topology and schema truth
+
+`MarkeiComposition` owns database/adapters, provisional local Account and persistent Device. `MarkeiApp` owns selected destination and coarse refresh; rail/bar switches at 720 px and `IndexedStack` preserves mounted state. Application read models prevent generated Drift rows leaking into widgets. Infrastructure translates rows. Extend these seams; do not bypass them.
+
+Generated Drift code is derived infrastructure. Table declarations and handwritten migrations in `local_database.dart` are authoritative; `.g.dart` must be regenerated, never hand-edited.
+
+Schema v2 contains LocalAccounts, Devices, Products, Stores, Purchases, PurchaseItems, SyncEvents, PendingEvents, SyncState and MigrationLedger. Product has UUID PK, nullable legacy-compatible visible/normalized code, normalization version, normalized fields and Account-scoped unique exact key. Purchases require Store and have no Person/PaymentMethod. Items store integer package count, canonical quantity text and integer minor-unit totals. FKs are enabled. Unsupported origins throw without silent reset. No v3, reference tables, projection cache, export table or error catalogue exists.
+
+## 3. Cycle 09 UI responsibility map
+
+| Surface | Presentation | Application/domain | Persistence |
+| --- | --- | --- | --- |
+| Home | cards, links, responsive layout | typed static descriptors | none |
+| Lists | view/filter/unavailable state | pure versioned projection query/calculation | Purchase/Product facts |
+| Purchase | draft and optional selectors | validation/atomic command | transaction + optional refs |
+| History | selected ID set/action mode | export/share use cases and DTOs | read-only facts |
+| Catalogue | search/create/detail action | exact lookup and advisory similarity | Product constraints |
+| Product details | adaptive rendering | immutable detail read model | query adapter |
+| Settings | reference management UI | identity/archive rules | dedicated tables |
+| Analytics/Household | disabled destinations | none active | none |
+| Guide/Docs | content navigation | typed content/link config | none |
+
+## 4. Home and navigation
+
+Home becomes index 0 and startup landing. Shell owns destination selection, responsive layout and state preservation. Use a typed destination enum/registry rather than raw index meaning.
+
+Bundled cards are compiled/static configuration, not database facts. Offline copy must conservatively describe capabilities of the installed release. GitHub is an external-launch action with unavailable/failure feedback, not persisted data. `IndexedStack` remains acceptable, but static/disabled pages need not all create database-backed live state.
+
+## 5. Lists projections
+
+Authoritative facts: Product identity/display plus ordered registered Purchase/Item occurrence, package/amount/unit, price and currency. Latest Purchase/amount/unit price are read facts. Personal cycle, expected date, remaining time and status are estimates.
+
+```text
+compatible Product observations
+→ versioned PersonalCycleResult
+→ ProductListProjection
+→ Storage / Shortage / Market / All filters
+```
+
+Provide `AvailableCycleEstimate` and explicit `CycleEstimateUnavailable(reason)`. Insufficient history stays visible in All and never becomes invented inventory. Labels must distinguish personal estimate from factual stock.
+
+Threshold belongs to user preference/application configuration, not Product/Purchase. A compiled default passed to the pure calculation is smaller than a generic DB settings table until editability is accepted.
+
+Recommended persistence: targeted observation query plus pure Dart calculation on demand. Do not persist/cache without measurement. Algorithm ID/version is required. New registration invalidates read state; current refresh signal may trigger rebuild. Candidate indexes require realistic volume and query-plan evidence.
+
+## 6. History selection/export/share
+
+History owns transient `Set<PurchaseId>`. Checkbox/tap/keyboard and clear/select-all are primary; double-click is convenience. Operations never mutate Purchases.
+
+```text
+selected IDs
+→ export use case
+→ ordered ExportPurchase DTO graph
+→ CSV encoder or PDF renderer
+→ filesystem/share adapter
+```
+
+DTOs are independent of Drift and tiles, containing Purchase ID/time/Store, optional Person/Payment labels, currency/total and ordered Items with Product code/name/brand, quantities and totals.
+
+CSV: UTF-8, quoted/doubled fields, stable columns, declared ISO/local date policy, dot-decimal normalized numerics, integer-derived money, deterministic ordering. Multiple Purchases use one row per Item with repeated Purchase columns; single Purchase uses the same schema.
+
+PDF groups by Purchase but consumes the semantic DTO, not CSV. Renderer, file creation and platform sharing are separate ports/adapters. Windows may save/open/share; Android may use app-private temporary file plus OS share sheet. Destination, cancellation, cleanup and failure are visible. No silent upload/analytics. Move to Analytics stays disabled.
+
+## 7. Product details
+
+Use one semantic route keyed by `ProductId` with adaptive rendering: full route on compact/mobile, sheet/route on medium, persistent detail pane on wide desktop. Dialog-only is too restrictive. Explicit action, tap and keyboard are mandatory; double-click optional.
+
+Query returns immutable `ProductDetailView`; no Drift row or registered-Purchase mutation callback. Catalogue and Purchase share the same action/route.
+
+## 8. Person and Payment Method
+
+```text
+Person(PersonId, nickname, active|archived)
+PaymentMethod(PaymentMethodId, nickname, active|archived)
+Purchase.personId? → Person
+Purchase.paymentMethodId? → PaymentMethod
+```
+
+IDs are immutable opaque identities. Nickname may be corrected. Archived rows resolve in History/export but disappear from ordinary new-Purchase selectors. Nullable restrictive/no-action FKs preserve history. Referenced rows cannot be physically deleted; archive is the primary lifecycle. Backfill is null. Omission never blocks registration. No credentials, multiple people or split payment.
+
+Settings owns create/rename/archive/reactivate UI. Domain/application owns identity and lifecycle. Dedicated tables are required; generic settings is rejected. Indexes on optional refs require evidence.
+
+## 9. Product identity/code/normalization/collisions
+
+| Concern | Owner |
+| --- | --- |
+| record identity | `ProductId` UUID |
+| visible code | normalized Account-scoped unique `ProductCode` |
+| exact identity | normalization-v2 Account-scoped unique key |
+| similarity | advisory pure heuristic, no merge |
+| retry idempotency | separate future SubmissionId |
+
+Add lookup ports for code alone and normalized draft facts; database uniqueness remains collision guard. PACKAGED already includes name/brand/mode/dimension/canonical package quantity. BULK excludes package quantity, but current model retains measurement kind. Main must resolve whether stated name+brand-only identity forbids same-name bulk products of different dimensions or whether dimension participates.
+
+Normalization v2 performs NFKC, lowercase, punctuation-to-space and whitespace collapse; accents remain significant. Canonical units equate 1000 g/1 kg and 1000 ml/1 L. Never mutate released v2. A changed rule needs new version, preflight/backfill, collision detection and explicit resolution. Migration must stop/report collisions, never auto-merge Purchases.
+
+Identity edits remain unmodeled. Recommend immutability this cycle; correction/reclassification is separate. Display-only correction is safe only if it cannot contradict identity. Technical UUID is never user code. Legacy null codes are readable compatibility rows and non-matches for code lookup; new commands remain non-null.
+
+## 10. Quantity, decimal and money
+
+Domain canonical boundary: MASS→KG, VOLUME→L, COUNT→UNIT, scale 1e6. Presentation accepts comma or dot, rejects mixed ambiguity, normalizes to dot before domain/application. Serialization stays locale-neutral.
+
+g/ml conversion currently truncates below canonical microunit through integer division; Main must accept truncation or require divisibility/rounding. Require positive bounded values. Fractional COUNT remains rejected unless separately changed.
+
+PACKAGED identity owns package quantity; Purchase records packages, amount and total. BULK has no package identity and packages must not be required. Current `packageCount` is non-null integer: decide nullable/not-applicable versus a documented placeholder. Design recommends nullable/not-applicable if schema work is accepted; fake `1` is misleading.
+
+Money remains currency + integer minor units. Presentation parses price without floating point and rejects unsupported fraction digits. For BULK, distinguish input price-per-unit from stored line total. Derive one from amount with explicit rounding; avoid two competing authoritative price facts.
+
+## 11. Error/result ownership
+
+Alternatives:
+
+1. typed domain/application failure algebra plus presentation mapping — recommended smallest owner;
+2. DB-backed descriptions — rejected now due migration/localization/staleness cost;
+3. typed failures plus compiled/localized catalogue — recommended evolution.
+
+Failure descriptor: stable code, title key, explanation key, field/operation, recovery action, retryable, and outcome (`known-not-applied`, `known-applied`, `unknown`). Adapters translate Drift/SQLite exceptions; widgets never receive raw DB errors. Do not persist/transmit error occurrences as analytics.
+
+## 12. Independent schema units
+
+Keep independently selectable:
+
+1. Person table;
+2. PaymentMethod table;
+3. nullable Purchase FKs;
+4. Product-code tightening/backfill;
+5. exact identity/normalization change;
+6. BULK package-count representation;
+7. evidence-justified indexes;
+8. measured projection cache;
+9. independently justified error catalogue;
+10. future SubmissionId.
+
+Each accepted unit defines next version, representative v2 fixture, backfill, collisions, FK/archive/delete behavior, transactional failure classification, reopen/no-reset evidence, Drift regeneration and Python/PySide6 database protection. Person/PaymentMethod/refs may share one coherent optional-metadata migration while remaining separately testable. Never bundle Product identity into it.
+
+## 13. Schema-free units
+
+- typed destination registry, Home and static destinations;
+- disabled Analytics/Household plus Guide/Docs;
+- History selection, export DTO and pure CSV;
+- Product-detail contract/route;
+- Lists algebra/algorithm fixtures/unavailable state;
+- comma/dot presentation parser and required unit controls;
+- typed failures plus compiled messages;
+- query-volume/plan measurement.
+
+PDF/share is schema-free but may be dependency/platform-bearing and needs separate license/platform authorization.
+
+## 14. Reversibility, cost and validation
+
+Preferred order:
+
+```text
+shell/Home
+→ typed failures and decimal boundary
+→ Product details
+→ History selection + DTO + CSV
+→ pure Lists fixtures/query
+→ optional-reference migration
+→ PDF/share adapters
+```
+
+Required evidence later: navigation/keyboard/tap widgets; projection fixtures/version; CSV escaping/order/date/decimal; exact lookup/collision/similarity separation; quantity and money rounding; representative v2 migration/archive/history/reopen/no-reset; generated schema reconciliation; share cancellation/privacy on Windows/Android; measured query plans; Python regression and protected DB evidence. Design does not claim these validations here.
+
+## 15. Main/human decisions
+
+1. Does BULK name+brand identity prohibit differing dimensions, or does dimension participate?
+2. Is BULK package count nullable/not-applicable?
+3. Define minimum observations, interval aggregation, ties and outliers for personal cycle.
+4. Define default threshold and whether user editing is active.
+5. Approve “personal estimate, not inventory” and explicit unavailable result.
+6. Keep Product identity fields immutable or authorize explicit correction.
+7. Retain accent-sensitive normalization v2 or stage a new version.
+8. Approve rename/archive/reactivate and whether never-used deletion is worthwhile.
+9. Approve Item-row CSV/grouped PDF, columns, timezone and order.
+10. Approve Windows save-first and Android share-sheet cleanup behavior.
+11. Approve adaptive semantic Product route.
+12. Approve typed failures + compiled/localized messages; reject DB catalogue now.
+13. Is optional Person/PaymentMethod metadata the first migration unit?
+14. Require measured evidence before index/cache.
+15. Keep Analytics/Household visibly disabled rather than empty active pages.
+
+## 16. Classification and next route
+
+Retained: inward topology, app-private Drift, atomic registration, UUID/code/exact identity separation, advisory similarity, fixed-scale quantity, minor-unit money and rebuildable analytics.
+
+Corrected: Cycle 09 local boundary; normalized key already exists; UI/domain capacity and current selection/error limits are now explicit.
+
+Contradicted: manual List aggregate, generic reference settings, identity-as-idempotency, DB error table by default and shortcut-only access.
+
+Unresolved: formula, BULK semantics, threshold, correction/version policy, export/share contract, lifecycle and performance evidence.
+
+Prospective: schema-free contracts and one optional-reference migration.
+
+Deferred: distributed/cloud/release scope and unrelated identity units.
+
+```text
+Main reconciles C09-R01 A/B/C
+→ resolves formula, BULK and reference lifecycle
+→ keeps D/E/F PROVISIONAL — NOT AUTHORIZED FOR CODEX
+→ stages schema-free contracts first
+→ requests Operational v2/query/share evidence
+→ freezes at most one schema migration unit
+→ explicitly transitions to FLX-ORD-01 only with writable paths,
+   validation, rollback and stop gates
+```
+
+Authority state:
+
+```text
+Design investigation appended
+source/schema/dependencies/permanent memory/J/D/E/F/G/H/I untouched
+Operational validation and Didactic maturity not claimed
+Codex inactive
+ready for Main reconciliation; not ready for materialization
+```
