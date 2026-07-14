@@ -44,6 +44,167 @@ Those operational rules belong to `FLUX.md`.
 
 ---
 
+# 1A. Promotion Cache — PRC-01
+
+PRC-01 is the low-cost semantic cache for ordinary sequence decisions.
+
+It does not replace the complete rules below. It allows prompts to verify routine classification and promotion without rereading the entire file.
+
+Read deeper sections only when PRC-01 cannot resolve a named contradiction, ownership question, maturity transition, or methodology change.
+
+## PRC-01.1 Claim-State Vocabulary
+
+| State | Meaning | Does not prove |
+| --- | --- | --- |
+| candidate | captured as potentially relevant | correctness, acceptance, or destination |
+| proposed | a concrete option has been stated | selection |
+| provisional | classified working knowledge awaiting acceptance or evidence | canon or implementation authority |
+| accepted | an authorized semantic decision may be depended on within its stated boundary | implementation or validation |
+| implemented | repository behavior or structure exists | correct execution, platform acceptance, or learner maturity |
+| validated | named evidence passed within a stated environment and scope | broader platform or production acceptance |
+| host-unvalidated | the relevant host could not establish the claim | product failure or success |
+| blocked | a named gate prevents progress | rejection |
+| deferred | intentionally assigned to a later boundary | completion |
+| superseded | replaced for current use while retained as history | historical erasure |
+| contradicted | relevant evidence disagrees and requires resolution | automatic choice of either side |
+
+Never collapse these states.
+
+## PRC-01.2 Semantic Destination Cache
+
+| Destination | Owns | Must not do |
+| --- | --- | --- |
+| Functional stage | current domain investigation and alternatives | claim canon |
+| Main/J synthesis | cross-domain grouping, contradiction, current investigative cache | replace domain canon |
+| D/E/F | provisional investigation cache or controlling materialization instructions, as explicitly marked | mix provisional and active authority |
+| G/H/I | materialization evidence | promote itself |
+| Canonical | one domain’s stable accepted truth | preserve raw chronology or speculation |
+| Derived | reorganized explanation, map, index, or TODO from accepted owners | create truth |
+| Checkpoint | compact current-state recovery | become canon, history, or full rationale |
+| Observational | chronology, evidence, decisions, failures, corrections | define current truth alone |
+| Main continuity | global state, session history, and forward recovery | replace domain ownership |
+
+## PRC-01.3 Required Classification Record
+
+Before promotion, record:
+
+~~~text
+Claim:
+Source:
+Current state:
+Evidence:
+Evidence boundary:
+Contradictions:
+Semantic owner:
+Target role:
+History disposition:
+Confidence:
+Human/Main authority:
+Required regeneration:
+Result:
+~~~
+
+If any required field is unknowable and materially affects the result, promotion stops or remains provisional.
+
+## PRC-01.4 Integrity Gates
+
+A promotion is invalid when any of the following is true:
+
+1. conversation is treated as persistence;
+2. staging is treated as canon;
+3. Codex evidence is copied into canon without interpretation;
+4. implementation is called validated without named evidence;
+5. project evidence is treated as learner maturity;
+6. two permanent files claim the same canonical meaning;
+7. derived knowledge or a checkpoint creates an independent fact;
+8. an observational record is rewritten as current truth;
+9. Main-root state replaces a domain owner;
+10. cross-domain repetition lacks a distinct perspective;
+11. a correction erases useful history;
+12. a materialized file change is treated as semantic acceptance;
+13. a proposed, blocked, deferred, contradicted, or host-unvalidated claim is promoted as accepted or validated;
+14. a new file or rename bypasses FLUX authority;
+15. methodology changes occur outside explicit methodological context.
+
+## PRC-01.5 Evidence Gate
+
+Use the narrowest evidence sufficient for the claim.
+
+Examples:
+
+| Claim | Minimum evidence class |
+| --- | --- |
+| code exists | repository inspection |
+| unit behavior works | named passing unit test |
+| platform build works | named successful platform build |
+| manual workflow works | recorded manual observation |
+| migration preserves data | representative migration and reopen evidence |
+| synchronization works | real upload/download/convergence evidence, not a local queue |
+| learner maturity changed | explicit learner explanation or application evidence under Didactic criteria |
+| architecture accepted | authorized decision plus coherent responsibility and dependency evidence |
+| operational model accepted | repeatable or adequately evidenced execution rule |
+
+Evidence must keep environment, scope, date/head, and known exclusions visible.
+
+## PRC-01.6 Promotion Order
+
+For full domain reconciliation:
+
+~~~text
+Observational
+    preserve event and evidence
+↓
+Canonical
+    accept or correct stable truth
+↓
+Derived
+    regenerate from accepted owners
+↓
+Checkpoint
+    regenerate current recovery state
+↓
+Main continuity
+    summarize only when global state changed
+~~~
+
+A valid run may conclude:
+
+~~~text
+no canonical change
+derived refresh only
+checkpoint refresh only
+observational append only
+promotion blocked
+further investigation required
+~~~
+
+## PRC-01.7 Sequence Binding
+
+- FLX-ORD-01 invokes PRC-01 after G/H/I or an accepted direct change.
+- FLX-INV-02 uses PRC-01 to keep round claims provisional and distinct; it does not promote merely through repetition.
+- FLX-PRN-03 uses PRC-01 when pruning exposes an ownership conflict or semantic correction.
+- FLX-PRM-04 is the controlling promotion sequence and must complete the Required Classification Record.
+
+## PRC-01.8 Deeper Reading Index
+
+Read only the targeted section needed:
+
+| Question | Read |
+| --- | --- |
+| knowledge-state meaning | Sections 2–5 |
+| domain and semantic-role classification | Sections 6–9 |
+| validation and synthesis | Sections 10–11 |
+| canonical/derived/checkpoint/observational handling | Sections 12–15 |
+| Codex report absorption and drift | Sections 16–17 |
+| vertical/horizontal reconciliation or duplicate ownership | Section 18 |
+| promotion direction | Section 19 |
+| domain-specific promotion | Section 20 |
+| structural gaps | Section 21 |
+| non-negotiable integrity rules | Section 22 |
+| relationship with routing or communication | Sections 24–25 |
+
+---
+
 # 2. Promotion
 
 Promotion is the controlled transformation of knowledge from one maturity state into another.
