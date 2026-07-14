@@ -51,6 +51,8 @@ class _PurchasePageState extends State<PurchasePage> {
   bool _submitting = false;
   bool _bulk = false;
   int? _editingKey;
+  ProductReference? _editingReference;
+  String? _editingProductLabel;
   int _nextKey = 1;
   _PurchaseFeedback? _feedback;
 
@@ -166,6 +168,20 @@ class _PurchasePageState extends State<PurchasePage> {
     _stageItem(ExistingProductReference(product.id), product.displayName);
   }
 
+  void _saveEditedLine() {
+    final reference = _editingReference;
+    final productLabel = _editingProductLabel;
+    if (_editingKey == null || reference == null || productLabel == null) {
+      setState(() {
+        _feedback = _PurchaseFeedback.error(
+          'Choose a staged Item to edit before saving.',
+        );
+      });
+      return;
+    }
+    _stageItem(reference, productLabel);
+  }
+
   void _stageItem(ProductReference reference, String productLabel) {
     try {
       final item = PurchaseItemDraft(
@@ -193,7 +209,7 @@ class _PurchasePageState extends State<PurchasePage> {
         } else {
           _lines[index] = line;
         }
-        _editingKey = null;
+        _clearEditState();
         _warnings = const [];
         _feedback = _PurchaseFeedback.success('Staged Item saved.');
         _clearItemInputs();
@@ -210,6 +226,8 @@ class _PurchasePageState extends State<PurchasePage> {
   void _editLine(_DraftLine line) {
     setState(() {
       _editingKey = line.keyValue;
+      _editingReference = line.item.productReference;
+      _editingProductLabel = line.productLabel;
       _reviewing = false;
       _lineTotalController.text = _formatMinorUnits(line.item.lineTotal);
       _packageCountController.text = line.item.packageCount.toString();
@@ -223,7 +241,7 @@ class _PurchasePageState extends State<PurchasePage> {
     setState(() {
       _lines.removeWhere((candidate) => candidate.keyValue == line.keyValue);
       if (_editingKey == line.keyValue) {
-        _editingKey = null;
+        _clearEditState();
       }
       _reviewing = false;
       _feedback = _PurchaseFeedback.success('Staged Item removed.');
@@ -263,6 +281,7 @@ class _PurchasePageState extends State<PurchasePage> {
       }
       setState(() {
         _lines.clear();
+        _clearEditState();
         _warnings = const [];
         _reviewing = false;
         _submitting = false;
@@ -321,6 +340,13 @@ class _PurchasePageState extends State<PurchasePage> {
     _nameController.clear();
     _brandController.clear();
     _lineTotalController.clear();
+    _selectedProduct = null;
+  }
+
+  void _clearEditState() {
+    _editingKey = null;
+    _editingReference = null;
+    _editingProductLabel = null;
   }
 
   @override
@@ -356,16 +382,19 @@ class _PurchasePageState extends State<PurchasePage> {
             children: [
               FilledButton(
                 key: const Key('item.add'),
-                onPressed: () => _stageNewProduct(createAnyway: false),
+                onPressed: _editingKey == null
+                    ? () => _stageNewProduct(createAnyway: false)
+                    : _saveEditedLine,
                 child: Text(
                   _editingKey == null ? 'Add staged Item' : 'Save staged Item',
                 ),
               ),
-              FilledButton.tonal(
-                key: const Key('product.createAnyway'),
-                onPressed: () => _stageNewProduct(createAnyway: true),
-                child: const Text('Create anyway'),
-              ),
+              if (_editingKey == null)
+                FilledButton.tonal(
+                  key: const Key('product.createAnyway'),
+                  onPressed: () => _stageNewProduct(createAnyway: true),
+                  child: const Text('Create anyway'),
+                ),
               OutlinedButton(
                 key: const Key('purchase.review'),
                 onPressed: _lines.isEmpty

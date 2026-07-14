@@ -4,7 +4,9 @@ import 'package:markei/application/purchase_history.dart';
 import 'package:markei/app/markei_app.dart';
 import 'package:markei/app/markei_composition.dart';
 import 'package:markei/app/pages/history_page.dart';
+import 'package:markei/domain/catalogue/product.dart';
 import 'package:markei/domain/shared/ids.dart';
+import 'package:markei/domain/shared/quantity.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
 import 'package:markei/infrastructure/local/local_query_repository.dart';
@@ -62,6 +64,91 @@ void main() {
     expect(find.text('Mercado Central'), findsOneWidget);
     expect(find.textContaining('2 Purchase Item(s)'), findsOneWidget);
     expect(find.text('BRL 21.49'), findsOneWidget);
+  });
+
+  testWidgets('editing an existing Product Item preserves Product identity', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    final product = await queries.createProduct(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      const ProductDraft(
+        userCode: 'CAFE-001',
+        name: 'Cafe Especial',
+        brand: 'Marca A',
+        mode: ProductMode.packaged,
+        measurementKind: MeasurementKind.mass,
+        packageAmount: '1',
+        packageUnit: 'kg',
+      ),
+    );
+    final composition = MarkeiComposition(
+      database: db,
+      purchaseRegistration: LocalPurchaseRepository(db),
+      catalogueQueries: queries,
+      purchaseHistory: queries,
+      accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
+      deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+
+    await _enterVisibleText(
+      tester,
+      find.byKey(const Key('item.lineTotal')),
+      '10.00',
+    );
+    await _tapVisible(tester, find.byKey(const Key('purchase.product.select')));
+    await _pumpReady(tester);
+    await tester.tap(find.text('Cafe Especial').last);
+    await _pumpReady(tester);
+    await _tapVisible(tester, find.byKey(const Key('product.useSelected')));
+    await _pumpReady(tester);
+
+    await _tapVisible(tester, find.byKey(const Key('purchase.line.edit.1')));
+    await _enterVisibleText(
+      tester,
+      find.byKey(const Key('item.packageCount')),
+      '3',
+    );
+    await _enterVisibleText(
+      tester,
+      find.byKey(const Key('item.quantity')),
+      '2',
+    );
+    await _enterVisibleText(
+      tester,
+      find.byKey(const Key('item.lineTotal')),
+      '15.50',
+    );
+    await _tapVisible(tester, find.byKey(const Key('item.add')));
+    await _tapVisible(tester, find.byKey(const Key('purchase.review')));
+    await _pumpReady(tester);
+    await _tapVisible(tester, find.byKey(const Key('purchase.register')));
+    await _pumpReady(tester);
+
+    final products = await queries.listProducts(composition.accountId);
+    expect(products, hasLength(1));
+    expect(products.single.id.value, product.id.value);
+
+    final purchases = await queries.listRecentPurchases(composition.accountId);
+    final detail = await queries.getPurchaseDetail(
+      composition.accountId,
+      purchases.single.purchaseId,
+    );
+    final item = detail!.items.single;
+    expect(item.productId.value, product.id.value);
+    expect(item.packageCount, 3);
+    expect(item.purchasedAmount, '2.000000');
+    expect(item.lineTotalMinorUnits, 1550);
   });
 
   testWidgets('phone-width shell shows purchase and history states', (
