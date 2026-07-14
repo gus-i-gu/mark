@@ -1335,3 +1335,237 @@ Cycle 09/10: scheduled, inactive
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+---
+
+# Cycle 09 Entry Scheme — Database/UI Fine-Tuning
+
+> Prepared: 2026-07-14
+> Starting branch: `intermid-cycle-recovery`
+> Starting permanent-domain head: `b590f9659426ee94bb9581da4013f40410716fed`
+> Corrected implementation: `409e5f1e013a282165efd5f31bed17a396ad6543`
+> Status: active forward checkpoint; investigation and prioritization only
+> Suggested next branch: `cycle-09-db-ui-fine-tuning` after closure is pulled
+
+## 1. Cycle mission
+
+Cycle 09 aligns the MVP interface, domain contracts, local persistence, and
+query projections.
+
+The governing rule is:
+
+> UI requirements identify needed behavior; domain decisions define meaning;
+> the database stores only accepted facts and invariants; queries return the
+> states the UI must truthfully present.
+
+The cycle must not begin with a speculative schema. It begins with the current
+user journeys and their data/lifecycle gaps.
+
+## 2. Starting product baseline
+
+Available now:
+
+- Purchase, Products, and History destinations;
+- existing/new Product and Store references;
+- multi-line session draft, edit/remove/review, total, and local registration;
+- corrected Product-reference-preserving edit flow;
+- detailed History and personal price comparison;
+- Drift schema v2 and one atomic local registration transaction;
+- local Device/event/pending preparation;
+- 7 focused tests, 32 total Flutter tests, and clean analysis at the recovery
+  materialization boundary.
+
+Known evidence gaps:
+
+- file-backed close/reopen and migration fixtures;
+- rollback failure injection;
+- current Windows/Android manual and lifecycle evidence;
+- measured Catalogue/History volume;
+- durable retry identity;
+- Store and installation identity semantics;
+- backup/export/restore behavior.
+
+## 3. Cycle 09 scope-control rules
+
+1. One bounded product/data decision at a time.
+2. No schema v3 before the owning UI need and domain invariant are accepted.
+3. Every schema change requires migration, reopen, rollback, and no-silent-reset
+   evidence appropriate to its risk.
+4. Do not combine Store identity, SubmissionId, Device lifecycle, persisted
+   drafts, and query/index work into one migration.
+5. Prefer rebuildable projections over stored derived values.
+6. Measure query cost before adding indexes, pagination, or caches.
+7. Preserve the protected Python/PySide6 beta and database boundary.
+8. Local queue/event tables are not synchronization.
+9. No authentication, API, Neon, upload/download, cursor, or convergence work in
+   this cycle unless the human explicitly changes the schedule.
+10. MVP value and closure speed outrank speculative generality.
+
+## 4. First investigation deliverable — UI/Data Contract Matrix
+
+Before source materialization, map each active or proposed MVP interaction:
+
+| Question | Required answer |
+| --- | --- |
+| User action | What does the person do? |
+| Visible state | loading, empty, input, validation, success, failure, retry |
+| Domain meaning | Which identity, invariant, or aggregate owns it? |
+| Persisted fact | What must survive restart? |
+| Session state | What may remain mounted-memory only? |
+| Query/projection | What must the UI read or derive? |
+| Failure behavior | What remains after rejection/interruption? |
+| Migration effect | none, compatible read, backfill, or schema change |
+| Evidence | unit, widget, file-backed, migration, manual, lifecycle |
+| Non-goal | What nearby behavior is deliberately excluded? |
+
+The matrix should cover current Purchase, Products, Stores, and History before
+adding new features.
+
+## 5. Decision queue
+
+### P0 — Persistence safety baseline
+
+- file-backed create → register → close → reopen → History;
+- representative v1→v2 migration fixture;
+- explicit future migration-chain rule;
+- injected registration failures and all-or-nothing row/sequence evidence;
+- database location and replacement/recovery behavior.
+
+This evidence may be gathered without schema expansion.
+
+### P0 — Select one MVP database/UI vertical slice
+
+Choose exactly one after A/B/C investigation:
+
+- Store duplicate/correction identity;
+- durable registration submission/retry identity;
+- Product correction/alias behavior;
+- export/restore MVP boundary;
+- another human-approved user journey with a demonstrated data gap.
+
+Selection criteria:
+
+- direct MVP user value;
+- current UI friction or correctness risk;
+- reversible design;
+- bounded migration cost;
+- testability;
+- no dependency on synchronization.
+
+### P1 — UI response and state hardening
+
+For the selected slice and existing journeys:
+
+- truthful loading/empty/error/retry/success states;
+- validation attached to the responsible input;
+- narrow/wide behavior;
+- keyboard, focus, Back, scrolling, and larger-text behavior;
+- preserved draft/retry behavior according to the accepted lifetime;
+- no misleading synchronization, backup, or durable-idempotency language.
+
+### P1 — Query evidence
+
+- define realistic local Catalogue and History volumes;
+- measure current query/render behavior;
+- add indexes or pagination only from observed need;
+- keep price comparison rebuildable unless evidence demonstrates otherwise.
+
+## 6. Recommended execution units
+
+```text
+C09-U01  A/B/C UI/Data Contract investigation
+C09-U02  Main selects and freezes one bounded decision
+C09-U03  persistence-safety evidence or prerequisite correction
+C09-U04  selected database/UI vertical slice
+C09-U05  UI state/accessibility hardening for that slice
+C09-U06  Windows/Android regression and cycle reconciliation
+```
+
+Units may be merged only when they share one invariant, one rollback boundary,
+and one validation story.
+
+## 7. Role responsibilities for C09-U01
+
+Operational [O]:
+
+- recover current file-backed, migration, rollback, host, and query evidence;
+- define reproducible commands and acceptance matrix;
+- estimate validation cost;
+- distinguish source inspection from executed evidence;
+- stage only Operational findings.
+
+Didactic [A]:
+
+- map user-visible terms to existing concepts;
+- identify concepts required by the selected UI/data decision;
+- separate project evidence from learner maturity;
+- protect naming against false backup, sync, identity, or idempotency claims;
+- stage only Didactic findings.
+
+Design [D]:
+
+- map UI states to application ports, domain ownership, facts, and projections;
+- compare candidate vertical slices by value, reversibility, migration cost, and
+  testability;
+- keep independent identities and migrations separate;
+- recommend one smallest coherent unit;
+- stage only Design findings.
+
+Main [M]:
+
+- reconcile A/B/C;
+- obtain human selection where product meaning changes;
+- write fresh controlling D/E/F for one unit only;
+- keep rejected/deferred candidates explicit.
+
+## 8. Entry questions requiring human/Main selection
+
+1. Which user-visible problem is the first Cycle 09 database/UI slice?
+2. Is session-only Purchase draft lifetime still accepted for the MVP?
+3. Must ambiguous local registration retries be durable before synchronization?
+4. Does Store correction/duplicate handling block ordinary MVP use now?
+5. Is export/restore required for launchable local MVP, or deferred with clear
+   product copy?
+6. Which Windows and Android acceptance gates are mandatory for Cycle 09 exit?
+
+Do not answer these through schema inference alone.
+
+## 9. Cycle 09 exit direction
+
+Cycle 09 should close with:
+
+- current UI/data contracts documented and reconciled;
+- persistence safety materially improved;
+- at least one accepted MVP database/UI gap closed end to end;
+- any schema change migrated and regression protected;
+- UI states truthful across the selected workflow;
+- measured rather than speculative query decisions;
+- refreshed Operational, Didactic, Design, and Main-root memory;
+- explicit remaining gates for the following cycle.
+
+Cycle 09 does not require Neon synchronization.
+
+## 10. Recovery and staging instructions
+
+Start through `INDEX.md` and follow its methodology-defined route. Recover the
+current domain checkpoint before deeper memory or repository inspection.
+
+Current Intermid A–J evidence must not be erased merely to create an empty Cycle
+09 surface. Stage cleanup, archival, or temporal partitioning requires the
+methodology-authorized pruning/transition route.
+
+No source, schema, dependency, host installation, branch creation, staging-file
+reset, or permanent-memory promotion is authorized by this scheme alone.
+
+## 11. First valid action
+
+```text
+pull the Intermid closure head
+→ create/switch the human-approved Cycle 09 branch
+→ initialize O/A/D through INDEX
+→ run C09-U01 UI/Data Contract investigation
+→ Main reconciles candidate slices
+→ human selects the first bounded MVP decision
+→ fresh D/E/F
+```
