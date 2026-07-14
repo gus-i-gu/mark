@@ -15,10 +15,10 @@
 
 # Cycle 07 Sprint 05 Design Checkpoint
 
-> Branch: `cycle-07-mobile-preparation`  
-> Evidence: `DEV_STAGE/I_DSN_CODEX.md`  
-> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, §24  
-> Intent/directive: `DEV_STAGE/C_DESIGN.md`, `DEV_STAGE/F_DSN_STAGE.md`  
+> Branch: `cycle-07-mobile-preparation`
+> Evidence: `DEV_STAGE/I_DSN_CODEX.md`
+> Main reconciliation: `[M]_STAGE/J_[M]_STAGE.md`, §24
+> Intent/directive: `DEV_STAGE/C_DESIGN.md`, `DEV_STAGE/F_DSN_STAGE.md`
 > Repository truth: Android host, async composition, Device repository, Drift v2, tests, and functional scaffold
 
 ## Current architecture
@@ -126,10 +126,10 @@ Additional implementation remains inactive until Main/human authority is express
 
 # Cycle 09 Sprint 02 Design Checkpoint
 
-> Sequence: FLX-PRM-04 / PRC-01  
-> Branch: `intermid-cycle-recovery`  
-> Required ancestry: `4bf2e52d9d3e23437c4da1d8bb05e2402e189dd5`  
-> Source range: `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3..1d817972aea0229c9f109f236f4d224671927aab`  
+> Sequence: FLX-PRM-04 / PRC-01
+> Branch: `intermid-cycle-recovery`
+> Required ancestry: `4bf2e52d9d3e23437c4da1d8bb05e2402e189dd5`
+> Source range: `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3..1d817972aea0229c9f109f236f4d224671927aab`
 > Generated Drift: derived evidence only
 
 ## Current architecture
