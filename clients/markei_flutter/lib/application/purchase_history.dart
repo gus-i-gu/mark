@@ -23,6 +23,8 @@ final class PurchaseHistoryEntry {
     required this.currencyCode,
     required this.totalMinorUnits,
     required this.itemCount,
+    this.personLabel,
+    this.paymentMethodLabel,
   });
 
   final PurchaseId purchaseId;
@@ -31,6 +33,8 @@ final class PurchaseHistoryEntry {
   final String currencyCode;
   final int totalMinorUnits;
   final int itemCount;
+  final String? personLabel;
+  final String? paymentMethodLabel;
 }
 
 final class PurchaseDetail {
@@ -58,7 +62,7 @@ final class PurchaseDetailItem {
   final String productName;
   final String productBrand;
   final String productCode;
-  final int packageCount;
+  final int? packageCount;
   final String measurementKind;
   final String purchasedAmount;
   final String purchasedUnit;

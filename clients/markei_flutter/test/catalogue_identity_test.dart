@@ -29,8 +29,11 @@ void main() {
       expected['normalizedUserProductCode'],
     );
     expect(product.packageQuantity?.decimalText, expected['packageAmount']);
-    expect(product.identityKey, expected['identityKey']);
-    expect(equivalentProduct.identityKey, equivalent['expectedIdentityKey']);
+    expect(product.identityKey, _v3(expected['identityKey']! as String));
+    expect(
+      equivalentProduct.identityKey,
+      _v3(equivalent['expectedIdentityKey']! as String),
+    );
     expect(equivalentProduct.id.value == product.id.value, isFalse);
   });
 
@@ -47,7 +50,7 @@ void main() {
 
     expect(product.mode, ProductMode.bulk);
     expect(product.packageQuantity, isNull);
-    expect(product.identityKey, expected['identityKey']);
+    expect(product.identityKey, _v3(expected['identityKey']! as String));
   });
 
   test('similar product spelling warns but does not auto merge', () {
@@ -104,3 +107,5 @@ MeasurementKind _kind(String value) => switch (value) {
   'COUNT' => MeasurementKind.count,
   _ => throw ArgumentError('Unknown kind $value'),
 };
+
+String _v3(String value) => value.replaceFirst('|v2|', '|v3|');

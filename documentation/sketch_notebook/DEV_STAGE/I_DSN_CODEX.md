@@ -1,64 +1,63 @@
-<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
-> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+# I_DSN_CODEX — Cycle 09 Design Evidence
 
----
+> Sequence: FLX-ORD-01
+> Unit: C09-U02
+> Status: Architecture evidence only; not permanent Design memory
 
-## 2026-07-14 — Codex Design Evidence: Edit-State Ownership
+## Topology
 
-Sequence: FLX-ORD-01
-Role: Codex materialization evidence
-Round or unit: Existing-product staged Item edit correction
-Branch: intermid-cycle-recovery
-Baseline / inspected HEAD: a73b1dc9e23cdd247a93d43222ff6107a041b9f5
-Authority: D_OPS_STAGE.md + E_DDC_STAGE.md + F_DSN_STAGE.md controlling envelope
-Writable surfaces: authorized source paths and G/H/I Codex reports
-Evidence boundary: local Flutter widget regression, full tests, and analysis
+- Preserved dependency direction: Flutter presentation uses application ports/read models; repositories adapt Drift rows; domain owns Product/Purchase/quantity semantics.
+- Composition remains explicit in `MarkeiComposition`.
+- Widgets do not receive Drift rows or raw SQLite exceptions.
+- Generated Drift code remains derived from `local_database.dart`.
+- Protected Python/PySide6/database topology was not changed.
 
-Source stage files:
-- documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
-- documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
-- documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
+## Application And Domain Ownership
 
-Changed paths:
-- clients/markei_flutter/lib/app/pages/purchase_page.dart
-- clients/markei_flutter/test/app/markei_app_test.dart
-- documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
-- documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
-- documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+- Application contracts added for typed failures, local references/preferences, Home descriptors, Lists projections, exact Product lookup, and Purchase export DTOs.
+- Domain owns Product normalization v3, local reference value semantics, nullable BULK package count, and display quantity normalization.
+- Presentation owns selected destination, staged draft lines, History selected-ID set, and temporary UI feedback.
+- Local repository owns Drift transactions, v3 migration, read models, reference lifecycle, preference persistence, Lists projection query, and export bundle retrieval.
 
-Chosen edit-state ownership:
-- PurchasePage now retains edit-state ownership for `_editingKey`, `_editingReference`, and `_editingProductLabel`.
-- Entering edit mode copies the selected draft line's ProductReference and label into explicit edit state.
-- Saving an edit calls one save path that rebuilds only PurchaseItemDraft values from editable controls and reuses the retained reference and label.
-- Removing an edited line, saving an edited line, or registering the purchase clears associated edit state.
+## Schema v3 And Migration
 
-Invariant evidence:
-- Regression `editing an existing Product Item preserves Product identity` creates one existing Product, selects/stages it through the widget flow, edits package count, quantity, and line total, registers, and verifies:
-  - Product row count remains 1;
-  - registered PurchaseDetailItem.productId matches the original Product ID;
-  - edited package count, purchased amount, and line total are persisted.
+- New tables: People, PaymentMethods, AccountPreferences.
+- Purchases gain nullable `person_id` and `payment_method_id`.
+- PurchaseItems `package_count` is nullable for BULK.
+- Product normalization version moves to 3; v2 rows are rewritten to v3 exact keys without rewriting Purchase history.
+- Legacy null codes are deterministically backfilled from Product IDs.
+- Migration preflights v3 exact identity collisions and stops on collision.
+- v2 migration rebuilds `purchase_items` to relax package count nullability.
+- Fresh-create, v1 migration, file-backed v2-to-v3 migration, close/reopen, and generated-code evidence are present.
 
-Commands and results:
-- dart format lib/app/pages/purchase_page.dart test/app/markei_app_test.dart: passed.
-- flutter test test/app/markei_app_test.dart: final run passed, 7 tests passed.
-- flutter test: passed, 32 tests passed.
-- flutter analyze: passed, No issues found.
+## Projection, Export, And Share Architecture
 
-Deviation:
-- No deviation from authorized source scope.
-- A presentation-local selected Product clear was added after line save so dropdown state cannot retain a stale Product instance across catalogue reload; staged identity remains owned by the line/edit state.
+- Lists are transient projections from Product/Purchase observations; no List aggregate or cache table was added.
+- `personal-cycle-v1` is pure Dart and versioned in the application layer.
+- CSV/PDF export uses selected Purchase DTOs independent of Drift/widgets.
+- CSV is deterministic UTF-8 text.
+- PDF is generated as simple PDF bytes with Dart standard libraries.
+- Save/share behavior writes explicit local files and tells the user to share manually; no upload or synchronization path was activated.
 
-Stop-condition audit:
-- No schema or migration change.
-- No Product merge/correction semantics.
-- No Store identity work.
-- No durable submission identity.
-- No persisted drafts.
-- No synchronization architecture.
-- No source changes outside the authorized paths.
+## Dependency Choices
 
-Unresolved risks:
-- None identified within the local widget/regression boundary.
+- No new Flutter dependency was added.
+- Reason: current requirements could be satisfied with Dart standard libraries for deterministic CSV/PDF file evidence, avoiding unsupported or unverified share dependencies on this host.
+- `pubspec.yaml` and `pubspec.lock` were not changed.
 
-Suggested functional follow-up:
-- Design Chat may classify the page as having presentation-local edit identity ownership for staged line edits.
+## Invariants
+
+- Account-scoped Product code and exact identity remain enforced.
+- Exact Product collision is not similarity.
+- BULK has no package count and does not persist a competing price truth.
+- Optional references are nullable and history-preserving.
+- Registered Purchase edit/delete remains disabled.
+- Analytics and Household remain disabled/PIN-labelled.
+- Store identity, sync/API/auth, SubmissionId, persisted drafts, and Product auto-merge remain outside implementation.
+
+## Deviations And Risks
+
+- OS-native share plugin was not introduced; share is explicit local PDF save plus manual share boundary.
+- Android build/runtime is host-blocked by missing Java.
+- Windows smoke was bounded process launch only, not full manual acceptance.
+- Future review should inspect UI density for small screens and decide whether native share dependencies are worth adding.

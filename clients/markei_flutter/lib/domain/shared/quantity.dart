@@ -2,6 +2,18 @@ enum MeasurementKind { mass, volume, count }
 
 enum CanonicalUnit { kg, l, unit }
 
+enum DisplayUnit {
+  kg('kg'),
+  g('g'),
+  l('L'),
+  ml('ml'),
+  unit('un');
+
+  const DisplayUnit(this.label);
+
+  final String label;
+}
+
 final class NormalizedQuantity {
   const NormalizedQuantity({
     required this.kind,
@@ -21,7 +33,7 @@ final class NormalizedQuantity {
     required CanonicalUnit unit,
     required String decimal,
   }) {
-    final parsed = _parseDecimalMicrounits(decimal);
+    final parsed = parseDisplayDecimalMicrounits(decimal);
     if (kind == MeasurementKind.count && parsed % factor != 0) {
       throw ArgumentError('Fractional COUNT is not accepted in this unit.');
     }
@@ -48,7 +60,7 @@ NormalizedQuantity normalizeDisplayQuantity({
   required String unit,
 }) {
   final rawUnit = unit.trim().toLowerCase();
-  final rawMicros = _parseDecimalMicrounits(amount);
+  final rawMicros = parseDisplayDecimalMicrounits(amount);
   return switch (kind) {
     MeasurementKind.mass when rawUnit == 'g' => NormalizedQuantity(
       kind: kind,
@@ -80,9 +92,13 @@ NormalizedQuantity normalizeDisplayQuantity({
   };
 }
 
-int _parseDecimalMicrounits(String decimal) {
+int parseDisplayDecimalMicrounits(String decimal) {
   final trimmed = decimal.trim();
-  final match = RegExp(r'^(\d+)(?:\.(\d{1,6}))?$').firstMatch(trimmed);
+  if (trimmed.contains(',') && trimmed.contains('.')) {
+    throw ArgumentError('Ambiguous decimal separator: $decimal');
+  }
+  final normalized = trimmed.replaceAll(',', '.');
+  final match = RegExp(r'^(\d+)(?:\.(\d{1,6}))?$').firstMatch(normalized);
   if (match == null) {
     throw ArgumentError('Invalid fixed decimal quantity: $decimal');
   }

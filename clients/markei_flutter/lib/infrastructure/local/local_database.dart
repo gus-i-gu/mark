@@ -79,6 +79,13 @@ class Purchases extends Table {
       text().references(LocalAccounts, #id, onDelete: KeyAction.restrict)();
   TextColumn get storeId =>
       text().references(Stores, #id, onDelete: KeyAction.restrict)();
+  TextColumn get personId =>
+      text().nullable().references(People, #id, onDelete: KeyAction.restrict)();
+  TextColumn get paymentMethodId => text().nullable().references(
+    PaymentMethods,
+    #id,
+    onDelete: KeyAction.restrict,
+  )();
   DateTimeColumn get occurrenceTime => dateTime()();
   TextColumn get currencyCode => text().withLength(min: 3, max: 3)();
   IntColumn get totalMinorUnits => integer()();
@@ -94,7 +101,7 @@ class PurchaseItems extends Table {
       text().references(Purchases, #id, onDelete: KeyAction.cascade)();
   TextColumn get productId =>
       text().references(Products, #id, onDelete: KeyAction.restrict)();
-  IntColumn get packageCount => integer()();
+  IntColumn get packageCount => integer().nullable()();
   TextColumn get measurementKind => text()();
   TextColumn get purchasedAmount => text()();
   TextColumn get purchasedUnit => text()();
@@ -103,6 +110,57 @@ class PurchaseItems extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+}
+
+class People extends Table {
+  TextColumn get id => text()();
+  TextColumn get accountId =>
+      text().references(LocalAccounts, #id, onDelete: KeyAction.restrict)();
+  TextColumn get nickname => text()();
+  TextColumn get normalizedNickname => text()();
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get archivedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {accountId, normalizedNickname, active},
+  ];
+}
+
+class PaymentMethods extends Table {
+  TextColumn get id => text()();
+  TextColumn get accountId =>
+      text().references(LocalAccounts, #id, onDelete: KeyAction.restrict)();
+  TextColumn get nickname => text()();
+  TextColumn get normalizedNickname => text()();
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get archivedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {accountId, normalizedNickname, active},
+  ];
+}
+
+class AccountPreferences extends Table {
+  TextColumn get accountId =>
+      text().references(LocalAccounts, #id, onDelete: KeyAction.cascade)();
+  IntColumn get shortageThresholdDays =>
+      integer().withDefault(const Constant(5))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {accountId};
 }
 
 class SyncEvents extends Table {
@@ -164,6 +222,9 @@ class MigrationLedger extends Table {
     Devices,
     Products,
     Stores,
+    People,
+    PaymentMethods,
+    AccountPreferences,
     Purchases,
     PurchaseItems,
     SyncEvents,
@@ -191,7 +252,7 @@ class LocalDatabase extends _$LocalDatabase {
       LocalDatabase(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -203,13 +264,13 @@ class LocalDatabase extends _$LocalDatabase {
           schemaVersion: schemaVersion,
           fromVersion: const Value(null),
           toVersion: Value(schemaVersion),
-          migrationId: const Value('create-v2'),
+          migrationId: const Value('create-v3'),
           appliedAt: DateTime.utc(2026, 7, 12),
         ),
       );
     },
     onUpgrade: (migrator, from, to) async {
-      if (from == 1) {
+      if (from < 2) {
         await migrator.addColumn(products, products.userProductCode);
         await migrator.addColumn(products, products.normalizedUserProductCode);
         await migrator.addColumn(products, products.displayName);
@@ -237,12 +298,37 @@ class LocalDatabase extends _$LocalDatabase {
             schemaName: 'shared_beta_local',
             schemaVersion: to,
             fromVersion: Value(from),
-            toVersion: Value(to),
+            toVersion: const Value(2),
             migrationId: const Value('v1-to-v2-product-code-display'),
             appliedAt: DateTime.now().toUtc(),
           ),
         );
-      } else {
+      }
+      if (from < 3) {
+        await _preflightV3ProductIdentity();
+        await migrator.createTable(people);
+        await migrator.createTable(paymentMethods);
+        await migrator.createTable(accountPreferences);
+        await migrator.addColumn(purchases, purchases.personId);
+        await migrator.addColumn(purchases, purchases.paymentMethodId);
+        await _rebuildPurchaseItemsWithNullablePackageCount();
+        await _migrateProductsToV3();
+        await customStatement('''
+INSERT OR IGNORE INTO account_preferences(account_id, shortage_threshold_days, updated_at)
+SELECT id, 5, strftime('%s','now') * 1000 FROM local_accounts
+''');
+        await into(migrationLedger).insert(
+          MigrationLedgerCompanion.insert(
+            schemaName: 'shared_beta_local',
+            schemaVersion: to,
+            fromVersion: Value(from),
+            toVersion: const Value(3),
+            migrationId: const Value('v2-to-v3-local-products-references'),
+            appliedAt: DateTime.now().toUtc(),
+          ),
+        );
+      }
+      if (from > 3) {
         throw UnsupportedError(
           'Unsupported local database migration $from to $to.',
         );
@@ -252,4 +338,94 @@ class LocalDatabase extends _$LocalDatabase {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  Future<void> _preflightV3ProductIdentity() async {
+    final rows = await customSelect(
+      'SELECT id, account_id, normalized_name, normalized_brand, mode, '
+      'measurement_kind, package_amount, package_unit FROM products',
+      readsFrom: {products},
+    ).get();
+    final keys = <String, String>{};
+    for (final row in rows) {
+      final data = row.data;
+      final key = _v3IdentityKey(data);
+      final scoped = '${data['account_id']}|$key';
+      final previous = keys[scoped];
+      if (previous != null && previous != data['id']) {
+        throw StateError(
+          'v3 Product identity collision: $previous and ${data['id']}',
+        );
+      }
+      keys[scoped] = data['id'] as String;
+    }
+  }
+
+  Future<void> _migrateProductsToV3() async {
+    final rows = await customSelect(
+      'SELECT id, account_id, user_product_code, normalized_user_product_code, '
+      'normalized_name, normalized_brand, mode, measurement_kind, package_amount, '
+      'package_unit FROM products',
+      readsFrom: {products},
+    ).get();
+    for (final row in rows) {
+      final data = row.data;
+      final id = data['id'] as String;
+      final code =
+          (data['user_product_code'] as String?) ??
+          'legacy-${id.replaceAll('-', '').substring(0, 8)}';
+      final normalizedCode =
+          (data['normalized_user_product_code'] as String?) ??
+          code.toLowerCase();
+      await customStatement(
+        'UPDATE products SET user_product_code = ?, normalized_user_product_code = ?, '
+        'normalization_version = 3, exact_identity_key = ? WHERE id = ?',
+        [code, normalizedCode, _v3IdentityKey(data), id],
+      );
+    }
+  }
+
+  Future<void> _rebuildPurchaseItemsWithNullablePackageCount() async {
+    await customStatement(
+      'ALTER TABLE purchase_items RENAME TO purchase_items_old',
+    );
+    await customStatement('''
+CREATE TABLE purchase_items (
+  id TEXT NOT NULL PRIMARY KEY,
+  purchase_id TEXT NOT NULL REFERENCES purchases(id) ON DELETE CASCADE,
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  package_count INTEGER,
+  measurement_kind TEXT NOT NULL,
+  purchased_amount TEXT NOT NULL,
+  purchased_unit TEXT NOT NULL,
+  currency_code TEXT NOT NULL,
+  line_total_minor_units INTEGER NOT NULL
+)
+''');
+    await customStatement('''
+INSERT INTO purchase_items
+SELECT id, purchase_id, product_id, package_count, measurement_kind,
+       purchased_amount, purchased_unit, currency_code, line_total_minor_units
+FROM purchase_items_old
+''');
+    await customStatement('DROP TABLE purchase_items_old');
+  }
+
+  String _v3IdentityKey(Map<String, Object?> data) {
+    final base = [
+      data['account_id'],
+      'v3',
+      data['normalized_name'],
+      data['normalized_brand'],
+      data['mode'],
+    ];
+    if (data['mode'] == 'BULK') {
+      return base.join('|');
+    }
+    return [
+      ...base,
+      data['measurement_kind'],
+      data['package_amount'],
+      data['package_unit'],
+    ].join('|');
+  }
 }

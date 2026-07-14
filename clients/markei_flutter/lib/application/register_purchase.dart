@@ -26,6 +26,8 @@ final class RegisterPurchaseCommand {
     required this.occurrenceTime,
     required this.currencyCode,
     required this.items,
+    this.personId,
+    this.paymentMethodId,
   }) : storeReference =
            storeReference ?? NewStoreReference(storeName?.trim() ?? '');
 
@@ -35,6 +37,8 @@ final class RegisterPurchaseCommand {
   final DateTime occurrenceTime;
   final String currencyCode;
   final List<PurchaseItemDraft> items;
+  final String? personId;
+  final String? paymentMethodId;
 }
 
 abstract interface class PurchaseRegistrationRepository {

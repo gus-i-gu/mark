@@ -34,6 +34,7 @@ class _ProductsPageState extends State<ProductsPage> {
   List<ProductSimilarityWarning> _warnings = const [];
   bool _loading = true;
   bool _bulk = false;
+  Product? _selectedDetail;
   String? _message;
   bool _messageIsError = false;
 
@@ -157,10 +158,21 @@ class _ProductsPageState extends State<ProductsPage> {
       name: _nameController.text,
       brand: _brandController.text,
       mode: _bulk ? ProductMode.bulk : ProductMode.packaged,
-      measurementKind: MeasurementKind.mass,
+      measurementKind: _measurementKindFromUnit(),
       packageAmount: _bulk ? null : _packageAmountController.text,
       packageUnit: _bulk ? null : _packageUnitController.text,
     );
+  }
+
+  MeasurementKind _measurementKindFromUnit() {
+    final unit = _packageUnitController.text.trim().toLowerCase();
+    if (unit == 'l' || unit == 'ml') {
+      return MeasurementKind.volume;
+    }
+    if (unit == 'un' || unit == 'unit') {
+      return MeasurementKind.count;
+    }
+    return MeasurementKind.mass;
   }
 
   @override
@@ -186,12 +198,12 @@ class _ProductsPageState extends State<ProductsPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Products', style: TextStyle(fontSize: 22)),
+        const Text('Catalogue', style: TextStyle(fontSize: 22)),
         const SizedBox(height: 8),
         TextField(
           key: const Key('products.search'),
           controller: _searchController,
-          decoration: const InputDecoration(labelText: 'Search Products'),
+          decoration: const InputDecoration(labelText: 'Product code or name'),
           onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 12),
@@ -210,7 +222,13 @@ class _ProductsPageState extends State<ProductsPage> {
               subtitle: Text(
                 '${product.displayBrand} · ${product.userProductCode.displayValue}',
               ),
+              onTap: () => setState(() => _selectedDetail = product),
+              onLongPress: () => setState(() => _selectedDetail = product),
             ),
+        if (_selectedDetail != null) ...[
+          const Divider(height: 32),
+          _ProductDetail(product: _selectedDetail!),
+        ],
         const Divider(height: 32),
         const Text('Create Product', style: TextStyle(fontSize: 18)),
         SegmentedButton<bool>(
@@ -300,6 +318,37 @@ class _ProductsPageState extends State<ProductsPage> {
             ),
         ],
       ],
+    );
+  }
+}
+
+class _ProductDetail extends StatelessWidget {
+  const _ProductDetail({required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context) {
+    final package = product.packageQuantity;
+    return Card(
+      key: const Key('products.detail'),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Product details', style: TextStyle(fontSize: 18)),
+            Text('Product code: ${product.userProductCode.displayValue}'),
+            Text('Name: ${product.displayName}'),
+            Text('Brand: ${product.displayBrand}'),
+            Text('Mode: ${product.mode.name.toUpperCase()}'),
+            if (package != null)
+              Text(
+                'Package quantity: ${package.decimalText} ${package.unit.name}',
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

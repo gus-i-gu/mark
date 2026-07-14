@@ -5,6 +5,15 @@ import '../domain/store/store.dart';
 abstract interface class CatalogueQueryRepository {
   Future<List<Product>> listProducts(AccountId accountId);
 
+  Future<Product?> productByCode(AccountId accountId, String productCode);
+
+  Future<Product?> productByExactIdentity(
+    AccountId accountId,
+    ProductDraft draft,
+  );
+
+  Future<Product?> productDetail(AccountId accountId, ProductId productId);
+
   Future<List<Store>> listStores(AccountId accountId);
 
   Future<Product> createProduct(AccountId accountId, ProductDraft draft);

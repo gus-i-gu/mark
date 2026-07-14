@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:markei/application/app_failure.dart';
 import 'package:markei/application/register_purchase.dart';
 import 'package:markei/domain/catalogue/product.dart';
 import 'package:markei/domain/purchase/purchase.dart';
@@ -20,7 +21,7 @@ void main() {
       final second = await repository.registerPurchase(_command('FEIJAO-001'));
       await expectLater(
         repository.registerPurchase(_command('CAFE-001', packageCount: 0)),
-        throwsArgumentError,
+        throwsA(isA<AppFailure>()),
       );
       final third = await repository.registerPurchase(_command('BANANA-001'));
 

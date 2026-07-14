@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:markei/application/history_export.dart';
 import 'package:markei/application/purchase_history.dart';
 import 'package:markei/app/markei_app.dart';
 import 'package:markei/app/markei_composition.dart';
@@ -28,6 +29,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -37,7 +42,10 @@ void main() {
 
     expect(find.byKey(const Key('markei.navigationRail')), findsOneWidget);
     expect(find.byKey(const Key('markei.navigationBar')), findsNothing);
+    expect(find.byKey(const Key('home.page')), findsOneWidget);
 
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
     await _stageItem(
       tester,
       code: 'ARROZ-001',
@@ -94,6 +102,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -101,6 +113,8 @@ void main() {
     await tester.pumpWidget(MarkeiApp(composition: composition));
     await _pumpReady(tester);
 
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
     await _enterVisibleText(
       tester,
       find.byKey(const Key('item.lineTotal')),
@@ -167,6 +181,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -176,6 +194,11 @@ void main() {
 
     expect(find.byKey(const Key('markei.navigationBar')), findsOneWidget);
     expect(find.byKey(const Key('markei.navigationRail')), findsNothing);
+
+    expect(find.byKey(const Key('home.page')), findsOneWidget);
+
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
 
     expect(find.byKey(const Key('purchase.localNotice')), findsOneWidget);
 
@@ -201,6 +224,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -234,6 +261,7 @@ void main() {
         home: HistoryPage(
           accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
           history: _FailingThenEmptyHistory(),
+          exports: _EmptyExportRepository(),
           refreshSignal: 0,
         ),
       ),
@@ -274,6 +302,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -281,7 +313,7 @@ void main() {
     await tester.pumpWidget(MarkeiApp(composition: composition));
     await _pumpReady(tester);
 
-    await tester.tap(find.text('Products'));
+    await tester.tap(find.text('Catalogue'));
     await _pumpReady(tester);
 
     expect(find.byKey(const Key('products.empty')), findsOneWidget);
@@ -334,6 +366,10 @@ void main() {
       purchaseRegistration: LocalPurchaseRepository(db),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
     );
@@ -341,6 +377,8 @@ void main() {
     await tester.pumpWidget(MarkeiApp(composition: composition));
     await _pumpReady(tester);
 
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
     await _registerSingleItemPurchase(
       tester,
       code: 'LEITE-001',
@@ -397,6 +435,16 @@ final class _FailingThenEmptyHistory implements PurchaseHistoryRepository {
     ProductId productId,
   ) async {
     return const PriceChangeUnavailable('Not enough comparable purchases.');
+  }
+}
+
+final class _EmptyExportRepository implements PurchaseExportRepository {
+  @override
+  Future<PurchaseExportBundle> exportBundle(
+    AccountId accountId,
+    Set<PurchaseId> purchaseIds,
+  ) async {
+    return const PurchaseExportBundle(purchases: []);
   }
 }
 

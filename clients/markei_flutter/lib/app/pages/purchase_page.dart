@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../application/catalogue_queries.dart';
+import '../../application/local_references.dart';
 import '../../application/register_purchase.dart';
 import '../../domain/catalogue/product.dart';
 import '../../domain/purchase/purchase.dart';
+import '../../domain/references/local_reference.dart';
 import '../../domain/shared/ids.dart';
 import '../../domain/shared/money.dart';
 import '../../domain/shared/quantity.dart';
@@ -15,6 +17,7 @@ class PurchasePage extends StatefulWidget {
     required this.deviceId,
     required this.registration,
     required this.catalogueQueries,
+    required this.references,
     required this.onRegistered,
     super.key,
   });
@@ -23,6 +26,7 @@ class PurchasePage extends StatefulWidget {
   final DeviceId deviceId;
   final PurchaseRegistrationRepository registration;
   final CatalogueQueryRepository catalogueQueries;
+  final LocalReferenceRepository references;
   final VoidCallback onRegistered;
 
   @override
@@ -43,9 +47,13 @@ class _PurchasePageState extends State<PurchasePage> {
   final List<_DraftLine> _lines = [];
   List<Product> _products = const [];
   List<Store> _stores = const [];
+  List<LocalReference> _people = const [];
+  List<LocalReference> _paymentMethods = const [];
   List<ProductSimilarityWarning> _warnings = const [];
   Product? _selectedProduct;
   Store? _selectedStore;
+  LocalReference? _selectedPerson;
+  LocalReference? _selectedPaymentMethod;
   bool _loading = true;
   bool _reviewing = false;
   bool _submitting = false;
@@ -53,6 +61,8 @@ class _PurchasePageState extends State<PurchasePage> {
   int? _editingKey;
   ProductReference? _editingReference;
   String? _editingProductLabel;
+  ProductMode? _editingProductMode;
+  MeasurementKind? _editingMeasurementKind;
   int _nextKey = 1;
   _PurchaseFeedback? _feedback;
 
@@ -91,6 +101,14 @@ class _PurchasePageState extends State<PurchasePage> {
         widget.accountId,
       );
       final stores = await widget.catalogueQueries.listStores(widget.accountId);
+      final people = await widget.references.listReferences(
+        widget.accountId,
+        LocalReferenceKind.person,
+      );
+      final paymentMethods = await widget.references.listReferences(
+        widget.accountId,
+        LocalReferenceKind.paymentMethod,
+      );
       if (!mounted) {
         return;
       }
@@ -106,6 +124,8 @@ class _PurchasePageState extends State<PurchasePage> {
       setState(() {
         _products = products;
         _stores = stores;
+        _people = people;
+        _paymentMethods = paymentMethods;
         _selectedStore = selectedStore;
         _loading = false;
         if (clearFeedback) {
@@ -161,17 +181,33 @@ class _PurchasePageState extends State<PurchasePage> {
         return;
       }
     }
-    _stageItem(NewProductReference(_productDraft()), _newProductLabel());
+    _stageItem(
+      NewProductReference(_productDraft()),
+      _newProductLabel(),
+      _bulk ? ProductMode.bulk : ProductMode.packaged,
+      _selectedMeasurementKind(),
+    );
   }
 
   void _stageExistingProduct(Product product) {
-    _stageItem(ExistingProductReference(product.id), product.displayName);
+    _stageItem(
+      ExistingProductReference(product.id),
+      product.displayName,
+      product.mode,
+      product.measurementKind,
+    );
   }
 
   void _saveEditedLine() {
     final reference = _editingReference;
     final productLabel = _editingProductLabel;
-    if (_editingKey == null || reference == null || productLabel == null) {
+    final mode = _editingProductMode;
+    final kind = _editingMeasurementKind;
+    if (_editingKey == null ||
+        reference == null ||
+        productLabel == null ||
+        mode == null ||
+        kind == null) {
       setState(() {
         _feedback = _PurchaseFeedback.error(
           'Choose a staged Item to edit before saving.',
@@ -179,16 +215,24 @@ class _PurchasePageState extends State<PurchasePage> {
       });
       return;
     }
-    _stageItem(reference, productLabel);
+    _stageItem(reference, productLabel, mode, kind);
   }
 
-  void _stageItem(ProductReference reference, String productLabel) {
+  void _stageItem(
+    ProductReference reference,
+    String productLabel,
+    ProductMode mode,
+    MeasurementKind kind,
+  ) {
     try {
+      final packageCount = mode == ProductMode.bulk
+          ? null
+          : int.parse(_packageCountController.text.trim());
       final item = PurchaseItemDraft(
         productReference: reference,
-        packageCount: int.parse(_packageCountController.text.trim()),
+        packageCount: packageCount,
         purchasedQuantity: normalizeDisplayQuantity(
-          kind: MeasurementKind.mass,
+          kind: kind,
           amount: _purchasedAmountController.text,
           unit: _purchasedUnitController.text,
         ),
@@ -201,6 +245,8 @@ class _PurchasePageState extends State<PurchasePage> {
         final line = _DraftLine(
           keyValue: _editingKey ?? _nextKey++,
           productLabel: productLabel,
+          productMode: mode,
+          measurementKind: kind,
           item: item,
         );
         final index = _lines.indexWhere((line) => line.keyValue == _editingKey);
@@ -228,9 +274,12 @@ class _PurchasePageState extends State<PurchasePage> {
       _editingKey = line.keyValue;
       _editingReference = line.item.productReference;
       _editingProductLabel = line.productLabel;
+      _editingProductMode = line.productMode;
+      _editingMeasurementKind = line.measurementKind;
+      _bulk = line.productMode == ProductMode.bulk;
       _reviewing = false;
       _lineTotalController.text = _formatMinorUnits(line.item.lineTotal);
-      _packageCountController.text = line.item.packageCount.toString();
+      _packageCountController.text = (line.item.packageCount ?? 1).toString();
       _purchasedAmountController.text = line.item.purchasedQuantity.decimalText;
       _purchasedUnitController.text = line.item.purchasedQuantity.unit.name;
       _feedback = _PurchaseFeedback.success('Editing staged Item.');
@@ -273,6 +322,8 @@ class _PurchasePageState extends State<PurchasePage> {
           storeReference: storeReference,
           occurrenceTime: DateTime.now().toUtc(),
           currencyCode: 'BRL',
+          personId: _selectedPerson?.id,
+          paymentMethodId: _selectedPaymentMethod?.id,
           items: List.unmodifiable(_lines.map((line) => line.item)),
         ),
       );
@@ -324,10 +375,21 @@ class _PurchasePageState extends State<PurchasePage> {
       name: _nameController.text,
       brand: _brandController.text,
       mode: _bulk ? ProductMode.bulk : ProductMode.packaged,
-      measurementKind: MeasurementKind.mass,
+      measurementKind: _selectedMeasurementKind(),
       packageAmount: _bulk ? null : _packageAmountController.text,
       packageUnit: _bulk ? null : _packageUnitController.text,
     );
+  }
+
+  MeasurementKind _selectedMeasurementKind() {
+    final unit = _purchasedUnitController.text.trim().toLowerCase();
+    if (unit == 'l' || unit == 'ml') {
+      return MeasurementKind.volume;
+    }
+    if (unit == 'un' || unit == 'unit') {
+      return MeasurementKind.count;
+    }
+    return MeasurementKind.mass;
   }
 
   String _newProductLabel() {
@@ -347,6 +409,8 @@ class _PurchasePageState extends State<PurchasePage> {
     _editingKey = null;
     _editingReference = null;
     _editingProductLabel = null;
+    _editingProductMode = null;
+    _editingMeasurementKind = null;
   }
 
   @override
@@ -370,6 +434,8 @@ class _PurchasePageState extends State<PurchasePage> {
         ),
         const SizedBox(height: 16),
         _storeSection(),
+        const SizedBox(height: 12),
+        _referenceSection(),
         const Divider(height: 32),
         if (!_reviewing) ...[
           _productSection(),
@@ -465,6 +531,37 @@ class _PurchasePageState extends State<PurchasePage> {
               ),
             ),
         ],
+      ],
+    );
+  }
+
+  Widget _referenceSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Optional local labels', style: TextStyle(fontSize: 18)),
+        DropdownButton<LocalReference?>(
+          key: const Key('purchase.person.select'),
+          value: _selectedPerson,
+          isExpanded: true,
+          items: [
+            const DropdownMenuItem(value: null, child: Text('Not assigned')),
+            for (final person in _people)
+              DropdownMenuItem(value: person, child: Text(person.nickname)),
+          ],
+          onChanged: (value) => setState(() => _selectedPerson = value),
+        ),
+        DropdownButton<LocalReference?>(
+          key: const Key('purchase.payment.select'),
+          value: _selectedPaymentMethod,
+          isExpanded: true,
+          items: [
+            const DropdownMenuItem(value: null, child: Text('Not assigned')),
+            for (final payment in _paymentMethods)
+              DropdownMenuItem(value: payment, child: Text(payment.nickname)),
+          ],
+          onChanged: (value) => setState(() => _selectedPaymentMethod = value),
+        ),
       ],
     );
   }
@@ -617,14 +714,17 @@ class _PurchasePageState extends State<PurchasePage> {
         ),
         Row(
           children: [
-            Expanded(
-              child: TextField(
-                key: const Key('item.packageCount'),
-                controller: _packageCountController,
-                decoration: const InputDecoration(labelText: 'Packages bought'),
+            if (!_bulk)
+              Expanded(
+                child: TextField(
+                  key: const Key('item.packageCount'),
+                  controller: _packageCountController,
+                  decoration: const InputDecoration(
+                    labelText: 'Packages bought',
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
+            if (!_bulk) const SizedBox(width: 12),
             Expanded(
               child: TextField(
                 key: const Key('item.lineTotal'),
@@ -652,7 +752,7 @@ class _PurchasePageState extends State<PurchasePage> {
             key: Key('purchase.line.${line.keyValue}'),
             title: Text(line.productLabel),
             subtitle: Text(
-              '${line.item.packageCount} package(s) · ${line.item.purchasedQuantity.decimalText} ${line.item.purchasedQuantity.unit.name}',
+              '${line.item.packageCount == null ? 'BULK' : '${line.item.packageCount} package(s)'} · ${line.item.purchasedQuantity.decimalText} ${line.item.purchasedQuantity.unit.name}',
             ),
             trailing: Wrap(
               spacing: 4,
@@ -681,11 +781,15 @@ final class _DraftLine {
   const _DraftLine({
     required this.keyValue,
     required this.productLabel,
+    required this.productMode,
+    required this.measurementKind,
     required this.item,
   });
 
   final int keyValue;
   final String productLabel;
+  final ProductMode productMode;
+  final MeasurementKind measurementKind;
   final PurchaseItemDraft item;
 }
 

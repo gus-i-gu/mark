@@ -1,63 +1,63 @@
-<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
-> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+# G_OPS_CODEX — Cycle 09 Codex Evidence
 
----
+> Sequence: FLX-ORD-01
+> Unit: C09-U02
+> Branch: `intermid-cycle-recovery`
+> Starting commit: `06714d719c22ebd6b64008b7dcec745faee8fcd5`
+> Status: Codex materialization evidence, not canonical memory
 
-## 2026-07-14 — Codex Operational Evidence: Existing-Product Edit Correction
+## Execution
 
-Sequence: FLX-ORD-01
-Role: Codex materialization
-Round or unit: Existing-product staged Item edit correction
-Branch: intermid-cycle-recovery
-Baseline / inspected HEAD: a73b1dc9e23cdd247a93d43222ff6107a041b9f5
-Authority: D_OPS_STAGE.md + E_DDC_STAGE.md + F_DSN_STAGE.md controlling envelope
-Writable surfaces: authorized source paths and G/H/I Codex reports
-Evidence boundary: local Flutter tests and analysis under clients/markei_flutter
+- Full executive boot completed from checkout: AGENTS, INDEX, PROMPT_COLLECTION, METHOD_FOUNDATIONS, FLUX, PROMOTION_RULES, CHAT_PROTOCOL, CHAT_BEHAVIOUR, METHOD_GLOSSARY, J, D, E, F.
+- Safety checks passed: branch was `intermid-cycle-recovery`; HEAD descended from `b93c688496d2995c17d5328aadb348ee8c980da5`; remote was `origin https://github.com/gus-i-gu/markei.git`.
+- Active J/D/E/F were Cycle 09 C09-U02 and authorized this materialization envelope.
+- Protected Python/PySide6 source and database were not modified.
 
-Source stage files:
-- documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
-- documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
-- documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
+## Implementation
 
-Files changed:
-- clients/markei_flutter/lib/app/pages/purchase_page.dart
-- clients/markei_flutter/test/app/markei_app_test.dart
-- documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
-- documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
-- documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+- Implemented schema v3 in the Flutter local Drift database.
+- Added People, Payment Methods, Account preference, nullable Purchase references, nullable BULK package count, and Product normalization version 3.
+- Added sequential migration coverage for v1/v2 databases, deterministic legacy code retention, v3 identity rewrite, and no silent reset close/reopen evidence.
+- Added typed failure contract, comma/point quantity parsing, COUNT fractional rejection, exact Product lookup ports, optional references, local Lists projections, and deterministic selected-Purchase export DTOs.
+- Added Home, Lists, Catalogue wording/details, Purchase optional labels and BULK/PACKAGED controls, History multi-selection/export actions, disabled Analytics/Household/edit/delete, Guide, Documentation, and Settings.
+- No new package dependency was added; PDF bytes and CSV are generated with Dart standard libraries. Share is explicit file save with manual share boundary.
 
-Files created: none.
+## Changed Paths
 
-Files deleted: none.
+- Flutter app/composition/pages under `clients/markei_flutter/lib/app/`.
+- Application contracts under `clients/markei_flutter/lib/application/`.
+- Domain Product/Purchase/quantity/reference contracts under `clients/markei_flutter/lib/domain/`.
+- Local Drift database/repositories and generated Drift artifact under `clients/markei_flutter/lib/infrastructure/local/`.
+- Focused tests under `clients/markei_flutter/test/`.
+- This report plus H/I reports.
 
-Commands run:
-- git status --short --branch: clean branch at start, intermid-cycle-recovery tracking origin/intermid-cycle-recovery.
-- git rev-parse HEAD: a73b1dc9e23cdd247a93d43222ff6107a041b9f5.
-- dart format lib/app/pages/purchase_page.dart test/app/markei_app_test.dart: passed; formatter reported test/app/markei_app_test.dart changed during first run.
-- flutter test test/app/markei_app_test.dart: first two runs failed while shaping the regression and exposed the pre-fix edit/dropdown behavior; final run passed, 7 tests passed.
-- flutter test: passed, 32 tests passed.
-- flutter analyze: passed, No issues found.
-- git diff -- clients/markei_flutter/lib/app/pages/purchase_page.dart clients/markei_flutter/test/app/markei_app_test.dart: inspected final source diff for scope.
+## Validation
 
-Validation results:
-- Focused app widget suite passed.
-- Full Flutter test suite passed.
-- Flutter analysis passed.
+- `flutter pub get`: passed; existing dependencies resolved, no new dependencies added.
+- `dart run build_runner build --delete-conflicting-outputs`: passed; Drift generated code updated. The flag was reported ignored by this build_runner version.
+- `dart format lib test`: passed; touched Dart files formatted.
+- `flutter test`: passed, 39 tests.
+- `flutter analyze`: passed, no issues.
+- `git diff --check`: passed; only CRLF warning notices.
+- `python -m pytest`: blocked, active Python has no `pytest` module.
+- `python -m pip install -r requirements-dev.txt`: passed but requirements only contained PyInstaller, not pytest.
+- `python -m unittest tests.test_release_configuration`: passed, 5 tests.
+- `flutter build windows`: passed; built `build\windows\x64\runner\Release\markei.exe`.
+- Windows bounded smoke: launched built exe, process stayed running for 5 seconds, then Codex stopped the launched process.
+- `flutter build apk`: blocked by host environment: `JAVA_HOME` unset and no `java` on PATH.
+- `where.exe java`: confirmed Java not found.
 
-Instructions completed:
-- Preserved the original staged line ProductReference and product label during edit.
-- Saved edited Item values through the retained reference instead of new Product creation, similarity checks, or current Product dropdown state.
-- Added focused regression proving the existing Product ID is retained, edited Item values persist, and no duplicate Product row is created.
-- Kept source changes inside the two authorized source paths.
+## Evidence Boundaries
 
-Instructions skipped: none.
+- Flutter widget tests are widget/runtime evidence, not manual platform acceptance.
+- Windows build plus bounded launch is build/smoke evidence, not full lifecycle acceptance.
+- Android runtime remains host-unvalidated because Java/Gradle toolchain is unavailable.
+- PDF/share behavior is local file generation with explicit manual sharing; no OS share plugin or upload was activated.
+- Local pending events remain local storage and were not treated as synchronization.
 
-Failures or blockers:
-- No final blockers.
-- Intermediate focused test failures were corrected before final validation: one test-driver pump issue, then a presentation-state assertion from stale selected Product instance after catalogue reload.
+## Blockers And Risks
 
-Unresolved risks:
-- Android/Windows/manual acceptance was not run because D prohibits expanding this unit into platform acceptance.
-
-Suggested functional follow-up:
-- Operational Chat may classify this as validated local widget/regression evidence for the staged-line edit correction. No schema, migration, synchronization, generated artifact, dependency, or unrelated cleanup occurred.
+- Android build/runtime could not be validated on this host without Java.
+- `pytest` was unavailable; protected Python validation was executed with the repository's `unittest` regression instead.
+- The Cycle 09 UI is functional but compact; further manual UX review is still warranted for dense mobile layouts.
+- No Product correction, Store identity redesign, sync, auth, persisted drafts, registered edit/delete, or Product auto-merge was introduced.

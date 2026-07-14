@@ -4,7 +4,7 @@ import 'package:markei/domain/shared/ids.dart';
 import 'package:markei/domain/shared/quantity.dart';
 
 void main() {
-  test('normalization v2 preserves Portuguese accented letters', () {
+  test('normalization v3 preserves Portuguese accented letters', () {
     final product = createProductFromDraft(
       accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
       draft: const ProductDraft(
@@ -18,7 +18,7 @@ void main() {
       ),
     );
 
-    expect(product.normalizationVersion, 2);
+    expect(product.normalizationVersion, 3);
     expect(product.displayName, 'CAFÉ   PILÃO');
     expect(product.displayBrand, 'São João');
     expect(product.normalizedName, 'café pilão');

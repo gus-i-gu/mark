@@ -4,7 +4,7 @@ import '../shared/ids.dart';
 import '../shared/quantity.dart';
 import 'product_code.dart';
 
-const int productNormalizationVersion = 2;
+const int productNormalizationVersion = 3;
 
 enum ProductMode { packaged, bulk }
 

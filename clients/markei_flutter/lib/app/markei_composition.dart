@@ -1,4 +1,7 @@
 import '../application/catalogue_queries.dart';
+import '../application/history_export.dart';
+import '../application/local_references.dart';
+import '../application/product_lists.dart';
 import '../application/purchase_history.dart';
 import '../application/register_purchase.dart';
 import '../domain/shared/ids.dart';
@@ -13,6 +16,10 @@ final class MarkeiComposition {
     required this.purchaseRegistration,
     required this.catalogueQueries,
     required this.purchaseHistory,
+    required this.references,
+    required this.preferences,
+    required this.productLists,
+    required this.purchaseExports,
     required this.accountId,
     required this.deviceId,
   });
@@ -21,6 +28,10 @@ final class MarkeiComposition {
   final PurchaseRegistrationRepository purchaseRegistration;
   final CatalogueQueryRepository catalogueQueries;
   final PurchaseHistoryRepository purchaseHistory;
+  final LocalReferenceRepository references;
+  final AccountPreferenceRepository preferences;
+  final ProductListProjectionRepository productLists;
+  final PurchaseExportRepository purchaseExports;
   final AccountId accountId;
   final DeviceId deviceId;
 
@@ -36,6 +47,10 @@ final class MarkeiComposition {
       purchaseRegistration: LocalPurchaseRepository(database),
       catalogueQueries: queries,
       purchaseHistory: queries,
+      references: queries,
+      preferences: queries,
+      productLists: queries,
+      purchaseExports: queries,
       accountId: accountId,
       deviceId: deviceId,
     );

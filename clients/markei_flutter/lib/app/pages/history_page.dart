@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import '../../application/history_export.dart';
 import '../../application/purchase_history.dart';
 import '../../domain/shared/ids.dart';
 
@@ -7,12 +10,14 @@ class HistoryPage extends StatefulWidget {
   const HistoryPage({
     required this.accountId,
     required this.history,
+    required this.exports,
     required this.refreshSignal,
     super.key,
   });
 
   final AccountId accountId;
   final PurchaseHistoryRepository history;
+  final PurchaseExportRepository exports;
   final int refreshSignal;
 
   @override
@@ -22,6 +27,8 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   int _retrySignal = 0;
   PurchaseId? _selectedPurchaseId;
+  final Set<PurchaseId> _selectedIds = {};
+  String? _message;
 
   @override
   Widget build(BuildContext context) {
@@ -71,9 +78,53 @@ class _HistoryPageState extends State<HistoryPage> {
           children: [
             const Text('Purchase History', style: TextStyle(fontSize: 22)),
             const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonal(
+                  onPressed: null,
+                  child: const Text('Move to Analytics'),
+                ),
+                FilledButton.tonal(
+                  key: const Key('history.exportCsv'),
+                  onPressed: _selectedIds.isEmpty
+                      ? null
+                      : () => _exportCsv(_selectedIds),
+                  child: const Text('Export CSV'),
+                ),
+                FilledButton.tonal(
+                  key: const Key('history.sharePdf'),
+                  onPressed: _selectedIds.isEmpty
+                      ? null
+                      : () => _sharePdf(_selectedIds),
+                  child: const Text('Share list (PDF)'),
+                ),
+                OutlinedButton(onPressed: null, child: const Text('Edit')),
+                OutlinedButton(onPressed: null, child: const Text('Delete')),
+                TextButton(
+                  key: const Key('history.clearSelection'),
+                  onPressed: _selectedIds.isEmpty
+                      ? null
+                      : () => setState(_selectedIds.clear),
+                  child: const Text('Clear'),
+                ),
+              ],
+            ),
+            if (_message != null) ...[
+              const SizedBox(height: 8),
+              Text(_message!, key: const Key('history.export.message')),
+            ],
+            const SizedBox(height: 8),
             for (final entry in entries) ...[
               ListTile(
                 key: Key('history.purchase.${entry.purchaseId.value}'),
+                leading: Checkbox(
+                  value: _selectedIds.any(
+                    (id) => id.value == entry.purchaseId.value,
+                  ),
+                  onChanged: (_) => _toggleSelection(entry.purchaseId),
+                ),
                 title: Text(entry.storeName),
                 subtitle: Text(
                   '${entry.itemCount} Purchase Item(s) · ${entry.occurrenceTime.toLocal()}',
@@ -81,7 +132,11 @@ class _HistoryPageState extends State<HistoryPage> {
                 trailing: Text(
                   '${entry.currencyCode} ${(entry.totalMinorUnits / 100).toStringAsFixed(2)}',
                 ),
-                onTap: () =>
+                onTap: () {
+                  _toggleSelection(entry.purchaseId);
+                  setState(() => _selectedPurchaseId = entry.purchaseId);
+                },
+                onLongPress: () =>
                     setState(() => _selectedPurchaseId = entry.purchaseId),
               ),
               const Divider(height: 1),
@@ -98,6 +153,37 @@ class _HistoryPageState extends State<HistoryPage> {
         );
       },
     );
+  }
+
+  void _toggleSelection(PurchaseId purchaseId) {
+    setState(() {
+      final existing = _selectedIds
+          .where((id) => id.value == purchaseId.value)
+          .toList(growable: false);
+      if (existing.isEmpty) {
+        _selectedIds.add(purchaseId);
+      } else {
+        _selectedIds.remove(existing.first);
+      }
+    });
+  }
+
+  Future<void> _exportCsv(Set<PurchaseId> ids) async {
+    final bundle = await widget.exports.exportBundle(widget.accountId, ids);
+    final csv = purchaseBundleCsv(bundle);
+    final file = File(
+      '${Directory.systemTemp.path}/markei-selected-purchases.csv',
+    );
+    await file.writeAsString(csv);
+    setState(() => _message = 'CSV saved to ${file.path}.');
+  }
+
+  Future<void> _sharePdf(Set<PurchaseId> ids) async {
+    final bundle = await widget.exports.exportBundle(widget.accountId, ids);
+    final bytes = purchaseBundlePdfBytes(bundle);
+    final file = File('${Directory.systemTemp.path}/markei-selected-list.pdf');
+    await file.writeAsBytes(bytes);
+    setState(() => _message = 'PDF saved to ${file.path}. Share it manually.');
   }
 }
 
@@ -150,7 +236,7 @@ class _PurchaseDetailView extends StatelessWidget {
                 child: ListTile(
                   title: Text(item.productName),
                   subtitle: Text(
-                    '${item.productCode} · ${item.packageCount} package(s) · ${item.purchasedAmount} ${item.purchasedUnit}',
+                    '${item.productCode} · ${item.packageCount == null ? 'BULK' : '${item.packageCount} package(s)'} · ${item.purchasedAmount} ${item.purchasedUnit}',
                   ),
                   trailing: Text(
                     '${item.currencyCode} ${(item.lineTotalMinorUnits / 100).toStringAsFixed(2)}',

@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../application/app_failure.dart';
 import '../../application/register_purchase.dart';
 import '../../domain/catalogue/product.dart' as domain;
 import '../../domain/catalogue/product_code.dart' as domain_code;
@@ -62,16 +63,42 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
           );
 
       final store = await _resolveStore(command, now);
+      await _assertOptionalReference(
+        tableName: 'people',
+        accountId: command.accountId,
+        id: command.personId,
+        operation: 'Person selection',
+      );
+      await _assertOptionalReference(
+        tableName: 'payment_methods',
+        accountId: command.accountId,
+        id: command.paymentMethodId,
+        operation: 'Payment Method selection',
+      );
       final purchaseId = PurchaseId(_uuid.v4());
       final itemModels = <domain_purchase.PurchaseItem>[];
 
       for (final draft in command.items) {
         final product = await _resolveProduct(command.accountId, draft, now);
+        final packageCount = product.mode == domain.ProductMode.bulk
+            ? null
+            : draft.packageCount;
+        if (product.mode == domain.ProductMode.packaged &&
+            (packageCount == null || packageCount <= 0)) {
+          throw const AppFailure(
+            code: 'invalid-package-count',
+            operation: 'Purchase registration',
+            field: 'Packages bought',
+            recovery: 'Enter a positive whole package count.',
+            retryable: true,
+            outcome: FailureOutcome.notApplied,
+          );
+        }
         final item = domain_purchase.PurchaseItem(
           id: PurchaseItemId(_uuid.v4()),
           purchaseId: purchaseId,
           productId: product.id,
-          packageCount: draft.packageCount,
+          packageCount: packageCount,
           purchasedQuantity: draft.purchasedQuantity,
           lineTotal: draft.lineTotal,
         );
@@ -95,6 +122,8 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
               id: purchase.id.value,
               accountId: command.accountId.value,
               storeId: store.id.value,
+              personId: Value(command.personId),
+              paymentMethodId: Value(command.paymentMethodId),
               occurrenceTime: command.occurrenceTime.toUtc(),
               currencyCode: command.currencyCode,
               totalMinorUnits: purchase.totalMinorUnits,
@@ -110,7 +139,7 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
                 id: item.id.value,
                 purchaseId: item.purchaseId.value,
                 productId: item.productId.value,
-                packageCount: item.packageCount,
+                packageCount: Value(item.packageCount),
                 measurementKind: item.purchasedQuantity.kind.name.toUpperCase(),
                 purchasedAmount: item.purchasedQuantity.decimalText,
                 purchasedUnit: item.purchasedQuantity.unit.name.toUpperCase(),
@@ -182,7 +211,15 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
                 ))
                 .getSingleOrNull();
         if (existing == null) {
-          throw ArgumentError('Existing Store does not belong to account.');
+          throw const AppFailure(
+            code: 'missing-store',
+            operation: 'Purchase registration',
+            field: 'Store',
+            recovery:
+                'Choose an existing Store for this account or create one.',
+            retryable: true,
+            outcome: FailureOutcome.notApplied,
+          );
         }
         return domain_store.Store(
           id: StoreId(existing.id),
@@ -192,7 +229,14 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
       case NewStoreReference(:final displayName):
         final name = displayName.trim();
         if (name.isEmpty) {
-          throw ArgumentError('Store display name is required.');
+          throw const AppFailure(
+            code: 'missing-store',
+            operation: 'Purchase registration',
+            field: 'Store',
+            recovery: 'Enter a Store name.',
+            retryable: true,
+            outcome: FailureOutcome.notApplied,
+          );
         }
         final store = domain_store.Store(
           id: StoreId(_uuid.v4()),
@@ -228,7 +272,14 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
                 ))
                 .getSingleOrNull();
         if (existing == null) {
-          throw ArgumentError('Existing Product does not belong to account.');
+          throw const AppFailure(
+            code: 'missing-product',
+            operation: 'Purchase registration',
+            field: 'Product',
+            recovery: 'Use a Product that belongs to this account.',
+            retryable: true,
+            outcome: FailureOutcome.notApplied,
+          );
         }
         return _productFromRow(existing);
       case domain_purchase.NewProductReference(:final productDraft):
@@ -257,7 +308,14 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
                 ))
                 .getSingleOrNull();
         if (code != null) {
-          throw ArgumentError('Product code already exists in this account.');
+          throw const AppFailure(
+            code: 'product-code-collision',
+            operation: 'Product creation',
+            field: 'Product code',
+            recovery: 'Use the existing Product or choose a different code.',
+            retryable: true,
+            outcome: FailureOutcome.notApplied,
+          );
         }
         await _db
             .into(_db.products)
@@ -285,6 +343,36 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
               ),
             );
         return product;
+    }
+  }
+
+  Future<void> _assertOptionalReference({
+    required String tableName,
+    required AccountId accountId,
+    required String? id,
+    required String operation,
+  }) async {
+    if (id == null) {
+      return;
+    }
+    final row = await _db
+        .customSelect(
+          'SELECT id FROM $tableName WHERE account_id = ? AND id = ?',
+          variables: [
+            Variable.withString(accountId.value),
+            Variable.withString(id),
+          ],
+        )
+        .getSingleOrNull();
+    if (row == null) {
+      throw AppFailure(
+        code: 'missing-reference',
+        operation: operation,
+        field: operation,
+        recovery: 'Choose an active local label or leave it Not assigned.',
+        retryable: true,
+        outcome: FailureOutcome.notApplied,
+      );
     }
   }
 

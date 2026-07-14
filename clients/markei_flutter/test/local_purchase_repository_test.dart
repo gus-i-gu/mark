@@ -2,14 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:markei/application/app_failure.dart';
 import 'package:markei/application/register_purchase.dart';
 import 'package:markei/domain/catalogue/product.dart';
 import 'package:markei/domain/purchase/purchase.dart';
+import 'package:markei/domain/references/local_reference.dart';
 import 'package:markei/domain/shared/ids.dart';
 import 'package:markei/domain/shared/money.dart';
 import 'package:markei/domain/shared/quantity.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
+import 'package:markei/infrastructure/local/local_query_repository.dart';
 
 import 'fixture_support.dart';
 
@@ -53,7 +56,7 @@ void main() {
 
     await expectLater(
       repository.registerPurchase(_command(fixture, items: [_invalidItem()])),
-      throwsArgumentError,
+      throwsA(isA<AppFailure>()),
     );
 
     expect(await db.select(db.stores).get(), isEmpty);
@@ -90,6 +93,32 @@ void main() {
     );
   });
 
+  test('archived local references remain resolvable in history', () async {
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    final repository = LocalPurchaseRepository(db);
+    final fixture = loadFixture('purchase_aggregate.json');
+    final accountId = AccountId(fixture['accountId']! as String);
+    final person = await queries.saveReference(
+      accountId: accountId,
+      kind: LocalReferenceKind.person,
+      nickname: 'Gus',
+    );
+
+    await repository.registerPurchase(
+      _command(fixture, items: [_riceItem()], personId: person.id),
+    );
+    await queries.archiveReference(
+      accountId: accountId,
+      kind: LocalReferenceKind.person,
+      id: person.id,
+    );
+
+    final purchase = (await queries.listRecentPurchases(accountId)).single;
+    expect(purchase.personLabel, 'Gus (archived)');
+  });
+
   test('sync event fixture states required envelope fields', () {
     final fixture = loadFixture('sync_event.json');
 
@@ -103,6 +132,7 @@ void main() {
 RegisterPurchaseCommand _command(
   Map<String, Object?> fixture, {
   required List<PurchaseItemDraft> items,
+  String? personId,
 }) {
   return RegisterPurchaseCommand(
     accountId: AccountId(fixture['accountId']! as String),
@@ -110,6 +140,7 @@ RegisterPurchaseCommand _command(
     storeName: fixture['storeName']! as String,
     occurrenceTime: DateTime.parse(fixture['occurrenceTime']! as String),
     currencyCode: fixture['currencyCode']! as String,
+    personId: personId,
     items: items,
   );
 }

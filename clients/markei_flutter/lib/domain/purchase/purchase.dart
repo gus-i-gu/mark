@@ -17,12 +17,12 @@ final class PurchaseItem {
   final PurchaseItemId id;
   final PurchaseId purchaseId;
   final ProductId productId;
-  final int packageCount;
+  final int? packageCount;
   final NormalizedQuantity purchasedQuantity;
   final Money lineTotal;
 
   void validate() {
-    if (packageCount <= 0) {
+    if (packageCount != null && packageCount! <= 0) {
       throw ArgumentError('Purchase Item packageCount must be positive.');
     }
     if (purchasedQuantity.microunits <= 0) {
@@ -51,6 +51,8 @@ final class Purchase {
     required this.occurrenceTime,
     required this.currencyCode,
     required this.items,
+    this.personId,
+    this.paymentMethodId,
   });
 
   final PurchaseId id;
@@ -59,6 +61,8 @@ final class Purchase {
   final DateTime occurrenceTime;
   final String currencyCode;
   final List<PurchaseItem> items;
+  final String? personId;
+  final String? paymentMethodId;
 
   void validate() {
     if (items.isEmpty) {
@@ -81,6 +85,8 @@ final class Purchase {
     'id': id.value,
     'accountId': accountId.value,
     'store': store.toJson(),
+    'personId': personId,
+    'paymentMethodId': paymentMethodId,
     'occurrenceTime': occurrenceTime.toUtc().toIso8601String(),
     'currencyCode': currencyCode,
     'totalMinorUnits': totalMinorUnits,
@@ -113,7 +119,7 @@ final class PurchaseItemDraft {
   });
 
   final ProductReference productReference;
-  final int packageCount;
+  final int? packageCount;
   final NormalizedQuantity purchasedQuantity;
   final Money lineTotal;
 }
