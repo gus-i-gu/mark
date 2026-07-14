@@ -1,189 +1,227 @@
-# J_MAIN_STAGE — Cycle 09 Sprint 02 Post-Codex Reconciliation
+# J_MAIN_STAGE — Cycle 10 Opening Charter and Investigation Conciliation
 
-> Sequence: D/E/F materialization → G/H/I evidence → Main reconciliation → domain promotion
-> Unit: C09-S02 — Functional correction and UI convergence
-> Status: FUNCTIONAL INCREMENT ACCEPTED; VISUAL CONVERGENCE OPEN; DOMAIN PROMOTION AUTHORIZED
+> Sequence: Cycle 09 closure → human scope expansion → A/B/C investigation → later Main reconciliation
+> Cycle: 10 — Cross-Platform Local Beta Consolidation and Inter-Device Coordination
+> Status: OPENING CHARTER; A/B/C INVESTIGATION AUTHORIZED; SOURCE IMPLEMENTATION INACTIVE
 > Branch: `intermid-cycle-recovery`
-> Implementation staging: `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3`
-> Reconciled implementation HEAD: `1d817972aea0229c9f109f236f4d224671927aab`
-> Inputs: D/E/F, implementation diff, G/H/I, tests/build reports and human Windows observation
-> Authority: human-supervised Main synthesis
+> Required starting ancestry: `7ac003e754a486dc7f24016386a737bdb6dee830`
+> Cycle 09 implementation baseline: `1d817972aea0229c9f109f236f4d224671927aab`
+> Authority: human direction reconciled by Main Chat [M]
 
 ---
 
-<!-- ROUND_MARKER:C09-S02-POST-CODEX-RECONCILIATION-2026-07-14 -->
+<!-- ROUND_MARKER:C10-OPENING-CHARTER-2026-07-14 -->
 
-## 1. Purpose and authority
+## 1. Purpose and current authority
 
-This J reconciles the Sprint 02 implementation rather than repeating its intended contract.
-It distinguishes implemented evidence from report claims, deviations and remaining work. It
-authorizes bounded promotion into permanent Operational, Didactic and Design documentation.
-It does not authorize another source mutation or declare Cycle 09/Sprint 02 visually closed.
+This J opens Cycle 10 and describes the investigation envelope for A/B/C. It supersedes the
+Cycle 09 closure assumption that API/Neon/synchronization would remain outside Cycle 10.
 
-Earlier J states remain recoverable in Git. A/B/C are investigative inputs, D/E/F are the
-controlling implementation contract, and G/H/I are post-Codex evidence reports. Where reports
-and source differ, source plus executable/manual evidence controls.
+Cycle 10 now combines:
 
-## 2. Reconciled implementation abstract
+1. the already proposed local-beta consolidation work; and
+2. an API-mediated Neon/PostgreSQL foundation for inter-device updating.
 
-The materialization is a meaningful local-first functional increment. Schema v4, immutable
-visible reference sequences, mandatory Product codes, manual Purchase occurrence input, exact
-code lookup/autofill, same-unit BULK calculation and several selection/detail behaviors are now
-represented in source and automated tests. Flutter analysis, 43 tests, migration coverage and a
-Windows build were reported successful within the named scope.
+This is an investigative charter, not D/E/F and not Codex authority. Functional chats may inspect
+the repository, existing documentation and relevant authoritative external specifications, then
+write only their A/B/C stages. No source, schema, dependency, cloud resource or permanent-domain
+mutation is authorized by this file.
 
-The materialization is not the requested visual reconstruction of target images 01–05. It adds
-a small theme and component foundation plus navigation adjustments, but it does not consistently
-compose the pages from that system. Human Windows observation that the interface changed little
-is consistent with the source. Therefore functional/schema progress is accepted while UI/UX
-visual convergence remains an open correction unit.
+## 2. Reconciled starting state
 
-## 3. Accepted implemented facts
+Cycle 09 closed with schema v4, mandatory Product codes, local Person/Payment references, manual
+Purchase occurrence, exact-code autofill, same-unit BULK calculation and local export generation.
+Its named automated and Windows build/smoke evidence remains narrow; Android and complete manual
+platform evidence remain open.
 
-### 3.1 Data and identity
+Repository inspection shows existing synchronization preparation:
 
-- Local schema v4 introduces Account-scoped visible counters and immutable `@001` Person and
-  `#001` Payment Method references while preserving opaque relational identity.
-- Product code is non-null, normalized, unique within Account and treated as immutable after
-  creation; migration/backfill behavior has test coverage.
-- Person and Payment Method remain optional Purchase labels. No credential data is stored.
-- Purchase occurrence date/time is manually entered, begins blank, is parsed at the application
-  boundary and remains distinct from insertion time.
+- local Account and app-private Device identities;
+- Device-owned monotonic sequence allocation;
+- immutable local `SyncEvent` envelopes;
+- `PendingEvent` state;
+- synchronization metadata and migration ledger;
+- atomic Purchase/event/pending-event persistence;
+- older architecture preference for a controlled API in front of Neon Postgres.
 
-### 3.2 Purchase and Product behavior
+These are foundations, not proof of upload, download, authentication, acknowledgement, conflict
+resolution, convergence or secure cloud operation. Existing local identity selection is explicitly
+prototype-bounded and must be revisited before realistic multi-device history.
 
-- Exact Product-code lookup can resolve and autofill Product facts without automatically adding
-  a Purchase Item.
-- BULK amount and same-unit rate calculate a read-only line total through fixed-point logic.
-- Catalogue exposes explicit selection/detail interaction improvements.
-- Lists now distinguish zero compatible observations from one observation in user-facing state.
-- History retains multi-selection actions and adds detail access.
+## 3. Governing topology and security boundary
 
-### 3.3 Validation evidence boundary
-
-- Reported green evidence: `flutter analyze`, 43 Flutter tests, schema-v4 migration tests and
-  Windows build.
-- The Windows run was a bounded hidden smoke launch, not a complete manual workflow or visual
-  acceptance pass.
-- Android validation remains host-blocked by missing Java and is not inferred from Windows.
-- No manual accessibility, keyboard traversal or screen-reader validation was completed.
-
-## 4. Deviations and unresolved obligations
-
-### 4.1 Visual composition is materially incomplete
-
-- `markei_theme.dart` establishes only a compact palette/theme layer.
-- `markei_components.dart` defines three components, but implementation search shows no page
-  consuming them; a component library that is not composed cannot establish visual convergence.
-- Home and Lists pages were not materially rebuilt in the implementation commit.
-- Catalogue and History remain primarily standard list compositions; Purchase remains the prior
-  long-form layout with added functional fields.
-- The target desktop information hierarchy, cards, tables, filters, spacing, responsive page
-  compositions and compact-card treatment are therefore not accepted as materialized.
-- Target images 01–05 remain directional product references, not pixel-perfect test oracles.
-
-### 4.2 Interaction and integration gaps
-
-- The controlling contract said History double-click toggles/selects a Purchase row. Current
-  source uses double-click for detail focus and does not toggle the multi-selection set. This is
-  a documented deviation requiring either implementation correction or a new human decision.
-- Native OS sharing was not adopted. Deterministic PDF generation/export remains the fallback;
-  native-share acceptance remains open.
-- Lists gained state-language distinction but not the complete catalogue-plus-purchase relational
-  presentation, summary cards, filtering or target responsive composition.
-- Product selection/details improvements do not yet constitute the complete desktop/mobile UX
-  represented by the target references.
-
-### 4.3 Maintainability debt
-
-- The usual approximately 250-line file guidance is exceeded by `purchase_page.dart` (about
-  1,020 lines), `products_page.dart` (about 377) and `history_page.dart` (about 330).
-- Permanent canonical documentation may use its approved exception; application page files do
-  not inherit that exception. Future visual work must extract bounded page sections/controllers
-  rather than further expanding monolithic files.
-
-## 5. Main disposition
-
-| Concern | Disposition |
-| --- | --- |
-| Schema v4 and local identity sequences | Accept with named automated evidence |
-| Product code, occurrence and BULK core | Accept with remaining host/manual boundaries |
-| Catalogue/History functional increment | Accept partially; retain interaction deviation |
-| Lists projection language | Accept narrowly; full page/read presentation remains open |
-| UI theme/component foundation | Record as partial infrastructure, not visual convergence |
-| Target images 01–05 | Keep as continuing design references |
-| Native sharing | Deferred/open; deterministic PDF fallback retained |
-| Android and accessibility | Unvalidated/open |
-| Cycle 09 Sprint 02 visual closure | Not authorized |
-
-No permanent file may state that the mockup aesthetics, complete responsive model or full Sprint
-02 UX has been delivered. No green build may be used as evidence of visual parity.
-
-## 6. Authorized permanent-documentation promotion
-
-Domain chats must load `INDEX.md`, AGENTS guidance and the complete methodology sequence before
-editing. They must reconcile from repository evidence, this J and their own staged competence;
-`PROMPT_COLLECTION.md` is not a substitute for full executive context.
-
-### 6.1 Operational competence
-
-Promote the verified test/build/migration scope, retained platform boundaries and actionable
-residuals. Windows build is not Windows visual acceptance. Record Android, native sharing,
-accessibility, History double-click, Lists presentation and visual convergence as open where the
-operational owners require them. Update only Operational permanent owners and write its checkpoint
-last.
-
-### 6.2 Didactic/UX competence
-
-Promote only stable vocabulary and interaction semantics supported by implementation. Preserve
-the distinction among selection, detail, autofill, item addition, occurrence time, insertion time,
-Product code and local reference code. Do not advance learner maturity without learner evidence.
-Record visual communication and accessibility equivalence as incomplete. Update only Didactic
-permanent owners and write its checkpoint last.
-
-### 6.3 Design competence
-
-Promote schema-v4, identity, calculation and application-boundary decisions with evidence. Record
-theme/components as partial architecture and explicitly retain non-use, unchanged page composition,
-responsive gaps, monolithic-page debt and the History interaction deviation. Update only Design
-permanent owners and write `09_DESIGN_STATE.md` last.
-
-## 7. Repository search-conflict and documentation rules
-
-- Required ancestry for domain work is this J commit; abort on divergent or dirty overlapping
-  permanent owners.
-- Search the repository before writing so newer canonical facts are not duplicated or contradicted.
-- If permanent owners disagree with J or implementation evidence, preserve the conflict visibly
-  and return it to Main; do not silently choose one account.
-- Each domain edits only its named permanent owners. Do not edit source, methodology, DEV_STAGE,
-  J, another domain, `00_PROJECT_STATE.md`, `05_SESSION_LOG.md` or `06_SESSION_SCHEME.md`.
-- Keep ordinary documentation near 250 lines. `02_KANBAN.md` may grow to about 400 lines as the
-  canonical exception; growth still requires consolidation rather than repetition.
-- Commit and push each domain promotion independently. Report changed paths, validation and commit
-  SHA. Main will reconcile domain results before any final project-state/session update.
-
-## 8. Next implementation perspective
-
-The next proposed unit is a dedicated visual-convergence correction, not a new data-model expansion:
+The accepted direction to investigate is:
 
 ```text
-shared tokens/components actually consumed
-→ Home composition
-→ Lists composition and relational presentation
-→ Catalogue composition
-→ Purchase composition and modular extraction
-→ History composition and double-click decision
-→ desktop/compact screenshot comparison
-→ Windows manual workflow + accessibility pass
+local01 Drift database
+    ↕ authenticated HTTPS synchronization
+controlled application API
+    ↕ least-privilege server connection
+Neon-hosted PostgreSQL coordination state
+    ↕ controlled application API
+local02 Drift database
 ```
 
-Its acceptance must use page-level visual/manual evidence in addition to tests. It requires a new
-Main authorization after permanent promotion; this J does not itself activate Codex.
+Neon is the managed PostgreSQL layer, not a client-facing application API. Flutter clients must
+not contain privileged PostgreSQL/Neon credentials or connect directly to the database.
+
+Local Drift remains the offline-first operational store. Server-side coordination exists only for
+accepted synchronization purposes. No developer analytics, unrelated profiling, advertising data
+use or silent external export enters scope.
+
+“Ephemeral” cannot mean deletion before an offline receiving Device can recover an update. A/B/C
+must investigate a bounded retention lifecycle involving acknowledgement, expiry, retry, recovery
+and account deletion. Exact retention time is not yet accepted.
+
+## 4. Manual configuration break rule
+
+Cycle 10 uses explicit Manual Configuration Gates (MCGs). An MCG is a minimal localized sprint
+performed by the human when external Neon/API configuration is required.
+
+At every MCG:
+
+1. Codex and domain work stop before the external mutation;
+2. the repository remains runnable at the last verified checkpoint;
+3. the human receives a short provider-console/local-environment checklist;
+4. secrets remain outside Git, notebook prose, screenshots, logs and chat output;
+5. only secret names, scopes, fingerprints or redacted presence may be reported;
+6. a bounded connectivity/permission probe is recorded;
+7. continuation requires explicit human confirmation.
+
+No repo refactoring may continue merely because a configuration step was assumed successful.
+
+Proposed manual gates, subject to A/B/C investigation:
+
+- **MCG-01 — isolated Neon environment:** create/select project, branch, database and least-privilege
+  roles; establish secret injection and disposal boundaries.
+- **MCG-02 — API runtime:** configure deployment/local runtime variables, TLS endpoint, migration
+  identity and server-only database access.
+- **MCG-03 — Account/Device test identities:** configure the minimum authentication or pairing
+  material for two controlled test Devices without embedding permanent secrets.
+- **MCG-04 — two-device evidence environment:** prepare local01/local02 fixtures, server cleanup,
+  retention observation and teardown.
+
+## 5. Ten Cycle 10 phases
+
+### C10-01 — Baseline, vocabulary and threat model
+
+Freeze the implementation/documentation baseline; inventory existing sync scaffolding; define
+assets, trust boundaries, threats, evidence matrix, fixtures and rollback rules. Decide which
+external facts require current official documentation. Prepare MCG-01; do not configure it yet.
+
+### C10-02 — Account, installation and Device identity
+
+Resolve provisional `local-account`, current-installation ownership, Device lifecycle, pairing,
+credential storage, revoked/lost Device behavior and preserved historical Devices. Identity must
+not be inferred from hardware identifiers, labels or Product/User nicknames.
+
+### C10-03 — Local outbox/inbox and idempotent event model
+
+Reconcile existing SyncEvent/PendingEvent structures with upload and download needs. Define event
+identity, SubmissionId/retry identity, sequence/cursor rules, payload versioning, inbox deduplication,
+atomic apply, unknown outcomes and crash recovery before network implementation.
+
+### C10-04 — API contract and Neon/PostgreSQL transition schema
+
+Define authenticated endpoints, request/response envelopes, authorization, validation, error
+semantics, physical server ownership, migrations, indexes and least-privilege roles. Prove locally
+or disposition MCG-01/MCG-02 before repo integration. Exact framework/tooling remains investigative.
+
+### C10-05 — Upload, download, acknowledgement and retention
+
+Define batching, cursors, safe retries, accepted/rejected outcomes, per-Device acknowledgement,
+bounded retention, expiry, cleanup, account deletion and recovery when a Device remains offline or
+never acknowledges. Demonstrate that server deletion cannot silently strand required updates.
+
+### C10-06 — Conflict, retry and convergence policy
+
+Classify entities and facts as immutable, append-only, replaceable or derived. Define duplicate,
+concurrent and out-of-order handling; conflict surfacing; deterministic convergence; and rebuild of
+derived Lists. Do not use blanket last-write-wins without entity-specific justification.
+
+### C10-07 — Local migration, recovery and export integrity
+
+Complete representative v1/v2/v3→v4 migration/reopen/failure evidence; test rollback and no-silent-
+reset; validate deterministic CSV/PDF artifacts; and decide export-only versus local backup/restore.
+Cloud synchronization must not become an undocumented backup substitute.
+
+### C10-08 — Measurement and behavior-preserving modularization
+
+Measure Lists, lookup, History, export and sync queues before indexes/paging. Extract oversized
+Purchase/Catalogue/History code only behind regression evidence and without intentional UI/UX change.
+Pause around MCGs rather than mixing provider configuration with broad refactoring.
+
+### C10-09 — Windows, Android and two-device evidence
+
+After MCG-03/MCG-04, validate offline operation, upload, download, retry, duplicate delivery,
+interrupted transfer, acknowledgement, convergence and teardown across controlled local01/local02.
+Classify Windows, Android, emulator, physical-device, lifecycle and manual evidence separately.
+
+### C10-10 — Promotion, reconciliation and closure
+
+Codex reports G/H/I after authorized materialization. Domain chats perform PRC-01 promotion into
+permanent memory. Main reconciles evidence, human observations, configuration records and domain
+checkpoints before refreshing 00/05/06. No cloud/security/release claim is closed by code presence.
+
+## 6. Cycle 11 boundary
+
+Cycle 11 continues to own target-image UI polishing, page-level UX recomposition, full Lists visual
+presentation, shared-component adoption, Product-detail/History interaction refinement, native-share
+presentation, accessibility improvement and the proposed minimum Analytics page.
+
+Cycle 10 may extract code without intentional visible change and may record UX/accessibility
+observations. It must not consume the Cycle 11 redesign merely to make synchronization visible.
+
+## 7. Required A/B/C investigation outputs
+
+All domains must classify claims with PRC-01 vocabulary and distinguish accepted direction,
+existing implementation, named validation, host-unvalidated state, proposals, blockers and deferral.
+
+### A — Operational
+
+Own the executable phase/checkpoint plan, environments, MCG runbooks, secret-safe evidence,
+dependency/toolchain inventory, rollback, validation matrix, failure injection and stop conditions.
+
+### B — Didactic/UX
+
+Own stable synchronization vocabulary, user-visible state/recovery semantics, offline/online truth,
+privacy explanations, configuration learning risks and evidence boundaries. Do not redesign Cycle 11 UI
+or change learner maturity without learner evidence.
+
+### C — Design/Architecture
+
+Own trust boundaries, Account/installation/Device identity, event protocol, API responsibilities,
+Neon/Postgres schema alternatives, acknowledgement/retention, conflict/convergence, local/cloud
+authority and migration boundaries. Do not operationally validate or select tools without evidence.
+
+## 8. Decisions Main must reconcile after A/B/C
+
+1. Account authentication and Device enrollment model.
+2. Explicit current-installation→Device invariant and migration.
+3. SubmissionId/event/cursor/inbox identity rules.
+4. API language/framework, hosting and migration tooling.
+5. Neon project/branch/database/role layout and environment separation.
+6. Payload scope: which facts synchronize in the first vertical slice.
+7. Per-entity conflict and convergence policy.
+8. Acknowledgement, retention, expiry, cleanup and account-deletion policy.
+9. Export-only versus local backup/restore boundary.
+10. Required Windows/Android/two-device acceptance matrix.
+
+## 9. Preserved prohibitions
+
+- never commit or print credentials, tokens, connection strings or private keys;
+- no privileged client database access;
+- no implicit upload, analytics or unrelated retention;
+- no production environment before disposable/local protocol evidence;
+- no cloud claim from local queue preparation alone;
+- no broad refactor across an unresolved manual configuration gate;
+- no source implementation until A/B/C are reconciled into active D/E/F;
+- no public release, store publication, Household behavior or Cycle 11 UI/Analytics work.
 
 ```text
-functional increment: accepted within evidence boundary
-visual convergence: open
-domain promotion: authorized and isolated
-source implementation: not authorized by this J
-next Main gate: reconcile domain commits before 00/05/06
+Cycle 10: investigation opened
+A/B/C staging: authorized
+manual Neon/API configuration: gated and human-confirmed
+D/E/F: not prepared
+Codex/source/cloud mutation: inactive
 ```
