@@ -1104,3 +1104,8 @@ permanent promotion: inactive
 ```
 
 This reconciliation does not authorize implementation. Only a later explicit human/Main activation may identify controlling D/E/F sections for Codex.
+
+---
+
+<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
+> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
