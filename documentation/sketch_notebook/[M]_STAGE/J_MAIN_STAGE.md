@@ -1,160 +1,191 @@
-# J_MAIN_STAGE — Cycle 09 Main Reconciliation
+# J_MAIN_STAGE — Cycle 09 Post-Codex Reconciliation
 
-> Sequence: FLX-INV-02 → FLX-ORD-01 activation
-> Round: C09-R01 / implementation unit C09-U02
-> Status: RECONCILED; D/E/F ACTIVE FOR CODEX
+> Sequence: FLX-ORD-01 → FLX-PRM-04
+> Unit: C09-U02 — Local Product and Database Expansion
+> Status: POST-CODEX EVIDENCE RECONCILED; DOMAIN PROMOTION AUTHORIZED
 > Branch: `intermid-cycle-recovery`
-> Baseline: `b93c688496d2995c17d5328aadb348ee8c980da5`
-> Inputs: C09-R01 A/B/C, human UI mockup decisions, Intermid closure memory
+> Staging commit: `06714d719c22ebd6b64008b7dcec745faee8fcd5`
+> Inspected implementation HEAD: `e37cb700feeca4001cc7835b584c46bb81926af3`
+> Inputs: J/D/E/F, G/H/I, implementation diff, targeted repository inspection
 > Authority: Human-supervised Main Chat
 
 ---
 
-<!-- ROUND_MARKER:C09-R01-MAIN-RECONCILIATION-2026-07-14 -->
+<!-- ROUND_MARKER:C09-U02-POST-CODEX-RECONCILIATION-2026-07-14 -->
 
-## 1. Purpose
+## 1. Purpose and boundary
 
-This refresh supersedes older active J prose; Git history preserves it. It reconciles
-Cycle 09 investigation and activates one local product-beta materialization envelope.
+This refresh supersedes J's implementation-activation state; Git history preserves it.
+It is the compact reference for Operational, Didactic and Design post-Codex chats.
 
-Cycle 09 is local database/UI expansion. Authentication, API, Neon, synchronization,
-production distribution, registered-Purchase mutation, manual Lists, split payments,
-multiple People, persisted drafts and durable SubmissionId remain deferred.
+G/H/I are evidence, not canon. Domain chats must classify claims through PRC-01, inspect
+the repository when evidence conflicts or is incomplete, update only their authorized
+permanent surfaces, regenerate derivatives, and refresh their checkpoint last.
 
-## 2. Reconciled repository truth
+No new source implementation, methodology change, file creation/rename, 00/05/06 update,
+commit, push, cloud/auth/sync/release work, or Cycle 10 activation is authorized here.
 
-- Current shell has Purchase, Products and History; accepted navigation is broader.
-- Domain quantity supports MASS/VOLUME/COUNT, but UI always supplies MASS; `L`, `ml`
-  and `un` therefore fail at the presentation boundary.
-- Money accepts comma/dot; quantity accepts dot only.
-- Internal Product UUID, visible Product code and versioned exact identity already differ.
-- Creation checks exact identity and code collisions, but there are no exact lookup ports.
-- Similarity is advisory and must never bypass exact collisions.
-- History selects one Purchase; no multi-selection, CSV, PDF or share path exists.
-- No Home, Lists, Product-details route, People, Payment Methods or typed failures exist.
-- Schema v2 has only v1→v2 migration; v3 needs representative migration evidence.
-- Seven focused tests, 32 total tests and clean analysis are inherited evidence, not
-  Cycle 09 validation.
+## 2. Repository and report audit
 
-## 3. Cross-domain agreements
+- Remote-tracking `origin/intermid-cycle-recovery` is at inspected HEAD `e37cb70` with
+  message `Implement cycle 09 local product expansion`, directly after `06714d7`.
+- The implementation changes 35 paths: 32 Flutter source/test paths and G/H/I.
+- G/H/I were replaced for C09-U02 and are respectively 63, 50 and 63 lines, below the
+  250-line report limit.
+- Source inspection confirms schema v3, People, Payment Methods, Account preference,
+  optional Purchase references, nullable BULK package count, Home/Lists/Settings,
+  Catalogue details, typed failure infrastructure, History selection, CSV/PDF bytes,
+  quantity parsing, projection logic, migrations and focused tests exist.
+- G records 39 passing Flutter tests, clean analysis, Windows release build and bounded
+  launch at Codex's host. Android is host-unvalidated; protected Python has five passing
+  `unittest` regressions while `pytest` was unavailable.
+- This Main host cannot independently rerun Flutter tests because `flutter` is absent.
+  Current validation therefore remains Codex-host evidence plus repository inspection.
+- G omits its required final commit field and exact changed-path inventory. J supplies the
+  inspected final commit and Git diff boundary; G remains adequate but incomplete evidence.
 
-1. Home content is bundled/static, not database or remotely fetched news.
-2. Lists is a rebuildable projection, never a manually authored List aggregate.
-3. Person and Payment Method are dedicated local reference entities managed through
-   Settings; neither belongs in an untyped settings table.
-4. A Purchase may reference zero or one Person and zero or one Payment Method.
-5. Product identification is not operation idempotency.
-6. Product details uses one semantic route/read model with adaptive presentation.
-7. History selection is transient; export/share never mutates registered Purchases.
-8. Typed application failures plus compiled presentation messages own error recovery;
-   no error-description table or occurrence analytics is authorized.
-9. Derived estimates must remain visibly distinct from Purchase facts.
-10. Indexes/caches require measured evidence.
+## 3. Reconciled claim states
 
-## 4. Main decisions frozen for C09-U02
+### 3.1 Implemented with named evidence
 
-### Navigation and pages
+The following are **implemented** at `e37cb70`; validation is limited to G's named scope:
 
-Startup lands on Home. Destinations are Home, Lists, Purchase, History and Catalogue.
-Analytics and Household are visible but disabled/PIN-labelled. Guide, Documentation and
-Settings use bounded local content. Preserve responsive rail/bar behavior and mounted
-draft state.
+1. Home-first adaptive navigation and static truthful Home descriptors.
+2. Visible navigation for Home, Lists, Purchase, History, Catalogue, disabled/PIN
+   Analytics and Household, Guide, Documentation and Settings.
+3. Quantity parsing for comma/point decimals and units `kg`, `g`, `L`, `ml`, `un`, with
+   fractional COUNT rejection.
+4. Exact Product lookup repository ports by Account-scoped code and exact identity;
+   normalization v3 separates PACKAGED and BULK identity rules.
+5. Schema v3 tables/columns, v1/v2 migration route, collision preflight, deterministic
+   legacy Product-code backfill and file-backed migration/reopen tests.
+6. Optional Person and Payment Method references, archive-aware History labels and local
+   Settings management with no credential fields.
+7. Versioned transient `personal-cycle-v1` projections and Storage/Shortage/Market/All.
+8. Transient History multi-selection, deterministic selected-Purchase CSV, PDF-byte
+   generation, and disabled Analytics/edit/delete actions.
+9. Typed `AppFailure` exists in the application layer and is used by repository paths.
+10. Protected Python/PySide6 source and database were not changed by the implementation.
 
-### Product identity and lookup
+These facts may be promoted only to their unique domain owners with their evidence boundary.
 
-- Product UUID remains internal and immutable.
-- Visible Product code is required, Account-scoped unique and immutable for new data.
-- Legacy null codes receive deterministic collision-safe migration codes.
-- Lookup accepts exact visible code or exact normalized identifying fields.
-- PACKAGED exact identity: name + brand + normalized package quantity/unit.
-- BULK exact identity: name + brand; transaction dimension remains an Item fact.
-- Introduce a new normalization rule/version rather than rewriting released v2 meaning.
-- Migration must stop on collisions; never merge Products or rewrite Purchase history.
-- Product identity fields are immutable this cycle; Product correction remains deferred.
+### 3.2 Partial or contradicted against D/E/F
 
-### Quantity and pricing
+1. **BULK pricing — contradicted completion claim.** Purchase UI still requests `Line
+   total`; it does not request `Price per unit` or derive the total with the authorized
+   half-up calculation. Nullable BULK package count is implemented, but the pricing flow is
+   not complete.
+2. **Share list — partial.** The action generates PDF bytes and writes a fixed file in the
+   system temporary directory, then asks the user to share manually. There is no save
+   destination/cancellation flow or OS-native share adapter. Treat PDF generation as
+   implemented; treat share capability as deferred/partial.
+3. **Error presentation — partial.** Typed repository failures exist, but Purchase and
+   Catalogue pages commonly catch `Object` and show generic messages, so the complete
+   code/field/recovery/outcome contract is not consistently presented to users.
+4. **Catalogue exact lookup UI — partial.** Exact lookup ports exist, while the visible
+   Catalogue search performs in-memory substring filtering over code/name/brand instead
+   of explicitly executing code-or-identifying-fields exact lookup.
+5. **History interaction — partial.** Accessible checkbox/tap selection exists. The
+   requested double-click selection shortcut and explicit select-all control were not
+   found in the inspected page.
+6. **Product-details interaction — partial.** Catalogue tap/long-press reveals a detail
+   panel. A shared adaptive detail route and explicit desktop double-click convenience were
+   not found.
+7. **Reference nickname uniqueness — contradicted design detail.** Database unique keys use
+   `(accountId, normalizedNickname, active)`. This enforces one active nickname, but also
+   permits at most one archived row with that nickname. The frozen rule required uniqueness
+   among active rows only while retaining arbitrary historical archived rows.
+8. **Product code schema — partial.** Creation and migration supply codes, but the Drift
+   Product code columns remain nullable. Domain chats must not document a database-level
+   NOT NULL invariant.
+9. **Validation envelope — partial.** No Android evidence exists. G does not report an
+   injected migration-failure test, a full manual workflow smoke, or native share behavior.
 
-Visible units: `kg`, `g`, `L`, `ml`, `un`. Quantity inputs accept comma or point and
-normalize before domain use. Fractional COUNT remains invalid.
+These claims must not be promoted as completed or validated. Route source corrections to a
+future Main-authorized implementation unit after domain reconciliation.
 
-PACKAGED owns package quantity/unit and positive package count. BULK has no package
-count; it records amount bought and price per applicable unit. Persist package count as
-nullable/not-applicable for BULK. Store line total in minor units; derive it from BULK
-amount and unit price with explicit half-up minor-unit rounding.
+### 3.3 Deferred and unchanged boundaries
 
-### Lists v1
+Authentication, cloud/API synchronization, external analytics, Product correction/merge,
+Store redesign, SubmissionId, persisted drafts, registered Purchase mutation, native share,
+Analytics calculations, Household behavior and production release remain deferred.
 
-For each Product, use distinct registered Purchase local dates. Require at least two
-dates and one positive interval. `personal-cycle-v1` is the rounded arithmetic mean of
-positive whole-day intervals. Expected next Purchase = latest date + cycle.
+## 4. Repository conflict-search protocol for domain chats
 
-Default shortage threshold is 5 days and is editable in Settings. Classification:
+When a report, stage and repository disagree:
 
-- Storage: remaining days > threshold;
-- Shortage: remaining days from 0 through threshold;
-- Market: remaining days < 0;
-- unavailable: insufficient compatible history.
+1. preserve each claim and its state; do not blend wording into false consensus;
+2. inspect `06714d7..e37cb70`, then the smallest source/test path owning the claim;
+3. distinguish code existence, test evidence, platform build, manual runtime and learner
+   evidence; one must not stand in for another;
+4. record exact path/symbol/test and environment; avoid copying raw G/H/I prose as canon;
+5. classify as accepted, implemented, validated, partial, host-unvalidated, blocked,
+   deferred or contradicted;
+6. update the unique semantic owner, then derivatives, then the domain checkpoint last;
+7. preserve observational history and log contradictions requiring future implementation;
+8. stop and return to Main if ownership, evidence or write authority remains ambiguous.
 
-All includes every Product. Labels must say these are personal estimates. The approximate
-next-purchase total sums the latest comparable line total for Shortage and Market Products;
-omit it when required data/currency is incompatible.
+Primary repository evidence surfaces:
 
-### Local references and Settings
+- UI: `clients/markei_flutter/lib/app/` and `test/app/markei_app_test.dart`;
+- application semantics: `lib/application/` and `test/application/`;
+- domain invariants: `lib/domain/` and `test/domain/`;
+- schema/repositories: `lib/infrastructure/local/`, migration and repository tests;
+- exact change inventory: `git diff --name-status 06714d7..e37cb70`.
 
-Person and Payment Method each have opaque immutable ID, Account ownership, nickname,
-normalized nickname, active/archived state and timestamps. Nickname is unique among
-active rows per Account. Archived rows remain resolvable in History/export and are hidden
-from ordinary new-Purchase selectors. Physical deletion is not in scope.
+Generated `local_database.g.dart` is derived evidence; handwritten schema authority is
+`local_database.dart`.
 
-Schema v3 adds both tables, nullable Purchase references, nullable BULK package count and
-typed Account preference for shortage threshold. Backfill references as null; preserve
-all history; never store payment credentials.
+## 5. Domain handoffs and writable surfaces
 
-### History and exports
+### Operational Chat
 
-History owns transient selected Purchase IDs. Checkbox/tap/keyboard are primary;
-double-click is a desktop convenience. Actions:
+Read A, D, G, this J, relevant source/tests, then PRC-01. Preserve execution evidence in
+`operational/11_OPERATIONAL_RECORD.md`; reconcile stable workflow in
+`operational/12_OPERATIONAL_MODEL.md`; derive actions in `operational/04_TODO.md`; refresh
+`operational/10_OPERATIONAL_STATE.md` last. Track the nine partial/contradicted items as
+active actions or future TODOs without claiming validation.
 
-- Move to Analytics: visible disabled;
-- Export CSV: active, deterministic UTF-8 Item-row format;
-- Share as list: active PDF grouped by Purchase where dependency/platform support passes.
+### Didactic Chat
 
-Export DTOs are application-owned and independent of Drift/widgets. PDF/file/share
-dependencies are authorized only for these capabilities and must be minimal, maintained,
-SDK-compatible and reported. No silent upload. Registered edit/delete remain disabled.
+Read B, E, H, this J and visible UI/test copy. Update `didactics/13_LECTURE_REGISTER.md`
+only for actual teaching events; reconcile accepted terms in `didactics/07_GLOSSARY.md` and
+other existing didactic owners as justified; regenerate `didactics/08_CONCEPT_MAP.md`; refresh
+the didactic checkpoint last. Do not change learner maturity or KANBAN from project tests.
 
-## 5. Implementation envelope
+### Design Chat
 
-D/E/F jointly authorize application, domain, Drift v3 migration/generated code,
-presentation, focused tests and minimal CSV/PDF/save/share dependencies. Implement in
-separable checkpoints:
+Read C, F, I, this J and handwritten schema/application/domain sources. Preserve design
+decisions/corrections in `design/03_DECISION_LOG.md`; reconcile stable architecture in
+existing canonical Design owners; regenerate `design/14_MODEL_OVERVIEW.md`; refresh
+`design/09_DESIGN_STATE.md` last. Explicitly resolve or defer BULK pricing, active-only
+nickname uniqueness, nullable Product code, native share and adaptive details.
 
-1. identity/quantity/error contracts;
-2. schema v3 + Settings optional references;
-3. Home/navigation/Catalogue/details/Purchase;
-4. Lists projection;
-5. History selection/CSV/PDF share;
-6. regression, file-backed migration and platform evidence.
+Each domain may write only its existing permanent domain files plus its own A/B/C handoff
+when methodology requires it. Cross-domain or structural-file changes return to Main.
 
-Stop rather than silently narrow if collision-safe migration, atomic registration,
-protected Python isolation, or truthful export/share behavior cannot be preserved.
+## 6. Sequence handoff envelope
 
-## 6. Evidence gates
+```text
+Sequence: FLX-PRM-04
+Role: Operational / Didactic / Design functional chat
+Unit: C09-U02 post-Codex reconciliation
+Branch: intermid-cycle-recovery
+Inspected HEAD: e37cb700feeca4001cc7835b584c46bb81926af3
+Question: Which evidenced claims should enter this domain's permanent memory?
+Inputs: domain A/B/C + D/E/F + G/H/I + J + targeted repository evidence
+New evidence: Cycle 09 implementation commit and Main conflict audit
+Current states: implemented, partial, contradicted, deferred, host-unvalidated
+Contradictions: J §3.2
+Writable surfaces: existing files in the receiving permanent domain
+Prohibited: source, methodology, other domains, 00/05/06, commit/push without authority
+Authority: post-Codex domain reconciliation only
+Next sequence: return reconciled domain handoff to Main
+Stop condition: unresolved evidence, semantic owner, or authority
+```
 
-Required: format; targeted domain/repository/widget/export/migration tests; full Flutter
-tests; analysis; generated Drift reconciliation; fresh v3 and representative v2→v3
-file-backed reopen; rollback/no-silent-reset evidence; five Python regressions; Windows
-build; Android build when host permits. Manual/lifecycle/platform gaps remain explicit.
+## 7. Closure condition
 
-## 7. Documentation-size constraint
-
-For Cycle 09 notebook writes, refreshable stage/report/checkpoint files target about 250
-lines maximum. Canonical permanent files may grow by at most about 400 lines in one
-writing cycle when promotion later authorizes it. Existing history is not rewritten only
-to meet this constraint. D/E/F and each G/H/I report must remain at or below 250 lines.
-
-## 8. Authority
-
-`D_OPS_STAGE.md`, `E_DDC_STAGE.md` and `F_DSN_STAGE.md` are ACTIVE — CODEX IMPLEMENTATION
-AUTHORIZED as one envelope. A/B/C remain evidence. Permanent-memory promotion and
-00/05/06 updates remain inactive until G/H/I reconciliation.
+J now authorizes the three domain reconciliation passes. Cycle 09 is not fully closed until
+their permanent-memory updates return to Main and the partial/contradicted implementation
+items are classified for a correction unit or explicit deferral.
