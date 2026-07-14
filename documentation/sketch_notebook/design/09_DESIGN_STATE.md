@@ -123,3 +123,89 @@ Additional implementation remains inactive until Main/human authority is express
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+# Intermid Cycle Recovery Design Checkpoint
+
+> Branch: `intermid-cycle-recovery`  
+> Inspected implementation HEAD: `84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8`  
+> Materialization commit: `409e5f1e013a282165efd5f31bed17a396ad6543`  
+> Evidence: `DEV_STAGE/I_DSN_CODEX.md`  
+> Main reconciliation: `[M]_STAGE/J_MAIN_STAGE.md`, sections 20–24  
+> Functional/directive inputs: `DEV_STAGE/C_DESIGN.md`, `DEV_STAGE/F_DSN_STAGE.md`
+
+## Current accepted architecture
+
+```text
+Flutter presentation
+→ application commands/query ports
+→ independent Dart domain
+← local repository adapters
+→ Drift schema v2 / app-private SQLite
+```
+
+The protected Python/PySide6 beta remains isolated and recoverable. Presentation owns mounted-session draft and edit state; repository infrastructure retains the atomic local registration transaction. Local SyncEvent/PendingEvent structures are preparation only and do not establish synchronization.
+
+## Corrected edit boundary
+
+The prior existing-Product staged-line edit defect is corrected.
+
+`_PurchasePageState` now owns the edit-state trio:
+
+- `_editingKey` — presentation line/edit identity;
+- `_editingReference` — original `ProductReference`;
+- `_editingProductLabel` — original Product label.
+
+Entering edit mode captures all three. Saving rebuilds only editable Item values and reuses the retained Product reference and label. Saving, removal of the edited line, and successful registration clear associated edit state. Product dropdown selection does not own staged-line Product identity.
+
+## Evidence classification
+
+**Implemented and directly regression-validated**
+
+- existing-Product edit retains the original Product ID;
+- editing package count, quantity, and line total persists the new Item values;
+- Product count remains one, so the edit does not duplicate the Product.
+
+**Implemented with structural support**
+
+- `NewProductReference` passes through the same retained base-`ProductReference` edit state and save path;
+- no separate new-Product edit regression was produced.
+
+**Recorded local validation**
+
+- focused app suite: 7 passed;
+- full Flutter suite: 32 passed;
+- Flutter analysis: no issues;
+- touched Dart files formatted.
+
+These results do not establish platform, file-backed restart, migration, manual, release, or synchronization acceptance.
+
+## Preserved boundaries
+
+- drafts remain mounted-session presentation state;
+- registered facts remain owned by the existing atomic local transaction;
+- schema remains v2;
+- no application contract, domain identity, repository transaction, composition, or navigation boundary changed;
+- local queue/event preparation remains distinct from real synchronization.
+
+## Deferred separate Design decisions
+
+- schema v3 and migration/recovery policy;
+- Store identity, normalization, branch, alias, and merge semantics;
+- durable `SubmissionId` and retry idempotency;
+- installation–Device lifecycle and uniqueness;
+- persisted drafts;
+- measured pagination/index/cache decisions;
+- backup/export/restore identity;
+- authentication, authorization, API/Neon, upload/download, cursor, convergence, and synchronization.
+
+## Next valid route
+
+Main may close the Intermid Cycle permanent-memory reconciliation after the other domains refresh their checkpoints. Any next implementation unit must select one deferred Design decision explicitly, gather its own evidence, and issue fresh controlling D/E/F. No further source or schema authority follows from this checkpoint.
+
+## Recovery pointers
+
+- Canonical: `design/01_ARCHITECTURE.md`, section 20.
+- Derived: `design/14_MODEL_OVERVIEW.md`, “Intermid Cycle Current Design Map”.
+- Observational: `design/03_DECISION_LOG.md`, Event 18.
+- Evidence: `DEV_STAGE/I_DSN_CODEX.md`.
+- Main: `[M]_STAGE/J_MAIN_STAGE.md`, sections 20–24.
