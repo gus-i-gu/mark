@@ -412,3 +412,15 @@ Automated Flutter tests, Windows artifact build, bounded process launch, manual 
 
 <!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
 > Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+
+---
+
+# Cycle 09 Sprint 02 Operational Rules
+
+People and Payment Methods retain opaque IDs plus Account-scoped immutable, transactional, non-reusing `@001...` / `#001...` codes. References remain optional, archives preserve `code · nickname`, and payment secrets are prohibited. Product codes are normalized, Account-scoped unique, non-null and immutable; legacy backfill must preserve relationships and pass migration/reopen gates.
+
+Manual `dd/mm/yyyy` and `HH:mm` represent Purchase occurrence, distinct from insertion, and convert to UTC at the application boundary. Exact Product-code autofill does not add an Item. BULK derives a read-only fixed-point total from amount and rate in the same selected unit.
+
+Catalogue click/tap selects and details remain explicit; History selection is checkbox/tap/keyboard owned, while double-click currently focuses detail. Lists language repair is not full relational/visual composition. Theme/components are infrastructure, not visual convergence. Oversized pages must be extracted before expansion.
+
+Tests, analysis, migration, build, bounded launch, manual workflow, accessibility, lifecycle and release are separate gates. Windows build/hidden launch is not manual acceptance; absent Java leaves Android host-unvalidated; deterministic PDF/export is not native OS sharing.
