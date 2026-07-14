@@ -915,3 +915,189 @@ deferred
 
 <!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
 > Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+
+# Event 20 — Cycle 09 Sprint 02 Current-UI Archive and Proposed Visual Language
+
+## Observation boundary
+
+This event archives Design evidence at `c67d573f1335ffd55c659a9ee795982ca72c2c32`.
+
+Evidence classes are kept separate:
+
+- screenshots 6–10: user-supplied current communication and interaction evidence;
+- handwritten Flutter source: structural evidence for composition and implemented interaction;
+- mockups 1–5: proposed visual and interaction intention only;
+- user observations: current workflow gaps requiring reproduction and Main selection.
+
+Nothing in this entry accepts the mockups as architecture, authorizes source work, or changes the current Design checkpoint.
+
+## Current visual abstraction
+
+The current client presents a sparse Material scaffold:
+
+```text
+MaterialApp with one dark-green seed
+→ standard AppBar
+→ narrow NavigationRail at desktop width
+→ NavigationBar below 720 px
+→ IndexedStack pages
+→ mostly ListView / Column / Row / Wrap
+→ standard TextField, DropdownButton, ListTile, Card and buttons
+```
+
+Screenshots 6–10 show a pale background, limited visual hierarchy, broad unused space, narrow navigation, plain list rows, minimally differentiated cards and weak separation between page title, task sections, data, feedback and actions. The visual system reads as a functioning scaffold rather than a coherent Markei product surface.
+
+Source supports this reading: the theme declares only `colorSchemeSeed`; Home is a sequence of basic Cards/ListTiles; Lists and History use plain Cards/ListTiles; Product creation, Purchase entry and Settings are long vertical forms assembled from standard fields, rows and wraps. No shared Markei spacing, typography, elevation, surface, table, status-chip or action-hierarchy abstraction is evident.
+
+Screenshots also preserve overflow warnings and constrained horizontal compositions. Rigid paired `Row` fields and dense navigation/page content create risks at narrow widths, larger text, localization and desktop window resizing. The single 720-pixel shell switch changes navigation placement but does not itself recompose page information hierarchy.
+
+## Current interaction archive
+
+### Navigation and page structure
+
+The shell preserves mounted page state with `IndexedStack`. Desktop uses a narrow labelled rail; compact layouts use the bottom bar. The expanded destination count competes for navigation space and does not yet express primary, secondary, disabled or informational destinations as a coherent hierarchy.
+
+### Purchase
+
+Purchase owns a long scrolling form, standard selectors and staged-line ListTiles. Store selection precedes Product and reference controls structurally, but the UI does not expose the requested editable Purchase date/time (`hh:mm · dd/mm/yyyy`) after Store; registration uses `DateTime.now()`.
+
+Person and Payment Method selectors show nicknames or “Not assigned.” Their immutable IDs are not communicated alongside nicknames.
+
+Product entry mixes catalogue selection and new-Product creation in one dense surface. PACKAGED fields use paired rows. BULK removes package fields but still asks for Line total; price per unit/volume and derived-total feedback are absent.
+
+Staged Items expose edit/remove controls, but the visual distinction between Product identity, Product details and editable Purchase Item values remains weak.
+
+### Catalogue
+
+Catalogue search filters the loaded list by substring across code, name and brand. Rows use tap and long-press to reveal an inline detail card. The current surface does not communicate an explicit selection mode, exact Product selection, or desktop double-click behavior. Product details and Product selection can therefore read as the same action even though their responsibilities differ.
+
+### Lists
+
+Lists exposes Storage, Shortage, Market and All through standard projection controls and Cards/ListTiles. The screenshot evidence reports that the expected Catalogue/Purchase relational information is not visibly materializing. The current row hierarchy is too thin to communicate Product code, Product/Brand, latest Purchase, amount, unit price, personal cycle, expected date, remaining time and derived status together. Sparse or unavailable data lacks a strong learning/status treatment.
+
+### History
+
+History has checkbox/tap selection, action buttons, plain Purchase rows and an inline detail region. Selection is more explicit here than in Catalogue, but feedback and action hierarchy remain weak: export/share/disabled mutation actions compete visually, and selected state is not elevated into a clear action mode. Desktop double-click is not a substitute for checkbox/tap/keyboard access.
+
+### Settings
+
+Settings communicates local-only Person and Payment Method records, archive state and shortage threshold. Rows show nickname/history label and Active/Archived, but do not consistently teach the ID-plus-nickname distinction required for durable historical references.
+
+## Proposed visual abstraction from mockups 1–5
+
+The mockups propose, but do not implement or canonize, a more recognisable Markei language:
+
+- branded cream and white surfaces;
+- dark-green primary actions/navigation;
+- lavender secondary accents and selected/auxiliary surfaces;
+- consistent navigation treatment across desktop and mobile;
+- cards for grouped tasks and summaries;
+- tables or table-like rows for dense relational data;
+- status chips for Storage/Shortage/Market, Active/Archived, unavailable and disabled states;
+- stronger typography, spacing and section rhythm;
+- visible loading, empty, selected, success, warning, error and disabled states;
+- accessible selection controls plus optional desktop shortcuts;
+- coherent primary/secondary/destructive/inactive action hierarchy;
+- responsive desktop panes/tables and mobile stacked cards/sheets.
+
+This is a candidate component/token system, not accepted architecture.
+
+## Candidate tokens and components for Main review
+
+### Tokens
+
+```text
+surface.canvas        cream candidate
+surface.primary       white candidate
+surface.secondary     lavender candidate
+action.primary        dark green candidate
+text.primary          high-contrast near-black/green
+text.secondary        muted neutral
+status.storage        positive/available
+status.shortage       warning
+status.market         due/ended
+status.unavailable    neutral learning state
+spacing               named compact / regular / section / page rhythm
+radius                field / card / panel hierarchy
+elevation/border      restrained surface separation
+```
+
+Exact values, contrast, dark mode and platform theming are unresolved.
+
+### Components
+
+- branded adaptive application shell;
+- page header with title, context and primary action;
+- section card/panel;
+- responsive form grid;
+- labelled identity picker showing code/ID plus name;
+- Product result row with separate Select and Details actions;
+- dense desktop projection table with mobile Product card equivalent;
+- status chip and unavailable/learning badge;
+- selection action bar;
+- feedback banner with recovery action;
+- responsive detail pane/sheet/route;
+- date/time field group;
+- amount/unit and price-per-unit calculator group;
+- ID-plus-nickname reference row;
+- explicit empty/loading/error panels.
+
+## Functional contracts that must drive the redesign
+
+The redesign cannot be a skin over unresolved behavior.
+
+1. **Purchase date/time:** the visual field requires one presentation value, locale-aware editing, validation and a clear conversion into the existing occurrence-time contract.
+2. **Exact Product selection:** rows must distinguish “Select Product” from “View details”; exact code/identity operations require visible presentation and optional desktop double-click without removing tap/keyboard actions.
+3. **Relational Lists:** the row/table contract must be fed by Catalogue + Purchase projections and expose unavailable states, not static placeholders.
+4. **Person/Payment Method:** selectors and Settings rows must present stable ID/code plus nickname without making users edit internal identity.
+5. **BULK pricing:** amount/unit and price-per-unit must derive line total under the accepted rounding contract; line total should not remain the only unexplained input.
+6. **Product details:** adaptive pane/sheet/route should be shared across Catalogue and Purchase and remain distinct from Product selection.
+7. **History actions:** selected state must produce an accessible action hierarchy for Analytics-disabled, CSV and PDF/manual/native share boundaries without implying Purchase mutation.
+
+## Responsive risks
+
+- nine destinations can overflow or become cognitively flat in rail/bar navigation;
+- paired Row fields can overflow at phone width and larger text;
+- desktop unused space may coexist with cramped form rows;
+- relational Lists data cannot fit unchanged into both desktop and mobile;
+- inline Product and Purchase detail panels can create excessively long pages;
+- status/action chips can wrap unpredictably without priority rules;
+- selection action bars require keyboard focus, screen-reader labels and stable mobile placement;
+- cream/lavender candidates require contrast verification rather than aesthetic assumption;
+- screenshots do not establish rotation, zoom, text scaling, localization or lifecycle behavior.
+
+## Main decisions required before D/E/F
+
+1. Freeze the navigation hierarchy: primary product destinations versus disabled/informational destinations.
+2. Accept or revise the cream/white, dark-green and lavender token direction; define contrast and dark-mode boundary.
+3. Select typography, spacing, radius, border/elevation and density scales.
+4. Define desktop table versus mobile card representations for Lists and History.
+5. Freeze Product row actions: Select, Details and optional double-click semantics.
+6. Freeze date/time presentation, locale and occurrence-time conversion.
+7. Freeze the visible ID-plus-nickname format and whether IDs are user codes or shortened immutable IDs.
+8. Freeze BULK unit-price input, derived total and rounding feedback.
+9. Decide adaptive Product details: route, sheet, pane or breakpoint combination.
+10. Define selection-mode feedback and History action priority.
+11. Define shared loading/empty/error/unavailable/success/warning components.
+12. Set responsive breakpoints and minimum window/text-scale acceptance.
+13. Decide whether Sprint 02 is one visual-system foundation plus page units or a broad simultaneous restyle.
+14. Preserve mockups as target evidence only until D/E/F names exact components, paths, tests and stop conditions.
+
+## Disposition
+
+```text
+archived observational evidence
+    current sparse Material scaffold
+    screenshot-visible composition and workflow gaps
+    source-backed interaction patterns
+    proposed mockup language
+    responsive and accessibility risks
+
+not promoted
+    palette values
+    component library
+    navigation redesign
+    page layouts
+    functional contract changes
+    source/schema/dependency work
+```
