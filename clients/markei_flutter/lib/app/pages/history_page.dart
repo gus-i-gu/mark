@@ -103,6 +103,22 @@ class _HistoryPageState extends State<HistoryPage> {
                 OutlinedButton(onPressed: null, child: const Text('Edit')),
                 OutlinedButton(onPressed: null, child: const Text('Delete')),
                 TextButton(
+                  key: const Key('history.selectAll'),
+                  onPressed:
+                      entries.every(
+                        (entry) => _selectedIds.any(
+                          (id) => id.value == entry.purchaseId.value,
+                        ),
+                      )
+                      ? null
+                      : () => setState(() {
+                          _selectedIds
+                            ..clear()
+                            ..addAll(entries.map((entry) => entry.purchaseId));
+                        }),
+                  child: const Text('Select all'),
+                ),
+                TextButton(
                   key: const Key('history.clearSelection'),
                   onPressed: _selectedIds.isEmpty
                       ? null
@@ -117,27 +133,31 @@ class _HistoryPageState extends State<HistoryPage> {
             ],
             const SizedBox(height: 8),
             for (final entry in entries) ...[
-              ListTile(
-                key: Key('history.purchase.${entry.purchaseId.value}'),
-                leading: Checkbox(
-                  value: _selectedIds.any(
-                    (id) => id.value == entry.purchaseId.value,
-                  ),
-                  onChanged: (_) => _toggleSelection(entry.purchaseId),
-                ),
-                title: Text(entry.storeName),
-                subtitle: Text(
-                  '${entry.itemCount} Purchase Item(s) · ${entry.occurrenceTime.toLocal()}',
-                ),
-                trailing: Text(
-                  '${entry.currencyCode} ${(entry.totalMinorUnits / 100).toStringAsFixed(2)}',
-                ),
-                onTap: () {
-                  _toggleSelection(entry.purchaseId);
-                  setState(() => _selectedPurchaseId = entry.purchaseId);
-                },
-                onLongPress: () =>
+              GestureDetector(
+                onDoubleTap: () =>
                     setState(() => _selectedPurchaseId = entry.purchaseId),
+                child: ListTile(
+                  key: Key('history.purchase.${entry.purchaseId.value}'),
+                  leading: Checkbox(
+                    value: _selectedIds.any(
+                      (id) => id.value == entry.purchaseId.value,
+                    ),
+                    onChanged: (_) => _toggleSelection(entry.purchaseId),
+                  ),
+                  title: Text(entry.storeName),
+                  subtitle: Text(
+                    '${entry.itemCount} Purchase Item(s) · ${entry.occurrenceTime.toLocal()}',
+                  ),
+                  trailing: Text(
+                    '${entry.currencyCode} ${(entry.totalMinorUnits / 100).toStringAsFixed(2)}',
+                  ),
+                  onTap: () {
+                    _toggleSelection(entry.purchaseId);
+                    setState(() => _selectedPurchaseId = entry.purchaseId);
+                  },
+                  onLongPress: () =>
+                      setState(() => _selectedPurchaseId = entry.purchaseId),
+                ),
               ),
               const Divider(height: 1),
             ],

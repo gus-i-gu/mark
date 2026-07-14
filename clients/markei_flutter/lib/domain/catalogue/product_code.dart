@@ -20,6 +20,9 @@ ProductCode normalizeProductCode(String displayCode) {
   if (displayValue.length > 64) {
     throw ArgumentError('Product code must be 1-64 characters after trim.');
   }
+  if (displayValue.toLowerCase().startsWith('legacy:')) {
+    throw ArgumentError('Product code prefix is reserved for legacy backfill.');
+  }
   return ProductCode(
     displayValue: displayValue,
     normalizedKey: displayValue.toLowerCase(),

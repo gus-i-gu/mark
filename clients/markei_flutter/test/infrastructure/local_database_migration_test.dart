@@ -6,7 +6,7 @@ import 'package:markei/infrastructure/local/local_database.dart';
 
 void main() {
   test(
-    'migrates v1 database to v3 local references and identity fields',
+    'migrates v1 database to v4 local references and identity fields',
     () async {
       final temp = await Directory.systemTemp.createTemp('markei_migration_');
       addTearDown(() => temp.delete(recursive: true));
@@ -17,20 +17,24 @@ void main() {
       );
       addTearDown(migratingDb.close);
 
-      expect(migratingDb.schemaVersion, 3);
+      expect(migratingDb.schemaVersion, 4);
       final products = await migratingDb.select(migratingDb.products).get();
       final ledger = await migratingDb
           .select(migratingDb.migrationLedger)
           .get();
 
       expect(products, hasLength(1));
-      expect(products.single.userProductCode, startsWith('legacy-'));
+      expect(products.single.userProductCode, startsWith('legacy:'));
+      expect(products.single.normalizedUserProductCode, isNotEmpty);
       expect(products.single.normalizationVersion, 3);
       expect(products.single.exactIdentityKey, contains('|v3|'));
       expect(products.single.displayName, 'arroz branco');
       expect(ledger.last.fromVersion, 1);
-      expect(ledger.last.toVersion, 3);
-      expect(ledger.last.migrationId, 'v2-to-v3-local-products-references');
+      expect(ledger.last.toVersion, 4);
+      expect(
+        ledger.last.migrationId,
+        'v3-to-v4-visible-codes-product-not-null',
+      );
       expect(await migratingDb.select(migratingDb.people).get(), isEmpty);
       expect(
         await migratingDb.select(migratingDb.paymentMethods).get(),
@@ -44,17 +48,17 @@ void main() {
     },
   );
 
-  test('fresh v3 database creates reference and preference tables', () async {
+  test('fresh v4 database creates reference and preference tables', () async {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
 
-    expect(db.schemaVersion, 3);
+    expect(db.schemaVersion, 4);
     expect(await db.select(db.people).get(), isEmpty);
     expect(await db.select(db.paymentMethods).get(), isEmpty);
     expect(await db.select(db.accountPreferences).get(), isEmpty);
   });
 
-  test('migrates file-backed v2 database to v3 and reopens', () async {
+  test('migrates file-backed v2 database to v4 and reopens', () async {
     final temp = await Directory.systemTemp.createTemp('markei_migration_v2_');
     addTearDown(() => temp.delete(recursive: true));
     final file = File('${temp.path}/markei.sqlite');
@@ -70,7 +74,7 @@ void main() {
     expect(products.single.normalizationVersion, 3);
     expect(products.single.exactIdentityKey, contains('|v3|'));
     expect(items.single.packageCount, 1);
-    expect(ledger.last.migrationId, 'v2-to-v3-local-products-references');
+    expect(ledger.last.migrationId, 'v3-to-v4-visible-codes-product-not-null');
     await migratingDb.close();
 
     final reopened = LocalDatabase.file(file);

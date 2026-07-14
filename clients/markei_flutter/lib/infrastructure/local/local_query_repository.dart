@@ -158,10 +158,8 @@ class LocalQueryRepository
           ProductsCompanion.insert(
             id: product.id.value,
             accountId: product.accountId.value,
-            userProductCode: Value(product.userProductCode.displayValue),
-            normalizedUserProductCode: Value(
-              product.userProductCode.normalizedKey,
-            ),
+            userProductCode: product.userProductCode.displayValue,
+            normalizedUserProductCode: product.userProductCode.normalizedKey,
             normalizationVersion: product.normalizationVersion,
             displayName: Value(product.displayName),
             displayBrand: Value(product.displayBrand),
@@ -258,8 +256,13 @@ class LocalQueryRepository
             currencyCode: purchase.currencyCode,
             totalMinorUnits: purchase.totalMinorUnits,
             itemCount: counts[purchase.id] ?? 0,
-            personLabel: _referenceLabel(person?.nickname, person?.active),
+            personLabel: _referenceLabel(
+              person?.visibleCode,
+              person?.nickname,
+              person?.active,
+            ),
             paymentMethodLabel: _referenceLabel(
+              paymentMethod?.visibleCode,
               paymentMethod?.nickname,
               paymentMethod?.active,
             ),
@@ -319,7 +322,7 @@ class LocalQueryRepository
             productId: ProductId(product.id),
             productName: product.displayName ?? product.normalizedName,
             productBrand: product.displayBrand ?? product.normalizedBrand,
-            productCode: product.userProductCode ?? 'legacy',
+            productCode: product.userProductCode,
             packageCount: item.packageCount,
             measurementKind: item.measurementKind,
             purchasedAmount: item.purchasedAmount,
@@ -337,8 +340,13 @@ class LocalQueryRepository
         currencyCode: purchase.currencyCode,
         totalMinorUnits: purchase.totalMinorUnits,
         itemCount: items.length,
-        personLabel: _referenceLabel(person?.nickname, person?.active),
+        personLabel: _referenceLabel(
+          person?.visibleCode,
+          person?.nickname,
+          person?.active,
+        ),
         paymentMethodLabel: _referenceLabel(
+          paymentMethod?.visibleCode,
           paymentMethod?.nickname,
           paymentMethod?.active,
         ),
@@ -414,16 +422,55 @@ class LocalQueryRepository
     if (trimmed.isEmpty) {
       throw ArgumentError('Nickname is required.');
     }
-    await _ensureAccount(accountId, now);
-    final normalized = normalizeReferenceNickname(trimmed);
-    final referenceId = id ?? _uuid.v4();
-    if (kind == LocalReferenceKind.person) {
+    return _db.transaction(() async {
+      await _ensureAccount(accountId, now);
+      await _ensureAccountPreferences(accountId, now);
+      final normalized = normalizeReferenceNickname(trimmed);
+      final referenceId = id ?? _uuid.v4();
+      if (kind == LocalReferenceKind.person) {
+        final visibleCode = id == null
+            ? await _allocateReferenceCode(accountId, LocalReferenceKind.person)
+            : (await (_db.select(_db.people)
+                        ..where((table) => table.id.equals(referenceId)))
+                      .getSingle())
+                  .visibleCode;
+        await _db
+            .into(_db.people)
+            .insert(
+              PeopleCompanion.insert(
+                id: referenceId,
+                accountId: accountId.value,
+                visibleCode: visibleCode,
+                nickname: trimmed,
+                normalizedNickname: normalized,
+                active: Value(active),
+                createdAt: now,
+                updatedAt: now,
+                archivedAt: Value(active ? null : now),
+              ),
+              mode: InsertMode.insertOrAbort,
+            );
+        final row = await (_db.select(
+          _db.people,
+        )..where((table) => table.id.equals(referenceId))).getSingle();
+        return _referenceFromRow(kind, row);
+      }
+      final visibleCode = id == null
+          ? await _allocateReferenceCode(
+              accountId,
+              LocalReferenceKind.paymentMethod,
+            )
+          : (await (_db.select(
+                  _db.paymentMethods,
+                )..where((table) => table.id.equals(referenceId))).getSingle())
+                .visibleCode;
       await _db
-          .into(_db.people)
-          .insertOnConflictUpdate(
-            PeopleCompanion.insert(
+          .into(_db.paymentMethods)
+          .insert(
+            PaymentMethodsCompanion.insert(
               id: referenceId,
               accountId: accountId.value,
+              visibleCode: visibleCode,
               nickname: trimmed,
               normalizedNickname: normalized,
               active: Value(active),
@@ -431,30 +478,42 @@ class LocalQueryRepository
               updatedAt: now,
               archivedAt: Value(active ? null : now),
             ),
+            mode: InsertMode.insertOrAbort,
           );
       final row = await (_db.select(
-        _db.people,
+        _db.paymentMethods,
       )..where((table) => table.id.equals(referenceId))).getSingle();
       return _referenceFromRow(kind, row);
-    }
-    await _db
-        .into(_db.paymentMethods)
-        .insertOnConflictUpdate(
-          PaymentMethodsCompanion.insert(
-            id: referenceId,
-            accountId: accountId.value,
-            nickname: trimmed,
-            normalizedNickname: normalized,
-            active: Value(active),
-            createdAt: now,
-            updatedAt: now,
-            archivedAt: Value(active ? null : now),
-          ),
-        );
+    });
+  }
+
+  Future<String> _allocateReferenceCode(
+    AccountId accountId,
+    LocalReferenceKind kind,
+  ) async {
+    final now = DateTime.now().toUtc();
     final row = await (_db.select(
-      _db.paymentMethods,
-    )..where((table) => table.id.equals(referenceId))).getSingle();
-    return _referenceFromRow(kind, row);
+      _db.accountPreferences,
+    )..where((table) => table.accountId.equals(accountId.value))).getSingle();
+    final sequence = kind == LocalReferenceKind.person
+        ? row.nextPersonCode
+        : row.nextPaymentMethodCode;
+    final code =
+        '${kind == LocalReferenceKind.person ? '@' : '#'}${sequence.toString().padLeft(3, '0')}';
+    await (_db.update(
+      _db.accountPreferences,
+    )..where((table) => table.accountId.equals(accountId.value))).write(
+      kind == LocalReferenceKind.person
+          ? AccountPreferencesCompanion(
+              nextPersonCode: Value(sequence + 1),
+              updatedAt: Value(now),
+            )
+          : AccountPreferencesCompanion(
+              nextPaymentMethodCode: Value(sequence + 1),
+              updatedAt: Value(now),
+            ),
+    );
+    return code;
   }
 
   @override
@@ -507,15 +566,15 @@ class LocalQueryRepository
     }
     final now = DateTime.now().toUtc();
     await _ensureAccount(accountId, now);
-    await _db
-        .into(_db.accountPreferences)
-        .insertOnConflictUpdate(
-          AccountPreferencesCompanion.insert(
-            accountId: accountId.value,
-            shortageThresholdDays: Value(days),
-            updatedAt: now,
-          ),
-        );
+    await _ensureAccountPreferences(accountId, now);
+    await (_db.update(
+      _db.accountPreferences,
+    )..where((table) => table.accountId.equals(accountId.value))).write(
+      AccountPreferencesCompanion(
+        shortageThresholdDays: Value(days),
+        updatedAt: Value(now),
+      ),
+    );
   }
 
   @override
@@ -575,7 +634,7 @@ class LocalQueryRepository
                 );
           return ProductListProjectionItem(
             productId: ProductId(product.id),
-            productCode: product.userProductCode ?? 'legacy',
+            productCode: product.userProductCode,
             productName: product.displayName ?? product.normalizedName,
             productBrand: product.displayBrand ?? product.normalizedBrand,
             cycle: cycle,
@@ -688,8 +747,8 @@ class LocalQueryRepository
       id: ProductId(row.id),
       accountId: AccountId(row.accountId),
       userProductCode: domain_code.ProductCode(
-        displayValue: row.userProductCode ?? 'legacy',
-        normalizedKey: row.normalizedUserProductCode ?? 'legacy',
+        displayValue: row.userProductCode,
+        normalizedKey: row.normalizedUserProductCode,
       ),
       normalizationVersion: row.normalizationVersion,
       displayName: row.displayName ?? row.normalizedName,
@@ -713,6 +772,7 @@ class LocalQueryRepository
       id: row.id as String,
       accountId: AccountId(row.accountId as String),
       kind: kind,
+      visibleCode: row.visibleCode as String,
       nickname: row.nickname as String,
       normalizedNickname: row.normalizedNickname as String,
       active: row.active as bool,
@@ -722,11 +782,12 @@ class LocalQueryRepository
     );
   }
 
-  String? _referenceLabel(String? nickname, bool? active) {
+  String? _referenceLabel(String? visibleCode, String? nickname, bool? active) {
     if (nickname == null) {
       return null;
     }
-    return active == false ? '$nickname (archived)' : nickname;
+    final label = visibleCode == null ? nickname : '$visibleCode · $nickname';
+    return active == false ? '$label (archived)' : label;
   }
 
   Future<void> _ensureAccount(AccountId accountId, DateTime now) async {
@@ -738,6 +799,21 @@ class LocalQueryRepository
             defaultCurrencyCode: 'BRL',
             createdAt: now,
           ),
+        );
+  }
+
+  Future<void> _ensureAccountPreferences(
+    AccountId accountId,
+    DateTime now,
+  ) async {
+    await _db
+        .into(_db.accountPreferences)
+        .insert(
+          AccountPreferencesCompanion.insert(
+            accountId: accountId.value,
+            updatedAt: now,
+          ),
+          mode: InsertMode.insertOrIgnore,
         );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'design/markei_theme.dart';
 import 'markei_composition.dart';
 import 'pages/home_page.dart';
 import 'pages/history_page.dart';
@@ -20,6 +21,8 @@ class MarkeiApp extends StatefulWidget {
 class _MarkeiAppState extends State<MarkeiApp> {
   int _selectedIndex = 0;
   int _refreshSignal = 0;
+
+  static const _compactIndexes = [0, 1, 2, 4];
 
   static const _destinations = <_MarkeiDestination>[
     _MarkeiDestination(label: 'Home', icon: Icons.home),
@@ -44,10 +47,10 @@ class _MarkeiAppState extends State<MarkeiApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Markei',
-      theme: ThemeData(colorSchemeSeed: const Color(0xff246b5a)),
+      theme: markeiTheme(),
       home: LayoutBuilder(
         builder: (context, constraints) {
-          final useRail = constraints.maxWidth >= 720;
+          final useRail = constraints.maxWidth >= 600;
           final pages = [
             const HomePage(),
             ListsPage(
@@ -124,17 +127,35 @@ class _MarkeiAppState extends State<MarkeiApp> {
                 : content,
             bottomNavigationBar: useRail
                 ? null
-                : NavigationBar(
-                    key: const Key('markei.navigationBar'),
-                    selectedIndex: _selectedIndex,
-                    onDestinationSelected: _selectDestination,
-                    destinations: [
-                      for (final destination in _destinations)
+                : Builder(
+                    builder: (barContext) => NavigationBar(
+                      key: const Key('markei.navigationBar'),
+                      selectedIndex: _compactSelectedIndex,
+                      onDestinationSelected: (index) =>
+                          _selectCompactDestination(index, barContext),
+                      destinations: const [
                         NavigationDestination(
-                          icon: Icon(destination.icon),
-                          label: destination.label,
+                          icon: Icon(Icons.home),
+                          label: 'Home',
                         ),
-                    ],
+                        NavigationDestination(
+                          icon: Icon(Icons.checklist),
+                          label: 'Lists',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.add_shopping_cart),
+                          label: 'Purchase',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.history),
+                          label: 'History',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.more_horiz),
+                          label: 'More',
+                        ),
+                      ],
+                    ),
                   ),
           );
         },
@@ -144,6 +165,42 @@ class _MarkeiAppState extends State<MarkeiApp> {
 
   void _selectDestination(int index) {
     setState(() => _selectedIndex = index);
+  }
+
+  int get _compactSelectedIndex {
+    final compactIndex = _compactIndexes.indexOf(_selectedIndex);
+    return compactIndex == -1 ? 4 : compactIndex;
+  }
+
+  void _selectCompactDestination(int index, BuildContext sheetContext) {
+    if (index < _compactIndexes.length) {
+      _selectDestination(_compactIndexes[index]);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: sheetContext,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (
+              var destinationIndex = 0;
+              destinationIndex < _destinations.length;
+              destinationIndex++
+            )
+              if (!_compactIndexes.contains(destinationIndex))
+                ListTile(
+                  leading: Icon(_destinations[destinationIndex].icon),
+                  title: Text(_destinations[destinationIndex].label),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _selectDestination(destinationIndex);
+                  },
+                ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

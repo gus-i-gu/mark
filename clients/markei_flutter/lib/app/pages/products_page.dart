@@ -34,6 +34,7 @@ class _ProductsPageState extends State<ProductsPage> {
   List<ProductSimilarityWarning> _warnings = const [];
   bool _loading = true;
   bool _bulk = false;
+  Product? _selectedProduct;
   Product? _selectedDetail;
   String? _message;
   bool _messageIsError = false;
@@ -216,15 +217,37 @@ class _ProductsPageState extends State<ProductsPage> {
           )
         else
           for (final product in visible)
-            ListTile(
-              key: Key('products.product.${product.id.value}'),
-              title: Text(product.displayName),
-              subtitle: Text(
-                '${product.displayBrand} · ${product.userProductCode.displayValue}',
+            GestureDetector(
+              onDoubleTap: () => setState(() {
+                _selectedProduct = product;
+                _selectedDetail = product;
+              }),
+              child: ListTile(
+                key: Key('products.product.${product.id.value}'),
+                selected: _selectedProduct?.id.value == product.id.value,
+                title: Text(product.displayName),
+                subtitle: Text(
+                  '${product.displayBrand} · ${product.userProductCode.displayValue}',
+                ),
+                trailing: TextButton(
+                  key: Key('products.view.${product.id.value}'),
+                  onPressed: () => setState(() {
+                    _selectedProduct = product;
+                    _selectedDetail = product;
+                  }),
+                  child: const Text('View details'),
+                ),
+                onTap: () => setState(() => _selectedProduct = product),
+                onLongPress: () => setState(() => _selectedDetail = product),
               ),
-              onTap: () => setState(() => _selectedDetail = product),
-              onLongPress: () => setState(() => _selectedDetail = product),
             ),
+        if (_selectedProduct != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Selected ${_selectedProduct!.userProductCode.displayValue} · ${_selectedProduct!.displayName}',
+            key: const Key('products.selected'),
+          ),
+        ],
         if (_selectedDetail != null) ...[
           const Divider(height: 32),
           _ProductDetail(product: _selectedDetail!),

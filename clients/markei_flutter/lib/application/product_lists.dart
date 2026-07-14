@@ -76,6 +76,9 @@ PersonalCycleResult personalCycleV1(List<DateTime> localDates, DateTime today) {
           .toSet()
           .toList()
         ..sort();
+  if (uniqueDays.isEmpty) {
+    return const PersonalCycleResult.unavailable('No Purchase history');
+  }
   if (uniqueDays.length < 2) {
     return const PersonalCycleResult.unavailable('Not enough history');
   }

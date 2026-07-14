@@ -58,6 +58,7 @@ void main() {
       name: 'Feijao Preto',
       total: '8.50',
     );
+    await _enterPurchaseMoment(tester);
     await tester.tap(find.byKey(const Key('purchase.review')));
     await _pumpReady(tester);
     await tester.tap(find.byKey(const Key('purchase.register')));
@@ -122,7 +123,7 @@ void main() {
     );
     await _tapVisible(tester, find.byKey(const Key('purchase.product.select')));
     await _pumpReady(tester);
-    await tester.tap(find.text('Cafe Especial').last);
+    await tester.tap(find.text('CAFE-001 · Cafe Especial').last);
     await _pumpReady(tester);
     await _tapVisible(tester, find.byKey(const Key('product.useSelected')));
     await _pumpReady(tester);
@@ -144,6 +145,7 @@ void main() {
       '15.50',
     );
     await _tapVisible(tester, find.byKey(const Key('item.add')));
+    await _enterPurchaseMoment(tester);
     await _tapVisible(tester, find.byKey(const Key('purchase.review')));
     await _pumpReady(tester);
     await _tapVisible(tester, find.byKey(const Key('purchase.register')));
@@ -211,7 +213,7 @@ void main() {
   testWidgets('selected destination survives narrow to wide layout change', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = const Size(1200, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -289,7 +291,7 @@ void main() {
   testWidgets('Products can create, search, and report no match', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(390, 844);
+    tester.view.physicalSize = const Size(1200, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -477,10 +479,24 @@ Future<void> _registerSingleItemPurchase(
   required String total,
 }) async {
   await _stageItem(tester, code: code, name: name, total: total);
+  await _enterPurchaseMoment(tester);
   await _tapVisible(tester, find.byKey(const Key('purchase.review')));
   await _pumpReady(tester);
   await _tapVisible(tester, find.byKey(const Key('purchase.register')));
   await _pumpReady(tester);
+}
+
+Future<void> _enterPurchaseMoment(WidgetTester tester) async {
+  await _enterVisibleText(
+    tester,
+    find.byKey(const Key('purchase.date')),
+    '14/07/2026',
+  );
+  await _enterVisibleText(
+    tester,
+    find.byKey(const Key('purchase.time')),
+    '09:30',
+  );
 }
 
 Future<void> _enterVisibleText(

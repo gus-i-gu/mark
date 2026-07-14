@@ -116,8 +116,50 @@ void main() {
     );
 
     final purchase = (await queries.listRecentPurchases(accountId)).single;
-    expect(purchase.personLabel, 'Gus (archived)');
+    expect(purchase.personLabel, '@001 · Gus (archived)');
   });
+
+  test(
+    'existing Product reference is retained without duplicate Product',
+    () async {
+      final db = LocalDatabase.memory();
+      addTearDown(db.close);
+      final repository = LocalPurchaseRepository(db);
+      final fixture = loadFixture('purchase_aggregate.json');
+
+      await repository.registerPurchase(
+        _command(fixture, items: [_riceItem()]),
+      );
+      final existingProduct = (await db.select(db.products).get()).single;
+
+      await repository.registerPurchase(
+        _command(
+          fixture,
+          items: [
+            PurchaseItemDraft(
+              productReference: ExistingProductReference(
+                ProductId(existingProduct.id),
+              ),
+              packageCount: 2,
+              purchasedQuantity: NormalizedQuantity.fromDecimalString(
+                kind: MeasurementKind.mass,
+                unit: CanonicalUnit.kg,
+                decimal: '2',
+              ),
+              lineTotal: const Money(currencyCode: 'BRL', minorUnits: 2598),
+            ),
+          ],
+        ),
+      );
+
+      final products = await db.select(db.products).get();
+      final items = await db.select(db.purchaseItems).get();
+      expect(products, hasLength(1));
+      expect(items.last.productId, existingProduct.id);
+      expect(items.last.packageCount, 2);
+      expect(items.last.lineTotalMinorUnits, 2598);
+    },
+  );
 
   test('sync event fixture states required envelope fields', () {
     final fixture = loadFixture('sync_event.json');

@@ -1,56 +1,54 @@
-# H_DDC_CODEX — Cycle 09 Didactic Evidence
+# H_DDC_CODEX — Cycle 09 Sprint 02 Didactic Evidence
 
 > Sequence: FLX-ORD-01
-> Unit: C09-U02
+> Unit: C09-S02
 > Status: Codex evidence only; no KANBAN maturity change
 
 ## Vocabulary Implemented
 
-- Navigation now presents Home, Lists, Purchase, History, Catalogue, Analytics (PIN), Household (PIN), Guide, Documentation, and Settings.
-- `Catalogue` names the Product destination; `Product details` is shown without exposing UUIDs or Drift rows.
-- Settings uses `People`, `Person`, `Payment Methods`, `Payment Method`, `Nickname`, `Active`, `Archived`, and archived labels in History.
-- Purchase keeps PACKAGED language as Package quantity and Packages bought.
-- BULK hides Packages bought and treats package count as not applicable.
-- Quantity accepts `kg`, `g`, `L`, `ml`, and `un`; tests cover comma/point input and COUNT fractional rejection.
-- Lists language uses Storage, Shortage, Market, All, Not enough history, Estimate, Approximate, and Based on your history.
-- History actions use Move to Analytics, Export CSV, Share list (PDF), Edit, and Delete, with planned actions disabled.
+- Compact navigation now says Home, Lists, Purchase, History, More.
+- Expanded navigation keeps the visible destinations, including disabled/planned Analytics and Household.
+- People and Payment Methods render as `code · nickname`.
+- Archived reference labels render as `code · nickname (archived)`.
+- Product code is presented as required and immutable in Purchase.
+- Purchase date and Time are visible as the buying moment, not insertion time.
+- Purchase date helper uses `dd/mm/yyyy`; Time helper uses `HH:mm`.
+- Purchase Product-code lookup says Product facts are filled and the user must still add a staged Item.
+- BULK language uses Amount bought, Unit, Price per selected unit, and Calculated line total.
+- Lists now distinguishes `No Purchase history` from `Not enough history`.
+- History keeps selected-only CSV/PDF language and disabled Edit/Delete/Move to Analytics.
 
-## Semantic Behavior Preserved
+## Semantic Distinctions Preserved
 
-- Product UUID, visible Product code, and exact identification remain separate concepts.
-- Exact code/identity lookup is separate from advisory similarity.
-- Similarity still does not merge Products automatically.
-- Product facts remain distinct from Purchase Item facts.
-- Editing a staged Item preserves the original ProductReference and label while changing Item values.
-- Existing Product ID retention and no duplicate Product creation are covered by widget regression.
-- Person and Payment Method are local labels, not credentials.
-- Purchase facts are distinct from personal Lists estimates.
-- Export/share reads selected Purchases and does not mutate registered Purchase history.
+- UUID remains separate from visible reference code and nickname.
+- Product code remains separate from Product identity and advisory similarity.
+- Product selection, Product details, and Add staged Item remain separate actions.
+- Exact Product-code lookup does not automatically stage an Item.
+- Purchase buying moment is separate from row creation time.
+- BULK price-per-unit input is used only to calculate line total; no competing unit-price truth is persisted.
+- Registered Purchase history is not edited or deleted.
+- Lists estimates are not described as measured inventory.
+- Implementation evidence in G/H/I is not semantic promotion.
 
-## Error And Recovery Language
+## Recovery And Failure Language
 
-- Added typed `AppFailure` with code, operation, field, recovery, retryability, and known/unknown outcome.
-- Registration failures preserve drafts and avoid raw database exceptions in UI copy.
-- Known rollback language distinguishes not-applied failures from unknown outcomes.
-- Missing Store/Product/reference and Product code collision now have typed recovery paths.
+- Invalid Purchase date reports the exact date format.
+- Invalid Purchase time reports the exact time format.
+- Unknown or failed Purchase registration preserves the draft and does not claim success.
+- Product-code miss tells the user to check details or create a new Product.
+- Native share is not silently implied; PDF output remains deterministic file generation.
 
 ## Tests And Evidence
 
-- `test/domain/quantity_display_test.dart` covers comma/point parsing, `un`, and fractional COUNT rejection.
-- `test/app/markei_app_test.dart` covers Home-first navigation, responsive shell, existing Product staged edit identity preservation, Catalogue creation/search, History detail, and History state separation.
-- `test/application/lists_and_export_test.dart` covers `personal-cycle-v1`, view classification, deterministic CSV, and PDF bytes.
-- `test/local_purchase_repository_test.dart` covers aggregate rollback, file reopen, sync envelope, and archived Person label preservation.
-- `test/infrastructure/local_database_migration_test.dart` covers fresh v3, v1 migration, v2-to-v3 file-backed migration, and reopen.
+- Purchase occurrence tests cover exact local civil parsing and UTC conversion boundary.
+- BULK tests cover selected-unit calculation, comma decimal input, and mixed-unit rejection.
+- Repository regression proves existing Product ID retention and no duplicate Product creation after Item values change.
+- Widget tests cover Purchase registration, staged edit behavior, compact navigation, destination survival, Catalogue creation/search, History selection/detail, and empty/error states.
+- Migration tests cover fresh v4, chained v1/v2 to v4, reserved legacy code backfill, and file-backed reopen.
 
 ## Evidence Limits
 
-- This report does not update KANBAN maturity or permanent Didactic memory.
-- Tests prove implemented behavior, not learner maturity.
-- Platform smoke does not prove complete manual runtime acceptance.
-- Android behavior remains unvalidated because the host lacks Java.
-
-
----
-
-<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
-> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+- No KANBAN maturity change was made.
+- No permanent Didactic memory was changed.
+- Native OS share language remains deferred/blocked because no native share dependency was adopted.
+- Full manual accessibility and screen-reader validation were not run.

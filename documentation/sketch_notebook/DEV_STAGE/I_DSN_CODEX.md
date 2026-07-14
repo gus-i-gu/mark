@@ -1,69 +1,71 @@
-# I_DSN_CODEX — Cycle 09 Design Evidence
+# I_DSN_CODEX — Cycle 09 Sprint 02 Design Evidence
 
 > Sequence: FLX-ORD-01
-> Unit: C09-U02
+> Unit: C09-S02
 > Status: Architecture evidence only; not permanent Design memory
 
 ## Topology
 
-- Preserved dependency direction: Flutter presentation uses application ports/read models; repositories adapt Drift rows; domain owns Product/Purchase/quantity semantics.
-- Composition remains explicit in `MarkeiComposition`.
-- Widgets do not receive Drift rows or raw SQLite exceptions.
+- Preserved Flutter layering: app widgets call application ports/read models; repositories adapt Drift; domain owns Product/Purchase/quantity rules.
+- Added SDK-first app design surface under `lib/app/design/` and reusable widgets under `lib/app/widgets/`.
+- `MarkeiComposition` remains the dependency composition root.
 - Generated Drift code remains derived from `local_database.dart`.
-- Protected Python/PySide6/database topology was not changed.
+- Python/PySide6 application and protected database topology were not intentionally changed.
 
-## Application And Domain Ownership
+## Schema v4
 
-- Application contracts added for typed failures, local references/preferences, Home descriptors, Lists projections, exact Product lookup, and Purchase export DTOs.
-- Domain owns Product normalization v3, local reference value semantics, nullable BULK package count, and display quantity normalization.
-- Presentation owns selected destination, staged draft lines, History selected-ID set, and temporary UI feedback.
-- Local repository owns Drift transactions, v3 migration, read models, reference lifecycle, preference persistence, Lists projection query, and export bundle retrieval.
+- `Products.userProductCode` and `Products.normalizedUserProductCode` are database-level NOT NULL.
+- People have immutable account-scoped `visibleCode` with `@` prefix.
+- Payment Methods have immutable account-scoped `visibleCode` with `#` prefix.
+- Account preferences hold `nextPersonCode` and `nextPaymentMethodCode` counters.
+- Unique constraints enforce `(accountId, visibleCode)` for People and Payment Methods.
+- Product code uniqueness remains account-scoped through normalized Product code.
 
-## Schema v3 And Migration
+## Migration Design
 
-- New tables: People, PaymentMethods, AccountPreferences.
-- Purchases gain nullable `person_id` and `payment_method_id`.
-- PurchaseItems `package_count` is nullable for BULK.
-- Product normalization version moves to 3; v2 rows are rewritten to v3 exact keys without rewriting Purchase history.
-- Legacy null codes are deterministically backfilled from Product IDs.
-- Migration preflights v3 exact identity collisions and stops on collision.
-- v2 migration rebuilds `purchase_items` to relax package count nullability.
-- Fresh-create, v1 migration, file-backed v2-to-v3 migration, close/reopen, and generated-code evidence are present.
+- v1/v2 migrations add Product-code columns as transitional nullable columns only.
+- v4 rebuilds Products to enforce NOT NULL code columns.
+- v4 backfills only missing/blank Product codes with reserved deterministic `legacy:` codes.
+- v4 rebuilds People and Payment Methods to assign deterministic visible codes by account, creation time, and UUID.
+- v4 rebuilds AccountPreferences to seed next-code counters from archived and active rows.
+- Migration tests cover chained legacy paths and reopen.
 
-## Projection, Export, And Share Architecture
+## Application And Domain Design
 
-- Lists are transient projections from Product/Purchase observations; no List aggregate or cache table was added.
-- `personal-cycle-v1` is pure Dart and versioned in the application layer.
-- CSV/PDF export uses selected Purchase DTOs independent of Drift/widgets.
-- CSV is deterministic UTF-8 text.
-- PDF is generated as simple PDF bytes with Dart standard libraries.
-- Save/share behavior writes explicit local files and tells the user to share manually; no upload or synchronization path was activated.
+- `purchase_occurrence.dart` owns exact date/time parsing and UTC conversion.
+- `bulk_pricing.dart` owns fixed-point BULK line-total calculation.
+- `LocalReference` owns `displayLabel` and archived history label composition.
+- Product-code reservation is enforced in `product_code.dart`.
+- Lists still uses the existing joined projection; zero-history language was refined.
+- Local repositories allocate reference codes inside a Drift transaction.
 
-## Dependency Choices
+## Presentation Design
 
-- No new Flutter dependency was added.
-- Reason: current requirements could be satisfied with Dart standard libraries for deterministic CSV/PDF file evidence, avoiding unsupported or unverified share dependencies on this host.
-- `pubspec.yaml` and `pubspec.lock` were not changed.
+- `markeiTheme()` defines cream/white surfaces, dark-green primary, and lavender secondary.
+- Compact navigation maps to Home / Lists / Purchase / History / More.
+- Expanded navigation keeps direct destination labels.
+- Purchase keeps date/time after Store and preserves draft controllers through Review/Back.
+- Product-code lookup fills immutable facts but leaves staging explicit.
+- Catalogue tap selects; View details and double-click open details.
+- History adds select-all and double-click details while keeping edit/delete disabled.
+
+## Dependency Decisions
+
+- No new dependency was added.
+- Native share dependency was not adopted because dependency/platform validation was not completed safely in this pass.
+- Existing dependency audit was recorded with `flutter pub outdated`.
 
 ## Invariants
 
-- Account-scoped Product code and exact identity remain enforced.
-- Exact Product collision is not similarity.
-- BULK has no package count and does not persist a competing price truth.
-- Optional references are nullable and history-preserving.
-- Registered Purchase edit/delete remains disabled.
-- Analytics and Household remain disabled/PIN-labelled.
-- Store identity, sync/API/auth, SubmissionId, persisted drafts, and Product auto-merge remain outside implementation.
+- No Product auto-merge.
+- No Product edit/merge/delete UI.
+- No registered Purchase edit/delete.
+- No authentication, cloud/API sync, Store redesign, Analytics implementation, Household implementation, dark mode, or production release expansion.
+- No database error-description table.
 
 ## Deviations And Risks
 
-- OS-native share plugin was not introduced; share is explicit local PDF save plus manual share boundary.
-- Android build/runtime is host-blocked by missing Java.
-- Windows smoke was bounded process launch only, not full manual acceptance.
-- Future review should inspect UI density for small screens and decide whether native share dependencies are worth adding.
-
-
----
-
-<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
-> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+- Native OS PDF sharing remains deferred; deterministic PDF bytes and file save behavior remain.
+- UI foundation and target hierarchy improved but are not a complete mockup-level composition pass.
+- Android build/runtime/share evidence is host-blocked by missing Java.
+- Windows evidence is release build plus bounded smoke, not manual acceptance.

@@ -1,69 +1,82 @@
-# G_OPS_CODEX — Cycle 09 Codex Evidence
+# G_OPS_CODEX — Cycle 09 Sprint 02 Codex Evidence
 
 > Sequence: FLX-ORD-01
-> Unit: C09-U02
+> Unit: C09-S02
 > Branch: `intermid-cycle-recovery`
-> Starting commit: `06714d719c22ebd6b64008b7dcec745faee8fcd5`
-> Status: Codex materialization evidence, not canonical memory
+> Starting commit: `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3`
+> Status: Codex execution evidence only; not canonical memory
 
-## Execution
+## Boot And Safety
 
-- Full executive boot completed from checkout: AGENTS, INDEX, PROMPT_COLLECTION, METHOD_FOUNDATIONS, FLUX, PROMOTION_RULES, CHAT_PROTOCOL, CHAT_BEHAVIOUR, METHOD_GLOSSARY, J, D, E, F.
-- Safety checks passed: branch was `intermid-cycle-recovery`; HEAD descended from `b93c688496d2995c17d5328aadb348ee8c980da5`; remote was `origin https://github.com/gus-i-gu/markei.git`.
-- Active J/D/E/F were Cycle 09 C09-U02 and authorized this materialization envelope.
-- Protected Python/PySide6 source and database were not modified.
+- Read in required order: `AGENTS.md`, `INDEX.md`, `METHOD_FOUNDATIONS.md`, `FLUX.md`, `PROMOTION_RULES.md`, `CHAT_PROTOCOL.md`, `J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`.
+- Also inspected A/B/C, smallest relevant operational/didactic/design checkpoints, target mockups `01` through `05`, Flutter source, schema, migrations, tests, and pubspec.
+- Verified branch `intermid-cycle-recovery`; HEAD and `origin/intermid-cycle-recovery` were `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3`.
+- Required staging ancestor `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3` was present.
+- Worktree was clean before mutation.
+- J reconciled Main decisions; D/E/F jointly supplied implementation authority.
+- A/B/C remained investigation only.
 
-## Implementation
+## Implementation Summary
 
-- Implemented schema v3 in the Flutter local Drift database.
-- Added People, Payment Methods, Account preference, nullable Purchase references, nullable BULK package count, and Product normalization version 3.
-- Added sequential migration coverage for v1/v2 databases, deterministic legacy code retention, v3 identity rewrite, and no silent reset close/reopen evidence.
-- Added typed failure contract, comma/point quantity parsing, COUNT fractional rejection, exact Product lookup ports, optional references, local Lists projections, and deterministic selected-Purchase export DTOs.
-- Added Home, Lists, Catalogue wording/details, Purchase optional labels and BULK/PACKAGED controls, History multi-selection/export actions, disabled Analytics/Household/edit/delete, Guide, Documentation, and Settings.
-- No new package dependency was added; PDF bytes and CSV are generated with Dart standard libraries. Share is explicit file save with manual share boundary.
+- Added SDK-first Markei theme and reusable card/state/chip components.
+- Changed compact navigation to Home / Lists / Purchase / History / More while preserving the IndexedStack state model.
+- Added schema v4 with non-null Product code columns, visible People codes `@001...`, visible Payment Method codes `#001...`, and account preference counters.
+- Added deterministic v4 Product code backfill for legacy null/blank codes using reserved `legacy:` namespace.
+- Added v1/v2 chained migration coverage through v4 and file-backed reopen evidence.
+- Added transactional visible-code allocation for new People and Payment Methods.
+- Added required blank Purchase date and Time fields; parsing accepts exact `dd/mm/yyyy` and `HH:mm` and stores the buying moment as UTC.
+- Added exact Product-code lookup in Purchase; lookup fills immutable Product facts without staging an Item.
+- Added BULK fixed-point line-total calculation from amount, selected unit, and price per same selected unit; final total is read-only.
+- Adjusted Catalogue selection so ordinary tap selects; explicit View details and double-click open details.
+- Adjusted Lists zero-history language to distinguish `No Purchase history` from `Not enough history`.
+- Adjusted Settings/History labels to resolve current and archived `code · nickname`.
+- Added History select-all and desktop double-click detail access.
+- Added regression proving existing Product ID retention and no duplicate Product creation when Item values change.
 
 ## Changed Paths
 
-- Flutter app/composition/pages under `clients/markei_flutter/lib/app/`.
-- Application contracts under `clients/markei_flutter/lib/application/`.
-- Domain Product/Purchase/quantity/reference contracts under `clients/markei_flutter/lib/domain/`.
-- Local Drift database/repositories and generated Drift artifact under `clients/markei_flutter/lib/infrastructure/local/`.
-- Focused tests under `clients/markei_flutter/test/`.
-- This report plus H/I reports.
+- App UI: `clients/markei_flutter/lib/app/markei_app.dart`
+- App pages: `history_page.dart`, `products_page.dart`, `purchase_page.dart`
+- New app components: `clients/markei_flutter/lib/app/design/markei_theme.dart`, `clients/markei_flutter/lib/app/widgets/markei_components.dart`
+- Application: `bulk_pricing.dart`, `purchase_occurrence.dart`, `product_lists.dart`
+- Domain: `product_code.dart`, `local_reference.dart`
+- Infrastructure: `local_database.dart`, `local_database.g.dart`, `local_purchase_repository.dart`, `local_query_repository.dart`
+- Tests: `markei_app_test.dart`, `local_database_migration_test.dart`, `local_purchase_repository_test.dart`, `purchase_contracts_test.dart`
+- Reports: G/H/I Codex files only.
 
 ## Validation
 
-- `flutter pub get`: passed; existing dependencies resolved, no new dependencies added.
-- `dart run build_runner build --delete-conflicting-outputs`: passed; Drift generated code updated. The flag was reported ignored by this build_runner version.
-- `dart format lib test`: passed; touched Dart files formatted.
-- `flutter test`: passed, 39 tests.
+- `git fetch origin intermid-cycle-recovery`: passed.
+- `git merge-base --is-ancestor 5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3 HEAD`: passed.
+- `dart run build_runner build --delete-conflicting-outputs`: passed; Drift generated output updated; flag reported ignored by current build_runner.
+- `dart format lib test`: passed.
+- `flutter test test/infrastructure/local_database_migration_test.dart`: passed, 3 tests.
+- `flutter test test/local_purchase_repository_test.dart`: passed, 6 tests.
+- `flutter test test/application/purchase_contracts_test.dart test/application/lists_and_export_test.dart`: passed, 5 tests.
+- `flutter test test/app/markei_app_test.dart`: passed, 7 tests.
+- `flutter test`: passed, 43 tests.
 - `flutter analyze`: passed, no issues.
-- `git diff --check`: passed; only CRLF warning notices.
-- `python -m pytest`: blocked, active Python has no `pytest` module.
-- `python -m pip install -r requirements-dev.txt`: passed but requirements only contained PyInstaller, not pytest.
-- `python -m unittest tests.test_release_configuration`: passed, 5 tests.
+- `flutter pub get`: passed.
+- `flutter pub outdated`: passed; no new dependencies added; existing packages have available updates.
+- `dart format --output=none --set-exit-if-changed lib test`: passed.
+- `python -m pytest`: blocked, `pytest` not installed.
+- `python -m unittest`: discovered 0 tests.
+- `python -m unittest discover tests`: passed, 5 tests; generated Python pycache changes were restored.
 - `flutter build windows`: passed; built `build\windows\x64\runner\Release\markei.exe`.
-- Windows bounded smoke: launched built exe, process stayed running for 5 seconds, then Codex stopped the launched process.
-- `flutter build apk`: blocked by host environment: `JAVA_HOME` unset and no `java` on PATH.
-- `where.exe java`: confirmed Java not found.
+- Bounded Windows smoke: started release executable hidden for 5 seconds and stopped it; result `started-and-stopped`.
+- `flutter build apk`: blocked by host, `JAVA_HOME` unset and no `java` in PATH.
+- `git diff --check`: passed; only CRLF warnings.
 
 ## Evidence Boundaries
 
-- Flutter widget tests are widget/runtime evidence, not manual platform acceptance.
-- Windows build plus bounded launch is build/smoke evidence, not full lifecycle acceptance.
-- Android runtime remains host-unvalidated because Java/Gradle toolchain is unavailable.
-- PDF/share behavior is local file generation with explicit manual sharing; no OS share plugin or upload was activated.
-- Local pending events remain local storage and were not treated as synchronization.
+- Native OS PDF sharing dependency was not adopted; deterministic PDF save/export remains. Native share is host-unvalidated/deferred rather than accepted.
+- Android runtime/install/lifecycle/share workflow was blocked by missing Java/Android runtime path.
+- Windows evidence is build plus bounded launch smoke, not manual workflow acceptance.
+- Responsive evidence is widget-level for compact/expanded navigation and selected destination survival.
+- Accessibility evidence is limited to explicit tap/button alternatives in widgets; no separate screen-reader manual pass was run.
 
-## Blockers And Risks
+## Residual Risks
 
-- Android build/runtime could not be validated on this host without Java.
-- `pytest` was unavailable; protected Python validation was executed with the repository's `unittest` regression instead.
-- The Cycle 09 UI is functional but compact; further manual UX review is still warranted for dense mobile layouts.
-- No Product correction, Store identity redesign, sync, auth, persisted drafts, registered edit/delete, or Product auto-merge was introduced.
-
-
----
-
-<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
-> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+- Markei UI foundation is present but not a full target-mockup pixel/composition implementation.
+- Lists projection keeps the existing joined-query approach and language repair; deeper table/card target polish remains.
+- Native share adapter remains a D/E/F deviation and should be staged separately after dependency approval.

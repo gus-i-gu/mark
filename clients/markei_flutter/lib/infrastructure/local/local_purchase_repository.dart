@@ -323,10 +323,9 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
               ProductsCompanion.insert(
                 id: product.id.value,
                 accountId: product.accountId.value,
-                userProductCode: Value(product.userProductCode.displayValue),
-                normalizedUserProductCode: Value(
-                  product.userProductCode.normalizedKey,
-                ),
+                userProductCode: product.userProductCode.displayValue,
+                normalizedUserProductCode:
+                    product.userProductCode.normalizedKey,
                 normalizationVersion: product.normalizationVersion,
                 displayName: Value(product.displayName),
                 displayBrand: Value(product.displayBrand),
@@ -397,8 +396,8 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
       id: ProductId(row.id),
       accountId: AccountId(row.accountId),
       userProductCode: domain_code.ProductCode(
-        displayValue: row.userProductCode ?? 'legacy',
-        normalizedKey: row.normalizedUserProductCode ?? 'legacy',
+        displayValue: row.userProductCode,
+        normalizedKey: row.normalizedUserProductCode,
       ),
       normalizationVersion: row.normalizationVersion,
       displayName: row.displayName ?? row.normalizedName,

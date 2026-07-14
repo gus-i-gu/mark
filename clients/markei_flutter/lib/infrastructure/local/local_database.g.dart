@@ -642,13 +642,13 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
   late final GeneratedColumn<String> userProductCode = GeneratedColumn<String>(
     'user_product_code',
     aliasedName,
-    true,
+    false,
     additionalChecks: GeneratedColumn.checkTextLength(
       minTextLength: 1,
       maxTextLength: 64,
     ),
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _normalizedUserProductCodeMeta =
       const VerificationMeta('normalizedUserProductCode');
@@ -657,13 +657,13 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       GeneratedColumn<String>(
         'normalized_user_product_code',
         aliasedName,
-        true,
+        false,
         additionalChecks: GeneratedColumn.checkTextLength(
           minTextLength: 1,
           maxTextLength: 64,
         ),
         type: DriftSqlType.string,
-        requiredDuringInsert: false,
+        requiredDuringInsert: true,
       );
   static const VerificationMeta _normalizationVersionMeta =
       const VerificationMeta('normalizationVersion');
@@ -834,6 +834,8 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
           _userProductCodeMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_userProductCodeMeta);
     }
     if (data.containsKey('normalized_user_product_code')) {
       context.handle(
@@ -843,6 +845,8 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
           _normalizedUserProductCodeMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_normalizedUserProductCodeMeta);
     }
     if (data.containsKey('normalization_version')) {
       context.handle(
@@ -976,11 +980,11 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
       userProductCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}user_product_code'],
-      ),
+      )!,
       normalizedUserProductCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}normalized_user_product_code'],
-      ),
+      )!,
       normalizationVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}normalization_version'],
@@ -1037,8 +1041,8 @@ class $ProductsTable extends Products with TableInfo<$ProductsTable, Product> {
 class Product extends DataClass implements Insertable<Product> {
   final String id;
   final String accountId;
-  final String? userProductCode;
-  final String? normalizedUserProductCode;
+  final String userProductCode;
+  final String normalizedUserProductCode;
   final int normalizationVersion;
   final String? displayName;
   final String? displayBrand;
@@ -1053,8 +1057,8 @@ class Product extends DataClass implements Insertable<Product> {
   const Product({
     required this.id,
     required this.accountId,
-    this.userProductCode,
-    this.normalizedUserProductCode,
+    required this.userProductCode,
+    required this.normalizedUserProductCode,
     required this.normalizationVersion,
     this.displayName,
     this.displayBrand,
@@ -1072,14 +1076,10 @@ class Product extends DataClass implements Insertable<Product> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['account_id'] = Variable<String>(accountId);
-    if (!nullToAbsent || userProductCode != null) {
-      map['user_product_code'] = Variable<String>(userProductCode);
-    }
-    if (!nullToAbsent || normalizedUserProductCode != null) {
-      map['normalized_user_product_code'] = Variable<String>(
-        normalizedUserProductCode,
-      );
-    }
+    map['user_product_code'] = Variable<String>(userProductCode);
+    map['normalized_user_product_code'] = Variable<String>(
+      normalizedUserProductCode,
+    );
     map['normalization_version'] = Variable<int>(normalizationVersion);
     if (!nullToAbsent || displayName != null) {
       map['display_name'] = Variable<String>(displayName);
@@ -1106,13 +1106,8 @@ class Product extends DataClass implements Insertable<Product> {
     return ProductsCompanion(
       id: Value(id),
       accountId: Value(accountId),
-      userProductCode: userProductCode == null && nullToAbsent
-          ? const Value.absent()
-          : Value(userProductCode),
-      normalizedUserProductCode:
-          normalizedUserProductCode == null && nullToAbsent
-          ? const Value.absent()
-          : Value(normalizedUserProductCode),
+      userProductCode: Value(userProductCode),
+      normalizedUserProductCode: Value(normalizedUserProductCode),
       normalizationVersion: Value(normalizationVersion),
       displayName: displayName == null && nullToAbsent
           ? const Value.absent()
@@ -1143,8 +1138,8 @@ class Product extends DataClass implements Insertable<Product> {
     return Product(
       id: serializer.fromJson<String>(json['id']),
       accountId: serializer.fromJson<String>(json['accountId']),
-      userProductCode: serializer.fromJson<String?>(json['userProductCode']),
-      normalizedUserProductCode: serializer.fromJson<String?>(
+      userProductCode: serializer.fromJson<String>(json['userProductCode']),
+      normalizedUserProductCode: serializer.fromJson<String>(
         json['normalizedUserProductCode'],
       ),
       normalizationVersion: serializer.fromJson<int>(
@@ -1168,8 +1163,8 @@ class Product extends DataClass implements Insertable<Product> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'accountId': serializer.toJson<String>(accountId),
-      'userProductCode': serializer.toJson<String?>(userProductCode),
-      'normalizedUserProductCode': serializer.toJson<String?>(
+      'userProductCode': serializer.toJson<String>(userProductCode),
+      'normalizedUserProductCode': serializer.toJson<String>(
         normalizedUserProductCode,
       ),
       'normalizationVersion': serializer.toJson<int>(normalizationVersion),
@@ -1189,8 +1184,8 @@ class Product extends DataClass implements Insertable<Product> {
   Product copyWith({
     String? id,
     String? accountId,
-    Value<String?> userProductCode = const Value.absent(),
-    Value<String?> normalizedUserProductCode = const Value.absent(),
+    String? userProductCode,
+    String? normalizedUserProductCode,
     int? normalizationVersion,
     Value<String?> displayName = const Value.absent(),
     Value<String?> displayBrand = const Value.absent(),
@@ -1205,12 +1200,9 @@ class Product extends DataClass implements Insertable<Product> {
   }) => Product(
     id: id ?? this.id,
     accountId: accountId ?? this.accountId,
-    userProductCode: userProductCode.present
-        ? userProductCode.value
-        : this.userProductCode,
-    normalizedUserProductCode: normalizedUserProductCode.present
-        ? normalizedUserProductCode.value
-        : this.normalizedUserProductCode,
+    userProductCode: userProductCode ?? this.userProductCode,
+    normalizedUserProductCode:
+        normalizedUserProductCode ?? this.normalizedUserProductCode,
     normalizationVersion: normalizationVersion ?? this.normalizationVersion,
     displayName: displayName.present ? displayName.value : this.displayName,
     displayBrand: displayBrand.present ? displayBrand.value : this.displayBrand,
@@ -1331,8 +1323,8 @@ class Product extends DataClass implements Insertable<Product> {
 class ProductsCompanion extends UpdateCompanion<Product> {
   final Value<String> id;
   final Value<String> accountId;
-  final Value<String?> userProductCode;
-  final Value<String?> normalizedUserProductCode;
+  final Value<String> userProductCode;
+  final Value<String> normalizedUserProductCode;
   final Value<int> normalizationVersion;
   final Value<String?> displayName;
   final Value<String?> displayBrand;
@@ -1366,8 +1358,8 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   ProductsCompanion.insert({
     required String id,
     required String accountId,
-    this.userProductCode = const Value.absent(),
-    this.normalizedUserProductCode = const Value.absent(),
+    required String userProductCode,
+    required String normalizedUserProductCode,
     required int normalizationVersion,
     this.displayName = const Value.absent(),
     this.displayBrand = const Value.absent(),
@@ -1382,6 +1374,8 @@ class ProductsCompanion extends UpdateCompanion<Product> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        accountId = Value(accountId),
+       userProductCode = Value(userProductCode),
+       normalizedUserProductCode = Value(normalizedUserProductCode),
        normalizationVersion = Value(normalizationVersion),
        normalizedName = Value(normalizedName),
        normalizedBrand = Value(normalizedBrand),
@@ -1432,8 +1426,8 @@ class ProductsCompanion extends UpdateCompanion<Product> {
   ProductsCompanion copyWith({
     Value<String>? id,
     Value<String>? accountId,
-    Value<String?>? userProductCode,
-    Value<String?>? normalizedUserProductCode,
+    Value<String>? userProductCode,
+    Value<String>? normalizedUserProductCode,
     Value<int>? normalizationVersion,
     Value<String?>? displayName,
     Value<String?>? displayBrand,
@@ -1893,6 +1887,21 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
       'REFERENCES local_accounts (id) ON DELETE RESTRICT',
     ),
   );
+  static const VerificationMeta _visibleCodeMeta = const VerificationMeta(
+    'visibleCode',
+  );
+  @override
+  late final GeneratedColumn<String> visibleCode = GeneratedColumn<String>(
+    'visible_code',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 4,
+      maxTextLength: 16,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _nicknameMeta = const VerificationMeta(
     'nickname',
   );
@@ -1965,6 +1974,7 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
   List<GeneratedColumn> get $columns => [
     id,
     accountId,
+    visibleCode,
     nickname,
     normalizedNickname,
     active,
@@ -1996,6 +2006,17 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
       );
     } else if (isInserting) {
       context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('visible_code')) {
+      context.handle(
+        _visibleCodeMeta,
+        visibleCode.isAcceptableOrUnknown(
+          data['visible_code']!,
+          _visibleCodeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_visibleCodeMeta);
     }
     if (data.containsKey('nickname')) {
       context.handle(
@@ -2051,7 +2072,7 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {accountId, normalizedNickname, active},
+    {accountId, visibleCode},
   ];
   @override
   PeopleData map(Map<String, dynamic> data, {String? tablePrefix}) {
@@ -2064,6 +2085,10 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
       accountId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}account_id'],
+      )!,
+      visibleCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}visible_code'],
       )!,
       nickname: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -2101,6 +2126,7 @@ class $PeopleTable extends People with TableInfo<$PeopleTable, PeopleData> {
 class PeopleData extends DataClass implements Insertable<PeopleData> {
   final String id;
   final String accountId;
+  final String visibleCode;
   final String nickname;
   final String normalizedNickname;
   final bool active;
@@ -2110,6 +2136,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
   const PeopleData({
     required this.id,
     required this.accountId,
+    required this.visibleCode,
     required this.nickname,
     required this.normalizedNickname,
     required this.active,
@@ -2122,6 +2149,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['account_id'] = Variable<String>(accountId);
+    map['visible_code'] = Variable<String>(visibleCode);
     map['nickname'] = Variable<String>(nickname);
     map['normalized_nickname'] = Variable<String>(normalizedNickname);
     map['active'] = Variable<bool>(active);
@@ -2137,6 +2165,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     return PeopleCompanion(
       id: Value(id),
       accountId: Value(accountId),
+      visibleCode: Value(visibleCode),
       nickname: Value(nickname),
       normalizedNickname: Value(normalizedNickname),
       active: Value(active),
@@ -2156,6 +2185,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     return PeopleData(
       id: serializer.fromJson<String>(json['id']),
       accountId: serializer.fromJson<String>(json['accountId']),
+      visibleCode: serializer.fromJson<String>(json['visibleCode']),
       nickname: serializer.fromJson<String>(json['nickname']),
       normalizedNickname: serializer.fromJson<String>(
         json['normalizedNickname'],
@@ -2172,6 +2202,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'accountId': serializer.toJson<String>(accountId),
+      'visibleCode': serializer.toJson<String>(visibleCode),
       'nickname': serializer.toJson<String>(nickname),
       'normalizedNickname': serializer.toJson<String>(normalizedNickname),
       'active': serializer.toJson<bool>(active),
@@ -2184,6 +2215,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
   PeopleData copyWith({
     String? id,
     String? accountId,
+    String? visibleCode,
     String? nickname,
     String? normalizedNickname,
     bool? active,
@@ -2193,6 +2225,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
   }) => PeopleData(
     id: id ?? this.id,
     accountId: accountId ?? this.accountId,
+    visibleCode: visibleCode ?? this.visibleCode,
     nickname: nickname ?? this.nickname,
     normalizedNickname: normalizedNickname ?? this.normalizedNickname,
     active: active ?? this.active,
@@ -2204,6 +2237,9 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     return PeopleData(
       id: data.id.present ? data.id.value : this.id,
       accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      visibleCode: data.visibleCode.present
+          ? data.visibleCode.value
+          : this.visibleCode,
       nickname: data.nickname.present ? data.nickname.value : this.nickname,
       normalizedNickname: data.normalizedNickname.present
           ? data.normalizedNickname.value
@@ -2222,6 +2258,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
     return (StringBuffer('PeopleData(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('visibleCode: $visibleCode, ')
           ..write('nickname: $nickname, ')
           ..write('normalizedNickname: $normalizedNickname, ')
           ..write('active: $active, ')
@@ -2236,6 +2273,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
   int get hashCode => Object.hash(
     id,
     accountId,
+    visibleCode,
     nickname,
     normalizedNickname,
     active,
@@ -2249,6 +2287,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
       (other is PeopleData &&
           other.id == this.id &&
           other.accountId == this.accountId &&
+          other.visibleCode == this.visibleCode &&
           other.nickname == this.nickname &&
           other.normalizedNickname == this.normalizedNickname &&
           other.active == this.active &&
@@ -2260,6 +2299,7 @@ class PeopleData extends DataClass implements Insertable<PeopleData> {
 class PeopleCompanion extends UpdateCompanion<PeopleData> {
   final Value<String> id;
   final Value<String> accountId;
+  final Value<String> visibleCode;
   final Value<String> nickname;
   final Value<String> normalizedNickname;
   final Value<bool> active;
@@ -2270,6 +2310,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
   const PeopleCompanion({
     this.id = const Value.absent(),
     this.accountId = const Value.absent(),
+    this.visibleCode = const Value.absent(),
     this.nickname = const Value.absent(),
     this.normalizedNickname = const Value.absent(),
     this.active = const Value.absent(),
@@ -2281,6 +2322,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
   PeopleCompanion.insert({
     required String id,
     required String accountId,
+    required String visibleCode,
     required String nickname,
     required String normalizedNickname,
     this.active = const Value.absent(),
@@ -2290,6 +2332,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        accountId = Value(accountId),
+       visibleCode = Value(visibleCode),
        nickname = Value(nickname),
        normalizedNickname = Value(normalizedNickname),
        createdAt = Value(createdAt),
@@ -2297,6 +2340,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
   static Insertable<PeopleData> custom({
     Expression<String>? id,
     Expression<String>? accountId,
+    Expression<String>? visibleCode,
     Expression<String>? nickname,
     Expression<String>? normalizedNickname,
     Expression<bool>? active,
@@ -2308,6 +2352,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
+      if (visibleCode != null) 'visible_code': visibleCode,
       if (nickname != null) 'nickname': nickname,
       if (normalizedNickname != null) 'normalized_nickname': normalizedNickname,
       if (active != null) 'active': active,
@@ -2321,6 +2366,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
   PeopleCompanion copyWith({
     Value<String>? id,
     Value<String>? accountId,
+    Value<String>? visibleCode,
     Value<String>? nickname,
     Value<String>? normalizedNickname,
     Value<bool>? active,
@@ -2332,6 +2378,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
     return PeopleCompanion(
       id: id ?? this.id,
       accountId: accountId ?? this.accountId,
+      visibleCode: visibleCode ?? this.visibleCode,
       nickname: nickname ?? this.nickname,
       normalizedNickname: normalizedNickname ?? this.normalizedNickname,
       active: active ?? this.active,
@@ -2350,6 +2397,9 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
     }
     if (accountId.present) {
       map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (visibleCode.present) {
+      map['visible_code'] = Variable<String>(visibleCode.value);
     }
     if (nickname.present) {
       map['nickname'] = Variable<String>(nickname.value);
@@ -2380,6 +2430,7 @@ class PeopleCompanion extends UpdateCompanion<PeopleData> {
     return (StringBuffer('PeopleCompanion(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('visibleCode: $visibleCode, ')
           ..write('nickname: $nickname, ')
           ..write('normalizedNickname: $normalizedNickname, ')
           ..write('active: $active, ')
@@ -2421,6 +2472,21 @@ class $PaymentMethodsTable extends PaymentMethods
       'REFERENCES local_accounts (id) ON DELETE RESTRICT',
     ),
   );
+  static const VerificationMeta _visibleCodeMeta = const VerificationMeta(
+    'visibleCode',
+  );
+  @override
+  late final GeneratedColumn<String> visibleCode = GeneratedColumn<String>(
+    'visible_code',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 4,
+      maxTextLength: 16,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _nicknameMeta = const VerificationMeta(
     'nickname',
   );
@@ -2493,6 +2559,7 @@ class $PaymentMethodsTable extends PaymentMethods
   List<GeneratedColumn> get $columns => [
     id,
     accountId,
+    visibleCode,
     nickname,
     normalizedNickname,
     active,
@@ -2524,6 +2591,17 @@ class $PaymentMethodsTable extends PaymentMethods
       );
     } else if (isInserting) {
       context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('visible_code')) {
+      context.handle(
+        _visibleCodeMeta,
+        visibleCode.isAcceptableOrUnknown(
+          data['visible_code']!,
+          _visibleCodeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_visibleCodeMeta);
     }
     if (data.containsKey('nickname')) {
       context.handle(
@@ -2579,7 +2657,7 @@ class $PaymentMethodsTable extends PaymentMethods
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {accountId, normalizedNickname, active},
+    {accountId, visibleCode},
   ];
   @override
   PaymentMethod map(Map<String, dynamic> data, {String? tablePrefix}) {
@@ -2592,6 +2670,10 @@ class $PaymentMethodsTable extends PaymentMethods
       accountId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}account_id'],
+      )!,
+      visibleCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}visible_code'],
       )!,
       nickname: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -2629,6 +2711,7 @@ class $PaymentMethodsTable extends PaymentMethods
 class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
   final String id;
   final String accountId;
+  final String visibleCode;
   final String nickname;
   final String normalizedNickname;
   final bool active;
@@ -2638,6 +2721,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
   const PaymentMethod({
     required this.id,
     required this.accountId,
+    required this.visibleCode,
     required this.nickname,
     required this.normalizedNickname,
     required this.active,
@@ -2650,6 +2734,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['account_id'] = Variable<String>(accountId);
+    map['visible_code'] = Variable<String>(visibleCode);
     map['nickname'] = Variable<String>(nickname);
     map['normalized_nickname'] = Variable<String>(normalizedNickname);
     map['active'] = Variable<bool>(active);
@@ -2665,6 +2750,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     return PaymentMethodsCompanion(
       id: Value(id),
       accountId: Value(accountId),
+      visibleCode: Value(visibleCode),
       nickname: Value(nickname),
       normalizedNickname: Value(normalizedNickname),
       active: Value(active),
@@ -2684,6 +2770,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     return PaymentMethod(
       id: serializer.fromJson<String>(json['id']),
       accountId: serializer.fromJson<String>(json['accountId']),
+      visibleCode: serializer.fromJson<String>(json['visibleCode']),
       nickname: serializer.fromJson<String>(json['nickname']),
       normalizedNickname: serializer.fromJson<String>(
         json['normalizedNickname'],
@@ -2700,6 +2787,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'accountId': serializer.toJson<String>(accountId),
+      'visibleCode': serializer.toJson<String>(visibleCode),
       'nickname': serializer.toJson<String>(nickname),
       'normalizedNickname': serializer.toJson<String>(normalizedNickname),
       'active': serializer.toJson<bool>(active),
@@ -2712,6 +2800,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
   PaymentMethod copyWith({
     String? id,
     String? accountId,
+    String? visibleCode,
     String? nickname,
     String? normalizedNickname,
     bool? active,
@@ -2721,6 +2810,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
   }) => PaymentMethod(
     id: id ?? this.id,
     accountId: accountId ?? this.accountId,
+    visibleCode: visibleCode ?? this.visibleCode,
     nickname: nickname ?? this.nickname,
     normalizedNickname: normalizedNickname ?? this.normalizedNickname,
     active: active ?? this.active,
@@ -2732,6 +2822,9 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     return PaymentMethod(
       id: data.id.present ? data.id.value : this.id,
       accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      visibleCode: data.visibleCode.present
+          ? data.visibleCode.value
+          : this.visibleCode,
       nickname: data.nickname.present ? data.nickname.value : this.nickname,
       normalizedNickname: data.normalizedNickname.present
           ? data.normalizedNickname.value
@@ -2750,6 +2843,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
     return (StringBuffer('PaymentMethod(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('visibleCode: $visibleCode, ')
           ..write('nickname: $nickname, ')
           ..write('normalizedNickname: $normalizedNickname, ')
           ..write('active: $active, ')
@@ -2764,6 +2858,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
   int get hashCode => Object.hash(
     id,
     accountId,
+    visibleCode,
     nickname,
     normalizedNickname,
     active,
@@ -2777,6 +2872,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
       (other is PaymentMethod &&
           other.id == this.id &&
           other.accountId == this.accountId &&
+          other.visibleCode == this.visibleCode &&
           other.nickname == this.nickname &&
           other.normalizedNickname == this.normalizedNickname &&
           other.active == this.active &&
@@ -2788,6 +2884,7 @@ class PaymentMethod extends DataClass implements Insertable<PaymentMethod> {
 class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
   final Value<String> id;
   final Value<String> accountId;
+  final Value<String> visibleCode;
   final Value<String> nickname;
   final Value<String> normalizedNickname;
   final Value<bool> active;
@@ -2798,6 +2895,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
   const PaymentMethodsCompanion({
     this.id = const Value.absent(),
     this.accountId = const Value.absent(),
+    this.visibleCode = const Value.absent(),
     this.nickname = const Value.absent(),
     this.normalizedNickname = const Value.absent(),
     this.active = const Value.absent(),
@@ -2809,6 +2907,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
   PaymentMethodsCompanion.insert({
     required String id,
     required String accountId,
+    required String visibleCode,
     required String nickname,
     required String normalizedNickname,
     this.active = const Value.absent(),
@@ -2818,6 +2917,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        accountId = Value(accountId),
+       visibleCode = Value(visibleCode),
        nickname = Value(nickname),
        normalizedNickname = Value(normalizedNickname),
        createdAt = Value(createdAt),
@@ -2825,6 +2925,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
   static Insertable<PaymentMethod> custom({
     Expression<String>? id,
     Expression<String>? accountId,
+    Expression<String>? visibleCode,
     Expression<String>? nickname,
     Expression<String>? normalizedNickname,
     Expression<bool>? active,
@@ -2836,6 +2937,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
+      if (visibleCode != null) 'visible_code': visibleCode,
       if (nickname != null) 'nickname': nickname,
       if (normalizedNickname != null) 'normalized_nickname': normalizedNickname,
       if (active != null) 'active': active,
@@ -2849,6 +2951,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
   PaymentMethodsCompanion copyWith({
     Value<String>? id,
     Value<String>? accountId,
+    Value<String>? visibleCode,
     Value<String>? nickname,
     Value<String>? normalizedNickname,
     Value<bool>? active,
@@ -2860,6 +2963,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
     return PaymentMethodsCompanion(
       id: id ?? this.id,
       accountId: accountId ?? this.accountId,
+      visibleCode: visibleCode ?? this.visibleCode,
       nickname: nickname ?? this.nickname,
       normalizedNickname: normalizedNickname ?? this.normalizedNickname,
       active: active ?? this.active,
@@ -2878,6 +2982,9 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
     }
     if (accountId.present) {
       map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (visibleCode.present) {
+      map['visible_code'] = Variable<String>(visibleCode.value);
     }
     if (nickname.present) {
       map['nickname'] = Variable<String>(nickname.value);
@@ -2908,6 +3015,7 @@ class PaymentMethodsCompanion extends UpdateCompanion<PaymentMethod> {
     return (StringBuffer('PaymentMethodsCompanion(')
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
+          ..write('visibleCode: $visibleCode, ')
           ..write('nickname: $nickname, ')
           ..write('normalizedNickname: $normalizedNickname, ')
           ..write('active: $active, ')
@@ -2951,6 +3059,29 @@ class $AccountPreferencesTable extends AccountPreferences
     requiredDuringInsert: false,
     defaultValue: const Constant(5),
   );
+  static const VerificationMeta _nextPersonCodeMeta = const VerificationMeta(
+    'nextPersonCode',
+  );
+  @override
+  late final GeneratedColumn<int> nextPersonCode = GeneratedColumn<int>(
+    'next_person_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _nextPaymentMethodCodeMeta =
+      const VerificationMeta('nextPaymentMethodCode');
+  @override
+  late final GeneratedColumn<int> nextPaymentMethodCode = GeneratedColumn<int>(
+    'next_payment_method_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -2966,6 +3097,8 @@ class $AccountPreferencesTable extends AccountPreferences
   List<GeneratedColumn> get $columns => [
     accountId,
     shortageThresholdDays,
+    nextPersonCode,
+    nextPaymentMethodCode,
     updatedAt,
   ];
   @override
@@ -2997,6 +3130,24 @@ class $AccountPreferencesTable extends AccountPreferences
         ),
       );
     }
+    if (data.containsKey('next_person_code')) {
+      context.handle(
+        _nextPersonCodeMeta,
+        nextPersonCode.isAcceptableOrUnknown(
+          data['next_person_code']!,
+          _nextPersonCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_payment_method_code')) {
+      context.handle(
+        _nextPaymentMethodCodeMeta,
+        nextPaymentMethodCode.isAcceptableOrUnknown(
+          data['next_payment_method_code']!,
+          _nextPaymentMethodCodeMeta,
+        ),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -3022,6 +3173,14 @@ class $AccountPreferencesTable extends AccountPreferences
         DriftSqlType.int,
         data['${effectivePrefix}shortage_threshold_days'],
       )!,
+      nextPersonCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}next_person_code'],
+      )!,
+      nextPaymentMethodCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}next_payment_method_code'],
+      )!,
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
@@ -3039,10 +3198,14 @@ class AccountPreference extends DataClass
     implements Insertable<AccountPreference> {
   final String accountId;
   final int shortageThresholdDays;
+  final int nextPersonCode;
+  final int nextPaymentMethodCode;
   final DateTime updatedAt;
   const AccountPreference({
     required this.accountId,
     required this.shortageThresholdDays,
+    required this.nextPersonCode,
+    required this.nextPaymentMethodCode,
     required this.updatedAt,
   });
   @override
@@ -3050,6 +3213,8 @@ class AccountPreference extends DataClass
     final map = <String, Expression>{};
     map['account_id'] = Variable<String>(accountId);
     map['shortage_threshold_days'] = Variable<int>(shortageThresholdDays);
+    map['next_person_code'] = Variable<int>(nextPersonCode);
+    map['next_payment_method_code'] = Variable<int>(nextPaymentMethodCode);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
@@ -3058,6 +3223,8 @@ class AccountPreference extends DataClass
     return AccountPreferencesCompanion(
       accountId: Value(accountId),
       shortageThresholdDays: Value(shortageThresholdDays),
+      nextPersonCode: Value(nextPersonCode),
+      nextPaymentMethodCode: Value(nextPaymentMethodCode),
       updatedAt: Value(updatedAt),
     );
   }
@@ -3072,6 +3239,10 @@ class AccountPreference extends DataClass
       shortageThresholdDays: serializer.fromJson<int>(
         json['shortageThresholdDays'],
       ),
+      nextPersonCode: serializer.fromJson<int>(json['nextPersonCode']),
+      nextPaymentMethodCode: serializer.fromJson<int>(
+        json['nextPaymentMethodCode'],
+      ),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -3081,6 +3252,8 @@ class AccountPreference extends DataClass
     return <String, dynamic>{
       'accountId': serializer.toJson<String>(accountId),
       'shortageThresholdDays': serializer.toJson<int>(shortageThresholdDays),
+      'nextPersonCode': serializer.toJson<int>(nextPersonCode),
+      'nextPaymentMethodCode': serializer.toJson<int>(nextPaymentMethodCode),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
@@ -3088,10 +3261,14 @@ class AccountPreference extends DataClass
   AccountPreference copyWith({
     String? accountId,
     int? shortageThresholdDays,
+    int? nextPersonCode,
+    int? nextPaymentMethodCode,
     DateTime? updatedAt,
   }) => AccountPreference(
     accountId: accountId ?? this.accountId,
     shortageThresholdDays: shortageThresholdDays ?? this.shortageThresholdDays,
+    nextPersonCode: nextPersonCode ?? this.nextPersonCode,
+    nextPaymentMethodCode: nextPaymentMethodCode ?? this.nextPaymentMethodCode,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   AccountPreference copyWithCompanion(AccountPreferencesCompanion data) {
@@ -3100,6 +3277,12 @@ class AccountPreference extends DataClass
       shortageThresholdDays: data.shortageThresholdDays.present
           ? data.shortageThresholdDays.value
           : this.shortageThresholdDays,
+      nextPersonCode: data.nextPersonCode.present
+          ? data.nextPersonCode.value
+          : this.nextPersonCode,
+      nextPaymentMethodCode: data.nextPaymentMethodCode.present
+          ? data.nextPaymentMethodCode.value
+          : this.nextPaymentMethodCode,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -3109,36 +3292,52 @@ class AccountPreference extends DataClass
     return (StringBuffer('AccountPreference(')
           ..write('accountId: $accountId, ')
           ..write('shortageThresholdDays: $shortageThresholdDays, ')
+          ..write('nextPersonCode: $nextPersonCode, ')
+          ..write('nextPaymentMethodCode: $nextPaymentMethodCode, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(accountId, shortageThresholdDays, updatedAt);
+  int get hashCode => Object.hash(
+    accountId,
+    shortageThresholdDays,
+    nextPersonCode,
+    nextPaymentMethodCode,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AccountPreference &&
           other.accountId == this.accountId &&
           other.shortageThresholdDays == this.shortageThresholdDays &&
+          other.nextPersonCode == this.nextPersonCode &&
+          other.nextPaymentMethodCode == this.nextPaymentMethodCode &&
           other.updatedAt == this.updatedAt);
 }
 
 class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
   final Value<String> accountId;
   final Value<int> shortageThresholdDays;
+  final Value<int> nextPersonCode;
+  final Value<int> nextPaymentMethodCode;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const AccountPreferencesCompanion({
     this.accountId = const Value.absent(),
     this.shortageThresholdDays = const Value.absent(),
+    this.nextPersonCode = const Value.absent(),
+    this.nextPaymentMethodCode = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AccountPreferencesCompanion.insert({
     required String accountId,
     this.shortageThresholdDays = const Value.absent(),
+    this.nextPersonCode = const Value.absent(),
+    this.nextPaymentMethodCode = const Value.absent(),
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
   }) : accountId = Value(accountId),
@@ -3146,6 +3345,8 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
   static Insertable<AccountPreference> custom({
     Expression<String>? accountId,
     Expression<int>? shortageThresholdDays,
+    Expression<int>? nextPersonCode,
+    Expression<int>? nextPaymentMethodCode,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
@@ -3153,6 +3354,9 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
       if (accountId != null) 'account_id': accountId,
       if (shortageThresholdDays != null)
         'shortage_threshold_days': shortageThresholdDays,
+      if (nextPersonCode != null) 'next_person_code': nextPersonCode,
+      if (nextPaymentMethodCode != null)
+        'next_payment_method_code': nextPaymentMethodCode,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -3161,6 +3365,8 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
   AccountPreferencesCompanion copyWith({
     Value<String>? accountId,
     Value<int>? shortageThresholdDays,
+    Value<int>? nextPersonCode,
+    Value<int>? nextPaymentMethodCode,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
@@ -3168,6 +3374,9 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
       accountId: accountId ?? this.accountId,
       shortageThresholdDays:
           shortageThresholdDays ?? this.shortageThresholdDays,
+      nextPersonCode: nextPersonCode ?? this.nextPersonCode,
+      nextPaymentMethodCode:
+          nextPaymentMethodCode ?? this.nextPaymentMethodCode,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -3184,6 +3393,14 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
         shortageThresholdDays.value,
       );
     }
+    if (nextPersonCode.present) {
+      map['next_person_code'] = Variable<int>(nextPersonCode.value);
+    }
+    if (nextPaymentMethodCode.present) {
+      map['next_payment_method_code'] = Variable<int>(
+        nextPaymentMethodCode.value,
+      );
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -3198,6 +3415,8 @@ class AccountPreferencesCompanion extends UpdateCompanion<AccountPreference> {
     return (StringBuffer('AccountPreferencesCompanion(')
           ..write('accountId: $accountId, ')
           ..write('shortageThresholdDays: $shortageThresholdDays, ')
+          ..write('nextPersonCode: $nextPersonCode, ')
+          ..write('nextPaymentMethodCode: $nextPaymentMethodCode, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -7574,8 +7793,8 @@ typedef $$ProductsTableCreateCompanionBuilder =
     ProductsCompanion Function({
       required String id,
       required String accountId,
-      Value<String?> userProductCode,
-      Value<String?> normalizedUserProductCode,
+      required String userProductCode,
+      required String normalizedUserProductCode,
       required int normalizationVersion,
       Value<String?> displayName,
       Value<String?> displayBrand,
@@ -7593,8 +7812,8 @@ typedef $$ProductsTableUpdateCompanionBuilder =
     ProductsCompanion Function({
       Value<String> id,
       Value<String> accountId,
-      Value<String?> userProductCode,
-      Value<String?> normalizedUserProductCode,
+      Value<String> userProductCode,
+      Value<String> normalizedUserProductCode,
       Value<int> normalizationVersion,
       Value<String?> displayName,
       Value<String?> displayBrand,
@@ -8032,8 +8251,8 @@ class $$ProductsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> accountId = const Value.absent(),
-                Value<String?> userProductCode = const Value.absent(),
-                Value<String?> normalizedUserProductCode = const Value.absent(),
+                Value<String> userProductCode = const Value.absent(),
+                Value<String> normalizedUserProductCode = const Value.absent(),
                 Value<int> normalizationVersion = const Value.absent(),
                 Value<String?> displayName = const Value.absent(),
                 Value<String?> displayBrand = const Value.absent(),
@@ -8068,8 +8287,8 @@ class $$ProductsTableTableManager
               ({
                 required String id,
                 required String accountId,
-                Value<String?> userProductCode = const Value.absent(),
-                Value<String?> normalizedUserProductCode = const Value.absent(),
+                required String userProductCode,
+                required String normalizedUserProductCode,
                 required int normalizationVersion,
                 Value<String?> displayName = const Value.absent(),
                 Value<String?> displayBrand = const Value.absent(),
@@ -8574,6 +8793,7 @@ typedef $$PeopleTableCreateCompanionBuilder =
     PeopleCompanion Function({
       required String id,
       required String accountId,
+      required String visibleCode,
       required String nickname,
       required String normalizedNickname,
       Value<bool> active,
@@ -8586,6 +8806,7 @@ typedef $$PeopleTableUpdateCompanionBuilder =
     PeopleCompanion Function({
       Value<String> id,
       Value<String> accountId,
+      Value<String> visibleCode,
       Value<String> nickname,
       Value<String> normalizedNickname,
       Value<bool> active,
@@ -8646,6 +8867,11 @@ class $$PeopleTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8742,6 +8968,11 @@ class $$PeopleTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nickname => $composableBuilder(
     column: $table.nickname,
     builder: (column) => ColumnOrderings(column),
@@ -8807,6 +9038,11 @@ class $$PeopleTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get nickname =>
       $composableBuilder(column: $table.nickname, builder: (column) => column);
@@ -8909,6 +9145,7 @@ class $$PeopleTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> accountId = const Value.absent(),
+                Value<String> visibleCode = const Value.absent(),
                 Value<String> nickname = const Value.absent(),
                 Value<String> normalizedNickname = const Value.absent(),
                 Value<bool> active = const Value.absent(),
@@ -8919,6 +9156,7 @@ class $$PeopleTableTableManager
               }) => PeopleCompanion(
                 id: id,
                 accountId: accountId,
+                visibleCode: visibleCode,
                 nickname: nickname,
                 normalizedNickname: normalizedNickname,
                 active: active,
@@ -8931,6 +9169,7 @@ class $$PeopleTableTableManager
               ({
                 required String id,
                 required String accountId,
+                required String visibleCode,
                 required String nickname,
                 required String normalizedNickname,
                 Value<bool> active = const Value.absent(),
@@ -8941,6 +9180,7 @@ class $$PeopleTableTableManager
               }) => PeopleCompanion.insert(
                 id: id,
                 accountId: accountId,
+                visibleCode: visibleCode,
                 nickname: nickname,
                 normalizedNickname: normalizedNickname,
                 active: active,
@@ -9034,6 +9274,7 @@ typedef $$PaymentMethodsTableCreateCompanionBuilder =
     PaymentMethodsCompanion Function({
       required String id,
       required String accountId,
+      required String visibleCode,
       required String nickname,
       required String normalizedNickname,
       Value<bool> active,
@@ -9046,6 +9287,7 @@ typedef $$PaymentMethodsTableUpdateCompanionBuilder =
     PaymentMethodsCompanion Function({
       Value<String> id,
       Value<String> accountId,
+      Value<String> visibleCode,
       Value<String> nickname,
       Value<String> normalizedNickname,
       Value<bool> active,
@@ -9111,6 +9353,11 @@ class $$PaymentMethodsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9207,6 +9454,11 @@ class $$PaymentMethodsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nickname => $composableBuilder(
     column: $table.nickname,
     builder: (column) => ColumnOrderings(column),
@@ -9272,6 +9524,11 @@ class $$PaymentMethodsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get visibleCode => $composableBuilder(
+    column: $table.visibleCode,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get nickname =>
       $composableBuilder(column: $table.nickname, builder: (column) => column);
@@ -9376,6 +9633,7 @@ class $$PaymentMethodsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> accountId = const Value.absent(),
+                Value<String> visibleCode = const Value.absent(),
                 Value<String> nickname = const Value.absent(),
                 Value<String> normalizedNickname = const Value.absent(),
                 Value<bool> active = const Value.absent(),
@@ -9386,6 +9644,7 @@ class $$PaymentMethodsTableTableManager
               }) => PaymentMethodsCompanion(
                 id: id,
                 accountId: accountId,
+                visibleCode: visibleCode,
                 nickname: nickname,
                 normalizedNickname: normalizedNickname,
                 active: active,
@@ -9398,6 +9657,7 @@ class $$PaymentMethodsTableTableManager
               ({
                 required String id,
                 required String accountId,
+                required String visibleCode,
                 required String nickname,
                 required String normalizedNickname,
                 Value<bool> active = const Value.absent(),
@@ -9408,6 +9668,7 @@ class $$PaymentMethodsTableTableManager
               }) => PaymentMethodsCompanion.insert(
                 id: id,
                 accountId: accountId,
+                visibleCode: visibleCode,
                 nickname: nickname,
                 normalizedNickname: normalizedNickname,
                 active: active,
@@ -9510,6 +9771,8 @@ typedef $$AccountPreferencesTableCreateCompanionBuilder =
     AccountPreferencesCompanion Function({
       required String accountId,
       Value<int> shortageThresholdDays,
+      Value<int> nextPersonCode,
+      Value<int> nextPaymentMethodCode,
       required DateTime updatedAt,
       Value<int> rowid,
     });
@@ -9517,6 +9780,8 @@ typedef $$AccountPreferencesTableUpdateCompanionBuilder =
     AccountPreferencesCompanion Function({
       Value<String> accountId,
       Value<int> shortageThresholdDays,
+      Value<int> nextPersonCode,
+      Value<int> nextPaymentMethodCode,
       Value<DateTime> updatedAt,
       Value<int> rowid,
     });
@@ -9567,6 +9832,16 @@ class $$AccountPreferencesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get nextPersonCode => $composableBuilder(
+    column: $table.nextPersonCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nextPaymentMethodCode => $composableBuilder(
+    column: $table.nextPaymentMethodCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
@@ -9610,6 +9885,16 @@ class $$AccountPreferencesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get nextPersonCode => $composableBuilder(
+    column: $table.nextPersonCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nextPaymentMethodCode => $composableBuilder(
+    column: $table.nextPaymentMethodCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -9650,6 +9935,16 @@ class $$AccountPreferencesTableAnnotationComposer
   });
   GeneratedColumn<int> get shortageThresholdDays => $composableBuilder(
     column: $table.shortageThresholdDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nextPersonCode => $composableBuilder(
+    column: $table.nextPersonCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nextPaymentMethodCode => $composableBuilder(
+    column: $table.nextPaymentMethodCode,
     builder: (column) => column,
   );
 
@@ -9715,11 +10010,15 @@ class $$AccountPreferencesTableTableManager
               ({
                 Value<String> accountId = const Value.absent(),
                 Value<int> shortageThresholdDays = const Value.absent(),
+                Value<int> nextPersonCode = const Value.absent(),
+                Value<int> nextPaymentMethodCode = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AccountPreferencesCompanion(
                 accountId: accountId,
                 shortageThresholdDays: shortageThresholdDays,
+                nextPersonCode: nextPersonCode,
+                nextPaymentMethodCode: nextPaymentMethodCode,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
@@ -9727,11 +10026,15 @@ class $$AccountPreferencesTableTableManager
               ({
                 required String accountId,
                 Value<int> shortageThresholdDays = const Value.absent(),
+                Value<int> nextPersonCode = const Value.absent(),
+                Value<int> nextPaymentMethodCode = const Value.absent(),
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => AccountPreferencesCompanion.insert(
                 accountId: accountId,
                 shortageThresholdDays: shortageThresholdDays,
+                nextPersonCode: nextPersonCode,
+                nextPaymentMethodCode: nextPaymentMethodCode,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),

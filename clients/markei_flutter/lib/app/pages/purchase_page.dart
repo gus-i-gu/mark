@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../application/catalogue_queries.dart';
+import '../../application/bulk_pricing.dart';
 import '../../application/local_references.dart';
+import '../../application/purchase_occurrence.dart';
 import '../../application/register_purchase.dart';
 import '../../domain/catalogue/product.dart';
 import '../../domain/purchase/purchase.dart';
@@ -35,6 +37,8 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage> {
   final _storeController = TextEditingController(text: 'Mercado Central');
+  final _purchaseDateController = TextEditingController();
+  final _purchaseTimeController = TextEditingController();
   final _codeController = TextEditingController();
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
@@ -43,6 +47,7 @@ class _PurchasePageState extends State<PurchasePage> {
   final _purchasedAmountController = TextEditingController(text: '1');
   final _purchasedUnitController = TextEditingController(text: 'kg');
   final _packageCountController = TextEditingController(text: '1');
+  final _pricePerUnitController = TextEditingController();
   final _lineTotalController = TextEditingController();
   final List<_DraftLine> _lines = [];
   List<Product> _products = const [];
@@ -82,6 +87,8 @@ class _PurchasePageState extends State<PurchasePage> {
   @override
   void dispose() {
     _storeController.dispose();
+    _purchaseDateController.dispose();
+    _purchaseTimeController.dispose();
     _codeController.dispose();
     _nameController.dispose();
     _brandController.dispose();
@@ -90,6 +97,7 @@ class _PurchasePageState extends State<PurchasePage> {
     _purchasedAmountController.dispose();
     _purchasedUnitController.dispose();
     _packageCountController.dispose();
+    _pricePerUnitController.dispose();
     _lineTotalController.dispose();
     super.dispose();
   }
@@ -198,6 +206,55 @@ class _PurchasePageState extends State<PurchasePage> {
     );
   }
 
+  Future<void> _findProductByCode() async {
+    try {
+      final product = await widget.catalogueQueries.productByCode(
+        widget.accountId,
+        _codeController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      if (product == null) {
+        setState(() {
+          _selectedProduct = null;
+          _feedback = _PurchaseFeedback.error(
+            'No Product matches this exact code. Check details or create a new Product.',
+          );
+        });
+        return;
+      }
+      setState(() {
+        _applyProductFacts(product);
+        _feedback = _PurchaseFeedback.success(
+          'Product facts filled. Add staged Item when ready.',
+        );
+      });
+    } on Object {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _feedback = _PurchaseFeedback.error(
+          'Product code lookup failed. Check the code and try again.',
+        );
+      });
+    }
+  }
+
+  void _applyProductFacts(Product product) {
+    _selectedProduct = product;
+    _bulk = product.mode == ProductMode.bulk;
+    _codeController.text = product.userProductCode.displayValue;
+    _nameController.text = product.displayName;
+    _brandController.text = product.displayBrand;
+    final package = product.packageQuantity;
+    if (package != null) {
+      _packageAmountController.text = package.decimalText;
+      _packageUnitController.text = package.unit.name;
+    }
+  }
+
   void _saveEditedLine() {
     final reference = _editingReference;
     final productLabel = _editingProductLabel;
@@ -228,6 +285,19 @@ class _PurchasePageState extends State<PurchasePage> {
       final packageCount = mode == ProductMode.bulk
           ? null
           : int.parse(_packageCountController.text.trim());
+      final lineTotalMinorUnits = mode == ProductMode.bulk
+          ? bulkLineTotalMinorUnits(
+              kind: kind,
+              amount: _purchasedAmountController.text,
+              amountUnit: _purchasedUnitController.text,
+              pricePerSelectedUnit: _pricePerUnitController.text,
+            )
+          : _parseMinorUnits(_lineTotalController.text);
+      if (mode == ProductMode.bulk) {
+        _lineTotalController.text = (lineTotalMinorUnits / 100).toStringAsFixed(
+          2,
+        );
+      }
       final item = PurchaseItemDraft(
         productReference: reference,
         packageCount: packageCount,
@@ -236,10 +306,7 @@ class _PurchasePageState extends State<PurchasePage> {
           amount: _purchasedAmountController.text,
           unit: _purchasedUnitController.text,
         ),
-        lineTotal: Money(
-          currencyCode: 'BRL',
-          minorUnits: _parseMinorUnits(_lineTotalController.text),
-        ),
+        lineTotal: Money(currencyCode: 'BRL', minorUnits: lineTotalMinorUnits),
       );
       setState(() {
         final line = _DraftLine(
@@ -279,6 +346,7 @@ class _PurchasePageState extends State<PurchasePage> {
       _bulk = line.productMode == ProductMode.bulk;
       _reviewing = false;
       _lineTotalController.text = _formatMinorUnits(line.item.lineTotal);
+      _pricePerUnitController.clear();
       _packageCountController.text = (line.item.packageCount ?? 1).toString();
       _purchasedAmountController.text = line.item.purchasedQuantity.decimalText;
       _purchasedUnitController.text = line.item.purchasedQuantity.unit.name;
@@ -297,11 +365,46 @@ class _PurchasePageState extends State<PurchasePage> {
     });
   }
 
+  void _previewBulkTotal() {
+    if (!_bulk || _pricePerUnitController.text.trim().isEmpty) {
+      return;
+    }
+    try {
+      final total = bulkLineTotalMinorUnits(
+        kind: _selectedMeasurementKind(),
+        amount: _purchasedAmountController.text,
+        amountUnit: _purchasedUnitController.text,
+        pricePerSelectedUnit: _pricePerUnitController.text,
+      );
+      setState(() {
+        _lineTotalController.text = (total / 100).toStringAsFixed(2);
+      });
+    } on Object {
+      setState(() {
+        _lineTotalController.clear();
+      });
+    }
+  }
+
   Future<void> _registerPurchase() async {
     if (_submitting) {
       return;
     }
     final storeReference = _storeReference();
+    DateTime occurrenceTime;
+    try {
+      occurrenceTime = parsePurchaseOccurrenceUtc(
+        PurchaseOccurrenceInput(
+          dateText: _purchaseDateController.text,
+          timeText: _purchaseTimeController.text,
+        ),
+      );
+    } on FormatException catch (error) {
+      setState(() {
+        _feedback = _PurchaseFeedback.error(error.message);
+      });
+      return;
+    }
     if (storeReference == null || _lines.isEmpty) {
       setState(() {
         _feedback = _PurchaseFeedback.error(
@@ -320,7 +423,7 @@ class _PurchasePageState extends State<PurchasePage> {
           accountId: widget.accountId,
           deviceId: widget.deviceId,
           storeReference: storeReference,
-          occurrenceTime: DateTime.now().toUtc(),
+          occurrenceTime: occurrenceTime,
           currencyCode: 'BRL',
           personId: _selectedPerson?.id,
           paymentMethodId: _selectedPaymentMethod?.id,
@@ -401,6 +504,7 @@ class _PurchasePageState extends State<PurchasePage> {
     _codeController.clear();
     _nameController.clear();
     _brandController.clear();
+    _pricePerUnitController.clear();
     _lineTotalController.clear();
     _selectedProduct = null;
   }
@@ -547,7 +651,7 @@ class _PurchasePageState extends State<PurchasePage> {
           items: [
             const DropdownMenuItem(value: null, child: Text('Not assigned')),
             for (final person in _people)
-              DropdownMenuItem(value: person, child: Text(person.nickname)),
+              DropdownMenuItem(value: person, child: Text(person.displayLabel)),
           ],
           onChanged: (value) => setState(() => _selectedPerson = value),
         ),
@@ -558,7 +662,10 @@ class _PurchasePageState extends State<PurchasePage> {
           items: [
             const DropdownMenuItem(value: null, child: Text('Not assigned')),
             for (final payment in _paymentMethods)
-              DropdownMenuItem(value: payment, child: Text(payment.nickname)),
+              DropdownMenuItem(
+                value: payment,
+                child: Text(payment.displayLabel),
+              ),
           ],
           onChanged: (value) => setState(() => _selectedPaymentMethod = value),
         ),
@@ -599,6 +706,31 @@ class _PurchasePageState extends State<PurchasePage> {
                   : null,
             ),
           ),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('purchase.date'),
+                controller: _purchaseDateController,
+                decoration: const InputDecoration(
+                  labelText: 'Purchase date',
+                  helperText: 'dd/mm/yyyy',
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                key: const Key('purchase.time'),
+                controller: _purchaseTimeController,
+                decoration: const InputDecoration(
+                  labelText: 'Time',
+                  helperText: 'HH:mm',
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -608,6 +740,27 @@ class _PurchasePageState extends State<PurchasePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Find or create Product', style: TextStyle(fontSize: 18)),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('product.code'),
+                controller: _codeController,
+                readOnly: _selectedProduct != null,
+                decoration: const InputDecoration(
+                  labelText: 'Product code',
+                  helperText: 'Required and immutable',
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton(
+              key: const Key('product.findByCode'),
+              onPressed: _editingKey == null ? _findProductByCode : null,
+              child: const Text('Find code'),
+            ),
+          ],
+        ),
         if (_products.isEmpty)
           const Text('No Products yet. Create a Product to stage an Item.')
         else
@@ -624,18 +777,45 @@ class _PurchasePageState extends State<PurchasePage> {
               for (final product in _products)
                 DropdownMenuItem(
                   value: product,
-                  child: Text(product.displayName),
+                  child: Text(
+                    '${product.userProductCode.displayValue} · ${product.displayName}',
+                  ),
                 ),
             ],
-            onChanged: (value) => setState(() => _selectedProduct = value),
+            onChanged: (value) => setState(() {
+              if (value == null) {
+                _selectedProduct = null;
+                _codeController.clear();
+                _nameController.clear();
+                _brandController.clear();
+              } else {
+                _applyProductFacts(value);
+              }
+            }),
           ),
-        if (_selectedProduct != null)
+        if (_selectedProduct != null) ...[
+          TextField(
+            key: const Key('product.name'),
+            controller: _nameController,
+            readOnly: true,
+            decoration: const InputDecoration(labelText: 'Product name'),
+          ),
+          TextField(
+            key: const Key('product.brand'),
+            controller: _brandController,
+            readOnly: true,
+            decoration: const InputDecoration(labelText: 'Brand'),
+          ),
+          Text(
+            'Mode: ${_selectedProduct!.mode.name.toUpperCase()} · ${_selectedProduct!.measurementKind.name}',
+            key: const Key('product.immutableFacts'),
+          ),
           FilledButton.tonal(
             key: const Key('product.useSelected'),
             onPressed: () => _stageExistingProduct(_selectedProduct!),
-            child: const Text('Use existing Product'),
-          )
-        else ...[
+            child: const Text('Add selected Product'),
+          ),
+        ] else ...[
           SegmentedButton<bool>(
             segments: const [
               ButtonSegment(value: false, label: Text('Packaged')),
@@ -643,11 +823,6 @@ class _PurchasePageState extends State<PurchasePage> {
             ],
             selected: {_bulk},
             onSelectionChanged: (value) => setState(() => _bulk = value.single),
-          ),
-          TextField(
-            key: const Key('product.code'),
-            controller: _codeController,
-            decoration: const InputDecoration(labelText: 'Product code'),
           ),
           TextField(
             key: const Key('product.name'),
@@ -700,6 +875,7 @@ class _PurchasePageState extends State<PurchasePage> {
                 decoration: const InputDecoration(
                   labelText: 'Total amount bought',
                 ),
+                onChanged: (_) => _previewBulkTotal(),
               ),
             ),
             const SizedBox(width: 12),
@@ -708,6 +884,7 @@ class _PurchasePageState extends State<PurchasePage> {
                 key: const Key('item.unit'),
                 controller: _purchasedUnitController,
                 decoration: const InputDecoration(labelText: 'Unit'),
+                onChanged: (_) => _previewBulkTotal(),
               ),
             ),
           ],
@@ -729,11 +906,30 @@ class _PurchasePageState extends State<PurchasePage> {
               child: TextField(
                 key: const Key('item.lineTotal'),
                 controller: _lineTotalController,
-                decoration: const InputDecoration(labelText: 'Line total'),
+                readOnly: _bulk,
+                decoration: InputDecoration(
+                  labelText: _bulk ? 'Calculated line total' : 'Line total',
+                ),
               ),
             ),
           ],
         ),
+        if (_bulk)
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  key: const Key('item.pricePerUnit'),
+                  controller: _pricePerUnitController,
+                  decoration: InputDecoration(
+                    labelText:
+                        'Price per ${_purchasedUnitController.text.trim().isEmpty ? 'selected unit' : _purchasedUnitController.text.trim()}',
+                  ),
+                  onChanged: (_) => _previewBulkTotal(),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
