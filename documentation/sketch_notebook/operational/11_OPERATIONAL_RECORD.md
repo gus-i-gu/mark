@@ -761,3 +761,55 @@ PRC-01 disposition:
 - schema, migration, dependency, synchronization, transaction-failure infrastructure, and generated-artifact behavior: unchanged.
 
 No source, host, schema, migration, dependency, or permanent non-Operational surface was changed during this reconciliation.
+
+
+---
+
+## 2026-07-14 — Cycle 09 C09-U02 Operational reconciliation
+
+Sequence: `FLX-PRM-04`  
+Implementation commit: `e37cb700feeca4001cc7835b584c46bb81926af3`  
+Instruction baseline: `06714d719c22ebd6b64008b7dcec745faee8fcd5`  
+Sources: Cycle 09 A, controlling D, G, post-Codex J, implementation diff and targeted source/test inspection  
+Evidence boundary: Codex-host commands plus repository inspection; this reconciliation reran no Flutter, platform or host command
+
+Materialization changed 35 paths: 32 Flutter source/test paths and G/H/I. The protected Python/PySide6 source and database were unchanged.
+
+Implemented repository evidence includes schema v3; People, Payment Methods and Account preferences; nullable Purchase references; nullable BULK package count; Product normalization v3; sequential v1/v2 migration handling; typed application failures; comma/point quantity parsing; kg/g/L/ml/un handling with fractional COUNT rejection; exact Product lookup ports; Home-first navigation; Lists projections; Catalogue details; Settings; History selection; deterministic selected-Purchase CSV; and PDF-byte generation/local save.
+
+Recorded validation from G:
+
+```text
+flutter pub get                                      passed
+Drift/build_runner regeneration                     passed
+dart format lib test                                passed
+flutter test                                        passed: 39
+flutter analyze                                     passed: no issues
+git diff --check                                    passed; CRLF notices only
+python unittest release configuration               passed: 5
+flutter build windows                               passed
+Windows bounded five-second process launch          passed
+flutter build apk                                   host-blocked: Java/JAVA_HOME absent
+pytest                                              unavailable on Codex host
+```
+
+PRC-01 dispositions:
+
+- schema v3, migration routes, local reference storage, quantity normalization, projection/export code and navigation: **implemented**;
+- 39 Flutter tests and clean analysis: **validated within automated Codex-host scope**;
+- Windows release artifact and bounded launch: **validated as build/smoke only**, not manual workflow or lifecycle acceptance;
+- Android: **host-unvalidated**, not a product failure;
+- Python: five repository `unittest` regressions passed; pytest coverage remains unavailable;
+- BULK nullable package count: **implemented**; required price-per-unit entry/half-up total derivation: **contradicted as completed** because UI still requests Line total;
+- PDF bytes/local temporary-file save: **implemented**; native/save-destination sharing: **partial/deferred**;
+- typed `AppFailure` infrastructure: **implemented**; consistent user-facing code/field/recovery/outcome presentation: **partial** because pages still collapse many errors into generic copy;
+- exact Product lookup ports: **implemented**; explicit exact-lookup Catalogue workflow: **partial** because visible search remains substring filtering;
+- History checkbox/tap selection: **implemented**; select-all and desktop double-click shortcut: **not found**;
+- Product detail panel: **implemented** through tap/long-press; shared adaptive detail route and desktop double-click: **not found**;
+- active nickname uniqueness: **partially contradicted** because `(accountId, normalizedNickname, active)` also limits duplicate archived nicknames;
+- Product codes: creation/migration populate them, but schema columns remain nullable; no database NOT NULL invariant is accepted;
+- full manual Windows workflow, Android, dense phone-width UX, migration failure injection and native sharing: **unvalidated or absent**.
+
+Deferred boundaries remain authentication, API/Neon/synchronization, external analytics, Product correction/merge, Store redesign, SubmissionId, persisted drafts, registered Purchase mutation, native share, Household behavior and production release.
+
+No source, methodology, Main continuity or non-Operational memory changed during this reconciliation.
