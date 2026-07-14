@@ -104,3 +104,9 @@ Stop and report before broader mutation if:
 Replace G with a concise C09 report: starting/final commit, changed/created/deleted paths,
 dependencies, schema/migration actions, commands/results, completed/skipped instructions,
 platform evidence boundaries, blockers, residual risks and rollback notes. Maximum 250 lines.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

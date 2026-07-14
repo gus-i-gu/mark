@@ -99,3 +99,9 @@ Operational checkpoint refreshed
 → G/H/I
 → renewed FLX-PRM-04
 ```
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

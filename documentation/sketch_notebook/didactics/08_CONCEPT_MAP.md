@@ -365,3 +365,9 @@ No KANBAN maturity changed. Project implementation, passing tests, and the corre
 ## Next Valid Route and Authority
 
 Didactic permanent reconciliation is complete for this bounded claim. Main may reconcile the refreshed domain checkpoints into Main-root continuity. Further source work, maturity promotion, and next-cycle D/E/F require separate authority.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

@@ -416,3 +416,9 @@ Main/human authority is required to freeze:
 Round improvement: the investigation reduces the unit failures to an explicit UI dimension-mapping defect, a quantity-only decimal-normalization gap, absent lookup ports, generic exception collapse, and clearly separated schema/dependency surfaces.
 
 Next valid route: Main reconciles C09-R01 O/A/D into J and refreshes provisional D/E/F. FLX-INV-02 remains non-authorizing; no Codex/source authority exists until an explicit transition freezes controlling instructions.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

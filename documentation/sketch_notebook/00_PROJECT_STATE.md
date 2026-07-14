@@ -142,3 +142,9 @@ Read next:
 4. `didactics/08_CONCEPT_MAP.md` for the inherited learning checkpoint;
 5. `[M]_STAGE/J_MAIN_STAGE.md` for the post-Codex conflict audit;
 6. G/H/I and repository source only when the checkpoints cannot resolve a claim.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

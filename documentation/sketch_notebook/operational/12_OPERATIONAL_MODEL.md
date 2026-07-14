@@ -406,3 +406,9 @@ Nullable or absent package count establishes only the BULK package-count boundar
 ## Platform evidence restatement
 
 Automated Flutter tests, Windows artifact build, bounded process launch, manual workflow, lifecycle behavior, Android build/runtime and release distribution remain independent claims. A missing Java host leaves Android host-unvalidated; it does not classify the Flutter implementation as failed.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

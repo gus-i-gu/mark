@@ -1022,3 +1022,9 @@ Accepted project distinction:
 The focused regression directly validates `ExistingProductReference`: after editing Item values and registering, the Purchase Item keeps the original Product ID and no duplicate Product row is created. The shared source path retains the base `ProductReference` and therefore structurally covers `NewProductReference`, but that variant has no separate focused regression.
 
 No KANBAN status changes. Repository behavior and passing tests strengthen project evidence only; learner maturity still requires explicit explanation, comparison, prediction, or transfer.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

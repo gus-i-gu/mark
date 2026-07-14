@@ -1579,3 +1579,9 @@ Domain-specific emphasis:
 - Operational: protect safety/evidence/recovery rules while separating stable procedures, incidents, active gates, and inactive future work.
 
 No domain requires a new permanent file. The next valid transition is human resolution of the staged questions, followed by a single Main-approved documentation-revision authority that names exact writable files and validation gates. Application implementation remains inactive.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.

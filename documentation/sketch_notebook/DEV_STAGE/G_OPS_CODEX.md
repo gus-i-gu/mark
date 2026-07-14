@@ -61,3 +61,9 @@
 - `pytest` was unavailable; protected Python validation was executed with the repository's `unittest` regression instead.
 - The Cycle 09 UI is functional but compact; further manual UX review is still warranted for dense mobile layouts.
 - No Product correction, Store identity redesign, sync, auth, persisted drafts, registered edit/delete, or Product auto-merge was introduced.
+
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
