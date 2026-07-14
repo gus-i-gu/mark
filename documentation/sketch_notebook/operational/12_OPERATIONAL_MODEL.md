@@ -363,3 +363,46 @@ When a draft line references an existing durable Product, editing presentation f
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+# Cycle 09 Local Expansion Operational Rules
+
+## Schema-version transition gate
+
+A local schema increment is accepted operationally only when fresh creation, every supported prior-version route, generated persistence code, representative file-backed migration, close/reopen, collision preflight and no-silent-reset behavior are named and tested. Migration evidence must state what was preserved, rewritten, backfilled or rejected. Host build success does not substitute for file-backed migration evidence.
+
+## Optional historical-reference rule
+
+Local organizational references such as Person and Payment Method must remain optional at every Purchase boundary. Absence must not block Product creation, drafting, registration, History, Lists or export. Archiving changes future selection availability without destroying historical label resolution. Credentials and payment secrets are prohibited from this metadata.
+
+## Input-boundary normalization rule
+
+User-facing numeric input may accept supported locale forms, but application/domain boundaries normalize to one locale-neutral representation before persistence. Tests must cover comma/point equivalence, unit/dimension mapping, canonical storage and invalid ambiguity. COUNT integrality is validated separately from MASS and VOLUME conversion.
+
+## Exact lookup and collision evidence rule
+
+Internal Product ID, visible Product code, exact normalized identity, advisory similarity and operation idempotency are independently evidenced. Exact code and identity paths require account-scoped repository tests. Similarity may warn but cannot prove lookup, collision resolution, merge safety or idempotency. UI claims require exercising the visible exact-lookup flow, not only repository ports.
+
+## Typed-failure presentation rule
+
+A typed application failure is operationally complete only when stable code, title, explanation, affected field/operation, recovery action, retryability and known/unknown outcome survive to user-facing presentation where applicable. Catch-all generic copy may protect internals but is only partial typed-error adoption. Error occurrences must not be silently exported, synchronized or retained as development analytics.
+
+## Derived Lists evidence rule
+
+Storage, Shortage, Market and All are rebuildable projections from Purchase/Product observations and a versioned algorithm. Tests must cover insufficient history, threshold boundaries, deterministic classification and invalidation after registration. Projections must not invent history or become authoritative List aggregates merely for UI convenience.
+
+## Export/share separation rule
+
+Export serialization, PDF-byte generation, file destination selection, local save, native share invocation and external transmission are separate gates. Deterministic selected-Purchase output does not prove a native share workflow. Export remains explicit, read-only and limited to selected data; no upload is implied.
+
+## Accessibility and interaction completion rule
+
+Ordinary tap/click, checkbox selection and keyboard-operable actions own accessibility acceptance. Double-click and long-press are optional conveniences and cannot be the sole route. A detail panel is not automatically an adaptive route; multi-selection does not imply select-all. Each promised affordance requires named widget or manual evidence.
+
+## BULK purchase pricing gate
+
+Nullable or absent package count establishes only the BULK package-count boundary. Completion additionally requires the accepted amount-bought and price-per-unit input semantics, deterministic rounding/total derivation and regression evidence. A Line total field alone must not be reported as completed price-per-unit behavior.
+
+## Platform evidence restatement
+
+Automated Flutter tests, Windows artifact build, bounded process launch, manual workflow, lifecycle behavior, Android build/runtime and release distribution remain independent claims. A missing Java host leaves Android host-unvalidated; it does not classify the Flutter implementation as failed.
