@@ -1,168 +1,189 @@
-# J_MAIN_STAGE — Cycle 09 Sprint 02 Controlling Reconciliation
+# J_MAIN_STAGE — Cycle 09 Sprint 02 Post-Codex Reconciliation
 
-> Sequence: FLX-INV-02 → Main synthesis → FLX-ORD-01 materialization staging
+> Sequence: D/E/F materialization → G/H/I evidence → Main reconciliation → domain promotion
 > Unit: C09-S02 — Functional correction and UI convergence
-> Status: RECONCILED; D/E/F PREPARATION AUTHORIZED; CODEX ACTIVE ONLY THROUGH D/E/F
+> Status: FUNCTIONAL INCREMENT ACCEPTED; VISUAL CONVERGENCE OPEN; DOMAIN PROMOTION AUTHORIZED
 > Branch: `intermid-cycle-recovery`
-> Reconciled investigation HEAD: `a4374794d707e6a2a502ed67d447c713702e1851`
-> Implementation baseline: `e37cb700feeca4001cc7835b584c46bb81926af3`
-> Inputs: A/B/C Sprint 02 stages, observations, human decisions and target images 01–05
+> Implementation staging: `5ddff3c5eae582f0e25c1ecd0cfb3fe962026cf3`
+> Reconciled implementation HEAD: `1d817972aea0229c9f109f236f4d224671927aab`
+> Inputs: D/E/F, implementation diff, G/H/I, tests/build reports and human Windows observation
 > Authority: human-supervised Main synthesis
 
 ---
 
-<!-- ROUND_MARKER:C09-S02-CONTROLLING-RECONCILIATION-2026-07-14 -->
+<!-- ROUND_MARKER:C09-S02-POST-CODEX-RECONCILIATION-2026-07-14 -->
 
 ## 1. Purpose and authority
 
-This J closes the Sprint 02 investigative decision round and supplies the controlling
-cross-domain synthesis for D/E/F. A/B/C remain provisional investigation. D/E/F jointly
-authorize Codex materialization; no instruction should be inferred from J alone.
+This J reconciles the Sprint 02 implementation rather than repeating its intended contract.
+It distinguishes implemented evidence from report claims, deviations and remaining work. It
+authorizes bounded promotion into permanent Operational, Didactic and Design documentation.
+It does not authorize another source mutation or declare Cycle 09/Sprint 02 visually closed.
 
-Earlier J states remain recoverable in Git. Sprint 01 implementation evidence remains
-historical truth and must not be relabelled as Sprint 02 validation.
+Earlier J states remain recoverable in Git. A/B/C are investigative inputs, D/E/F are the
+controlling implementation contract, and G/H/I are post-Codex evidence reports. Where reports
+and source differ, source plus executable/manual evidence controls.
 
-## 2. Evidence reconciliation
+## 2. Reconciled implementation abstract
 
-- A at `a437479` confirms current source gaps, SDK-first feasibility, validation needs,
-  dependency risk and incremental rollback boundaries. It reran no host command.
-- B at `0b475b9` defines the visible language, interaction semantics, recovery copy and
-  accessibility equivalence. It changes no learner maturity.
-- C at `16cd3ec` defines the token/component architecture, data boundaries, query repair,
-  migration alternatives and incremental materialization order. It reran no tests.
-- Current screenshots 06–10 remain observational evidence of the sparse scaffold.
-- Target images 01–05 are now persistent DEV_STAGE reference assets and define accepted
-  product direction, not literal pixel authority.
-- Current application truth remains `e37cb70`: schema v3, optional local references,
-  Home/Lists/Settings, exact lookup ports, typed failures, CSV/PDF bytes and prior tests.
-- Sprint 02 functionality, schema v4, native sharing and visual convergence remain
-  unimplemented until Codex reports evidence through G/H/I.
+The materialization is a meaningful local-first functional increment. Schema v4, immutable
+visible reference sequences, mandatory Product codes, manual Purchase occurrence input, exact
+code lookup/autofill, same-unit BULK calculation and several selection/detail behaviors are now
+represented in source and automated tests. Flutter analysis, 43 tests, migration coverage and a
+Windows build were reported successful within the named scope.
 
-## 3. Management decisions accepted
+The materialization is not the requested visual reconstruction of target images 01–05. It adds
+a small theme and component foundation plus navigation adjustments, but it does not consistently
+compose the pages from that system. Human Windows observation that the interface changed little
+is consistent with the source. Therefore functional/schema progress is accepted while UI/UX
+visual convergence remains an open correction unit.
 
-### 3.1 Person and Payment Method identity
+## 3. Accepted implemented facts
 
-- People receive immutable visible sequential codes `@001`, `@002`, ….
-- Payment Methods receive immutable visible sequential codes `#001`, `#002`, ….
-- Sequences are Account-scoped, monotonically increasing and never reuse an issued code.
-- Width expands after 999 (`@1000`, `#1000`); leading zeros apply only below 1000.
-- Opaque UUID remains the database/FK identity; visible code is organizational identity.
-- UI presents `code · nickname` and always permits `Not assigned` during Purchase.
-- Create is allowed. Rename/edit and physical delete are not exposed in Sprint 02.
-- Existing archive/history integrity must remain; archive is non-destructive and must never
-  permit code reuse. No Payment credential is stored.
+### 3.1 Data and identity
 
-### 3.2 Product code
+- Local schema v4 introduces Account-scoped visible counters and immutable `@001` Person and
+  `#001` Payment Method references while preserving opaque relational identity.
+- Product code is non-null, normalized, unique within Account and treated as immutable after
+  creation; migration/backfill behavior has test coverage.
+- Person and Payment Method remain optional Purchase labels. No credential data is stored.
+- Purchase occurrence date/time is manually entered, begins blank, is parsed at the application
+  boundary and remains distinct from insertion time.
 
-- Every Product must have a non-null, normalized, Account-scoped unique visible code.
-- New codes are entered by the user when the Product is first established.
-- Product code is immutable after creation and remains one code for one exact identity set.
-- PACKAGED identity is Name + Brand + Package quantity/unit; BULK identity is Name + Brand.
-- Exact code entry in Purchase resolves one Product and fills Product Name, Brand, mode and
-  package quantity/unit when applicable. It does not add a Purchase Item automatically.
-- Exact identity collision and exact code collision select/explain the existing Product;
-  similarity remains advisory and never auto-merges.
-- Legacy null codes require deterministic reserved backfill before a NOT NULL constraint;
-  migration-assigned legacy codes are the sole exception to user establishment.
+### 3.2 Purchase and Product behavior
 
-### 3.3 BULK pricing
+- Exact Product-code lookup can resolve and autofill Product facts without automatically adding
+  a Purchase Item.
+- BULK amount and same-unit rate calculate a read-only line total through fixed-point logic.
+- Catalogue exposes explicit selection/detail interaction improvements.
+- Lists now distinguish zero compatible observations from one observation in user-facing state.
+- History retains multi-selection actions and adds detail access.
 
-- BULK requires Amount bought, Unit and Price per that same selected unit.
-- The pair is explicit: `kg × price/kg`, `g × price/g`, `L × price/L`, `ml × price/ml`
-  or integral `un × price/un`; mixed amount/rate units are rejected.
-- The calculator normalizes amount and rate internally before final currency rounding.
-- Line total is calculated half-up in integer minor units and remains read-only.
-- There is no override in Sprint 02 and no second persisted authoritative price fact.
+### 3.3 Validation evidence boundary
 
-### 3.4 Purchase occurrence date/time
+- Reported green evidence: `flutter analyze`, 43 Flutter tests, schema-v4 migration tests and
+  Windows build.
+- The Windows run was a bounded hidden smoke launch, not a complete manual workflow or visual
+  acceptance pass.
+- Android validation remains host-blocked by missing Java and is not inferred from Windows.
+- No manual accessibility, keyboard traversal or screen-reader validation was completed.
 
-- Purchase date and time represent the buying moment, not insertion/upsertion time.
-- Fields appear immediately after Store, start blank and are manually required.
-- Visible format is `dd/mm/yyyy` and `HH:mm`; Review/History show both consistently.
-- The entered local civil value converts to the existing UTC occurrence instant at the
-  application boundary. Zone/offset metadata is deferred; repeated-hour limitation is
-  documented. Invalid or nonexistent values retain the draft and focus the field.
+## 4. Deviations and unresolved obligations
 
-### 3.5 Lists
+### 4.1 Visual composition is materially incomplete
 
-- `All` includes every Account Product, including zero-history Products.
-- Two or more compatible distinct local Purchase dates are required for an available cycle.
-- Zero history → `No Purchase history`; one compatible date → `Not enough history`.
-- Incompatible facts remain visible with a reason; they do not become zero or disappear.
-- Cycle is derived from compatible date intervals. Shortage threshold defaults to five days
-  and remains locally configurable.
-- Remaining days greater than threshold → Storage; zero through threshold → Shortage;
-  negative remaining days → Market. Boundary-day tests are mandatory.
-- Lists remain transient projections; no manual List, inventory count or cache table.
+- `markei_theme.dart` establishes only a compact palette/theme layer.
+- `markei_components.dart` defines three components, but implementation search shows no page
+  consuming them; a component library that is not composed cannot establish visual convergence.
+- Home and Lists pages were not materially rebuilt in the implementation commit.
+- Catalogue and History remain primarily standard list compositions; Purchase remains the prior
+  long-form layout with added functional fields.
+- The target desktop information hierarchy, cards, tables, filters, spacing, responsive page
+  compositions and compact-card treatment are therefore not accepted as materialized.
+- Target images 01–05 remain directional product references, not pixel-perfect test oracles.
 
-### 3.6 Errors and sharing
+### 4.2 Interaction and integration gaps
 
-- Error descriptions and recovery methods use a typed, version-controlled source registry,
-  not a database table. User data stores no error catalogue.
-- UI failures expose code/operation, field when applicable, reason, retained-state promise,
-  next action and known-applied/not-applied/unknown outcome without raw exceptions.
-- Sprint 02 should attempt native OS sharing for selected-Purchase PDF output through a
-  minimal maintained adapter/dependency that supports Windows and Android.
-- If native sharing is host-blocked or unsupported after bounded investigation, PDF bytes
-  and deterministic save/export must remain usable and the limitation must be reported;
-  no silent upload or unrelated platform expansion is allowed.
+- The controlling contract said History double-click toggles/selects a Purchase row. Current
+  source uses double-click for detail focus and does not toggle the multi-selection set. This is
+  a documented deviation requiring either implementation correction or a new human decision.
+- Native OS sharing was not adopted. Deterministic PDF generation/export remains the fallback;
+  native-share acceptance remains open.
+- Lists gained state-language distinction but not the complete catalogue-plus-purchase relational
+  presentation, summary cards, filtering or target responsive composition.
+- Product selection/details improvements do not yet constitute the complete desktop/mobile UX
+  represented by the target references.
 
-## 4. Accepted UI direction
+### 4.3 Maintainability debt
 
-- Target palette direction: cream canvas, white primary surfaces, dark-green primary
-  navigation/actions, lavender secondary/informational surfaces and explicit semantic states.
-- Expanded layouts use grouped labelled navigation, page headers, cards/panels and tables.
-- Compact layouts use Product/Purchase cards and `Home / Lists / Purchase / History / More`.
-- `More` exposes Catalogue, Settings, Guide, Documentation and future/PIN destinations.
-- Product selection, Product details and adding an Item remain separate actions.
-- Catalogue/Purchase Product double-click opens Product details; explicit Select/Use remains.
-- History double-click toggles/selects its Purchase row; checkboxes/tap/keyboard remain primary.
-- Loading, empty, no-match, unavailable, validation, failure, unknown, selected, disabled and
-  success states must be visibly and semantically distinct.
-- Light theme is sufficient in Sprint 02; dark mode is deferred.
-- Candidate breakpoints `<600`, `600–1023`, `≥1024` begin testing but may change from evidence.
+- The usual approximately 250-line file guidance is exceeded by `purchase_page.dart` (about
+  1,020 lines), `products_page.dart` (about 377) and `history_page.dart` (about 330).
+- Permanent canonical documentation may use its approved exception; application page files do
+  not inherit that exception. Future visual work must extract bounded page sections/controllers
+  rather than further expanding monolithic files.
 
-## 5. Materialization order
+## 5. Main disposition
+
+| Concern | Disposition |
+| --- | --- |
+| Schema v4 and local identity sequences | Accept with named automated evidence |
+| Product code, occurrence and BULK core | Accept with remaining host/manual boundaries |
+| Catalogue/History functional increment | Accept partially; retain interaction deviation |
+| Lists projection language | Accept narrowly; full page/read presentation remains open |
+| UI theme/component foundation | Record as partial infrastructure, not visual convergence |
+| Target images 01–05 | Keep as continuing design references |
+| Native sharing | Deferred/open; deterministic PDF fallback retained |
+| Android and accessibility | Unvalidated/open |
+| Cycle 09 Sprint 02 visual closure | Not authorized |
+
+No permanent file may state that the mockup aesthetics, complete responsive model or full Sprint
+02 UX has been delivered. No green build may be used as evidence of visual parity.
+
+## 6. Authorized permanent-documentation promotion
+
+Domain chats must load `INDEX.md`, AGENTS guidance and the complete methodology sequence before
+editing. They must reconcile from repository evidence, this J and their own staged competence;
+`PROMPT_COLLECTION.md` is not a substitute for full executive context.
+
+### 6.1 Operational competence
+
+Promote the verified test/build/migration scope, retained platform boundaries and actionable
+residuals. Windows build is not Windows visual acceptance. Record Android, native sharing,
+accessibility, History double-click, Lists presentation and visual convergence as open where the
+operational owners require them. Update only Operational permanent owners and write its checkpoint
+last.
+
+### 6.2 Didactic/UX competence
+
+Promote only stable vocabulary and interaction semantics supported by implementation. Preserve
+the distinction among selection, detail, autofill, item addition, occurrence time, insertion time,
+Product code and local reference code. Do not advance learner maturity without learner evidence.
+Record visual communication and accessibility equivalence as incomplete. Update only Didactic
+permanent owners and write its checkpoint last.
+
+### 6.3 Design competence
+
+Promote schema-v4, identity, calculation and application-boundary decisions with evidence. Record
+theme/components as partial architecture and explicitly retain non-use, unchanged page composition,
+responsive gaps, monolithic-page debt and the History interaction deviation. Update only Design
+permanent owners and write `09_DESIGN_STATE.md` last.
+
+## 7. Repository search-conflict and documentation rules
+
+- Required ancestry for domain work is this J commit; abort on divergent or dirty overlapping
+  permanent owners.
+- Search the repository before writing so newer canonical facts are not duplicated or contradicted.
+- If permanent owners disagree with J or implementation evidence, preserve the conflict visibly
+  and return it to Main; do not silently choose one account.
+- Each domain edits only its named permanent owners. Do not edit source, methodology, DEV_STAGE,
+  J, another domain, `00_PROJECT_STATE.md`, `05_SESSION_LOG.md` or `06_SESSION_SCHEME.md`.
+- Keep ordinary documentation near 250 lines. `02_KANBAN.md` may grow to about 400 lines as the
+  canonical exception; growth still requires consolidation rather than repetition.
+- Commit and push each domain promotion independently. Report changed paths, validation and commit
+  SHA. Main will reconcile domain results before any final project-state/session update.
+
+## 8. Next implementation perspective
+
+The next proposed unit is a dedicated visual-convergence correction, not a new data-model expansion:
 
 ```text
-1. Safety/baseline and tests
-2. Markei tokens, shared components and adaptive shell
-3. Schema v4: visible reference codes + Product code NOT NULL
-4. Purchase occurrence, exact Product fill, Product details and BULK calculator
-5. Catalogue selection/details and immutable-code presentation
-6. Lists query/read model and responsive page
-7. History/Settings identity and action hierarchy
-8. Native share adapter with deterministic fallback
-9. Full responsive, accessibility, file-backed and platform validation
-10. G/H/I evidence reports
+shared tokens/components actually consumed
+→ Home composition
+→ Lists composition and relational presentation
+→ Catalogue composition
+→ Purchase composition and modular extraction
+→ History composition and double-click decision
+→ desktop/compact screenshot comparison
+→ Windows manual workflow + accessibility pass
 ```
 
-Horizontal foundation precedes vertical slices. Each checkpoint must keep the app runnable,
-preserve registered facts and allow independent rollback. Codex must not execute one broad
-restyle/schema/query/plugin mutation without intermediate tests.
-
-## 6. Preserved boundaries
-
-Deferred: authentication, API/cloud sync, developer analytics, Store redesign, Product
-merge/correction, Product-code editing, Person/Payment rename/delete, SubmissionId,
-persisted drafts, registered Purchase mutation, manual Lists, Analytics calculations,
-Household behavior, dark mode and production distribution.
-
-Protected: Python/PySide6 source/database and its release tests, except running regressions.
-
-## 7. Controlling handoff
-
-D owns execution, migration, validation, dependency and stop gates. E owns visible language,
-interaction meaning, state semantics and accessibility equivalence. F owns dependency
-direction, schema/domain/application contracts, component architecture and query boundaries.
-
-All three must be read together after AGENTS/INDEX and the full methodology boot. If D/E/F
-conflict, omit a decided requirement, cannot preserve migration data, or require scope beyond
-section 6, Codex stops before mutation and returns the contradiction to Main.
+Its acceptance must use page-level visual/manual evidence in addition to tests. It requires a new
+Main authorization after permanent promotion; this J does not itself activate Codex.
 
 ```text
-state: decisions reconciled
-Codex authority: D + E + F jointly
-evidence destination: replace G + H + I
-permanent promotion: not authorized until post-Codex reconciliation
+functional increment: accepted within evidence boundary
+visual convergence: open
+domain promotion: authorized and isolated
+source implementation: not authorized by this J
+next Main gate: reconcile domain commits before 00/05/06
 ```
