@@ -191,7 +191,7 @@ Initialize as Main Chat [M].
 Role: synthesize cross-domain knowledge, preserve global coherence, prepare Main staging and D/E/F authority, reconcile evidence, and maintain Main-root continuity.
 
 Owned surfaces when authorized:
-- [M]_STAGE/J_[M]_STAGE.md;
+- [M]_STAGE/J_MAIN_STAGE.md;
 - D_OPS_STAGE.md, E_DDC_STAGE.md, F_DSN_STAGE.md;
 - 00_PROJECT_STATE.md, 05_SESSION_LOG.md, 06_SESSION_SCHEME.md;
 - explicit human-supervised methodology revisions.
@@ -374,7 +374,7 @@ Resolve the active branch from the explicit task. If the task omits it, verify r
 Recover in this order:
 1. 00_PROJECT_STATE.md and 06_SESSION_SCHEME.md;
 2. the role's permanent checkpoint;
-3. the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md;
+3. the latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md;
 4. the role's paired functional stage and Codex evidence report;
 5. the role's permanent files from their latest temporal marker forward;
 6. older permanent content or source only when the latest segment is insufficient or drift is suspected.
@@ -444,7 +444,7 @@ Required evidence pair:
 - DEV_STAGE/G_OPS_CODEX.md.
 
 Main orientation:
-- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+- the latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md.
 
 Authorized permanent outputs:
 - operational/04_TODO.md;
@@ -484,7 +484,7 @@ Required evidence pair:
 - DEV_STAGE/H_DDC_CODEX.md.
 
 Main orientation:
-- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+- the latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md.
 
 Authorized permanent outputs:
 - didactics/02_KANBAN.md;
@@ -525,7 +525,7 @@ Required evidence pair:
 - DEV_STAGE/I_DSN_CODEX.md.
 
 Main orientation:
-- the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+- the latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md.
 
 Authorized permanent outputs:
 - design/01_ARCHITECTURE.md;
@@ -574,7 +574,7 @@ Read economically in this order:
 1. 00_PROJECT_STATE.md — current accepted global state.
 2. 06_SESSION_SCHEME.md — active sprint, milestone, human decisions, gates, and next route.
 3. 05_SESSION_LOG.md — only the latest chronological segment needed to verify how the current state arose.
-4. The latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+4. The latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md.
 5. DEV_STAGE/A_OPERATIONAL.md.
 6. DEV_STAGE/B_DIDACTIC.md.
 7. DEV_STAGE/C_DESIGN.md.
@@ -681,7 +681,7 @@ Resolve and verify:
 
 Primary recovery — required:
 
-1. Read the latest chronological reconciliation section in [M]_STAGE/J_[M]_STAGE.md.
+1. Read the latest chronological reconciliation section in [M]_STAGE/J_MAIN_STAGE.md.
 2. Read 00_PROJECT_STATE.md.
 3. Read only the latest relevant segment of 05_SESSION_LOG.md.
 4. Read the active forward checkpoint in 06_SESSION_SCHEME.md.
@@ -1367,7 +1367,7 @@ Purpose:
 Append a new J reconciliation that synthesizes the latest A/B/C rounds, prunes semantic duplication through grouping, preserves provenance/disagreement, builds a current structural model, adds prospective views, and prepares the next D/E/F enrichment.
 
 Designated file:
-[M]_STAGE/J_[M]_STAGE.md
+[M]_STAGE/J_MAIN_STAGE.md
 
 J is append-only and cumulative during exploratory work.
 
