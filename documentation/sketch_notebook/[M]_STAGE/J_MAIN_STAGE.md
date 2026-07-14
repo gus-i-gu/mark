@@ -648,3 +648,221 @@ permanent promotion: inactive
 next evidence: G/H/I
 next reconciliation: Main/human, then FLX-PRM-04 if selected
 ```
+
+
+---
+
+<!-- ROUND_MARKER:INTERMID-RECOVERY-POST-CODEX-RECONCILIATION-2026-07-14 -->
+
+# Post-Codex Reconciliation and Permanent-Memory Handoff
+
+> Date: 2026-07-14
+> Completed materialization commit: `409e5f1e013a282165efd5f31bed17a396ad6543`
+> Completed sequence unit: FLX-ORD-01 — existing-Product staged-Item edit correction
+> Inputs: D/E/F controlling envelope, G/H/I Codex evidence, implementation diff
+> Status: MATERIALIZATION RECONCILED; DOMAIN PROMOTION PENDING
+
+## 20. Materialization result
+
+Codex implemented the one bounded unit authorized by D/E/F.
+
+Changed implementation paths:
+
+```text
+clients/markei_flutter/lib/app/pages/purchase_page.dart
+clients/markei_flutter/test/app/markei_app_test.dart
+```
+
+Changed evidence paths:
+
+```text
+documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
+documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+```
+
+No file was created or deleted. No source path outside the F authorization was
+changed.
+
+## 21. Reconciliation against D/E/F
+
+### 21.1 Operational — D against G
+
+Required and satisfied:
+
+- focused widget regression added and passed;
+- focused app suite passed with 7 tests;
+- full Flutter suite passed with 32 tests;
+- Flutter analysis passed with no issues;
+- touched Dart files were formatted;
+- final source diff was inspected;
+- Product ID retention and absence of duplicate Product rows were asserted.
+
+Intermediate focused-test failures occurred while shaping the regression. They
+were resolved before final validation and are correctly recorded as development
+evidence rather than final blockers.
+
+Still outside the evidence boundary:
+
+- Windows manual runtime acceptance;
+- Android build/runtime and lifecycle validation;
+- physical-device and iOS evidence;
+- file-backed restart/migration evidence;
+- transaction failure injection;
+- release/distribution acceptance.
+
+### 21.2 Didactic — E against H
+
+Required and satisfied:
+
+- “Save staged Item” remains the visible edit action;
+- “Create anyway” is hidden while editing;
+- Product identity remains distinct from editable Item values;
+- the Product selection is cleared after saving;
+- no KANBAN status or learner maturity was promoted;
+- no permanent Didactic file or lesson was modified.
+
+The regression is project evidence for the identity/value distinction. It is not
+evidence that the learner can explain or transfer that distinction.
+
+### 21.3 Design — F against I
+
+Required and satisfied:
+
+- edit state explicitly owns `_editingKey`, `_editingReference`, and
+  `_editingProductLabel`;
+- entering edit mode captures the original reference and label;
+- saving rebuilds Item values but reuses the retained identity;
+- save, removal, and registration clear edit state coherently;
+- the save path does not invoke new Product creation or similarity checks;
+- no schema, migration, domain-contract, Store, idempotency, draft-persistence,
+  or synchronization change occurred.
+
+The additional clearing of the selected Product after line save is accepted as
+a presentation-local coherence correction. It prevents a stale dropdown object
+from competing with staged-line identity and remains inside the authorized
+boundary.
+
+### 21.4 Evidence limitation
+
+The focused regression directly proves the `ExistingProductReference` case.
+The implementation is reference-polymorphic and retains the base
+`ProductReference`, so the same path structurally preserves
+`NewProductReference`. A distinct new-Product edit regression was not required
+or produced in this unit. Permanent wording should preserve this distinction
+between direct regression evidence and source-structure inference.
+
+## 22. Main classification
+
+### Accepted implementation fact
+
+Staged-line editing now retains its original Product reference and label while
+allowing package count, quantity, unit, and line total to change.
+
+### Accepted validation fact
+
+At materialization time:
+
+- focused widget suite: 7 passed;
+- full Flutter suite: 32 passed;
+- Flutter analysis: no issues;
+- no final blocker was reported.
+
+### Corrected prior state
+
+The existing-Product edit defect recorded in IRC-R00 and A/C is no longer an
+active source defect at commit
+`409e5f1e013a282165efd5f31bed17a396ad6543`.
+
+### Retained boundaries
+
+- project evidence is not learner maturity;
+- local event queue is not synchronization;
+- widget/in-memory validation is not host or release acceptance;
+- materialization evidence is not permanent canon until domain reconciliation;
+- schema and identity decisions remain unresolved and separate.
+
+### Deferred
+
+- schema v3;
+- Store identity/normalization;
+- durable SubmissionId;
+- installation–Device lifecycle;
+- persisted drafts;
+- migration and rollback fixtures;
+- measured query/index decisions;
+- Python bytecode hygiene;
+- platform acceptance;
+- authentication, Neon, and synchronization.
+
+## 23. Intermid Cycle Recovery balance
+
+### Expectations met
+
+- recovered the Cycle 08 implementation and notebook state of knowledge;
+- established `J_MAIN_STAGE.md` as the canonical Main staging surface;
+- completed Operational, Didactic, and Design A/B/C assessments;
+- reconciled A/B/C into one bounded D/E/F controlling envelope;
+- completed Codex materialization without scope expansion;
+- produced G/H/I evidence;
+- corrected one confirmed MVP behavior defect;
+- increased focused app coverage from 6 to 7 tests and the full Flutter suite
+  from 31 to 32 tests;
+- preserved schema, migration, synchronization, and permanent-memory boundaries.
+
+### Expectations partially met
+
+- documentation knowledge has been recovered and staged, but permanent domain
+  files still require Operational, Didactic, and Design reconciliation;
+- local Flutter behavior is test-validated, but final host/device acceptance is
+  incomplete;
+- Cycle 09 database/UI decision inputs are identified, but no schema-v3 or
+  database-expansion decision has been selected.
+
+### Expectations remaining
+
+- domain chats classify and absorb G/H/I into permanent memory under FLX-PRM-04;
+- Main subsequently reconciles the refreshed checkpoints into
+  `00_PROJECT_STATE.md`, `05_SESSION_LOG.md`, and `06_SESSION_SCHEME.md`;
+- manual Windows restart/History smoke and Android toolchain/runtime validation
+  remain Operational gates;
+- Store identity, durable submission identity, Device lifecycle, migration
+  strategy, and query budgets must be decided as separate Cycle 09 units;
+- Neon synchronization remains later-cycle work and is not implied by local
+  pending-event persistence.
+
+## 24. Handoff to domain reconciliation
+
+The next controlling sequence is:
+
+```text
+FLX-PRM-04 — Promotion/Reconciliation Sequence
+```
+
+Domain evidence pairs:
+
+```text
+Operational: A_OPERATIONAL + D_OPS_STAGE + G_OPS_CODEX
+Didactic:    B_DIDACTIC + E_DDC_STAGE + H_DDC_CODEX
+Design:      C_DESIGN + F_DSN_STAGE + I_DSN_CODEX
+```
+
+Each domain chat must use PRC-01 classification, update only its permanent
+domain files, preserve unique semantic ownership, and refresh its checkpoint.
+Promotion may validly result in no change for claims that are duplicate,
+insufficiently evidenced, or owned elsewhere.
+
+## 25. Authority state
+
+```text
+FLX-ORD-01 materialization unit: complete
+D/E/F: consumed; no authority for additional source mutation
+G/H/I: accepted as Codex evidence
+J_MAIN_STAGE: post-Codex reconciliation updated
+source defect: corrected within tested local boundary
+permanent domain promotion: pending FLX-PRM-04
+learner maturity promotion: unsupported
+platform/release acceptance: incomplete
+next writers: Operational, Didactic, and Design chats in their own domains
+next Main duty: reconcile refreshed domain checkpoints and close recovery state
+```
