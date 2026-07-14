@@ -674,3 +674,8 @@ No Cycle 08 source implementation was authorized in this session.
 
 <!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
 > Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
+
+---
+
+<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
+> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
