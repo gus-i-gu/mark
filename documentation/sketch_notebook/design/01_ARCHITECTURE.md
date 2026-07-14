@@ -675,53 +675,56 @@ The edit correction does not decide or imply:
 
 These remain independent Design decisions with separate evidence, reversibility, and migration consequences.
 
-# 21. Cycle 09 Local Product and Database Expansion Boundaries
+---
+<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
+> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline. This section is the promoted current Cycle 09 architecture.
 
-## 21.1 Current local topology
+# 21. Cycle 09 Sprint 02 Promoted Architecture
+
+## 21.1 Dependency and evidence boundary
 
 ```text
-responsive Flutter presentation
-→ application commands, query ports, read models and typed failures
-→ independent Dart Product/Purchase/quantity/reference semantics
+adaptive Flutter shell/pages/components
+→ application ports, read models, typed failures and pure calculations
+→ independent Dart domain identity/quantity semantics
 ← local repository adapters
-→ handwritten Drift schema v3 and migrations
-→ application-private SQLite
+→ handwritten Drift schema v4 / app-private SQLite
 ```
 
-Composition owns database/adapters; presentation owns destination, draft, History selection and temporary feedback; application owns descriptors, lookups, references/preferences, projections and export DTOs; domain owns normalization v3, dimensional quantity and nullable BULK package-count meaning; repositories own translation, transactions, migration and queries. Generated Drift code is derived only.
+This preserves offline-first inward dependency direction and the protected Python/PySide6 application/database. Widgets consume application models, not Drift rows. Handwritten schema/migrations control physical truth; generated Drift is derived evidence. The controlling implementation range is `5ddff3c…1d81797`; J records host/manual limits.
 
-## 21.2 Schema v3 and identity
+## 21.2 Schema v4 and identity
 
-Schema v3 adds People, PaymentMethods and AccountPreferences; nullable Person/Payment Method Purchase references; and nullable BULK package count. Optional references preserve history.
+Schema v4 is implemented with tested v1/v2→v4 migration and reopen boundaries. People and Payment Methods retain opaque UUID PK/FK identity and gain immutable Account-scoped visible codes: `@001…` and `#001…`. `AccountPreferences` owns transactional next counters; allocation includes archived rows, never reuses a code, and Account-scoped uniqueness is physical.
 
-Normalization v3 retains Product UUID, Account-scoped code and exact-identity uniqueness, and collision-preflight migration. Legacy null codes are backfilled, but handwritten Product-code columns remain nullable. New commands require codes; database-level NOT NULL is not accepted.
+Product visible codes are mandatory, normalized, Account-scoped unique and immutable at application/repository boundaries. V4 rebuilds the Product table with non-null display and normalized code columns; missing/blank legacy values receive deterministic reserved `legacy:` codes. Product UUID, visible code, exact normalized identity, similarity and operation idempotency remain distinct.
 
-People/PaymentMethods currently constrain `(accountId, normalizedNickname, active)`. This also limits archived duplicates, so active-only nickname uniqueness remains contradicted and requires correction.
+Person and Payment Method Purchase references remain optional; restrictive FKs and archive-safe labels preserve historical resolution. Active-only nickname uniqueness is no longer a physical database key; repository behavior owns the active collision rule.
 
-## 21.3 Projections, lookup and details
+## 21.3 Purchase occurrence and BULK pricing
 
-Storage/Shortage/Market/All are transient `personal-cycle-v1` projections from registered facts; no List aggregate/cache is persisted. They are personal estimates, not factual inventory.
+Presentation accepts exact local `dd/mm/yyyy` and `HH:mm` text. The application parser validates the civil value and converts it to the one persisted UTC occurrence instant. No occurrence schema expansion was introduced; DST repeated-hour provenance remains outside this boundary.
 
-Exact code and normalized-identity lookup are application/repository responsibilities. Catalogue substring filtering does not expose those exact operations; presentation remains partial.
+For BULK, the user enters amount and price per the same selected unit (`kg`, `g`, `L`, `ml`, or `un`). Application fixed-point arithmetic derives the read-only line total in integer minor units with explicit half-up rounding. Persistence remains amount/unit plus one authoritative line total; no competing price-per-unit fact is stored. Null package count continues to mean not applicable.
 
-Product detail is ProductId-bound and Drift-free. The Catalogue detail card is implemented, while a shared adaptive route/pane/sheet across Catalogue and Purchase remains deferred.
+## 21.4 Lookup, projections and interactions
 
-## 21.4 BULK pricing
+Exact Product-code lookup flows presentation → application port → repository and may autofill immutable Product facts. It does not add a Purchase Item automatically. Catalogue substring search remains a browsing convenience, while exact resolution is explicit in Purchase.
 
-BULK uses null package count as not-applicable. Authoritative price facts remain amount plus integer-minor-unit line total; unit price is derived. The authorized price-per-unit input and half-up total derivation is not implemented because Purchase still asks for Line total. No competing price truth is persisted, but completion is contradicted.
+Storage/Shortage/Market/All remain rebuildable `personal-cycle-v1` projections from a Product-first left-joined query. Products without history remain visible. The read model distinguishes insufficient observations, but the current Lists page still omits the target relational table/card/filter hierarchy; no List aggregate or cache is persisted.
 
-## 21.5 Export and sharing
+Compact navigation now exposes Home, Lists, Purchase, History and More while the expanded rail remains. Catalogue tap selects and explicit View details opens the bounded detail surface. History retains checkbox/tap multi-selection and select-all, but desktop double-click focuses details instead of toggling selection; this contradicts the controlling selection contract and remains open. Shared adaptive Product details remain partial.
 
-Selected-Purchase DTOs support deterministic CSV and PDF bytes without Purchase mutation. Native sharing is absent: History writes fixed temporary files and asks for manual sharing. Save destination/cancellation, temporary-file lifecycle and OS share adapter remain deferred.
+## 21.5 UI materialization state
 
-## 21.6 Evidence and correction boundary
+`markei_theme.dart` is a small Material foundation, not a complete token system. `MarkeiCard`, `MarkeiStatePanel` and `MarkeiStatusChip` exist but pages do not consume them. Home and Lists were not materially rebuilt; Catalogue and History remain primarily standard list composition; Purchase has functional additions inside its former long form.
 
-Repository evidence is pinned to `e37cb700feeca4001cc7835b584c46bb81926af3`; reported local tests, analysis, Windows build/launch and migration/reopen evidence do not establish Android, native share, complete manual/accessibility, injected migration failure or release acceptance.
+Target images 01–05 remain directional evidence. Visual parity, complete responsive composition and accessible state/action hierarchy are not achieved. Approximate current page sizes—Purchase 1,020 lines, Catalogue 377 and History 330—exceed the ordinary ~250-line modularity guidance and make a broad rewrite unsafe.
 
-Independent corrections remain: active-only nickname uniqueness, BULK price-per-unit UI, exact-lookup UI, adaptive details, complete failure presentation, native save/share, and remaining History selection conveniences.
+## 21.6 Export, validation and next bounded unit
 
+Deterministic CSV/PDF bytes and temporary-file save behavior remain non-mutating. No native-share dependency or OS share adapter was adopted.
 
----
+Automated evidence supports schema/migration and focused Flutter contracts. Android runtime, native sharing, complete manual accessibility, target-image parity, Windows workflow acceptance and release readiness remain unvalidated.
 
-<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
-> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+Pending Main authorization, the next schema-free Design unit is: expand tokens/primitives; make pages consume them; recompose Home, Lists and Catalogue; split/recompose Purchase; recompose History and resolve double-click; then compare expanded/compact screenshots and validate Windows/accessibility. This direction is prospective, not implementation authority.
