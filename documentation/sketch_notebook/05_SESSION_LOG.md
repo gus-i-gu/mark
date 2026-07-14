@@ -797,3 +797,90 @@ Main-root continuity: refreshed
 Cycle 09: planning/investigation active
 source/schema authority: inactive
 ```
+
+---
+
+<!-- TEMPORAL_MARKER:C09-S01-MAIN-CLOSURE-2026-07-14 -->
+
+# Cycle 09 Sprint 01 Final Reconciliation
+
+> Date: 2026-07-14
+> Branch: `intermid-cycle-recovery`
+> Instruction commit: `06714d719c22ebd6b64008b7dcec745faee8fcd5`
+> Implementation commit: `e37cb700feeca4001cc7835b584c46bb81926af3`
+> Post-Codex J: `8c542c3174f3f070312c3d4169886a6f36bc00a0`
+> Latest permanent-domain head inspected: `eaa12efe3815ecf9cac34255eadca5010c7af505`
+
+## Closure chronology
+
+Cycle 09 Sprint 01:
+
+1. reconciled the new Home, Lists, Purchase, History, Catalogue and Settings composition;
+2. froze one C09-U02 D/E/F implementation envelope;
+3. materialized the Flutter/Drift local Product expansion at `e37cb70`;
+4. received G/H/I evidence with 39 Flutter tests, clean analysis, Windows build/smoke,
+   five Python regressions and an Android host limitation;
+5. confronted G/H/I with source and classified nine incomplete or contradicted claims in J;
+6. published post-Codex J at `8c542c3`;
+7. received Operational permanent updates through `e2339b7`;
+8. received Design permanent updates through `eaa12ef`;
+9. observed no new Cycle 09 Didactic permanent-memory commit;
+10. refreshed Main-root current state and prepared a conditional Cycle 10 perspective.
+
+## Accepted global result
+
+Implemented local-beta facts include schema v3 People, Payment Methods, preferences,
+optional Purchase references, nullable BULK package count, normalization v3, quantity/unit
+support, Home-first navigation, versioned Lists projections, History selection, CSV and
+PDF-byte generation, exact lookup ports and typed failure infrastructure.
+
+The protected Python/PySide6 application and database remained unchanged. No remote data
+path, authentication, API/Neon integration, synchronization or usage analytics was added.
+
+## Reconciliation balance
+
+Accepted as implemented within named evidence:
+
+- local schema/application expansion and migration routes;
+- automated Flutter behavior at Codex's host;
+- Windows build and bounded launch only;
+- five protected Python release-configuration regressions;
+- Operational and Design permanent classifications.
+
+Not promoted as complete:
+
+- BULK price-per-unit derivation;
+- active-only nickname uniqueness;
+- complete typed failure presentation;
+- explicit exact-lookup UI;
+- adaptive/double-click Product details;
+- History select-all/double-click;
+- save destination, cancellation and native PDF sharing;
+- Android/manual/lifecycle/release acceptance.
+
+Didactic disposition:
+
+- no learner maturity changes are justified;
+- existing Didactic canon remains authoritative;
+- absence of a Cycle 09 permanent return is recorded, not silently treated as completion;
+- vocabulary/checkpoint absorption remains a bounded documentation follow-up.
+
+## Schedule and authority decision
+
+Sprint 01 implementation authority is consumed. Main does not silently activate another
+source unit.
+
+Cycle 10 is prepared as a conditional consolidation perspective. Before activation, the
+human/Main must decide whether Cycle 09 contradictions are closed in a final Cycle 09 unit
+or become Cycle 10's first bounded unit. Production release, authentication/synchronization
+and Analytics remain outside immediate authority.
+
+```text
+Cycle 09 Sprint 01: reconciled and closed
+Cycle 09 correction disposition: human/Main decision pending
+Cycle 10 perspective: prepared, inactive
+Operational return: complete
+Design return: complete
+Didactic Cycle 09 return: absent / follow-up explicit
+source/schema authority: inactive
+```

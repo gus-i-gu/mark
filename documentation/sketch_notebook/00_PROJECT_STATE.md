@@ -1,619 +1,144 @@
 # 00_PROJECT_STATE.md
 
-> Version: Cycle 07 Sprint 04 materialization / Android milestone entry 0.7
+> Version: Cycle 09 Sprint 01 Main closure 1.0
 > Status: Active Global State Canon-Checkpoint
 > Persistence Class: Canon-Checkpoint
 > Knowledge Class: Main / Global
 > Authority: Main Chat [M]
-> Branch: `cycle-07-mobile-preparation`
-> Baseline: `f6414fbe7394453387067a5a34ca6cc7621bbed3`
-> Reconciliation source: `[M]_STAGE/J_[M]_STAGE.md` sections 21–22
-> Scope: Accepted current global state and low-cost recovery entrypoint
-
----
-
-# 1. Global State
-
-Cycle 06 is accepted and closed at the controlled Windows primary-beta boundary.
-
-Cycle 07 Sprint 02 planning and permanent-domain reconciliation are complete. Cycle 07 now has an accepted planning basis for a Flutter/Dart shared client, TypeScript synchronization API, Neon Postgres shared persistence, reusable catalogue, append-only synchronization, and progressive migration from the protected PySide6 beta.
-
-```text
-Cycle 06 desktop beta: accepted and protected
-Cycle 07 Sprint 01 portability investigation: complete
-Cycle 07 Sprint 02 shared-beta architecture planning: complete
-permanent Operational reconciliation: complete
-permanent Didactic promotion: complete
-permanent Design reconciliation: complete
-Flutter/Dart planning basis: accepted
-physical implementation: not started
-D/E/F: not yet activated for Sprint 03
-```
-
----
-
-# 2. Protected Desktop Baseline
-
-The accepted implementation remains:
-
-```text
-PySide6 Desktop
-→ ProductService
-→ Repository
-→ Database Manager
-→ SQLite
-```
-
-It includes the validated one-folder Windows runtime, per-user installer, Start Menu launch, external writable user data, structural defaults, technical workflows, close/reopen, reinstall retention, uninstall retention, and recovery evidence.
-
-The existing Python application and ordinary Cycle 06 database remain:
-
-- runnable and recoverable;
-- behavioral reference and fixture source;
-- legacy migration source;
-- rollback boundary;
-- excluded from direct Flutter opening or destructive conversion.
-
-PySide6 is not retired until Flutter desktop/mobile parity and migration safety are evidenced and accepted.
-
----
-
-# 3. Accepted Shared-Beta Planning Architecture
-
-```text
-Flutter presentation
-→ application/use cases
-→ domain contracts + versioned Dart analytics
-→ repository interfaces
-→ local persistence / event queue / synchronization adapters
-→ authenticated TypeScript synchronization API
-→ Neon Postgres
-```
-
-Stable boundaries:
-
-- Flutter/Dart owns the future Windows/Android/iOS client.
-- TypeScript is favored for the custom synchronization API.
-- Neon is favored as managed shared persistence behind the API.
-- Every installation remains offline-first with application-private storage.
-- The API is the mandatory client/cloud boundary.
-- Clients never contain privileged Postgres credentials.
-- Verified email maps to an immutable internal account UUID.
-- Python and Dart share behavior through contracts, fixtures, and migration evidence—not an embedded Python runtime.
-
----
-
-# 4. Reusable Catalogue and Purchase Model
-
-The first shared beta uses account-private reusable Products and Stores.
-
-Packaged Product identity is based on:
-
-```text
-normalized name
-+ normalized brand
-+ PACKAGED
-+ normalized package amount
-+ explicit dimension/unit
-```
-
-Bulk identity uses:
-
-```text
-normalized name
-+ normalized brand
-+ BULK
-```
-
-Exact normalized equivalence may reuse an identity. Fuzzy similarity only warns and asks the user; it never merges automatically.
-
-Domain relationship:
-
-```text
-Account
-├── Catalogue Products
-├── Stores
-└── Purchases
-    └── Purchase Items
-        └── reference Catalogue Product
-```
-
-Purchase is an atomic aggregate containing one or more Items and one pending append-only synchronization event. The first UI may guide one Item while preserving a multi-item contract.
-
-Product identity fields remain immutable in the reduced beta. Editing, deletion, merge/alias workflows, global catalogue, product-family relations, and household sharing remain deferred.
-
----
-
-# 5. Quantity, Money, and Analytics
-
-Quantity is dimensionally explicit:
-
-```text
-MASS   → KG
-VOLUME → L
-COUNT  → UNIT
-```
-
-Package amount, package count, and purchased amount are distinct. Markei never infers mass from volume.
-
-Money uses explicit currency and integer minor units. Account currency may default the interface, while every Purchase retains historical currency evidence.
-
-Raw Product, Store, Purchase, and Purchase Item facts remain authoritative. Storage, Shortage, Market, expected dates, price comparisons, personalized inflation/deflation, shrinkflation, store comparisons, and forecasts remain rebuildable analytics.
-
-Dart analytics use stable algorithm identifiers and versions. A released version does not change meaning; improved formulas create a new version.
-
----
-
-# 6. Synchronization Planning State
-
-The first synchronized fact is an atomic `purchase.registered` event containing immutable Item lines and required account-private reference/bootstrap facts.
-
-```text
-event UUID
-    retry identity and duplicate protection
-
-device UUID + monotonic sequence
-    one-installation creation order
-
-occurrence timestamp
-    business/purchase time
-
-opaque account-scoped cursor
-    accepted download order
-```
-
-Policies:
-
-- identical retry returns prior acceptance;
-- same UUID with different content is rejected;
-- sequence gaps are rejected/requested;
-- second device bootstraps from cursor zero in pages;
-- upload requests return per-event transactional results;
-- downloaded events and cursor advancement commit together locally;
-- API authentication and authorization are mandatory;
-- RLS remains an optional defense-in-depth question.
-
----
-
-# 7. Didactic State
-
-Cycle 07 Sprint 02 introduced the following concepts as Red:
-
-```text
-&&&06–&&&10
-&&%05
-&%%07–&%%17
-%%%07
-```
-
-They cover stable identity, authentication, authorization, eventual consistency, historical integrity, immutable Dart models, reusable catalogue, normalization, purchase aggregation, synchronization, dimensional quantity, minor-unit money, versioned analytics, and Flutter.
-
-No existing maturity changed.
-
----
-
-# 8. Provisional and Open Choices
-
-Experiment candidates—not validated dependencies:
-
-- Drift;
-- `sqflite_common_ffi`;
-- `flutter_secure_storage`;
-- local TypeScript API and disposable Postgres;
-- fake/test identity issuer;
-- later non-production Neon.
-
-Still open:
-
-- Flutter project/repository layout;
-- state management and navigation;
-- auth provider;
-- TypeScript API framework/runtime/host;
-- Postgres migration tooling;
-- canonical schema/fixture toolchain;
-- physical local/cloud schemas;
-- decimal scale/ranges and fractional COUNT;
-- currency metadata source;
-- normalization-version migration;
-- legacy ambiguity policy;
-- RLS;
-- paging limits and queue-corruption recovery;
-- parity threshold for PySide6 retirement.
-
----
-
-# 9. Next Milestone
-
-Cycle 07 Sprint 03 should begin the first bounded transition from the current repository into Flutter/Dart and the new logical data model.
-
-It must proceed additively:
-
-```text
-preserve Python/PySide6
-→ approve Sprint 03 D/E/F
-→ establish isolated Flutter/Dart structure
-→ define canonical fixtures
-→ materialize fresh Flutter-local schema
-→ prove catalogue + Purchase aggregate locally
-→ preserve Cycle 06 database
-→ only then introduce local API/Postgres sync harness
-```
-
-The authoritative forward boundary is `06_SESSION_SCHEME.md`.
-
----
-
-# 10. Recovery Route
-
-```text
-1. Read this file.
-2. Read 06_SESSION_SCHEME.md for Sprint 03.
-3. Read the relevant domain checkpoint.
-4. Read J sections 17–18 for reconciliation rationale.
-5. Read permanent canon for exact definitions.
-6. Read A/B/C only for detailed planning evidence.
-7. Inspect source when implementation truth is directly required.
-```
-
----
-
-<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state established before Sprint 03 materialization. Content appended below it belongs to Sprint 03 or later. If recovery cost becomes excessive or this file grows beyond approximately 1,000 lines, this reviewed marker is an eligible semantic-partition boundary under human/Main authorization.
-
-# Cycle 07 Sprint 03 Closure / Sprint 04 Entry
-
-## Current global state
-
-Sprint 03 Unit 01 is closed as an implemented and locally unit-tested Flutter/Dart foundation.
-
-```text
-accepted Cycle 06 Python/PySide6 beta
-+ additive Flutter client
-+ independent Dart domain/application boundary
-+ Drift fresh local persistence
-+ account-private catalogue
-+ Purchase/Purchase Item aggregate
-+ atomic local event and pending queue
-+ rollback and close/reopen tests
-+ versioned semantic fixtures
-+ permanent-domain reconciliation
-```
-
-Verified evidence:
-
-- Flutter 3.44.6 and Dart 3.12.2;
-- `flutter analyze` passed;
-- nine Flutter tests passed;
-- five Python regression tests passed;
-- ordinary Cycle 06 database remained protected.
-
-Generated but unvalidated: Windows, Android, and iOS target projects.
-
-Not implemented: full Purchase UI, platform runtime/lifecycle, authentication, TypeScript API, Postgres/Neon, actual synchronization, legacy import, parity, or PySide6 retirement.
-
-## Accepted Sprint 04 direction
-
-Sprint 04 targets the local shared-client vertical slice before the synchronization harness:
-
-```text
-correct device sequence
-→ establish Unicode-safe versioned identity
-→ harden contract examples
-→ minimal Flutter multi-item Purchase UI
-→ local history/projection
-→ close/reopen
-→ Windows execution
-→ Android execution or precise host blocker
-```
-
-TypeScript/Postgres synchronization remains the following candidate route.
-
-## Mandatory entry defects
-
-- Device sequence likely resets and is not accepted as monotonic.
-- Portuguese/Unicode normalization is not stable.
-- Product identifier semantics remain provisional.
-- Purchase/event fixtures are not complete wire contracts.
-- Schema upgrade/recovery is untested.
-- Store deduplication is undefined.
-
-## Authority state
-
-Sprint 04 planning is accepted. Implementation remains inactive until the human approves the route/host actions and Main prepares new D/E/F. Cycle 07 remains open.
-
-# Cycle 07 Sprint 04 Materialized State / Android Entry
-
-## Current global truth
-
-Sprint 04 is materially implemented.
-
-```text
-Product user code/internal ID separation: implemented
-normalization v2: implemented/tested
-device sequence correction: implemented/tested
-Drift schema v2 migration: implemented/tested
-shared_beta/v2 schemas/examples: implemented/tested
-multi-item Purchase UI: implemented/widget-tested
-local History UI: implemented/widget-tested
-Flutter tests: 21 passed
-Python regressions: 5 passed
-Windows release build: passed
-Windows startup smoke: passed
-Windows manual interaction: pending human
-Android: SDK absent; build/run not performed
-```
-
-The protected Python/PySide6 source and ordinary database remain unchanged.
-
-## Evidence limits
-
-Windows build and startup do not establish complete interaction, accessibility, responsive, or persistence acceptance. Human verification remains required.
-
-Android and iOS remain platform-unvalidated.
-
-The local event and pending queue are not synchronization.
-
-## Documentation drift
-
-Design and Didactic checkpoints reflect Sprint 04.
-
-The Operational checkpoint is stale and still describes pre-materialization state. G, repository truth, J §22, and this global checkpoint supersede it until PDR2-O is rerun.
-
-## Next accepted direction
-
-The next Cycle 07 milestone is full Android implementation and validation:
-
-```text
-Android tooling installation
-→ SDK/licenses/device readiness
-→ stable application ID
-→ persistent platform-neutral Device identity
-→ debug APK build
-→ emulator/physical-device launch
-→ Purchase/History workflow
-→ Android close/reopen persistence
-→ narrow-layout, keyboard, back, rotation, lifecycle evidence
-→ cross-platform regressions
-```
-
-TypeScript/API/Neon synchronization remains deferred.
-
-## Authority
-
-Android planning is accepted.
-
-Android tool installation and source materialization require fresh Main D/E/F with explicit components, commands, approval gates, data isolation, validation, and rollback/stop conditions.
-
-Cycle 07 remains open.
-
-
----
-
-# Cycle 07 Closure / Cycle 08 Product-Beta Entry
-
-> Main reconciliation: J §25  
-> Status: active global checkpoint  
-> Date: 2026-07-12
-
-## Current global state
-
-Cycle 07 is closed at the shared-client technical-foundation boundary.
-
-```text
-Cycle 06 Python/PySide6 Windows beta: accepted and protected
-Cycle 07 Flutter/Dart shared foundation: accepted
-Windows Flutter local workflow: human-validated
-Android debug toolchain/build/install/launch: validated
-Android Purchase registration and app-private persistence: human/runtime evidenced
-persistent installation Device UUID: implemented and tested
-Flutter tests: 27 passed
-Windows Flutter build: passed
-Python regressions: 5 passed
-final UI/UX and production distribution: not accepted
-authentication/API/Neon/synchronization: deferred
-```
-
-Cycle 07’s closure does not claim complete Android lifecycle, physical-device coverage, final accessibility, production signing, or public release. Keyboard, Back, rotation, background/resume, larger text, staged-state, and complete cold-relaunch behavior remain mandatory product-beta evidence in Cycle 08.
-
-The current Device lookup is accepted only for the bounded prototype. Before real multi-device synchronization it requires an explicit current-installation relation and uniqueness/concurrency policy.
-
-## Active cycle
-
-Cycle 08 — Shared-Client Product Beta.
-
-Objective:
-
-> Convert the validated Windows/Android technical slice into a coherent local-first beta centred on reusable Catalogue interaction, improved Purchase registration, detailed History, responsive interface foundations, and one meaningful personal price-comparison view.
-
-Cycle 08 priorities:
-
-1. product journeys and responsive information architecture;
-2. Catalogue search/reuse and advisory duplicate warning;
-3. Store selection/creation;
-4. staged Item edit/remove/review;
-5. atomic Purchase registration and detailed History;
-6. validation, empty, success, and failure states;
-7. first personal price-comparison analytics;
-8. migration, reopen, recovery, and backup/export decision;
-9. Windows and Android manual acceptance.
-
-Cloud synchronization remains architecturally preserved but inactive.
-
-## Forward schedule
-
-- Cycle 08: local shared-client product beta and UI/UX formalization.
-- Cycle 09: account, TypeScript API, Neon, upload/download, cursor bootstrap, and convergence.
-- Cycle 10: production hardening, signing, distribution, privacy, recovery, and controlled public beta.
-
-## Current sprint and authority
-
-Cycle 08 Sprint 01 is active as definition/investigation only.
-
-It must produce Operational, Didactic, and Design staging for Main reconciliation. No Cycle 08 implementation, dependency addition, schema change, or host installation is currently authorized.
-
-Read next:
-
-1. `06_SESSION_SCHEME.md` latest checkpoint;
-2. current domain checkpoint;
-3. J §25;
-4. repository UI/application source when the investigation requires it.
-
----
-
-<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
-> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
-
----
-
-<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
-> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
-
-
----
-
-# Intermid Cycle Recovery Closure / Cycle 09 Entry
-
-> Date: 2026-07-14
 > Branch: `intermid-cycle-recovery`
-> Corrected implementation: `409e5f1e013a282165efd5f31bed17a396ad6543`
-> Post-Codex Main reconciliation: `84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8`
-> Permanent-domain reconciled head: `b590f9659426ee94bb9581da4013f40410716fed`
-> Status: Intermid Cycle Recovery closed; Cycle 09 planning active
+> Inspected implementation: `e37cb700feeca4001cc7835b584c46bb81926af3`
+> Post-Codex reconciliation: `8c542c3174f3f070312c3d4169886a6f36bc00a0`
+> Latest permanent-domain head inspected: `eaa12efe3815ecf9cac34255eadca5010c7af505`
+> Scope: Current global state after Cycle 09 Sprint 01 reconciliation
 
-## Current global truth
+---
 
-The active product implementation is the local-first Flutter/Drift client under
-`clients/markei_flutter/`. The protected Python/PySide6 beta remains isolated
-and recoverable.
+<!-- TEMPORAL_MARKER:C09-S01-MAIN-CLOSURE-2026-07-14 -->
 
-Implemented product surface:
+# Cycle 09 Sprint 01 — Main Closure State
 
-- responsive Purchase, Products, and History destinations;
-- reusable Product catalogue creation/search/reuse;
-- Store selection or creation;
-- session-owned multi-line Purchase draft with edit, remove, review, total, and
-  guarded submission;
-- one local registration transaction covering Store/Product resolution,
-  Purchase, Items, Device sequence, SyncEvent, and PendingEvent;
-- detailed local History and compatible personal price comparison;
-- Drift schema v2 in app-private SQLite;
-- persistent local Device identity;
-- local event/pending preparation without remote synchronization.
+## 1. Current milestone
 
-## Recovery correction accepted
-
-The staged-line edit defect is closed at
-`409e5f1e013a282165efd5f31bed17a396ad6543`.
-
-Presentation edit state now retains:
+Cycle 09 Sprint 01 materialized and reconciled the local Product/database expansion on
+`intermid-cycle-recovery`.
 
 ```text
-line/edit key
-ProductReference
-Product label
+Cycle 08 / Intermid recovery foundation: closed
+Cycle 09 Sprint 01 investigation and staging: complete
+Cycle 09 C09-U02 materialization: complete at e37cb70
+post-Codex Main reconciliation: complete at 8c542c3
+Operational permanent reconciliation: complete at e2339b7
+Design permanent reconciliation: complete at eaa12ef
+Didactic Cycle 09 permanent return: no new commit observed
+Cycle 10 perspective: prepared, inactive
 ```
 
-Saving rebuilds only editable Purchase Item values. The directly tested
-existing-Product path retains the original Product ID and creates no duplicate
-Product. The common `ProductReference` path structurally supports new-Product
-references, but that variant has no separate focused regression.
+The protected Python/PySide6 beta and its database remain isolated and recoverable.
 
-Recorded materialization evidence:
+## 2. Current application state
+
+The active Flutter/Drift local beta now includes:
+
+- Home-first responsive navigation;
+- Home, Lists, Purchase, History, Catalogue and Settings;
+- disabled/PIN-labelled Analytics and Household placeholders;
+- schema v3 People, Payment Methods and Account preferences;
+- optional Purchase references with archive-aware historical labels;
+- Product normalization v3, code/exact-identity lookup ports and collision preflight;
+- PACKAGED/BULK distinction with nullable BULK package count;
+- `kg`, `g`, `L`, `ml`, `un`, comma/point input and fractional COUNT rejection;
+- transient `personal-cycle-v1` Storage/Shortage/Market/All projections;
+- History multi-selection, deterministic CSV and PDF-byte/local-file generation;
+- typed application failure infrastructure;
+- v1/v2→v3 migration handling and generated Drift reconciliation.
+
+No cloud service, authentication, remote analytics, external data retention or real
+synchronization was introduced.
+
+## 3. Evidence boundary
+
+Codex reported at `e37cb70`:
 
 ```text
-focused app widget tests: 7 passed
-full Flutter tests:       32 passed
-Flutter analysis:         no issues
-final blocker:            none within the bounded unit
+Flutter tests                              39 passed
+Flutter analysis                           no issues
+Drift regeneration and Dart formatting     passed
+Windows release build                      passed
+Windows bounded five-second launch          passed
+Python release-configuration unittest       5 passed
+Android build/runtime                       host-unvalidated: Java unavailable
 ```
 
-## Permanent-memory reconciliation
+File-backed migration/reopen tests exist. This Main closure did not rerun Flutter or
+platform commands because the reconciliation host has no Flutter executable.
 
-Operational memory now classifies the defect as corrected while retaining
-file-backed, migration, rollback, host, lifecycle, packaging, and release gates.
+The Windows result is build/smoke evidence, not a complete manual workflow or lifecycle
+acceptance. Android is host-unvalidated, not failed.
 
-Didactic memory reinforces existing Stable Identity, Reusable Catalogue,
-Purchase Item, and Evidence Boundary concepts. No new concept or KANBAN maturity
-transition was justified.
+## 4. Permanent-memory reconciliation
 
-Design memory accepts presentation-local edit identity ownership without
-changing application ports, domain identities, repository transactions, Drift
-schema, migration, composition, or navigation.
+Operational memory records the implementation, validation boundary and ordered corrective
+actions. Design memory accepts the schema/application topology and preserves the identified
+contradictions. Their current checkpoints are authoritative for domain depth.
 
-The permanent Operational model required no new stable rule in this bounded
-unit; its existing model remains authoritative.
+No Cycle 09 Didactic permanent-memory commit was found after J. No learner-maturity change
+is justified by project implementation or tests. Existing Didactic canon remains in force;
+Cycle 09 vocabulary absorption remains an explicit documentation follow-up rather than an
+assumed promotion.
 
-## Evidence limits carried forward
+Main continuity summarizes these results and does not replace domain ownership.
 
-Not yet accepted:
+## 5. Partial, contradicted and deferred state
 
-- manual Windows Purchase → Products → History and close/reopen smoke;
-- app-private file-backed restart and representative migration evidence;
-- transaction rollback failure injection;
-- Android Java/JDK recovery, current build/runtime/lifecycle evidence, and
-  physical-device coverage;
-- long-form phone-width, keyboard, Back, rotation, background/resume, larger
-  text, and accessibility acceptance;
-- production signing, distribution, backup/export/restore, or support contract;
-- durable registration idempotency;
-- authentication, API, Neon, upload/download, or convergence.
+Priority correction candidates:
 
-Local SyncEvent/PendingEvent storage remains synchronization preparation only.
+1. BULK still requests Line total instead of Price per unit with derived half-up total.
+2. `(accountId, normalizedNickname, active)` also restricts duplicate archived nicknames.
+3. typed failures exist but many UI paths still collapse them into generic messages.
+4. exact Product lookup ports exist but Catalogue presentation remains substring-based.
+5. Product-details adaptation and History double-click/select-all remain partial.
+6. PDF generation exists; save destination, cancellation and native share remain absent.
+7. Product codes are populated by commands/migration but remain nullable in Drift storage.
 
-## Active cycle
+Still deferred:
 
-Cycle 09 — Database/UI Fine-Tuning.
+- Product correction/merge and Store redesign;
+- durable SubmissionId and persisted drafts;
+- registered Purchase edit/delete;
+- Analytics calculations and Household behavior;
+- authentication, API, Neon, upload/download and convergence;
+- production signing, distribution and public release;
+- PySide6 retirement.
 
-Mission:
+## 6. Current authority
 
-> Improve the MVP interface and local data model together, allowing persistence
-> to expand only where an accepted user-facing workflow requires new facts,
-> identity, lifecycle, query, or recovery behavior.
+Cycle 09 Sprint 01 D/E/F authority is consumed. No source, schema, dependency, host or
+release change is active.
 
-Cycle 09 supersedes the older schedule that placed account/API/Neon work
-immediately after Cycle 08. Synchronization remains a later, separately
-authorized cycle.
+Before Cycle 10 materialization, Main/human must decide whether the correction candidates
+form a final Cycle 09 correction unit or the first bounded Cycle 10 unit. Either route
+requires fresh A/B/C investigation where meaning is unsettled and fresh controlling D/E/F.
 
-## Cycle 09 priority spine
+Cycle 10 is a forward perspective only. It does not authorize implementation.
 
-```text
-recover current UI/data contracts
-→ identify the smallest MVP interaction gaps
-→ prove file-backed and migration safety
-→ select one UI-driven data decision
-→ define domain and schema consequences
-→ materialize one reversible vertical slice
-→ validate UI, persistence, migration, and regression behavior
-→ repeat only for remaining MVP-critical gaps
-→ close with Windows/Android acceptance evidence
-```
+## 7. Active risks
 
-No schema v3 is assumed. A schema change requires an accepted UI/product need,
-identity semantics, migration/recovery contract, and focused evidence.
+- incomplete BULK pricing behavior can store a manually supplied total rather than the
+  intended unit-price-derived value;
+- the nickname constraint may reject legitimate archived-history patterns;
+- generic UI errors weaken recovery guidance;
+- temporary fixed-name export files lack destination/cancellation/native-share behavior;
+- Android and dense responsive/lifecycle behavior remain unvalidated;
+- missing Cycle 09 Didactic absorption may leave terminology recovery stale;
+- calling the beta release-ready would exceed current evidence.
 
-## Cycle 09 candidate decision queue
-
-Evaluate separately:
-
-1. Store identity and duplicate/correction behavior;
-2. durable Purchase submission identity and retry semantics;
-3. Product correction/alias/merge boundaries;
-4. installation–Device ownership timing;
-5. draft persistence versus the accepted session-only promise;
-6. History/Catalogue query budgets and measured index need;
-7. export/restore and corruption-recovery expectations.
-
-A candidate may be rejected or deferred. These decisions must not be combined
-into one broad migration.
-
-## Authority
-
-Cycle 09 is active for recovery, investigation, prioritization, and staging
-only. No source, schema, dependency, host, or synchronization materialization is
-authorized until Main selects one bounded unit and freezes fresh D/E/F.
+## 8. Recovery route
 
 Read next:
 
-1. `06_SESSION_SCHEME.md`, latest Cycle 09 entry;
-2. the applicable domain checkpoint;
-3. current repository source only where the selected investigation requires it.
+1. `06_SESSION_SCHEME.md` for the conditional Cycle 10 perspective;
+2. `operational/10_OPERATIONAL_STATE.md` for evidence and action priority;
+3. `design/09_DESIGN_STATE.md` for architecture classifications;
+4. `didactics/08_CONCEPT_MAP.md` for the inherited learning checkpoint;
+5. `[M]_STAGE/J_MAIN_STAGE.md` for the post-Codex conflict audit;
+6. G/H/I and repository source only when the checkpoints cannot resolve a claim.
