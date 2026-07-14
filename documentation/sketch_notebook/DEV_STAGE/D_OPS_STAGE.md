@@ -1,276 +1,221 @@
-# D_OPS_STAGE — Cycle 09 Sprint 02 Execution and Evidence Contract
+# D_OPS_STAGE — C10-S01 Execution and Evidence Contract
 
-> Sequence: FLX-ORD-01 — Main-approved materialization
-> Unit: C09-S02 — Functional correction and UI convergence
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED ONLY WITH E/F
-> Branch: `intermid-cycle-recovery`
-> Required investigation ancestor: `a4374794d707e6a2a502ed67d447c713702e1851`
-> Implementation baseline: `e37cb700feeca4001cc7835b584c46bb81926af3`
-> Report: replace `DEV_STAGE/G_OPS_CODEX.md`
+> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED WITH E/F
+> Unit: Disposable local `purchase.registered` synchronization proof
+> Reconciled baseline: `ad7107b602bd3820e8ef357491f57b1aab2ba632`
+> Controlling synthesis: `[M]_STAGE/J_MAIN_STAGE.md`
+> Terminal gate: `WAITING_FOR_MCG_01`
 
-## 1. Mandatory executive-context boot
+## 1. Authority
 
-Before inspecting or editing implementation files, Codex must load the complete operating
-methodology into executive context memory:
+Codex may modify repository source, contracts, tests, local lab configuration and G/H/I only as
+required by D/E/F. Codex may install/pin repository dependencies and run disposable local services.
+
+Codex may not create, configure or contact Neon, deploy an API, provision authentication, request
+human secrets, use ordinary user data, alter permanent notebook memory or consume Cycle 11 UI work.
+
+If D/E/F disagree, a schema migration risks reset/data loss, fixture auth could run outside tests,
+or a provider credential becomes necessary, stop before mutation and report to Main.
+
+## 2. Required preflight
+
+Before editing:
+
+1. read root/Sketch Notebook AGENTS, INDEX and the full methodology boot;
+2. read J and D/E/F together;
+3. verify branch `intermid-cycle-recovery`, clean/understood status and required ancestry;
+4. inventory Flutter/Dart, Node/npm, container runtime, PostgreSQL client and Java/Android state;
+5. run available baseline Flutter analysis/tests and protected Python tests;
+6. inspect schema-v4 migration fixtures and back up any file fixture before migration tests;
+7. secret-scan tracked files and confirm no provider `.env` is present;
+8. record unavailable host capabilities without substituting live infrastructure.
+
+Do not delete/stash/reset unrelated work. Do not modify the protected Python/PySide6 database.
+
+## 3. Checkpointed implementation order
+
+### CP0 — Baseline and protocol inventory
+
+- Record exact tool/dependency versions and available commands.
+- Reconcile `contracts/shared_beta/v2` with runtime JSON and define v3 ownership.
+- Add a concise lab README and ignored-artifact inventory.
+- Keep app runnable and all baseline tests green before schema work.
+
+Gate: v2 behavior and current local database can be reproduced.
+
+### CP1 — Executable v3 contracts
+
+Create `contracts/shared_beta/v3/` with JSON Schema and deterministic examples for:
+
+- `purchase.registered` event envelope/full aggregate;
+- upload Submission request/result;
+- download page/cursor;
+- acknowledgement request/result;
+- typed protocol failure.
+
+Define canonical UTF-8 JSON hashing consistently in Dart and TypeScript. Fixtures must cover
+equivalent duplicate, ID/hash mismatch, sequence gap, invalid version, unknown field, size/batch
+limit and optional Person/Payment facts.
+
+Gate: Dart and TypeScript validate the same fixtures and compute identical hashes.
+
+### CP2 — Local schema v5 and repositories
+
+Add handwritten Drift schema/migration for:
+
+- singleton InstallationMetadata/current Device;
+- durable SyncSubmissions/attempt results;
+- SubmissionEvents membership;
+- SyncInbox applied-event ledger;
+- cursor/apply bookkeeping and extended PendingEvent lifecycle where needed.
+
+Backfill one deterministic valid UUID Device only when the existing single-installation state is
+unambiguous. Preserve all historical Devices/events. Ambiguous or absent valid Device states return
+a typed blocker; never create a replacement by silently discarding history.
+
+Add repository/application operations for:
+
+- load/create current installation idempotently under concurrency;
+- lease/read a bounded pending batch;
+- persist/retry the same SubmissionId after unknown outcome;
+- accept/reject stored Submission outcomes;
+- insert inbox + apply facts + advance cursor atomically;
+- acknowledge only greatest contiguous applied cursor;
+- release expired local leases safely.
+
+Gate: fresh/v4→v5/reopen/failure/rollback/concurrency/crash-replay tests pass before HTTP work.
+
+### CP3 — Disposable local PostgreSQL/API
+
+Create a bounded service under `services/markei_sync_api/` and lab infrastructure under
+`infra/sync_lab/`:
+
+- Node 24 LTS / TypeScript;
+- Fastify JSON-schema routes;
+- `pg` transactions;
+- forward-only SQL migrations;
+- pinned lockfile, lint/typecheck/test scripts;
+- loopback-bound Docker Compose PostgreSQL 18 lab;
+- generated ignored lab secrets, never committed/logged;
+- separate migration and runtime roles.
+
+Implement health/readiness plus upload, download and acknowledgement endpoints from F. Test runtime
+DDL denial and Account isolation. Fixture authentication is injected only in tests; the normal
+server must refuse to start without a non-fixture AuthVerifier.
+
+Gate: local migrations, privilege probes, API unit/integration tests and deterministic teardown pass.
+
+### CP4 — Flutter transport and synchronization engine
+
+Implement ports/adapters/use cases without page redesign:
+
+- authenticated SyncTransport interface;
+- HTTP adapter configurable only through explicit non-secret base URL plus injected token source;
+- upload pending batch with timeout-safe Submission retry;
+- download after cursor;
+- atomic apply/inbox/cursor transaction;
+- acknowledgement after commit;
+- typed results matching E;
+- synchronization disabled by default unless the composition receives an explicit adapter/config.
+
+Do not embed database URLs, provider tokens, fixture credentials or a production authentication
+implementation. Local-only app startup and Purchase registration must behave unchanged.
+
+Gate: fake-transport unit tests pass before cross-process lab testing.
+
+### CP5 — Full local vertical slice and failures
+
+Run two isolated Drift files against the disposable API/Postgres lab:
+
+1. A registers a deterministic offline Purchase.
+2. A uploads one v3 Event.
+3. Inject timeout after server commit and retry the same SubmissionId.
+4. Confirm equivalent stored response and one server Event.
+5. B downloads and atomically applies facts/cursor/inbox.
+6. Replay/reorder the Event and confirm no duplicate effect.
+7. B acknowledges its contiguous cursor.
+8. Reopen both local files and compare stable facts/derived Lists.
+9. Tear down only inventoried disposable resources.
+
+Run negative/failure cases named in J. Never log payloads.
+
+Gate: convergence passes or is reported as a blocking defect; do not weaken assertions to continue.
+
+### CP6 — Regression, evidence and stop
+
+Run, when available:
 
 ```text
-AGENTS.md
-→ documentation/sketch_notebook/INDEX.md
-→ methodology/METHOD_FOUNDATIONS.md
-→ methodology/FLUX.md
-→ methodology/PROMOTION_RULES.md
-→ methodology/CHAT_PROTOCOL.md
-→ [M]_STAGE/J_MAIN_STAGE.md
-→ DEV_STAGE/D_OPS_STAGE.md
-→ DEV_STAGE/E_DDC_STAGE.md
-→ DEV_STAGE/F_DSN_STAGE.md
+dart format --output=none --set-exit-if-changed lib test tool
+flutter analyze
+flutter test
+dart run build_runner build --delete-conflicting-outputs
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+docker compose ... up --wait
+docker compose ... down --volumes
+flutter build windows --release
+flutter build apk --debug
+python -m unittest discover tests
+git diff --check
 ```
 
-Then inspect A/B/C and the smallest relevant domain checkpoints/source/tests. State the
-retained methodology, authority boundary and implementation plan before mutation. A/B/C do
-not directly authorize code. D/E/F are one joint instruction; none may be applied alone.
+Use actual repository scripts in reports rather than copying placeholders. Do not run live Neon probes.
 
-## 2. Visual reference assets
+## 4. Failure-injection floor
 
-The following target mockups are attached as persistent implementation evidence. Codex must
-inspect all five before altering the shell or page compositions:
+Required tests:
 
-![Target 01 — Lists](references/c09_s02/01_lists_target.png)
+- disconnect before request, mid-request and after server commit/before response;
+- same SubmissionId/Event/hash replay and ID/hash mismatch;
+- wrong Account, unknown/revoked Device and fixture-auth escape prevention;
+- DeviceSequence duplicate/gap and concurrent submissions;
+- invalid/unknown protocol version, malformed/oversized payload and batch overflow;
+- duplicate, reordered and cursor-gapped downloads;
+- crash after inbox insert, during fact apply, before cursor and after commit/before ack;
+- migration failure, v4 original reopen and no silent reset;
+- runtime DDL denial, RLS/cross-Account denial, serialization retry and pool exhaustion simulation;
+- local-only startup with API unavailable.
 
-![Target 02 — Catalogue](references/c09_s02/02_catalogue_target.png)
+Each failure must yield typed applied/not-applied/unknown state and safe retry/non-retry behavior.
 
-![Target 03 — Home](references/c09_s02/03_home_target.png)
+## 5. Secrets, logs and artifacts
 
-![Target 04 — Purchase](references/c09_s02/04_purchase_target.png)
+- Add `.gitignore` entries for generated lab env, databases, volumes, tokens and logs.
+- `.env.example` contains names/descriptions only, never working values.
+- Generate lab-only random credentials into an ignored file; bind published ports to loopback.
+- Logs may contain redacted Account/Device/Event/Submission IDs, cursor, code, count, duration and
+  content-hash prefix; never tokens, URLs with credentials, payload JSON or Purchase descriptions.
+- Secret-scan the staged diff before commit.
 
-![Target 05 — History](references/c09_s02/05_history_target.png)
+## 6. Human/manual stop points
 
-They define hierarchy, grouping, palette direction, information density, responsive intent
-and action/state language. They are not literal pixel authority. Accessibility, truthful
-data, supported interactions and platform behavior outrank decorative imitation.
+Codex may ask the human only to start/approve an installed local container service or approve a
+missing local tool installation. Codex must not ask for Neon credentials.
 
-## 3. Safety and baseline before mutation
+After CP6, produce `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`, then stop. Include a
+sanitized MCG-01 checklist but perform none of it.
 
-1. Fetch the named branch and verify HEAD descends from the investigation ancestor and
-   includes current J/D/E/F. Stop on divergence or missing stages.
-2. Record branch, HEAD, remote relationship and worktree status. Preserve unrelated work;
-   never reset, clean, overwrite, stash or force-push it.
-3. Inventory current schema version, handwritten/generated Drift files, migrations,
-   dependencies, platform registrants, application ports, pages and relevant tests.
-4. Run or record baseline inability for dependency resolution, focused/full Flutter tests,
-   analysis and protected Python regressions before large mutation.
-5. Make incremental coherent checkpoints. After each checkpoint, format touched Dart,
-   run focused tests and keep the client runnable.
-6. Do not rename or create Sketch Notebook files. The five reference PNGs are read-only.
-7. Write only implementation/test/dependency/generated files authorized by F and replace
-   G/H/I reports at completion.
+## 7. G evidence requirements
 
-## 4. Required delivery checkpoints
+G must report:
 
-### Checkpoint 1 — Markei UI foundation
+- exact baseline/final SHA and complete changed-path inventory;
+- installed/pinned dependencies and licenses if relevant;
+- migrations and rollback/no-reset evidence;
+- commands with pass/fail/skip counts and host boundaries;
+- local two-Device event/cursor/fact counts;
+- fault-injection results;
+- secret-scan and disposable-resource teardown;
+- skipped live provider/auth/deployment actions;
+- remaining risks and terminal status `WAITING_FOR_MCG_01`.
 
-- Introduce an in-repository Markei token/theme layer and shared SDK-first components.
-- Implement the accepted cream/white, dark-green and lavender direction with semantic
-  success/storage, warning/shortage, market/due, error and unavailable states.
-- Provide shared page header, surface/section card, feedback/state panel, status chip,
-  selection toolbar, responsive form grouping and desktop-table/mobile-card abstractions.
-- Recompose the shell:
-  - expanded grouped labelled navigation;
-  - compact `Home / Lists / Purchase / History / More`;
-  - More exposes Catalogue, Settings, Guide, Documentation and future/PIN destinations;
-  - active destination and Purchase draft survive supported width transitions.
-- Do not add a visual framework dependency. Existing SDK widgets remain preferred.
+## 8. Exit criteria
 
-Gate: theme/component/widget tests, narrow/wide shell tests, selected-destination survival,
-keyboard semantics, text-scale/overflow checks and existing app tests.
-
-### Checkpoint 2 — Schema v4 and immutable visible identities
-
-Advance schema only once and only for the reconciled identity requirements:
-
-- People: non-null visible code `@001`, `@002`, …, Account-scoped unique and immutable.
-- Payment Methods: non-null visible code `#001`, `#002`, …, Account-scoped unique and
-  immutable.
-- Sequence allocation is transactional, monotonic and non-reusing, including archived rows.
-  After 999, width expands naturally (`@1000`, `#1000`).
-- Backfill existing rows deterministically by Account, creation time then immutable UUID;
-  assign consecutive codes without changing UUIDs, nicknames or Purchase references.
-- New create operations allocate the next code atomically. Retry/failure must not produce a
-  duplicate code; gaps caused by a rolled-back transaction should not persist.
-- UI/application expose create only. Do not expose rename/edit or physical delete. Preserve
-  existing archive/history behavior only where it remains non-destructive and code-safe.
-- Products: rebuild/migrate visible and normalized code columns to NOT NULL while preserving
-  Account-scoped uniqueness and immutability.
-- Preflight all Products. Existing non-null codes remain unchanged. Any null/blank legacy
-  code receives a deterministic reserved collision-safe legacy code before NOT NULL is
-  applied; record the format and affected count in G.
-- New Product creation requires a user-entered code. No ordinary Product update path may
-  change it. Exact identity and code collision never merge or rewrite PurchaseItems.
-
-Migration gates:
-
-- fresh v4 creation;
-- representative v1→v2→v3→v4 and v3→v4 file-backed migrations;
-- deterministic People/Payment backfill;
-- Product null/blank/collision fixtures;
-- close/reopen and FK/history resolution;
-- injected migration failure with rollback/no silent reset;
-- generated Drift regeneration and clean analysis.
-
-Stop before schema mutation if existing rows cannot be assigned deterministic unique codes
-without changing facts or if SQLite rebuild would weaken FKs/atomic registration.
-
-### Checkpoint 3 — Purchase occurrence, Product resolution and BULK calculation
-
-- Place required blank `Purchase date` and `Time` fields immediately after Store.
-- Do not default them to `now`; the user manually records buying time, distinct from the
-  insertion/upsertion moment.
-- Parse exact `dd/mm/yyyy` and `HH:mm`, validate real local civil time, combine and convert
-  to the existing UTC occurrence instant at the application boundary.
-- Review, registered History, CSV and PDF consistently present the manually entered value;
-  exports may additionally use canonical machine-readable UTC where already required.
-- Invalid input preserves Store, references, Product selection and staged Items and moves
-  focus/feedback to the owning field.
-- Exact Product-code entry in Purchase calls exact lookup and fills Product name, brand,
-  mode, measurement kind and package quantity/unit for PACKAGED Product. Filled identity
-  fields are read-only in the existing-Product path unless the user deliberately clears the
-  selection and enters the new-Product path.
-- Exact identifying-field lookup remains available. Similarity remains advisory.
-- Selecting/filling a Product never adds an Item automatically.
-- Product details have explicit accessible actions; Catalogue/Purchase desktop double-click
-  opens details, not adds an Item.
-- BULK exposes Amount bought, selected Unit and Price per that same selected unit. Support
-  `kg/kg`, `g/g`, `L/L`, `ml/ml` and integral `un/un`; reject mixed amount/rate units.
-  Normalize both operands internally, calculate integer-minor-unit line total half-up and
-  render it read-only. No manual override and no competing persisted rate truth.
-
-Gate: controlled-clock/date parsing tests, leap/invalid/date-rollover cases, manual-required
-test, exact-code autofill tests, identity collision tests, details versus selection tests,
-BULK kg/g/L/ml/un and half-cent boundary tests, edit/review/register/reopen consistency.
-
-### Checkpoint 4 — Catalogue and Product details
-
-- Build the target Catalogue hierarchy using shared components and real read models.
-- Preserve broad search only when labelled `Search Catalogue`; expose exact Product code and
-  exact Product details operations without conflating them.
-- Row/card click/tap selects/highlights. Explicit `View Product details` opens details.
-  Desktop double-click opens details. Keyboard selection/details have equivalent routes.
-- Details show immutable code, Name, Brand, mode, package facts when PACKAGED, category and
-  available latest Purchase/unit-price/cycle facts without inventing missing values.
-- Product code cannot be edited. Exact collision never offers `Create anyway`; advisory
-  similarity may offer compare/use-existing and an explicit new-Product path.
-- Recompose wide table and compact cards without dropping identity or state semantics.
-
-Gate: tap/click/double-click/keyboard equivalence, selection persistence, details isolation,
-long text, empty/no-match/error/retry and 390/600/1024+ responsive tests.
-
-### Checkpoint 5 — Relational Lists repair and composition
-
-- Begin with every Account Product.
-- Fetch PurchaseItem/Purchase observations in one joined query or bounded batch; do not use
-  per-Product history queries or a persisted List/cache table.
-- Retain zero-history, one-history and incompatible-history Products.
-- Use deterministic latest observation ordering and expose latest date, amount/unit, line
-  total, compatible derived unit price, Store and optional Person label when available.
-- Cycle rule:
-  - at least two compatible distinct local Purchase dates;
-  - derive intervals between ordered distinct dates and the versioned personal cycle;
-  - expected next date from latest compatible date plus cycle;
-  - remaining > threshold → Storage;
-  - remaining 0..threshold → Shortage;
-  - remaining < 0 → Market.
-- Default threshold is five days and remains configurable.
-- `All` shows every Product/state. Filter tabs show only available-cycle Products matching
-  their derived state; unavailable states remain reachable through All.
-- Recompose target wide table/summary/filter/help hierarchy and equivalent compact cards.
-  Never state measured inventory or hide query failure as `Not enough history`.
-
-Gate: zero/one/two/multiple history, same-day deduplication, incompatible quantity/currency,
-boundary days, account isolation, deterministic latest, query failure/retry, query-count
-assertion and representative 1k Product/10k Item measurement.
-
-### Checkpoint 6 — History, Settings and native share
-
-- Settings presents People and Payment Methods as immutable `code · nickname`; create only,
-  with no rename/edit/delete UI. `Not assigned` remains available in Purchase.
-- History and exports resolve `code · nickname`, including archived history labels.
-- History supports checkbox/tap/keyboard selection, select-all/clear and pointer double-click
-  selection. Selection activates a clear action hierarchy.
-- `Move to Analytics` remains disabled/planned. Edit/Delete remain disabled/not supported.
-- CSV stays deterministic and selected-only.
-- PDF groups only selected Purchases and remains deterministic.
-- Attempt native OS share through a minimal, actively maintained dependency/adapter with
-  Windows and Android support. Inspect license, release health, transitive graph, manifests,
-  generated registrants, platform support and testability before adopting it.
-- Keep PDF rendering, temporary file lifecycle and sharing behind separate ports/adapters.
-  Handle cancellation, cleanup, unsupported platform and failure as typed outcomes.
-- If native share cannot be validated on a host, preserve deterministic PDF save/export and
-  report native sharing host-unvalidated/blocked. Never upload silently.
-
-Gate: selected-only CSV/PDF, escaping/order, no private/unselected data, optional labels,
-share success/cancel/failure/unsupported fakes, temporary cleanup and Windows/Android manual
-share when those hosts are available.
-
-### Checkpoint 7 — Final convergence and regression
-
-- Complete Home/Lists/Purchase/History/Catalogue visual convergence using target evidence.
-- Ensure Guide/Documentation/Settings/future destinations use the shared shell/states.
-- Validate 390×844, 600, 720 transition, 1024+ and constrained desktop; text scales
-  1.0/1.3/2.0; keyboard-only; semantics; touch targets; Back; resize/rotation; keyboard open.
-- Validate loading, empty, no match, unavailable, selected, validation, typed failure,
-  unknown outcome, retry, success and disabled states.
-- Preserve app-private offline-first storage and protected Python boundaries.
-
-## 5. Required command/evidence matrix
-
-Run from `clients/markei_flutter/` and record exact command, environment and result:
-
-1. `flutter --version`, `dart --version`, Java/Android/Windows toolchain availability.
-2. `flutter pub get`; dependency diff/audit if a sharing dependency is added.
-3. Drift/build-runner regeneration using the repository-established command.
-4. `dart format --output=none --set-exit-if-changed lib test` after formatting touched files.
-5. Focused domain/application/infrastructure/widget tests after each checkpoint.
-6. File-backed fresh/migration/reopen/failure tests.
-7. `flutter test` full suite.
-8. `flutter analyze`.
-9. `git diff --check` and changed/generated/platform path inventory.
-10. `flutter build windows --release` plus bounded manual workflow/share smoke when available.
-11. `flutter build apk --debug`, install/launch and lifecycle/share workflow when available.
-12. Protected Python release/regression suite named by existing G evidence.
-
-Classify source inspection, test, file-backed, build, launch, manual workflow, lifecycle,
-native share and platform evidence separately. Missing host prerequisites mean
-host-unvalidated, never automatic product failure or success.
-
-## 6. Global stop conditions
-
-Stop before broader mutation if:
-
-- D/E/F conflict, required images/stages are unavailable, or branch ancestry is wrong;
-- migration would change UUIDs, Product identity, Purchase facts, historical references or
-  silently reset/merge data;
-- reference sequences can duplicate/reuse codes or Product codes remain nullable/editable;
-- date/time fields default automatically or record insertion time instead of buying time;
-- BULK requires a competing stored price truth or editable derived total;
-- Lists require invented history, N+1 queries or a persistent cache/manual List;
-- native sharing needs unsupported/abandoned dependencies or unrelated platform expansion;
-- responsive work removes accessible equivalents or loses draft/selection state;
-- work expands into the deferred J boundaries.
-
-Report the exact blocker and smallest safe alternative. Do not silently defer a controlling
-requirement while claiming Sprint 02 complete.
-
-## 7. G report contract
-
-Replace G with a precise Operational evidence report containing:
-
-- starting/final commit, branch, host/toolchain and worktree boundary;
-- exact changed/created/deleted/generated paths and dependency changes;
-- checkpoint-by-checkpoint completion/deviation;
-- schema v4/backfill counts, sequence allocation and migration fixtures;
-- exact commands/results and evidence classifications;
-- Windows/Android/native-share/manual workflow status;
-- blockers, host-unvalidated work, residual risks and rollback notes.
-
-G is evidence, not permanent promotion. Keep G at or below 250 lines and do not edit
-permanent notebook memory.
+Successful exit requires executable local proof, preserved local-only behavior, green available
+regressions, no tracked secrets, no live provider use and G/H/I completed. A host-blocked local lab
+may exit only as partial with unit/static evidence and an explicit blocker; it may not claim protocol
+or convergence validation.

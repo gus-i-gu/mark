@@ -1,463 +1,311 @@
-# F_DSN_STAGE — Cycle 09 Sprint 02 Architecture and Materialization Contract
+# F_DSN_STAGE — C10-S01 Synchronization Architecture Contract
 
-> Sequence: FLX-ORD-01 — Main-approved materialization
-> Unit: C09-S02 — Functional correction and UI convergence
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED ONLY WITH D/E
-> Branch: `intermid-cycle-recovery`
-> Report: replace `DEV_STAGE/I_DSN_CODEX.md`
+> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED WITH D/E
+> Scope: pre-Neon local protocol, persistence, API and dependency architecture
+> Live provider/auth/deployment: prohibited
 
-## 1. Methodology and architecture authority
-
-Codex must complete D's executive-context boot before repository exploration or mutation.
-This F controls dependency direction, schema evolution, application/domain ownership,
-presentation composition, platform adapter boundaries and incremental materialization.
-
-Preserve:
+## 1. Required topology
 
 ```text
-Flutter presentation and Markei components
-→ application commands, query ports, read models and typed outcomes
-→ independent Dart domain invariants/calculations
-← local Drift repositories and platform share/file adapters
-→ app-private SQLite schema v4
+Flutter application
+→ synchronization application ports/use cases
+← local Drift adapters + HTTP transport adapter
+→ app-private SQLite v5
+
+HTTP transport
+→ controlled TypeScript API
+→ application transactions
+→ pg adapter
+→ disposable PostgreSQL 18 lab
 ```
 
-Widgets never consume Drift rows, generated table classes, raw SQL errors or platform-channel
-objects. Generated Drift code is derived. Handwritten schema/migration files remain authority.
-Keep composition explicit and preserve the protected Python/PySide6 application/database.
+Domain/application code must not depend on Flutter widgets, Drift, HTTP, Fastify, `pg`, Docker or
+Neon. Flutter never connects to PostgreSQL and never owns database migration credentials.
 
-## 2. Attached target evidence
+## 2. Repository structure
 
-Codex must inspect these five persistent target references before designing components:
-
-![Target 01 — Lists](references/c09_s02/01_lists_target.png)
-
-![Target 02 — Catalogue](references/c09_s02/02_catalogue_target.png)
-
-![Target 03 — Home](references/c09_s02/03_home_target.png)
-
-![Target 04 — Purchase](references/c09_s02/04_purchase_target.png)
-
-![Target 05 — History](references/c09_s02/05_history_target.png)
-
-Architectural interpretation: shared token/component foundation; adaptive shell; page-level
-compositions; wide tables/panes; compact cards/routes/sheets; explicit state and action
-hierarchies. Do not encode screenshots as one giant widget or page-local style duplication.
-
-## 3. Authorized implementation surfaces
-
-Codex may modify the smallest coherent subset within:
+Preferred bounded structure; equivalent names require explanation in I:
 
 ```text
-clients/markei_flutter/lib/app/
-clients/markei_flutter/lib/application/
-clients/markei_flutter/lib/domain/
-clients/markei_flutter/lib/infrastructure/local/
-clients/markei_flutter/test/
-clients/markei_flutter/pubspec.yaml
-clients/markei_flutter/pubspec.lock
-clients/markei_flutter/android/       # native-share dependency only
-clients/markei_flutter/windows/       # native-share dependency only
-documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
-documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
-documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
+contracts/shared_beta/v3/
+  purchase_registered.schema.json
+  sync_submission.schema.json
+  sync_download_page.schema.json
+  sync_acknowledgement.schema.json
+  protocol_failure.schema.json
+  fixtures/
+
+clients/markei_flutter/lib/domain/sync/
+clients/markei_flutter/lib/application/sync/
+clients/markei_flutter/lib/infrastructure/local/sync/
+clients/markei_flutter/lib/infrastructure/remote/
+clients/markei_flutter/test/sync/
+clients/markei_flutter/tool/sync_lab.dart
+
+services/markei_sync_api/
+  src/domain/
+  src/application/
+  src/http/
+  src/postgres/
+  migrations/
+  test/
+
+infra/sync_lab/
+  compose.yaml
+  scripts/
+  README.md
 ```
 
-Codex may add focused Dart files/tests under existing Flutter architecture and regenerate the
-existing Drift artifact. Do not modify reference PNGs, permanent notebook files, J/D/E/F,
-methodology, other clients or Python source/data.
+Keep handwritten modules near 250 lines. Split migrations and route/transaction responsibilities.
+Generated Drift output is exempt and remains derived.
 
-New dependencies are prohibited except one minimal native share/save dependency set after
-D's audit. Do not add a UI framework, table library, icon pack or date/time package unless
-the Flutter SDK demonstrably cannot satisfy a named requirement and Codex stops for Main.
+## 3. Executable v3 contract
 
-## 4. Presentation architecture
+Canonical JSON must be UTF-8, deterministic and hashed with SHA-256 using one documented canonical
+serialization shared by Dart and TypeScript. Do not hash ordinary non-canonical `jsonEncode` output
+whose map ordering or numeric representation is ambiguous.
 
-### 4.1 Token/theme layer
-
-Create a compact in-repository design system, preferably under `lib/app/design/` or an
-equally coherent existing convention:
-
-- `MarkeiTokens` / Theme extension for canvas, surfaces, primary/secondary and semantic
-  colors; spacing; radius; borders/elevation; control density; typography.
-- Material 3 `ThemeData` consumes tokens rather than hard-coded page colors.
-- Light theme only. Every semantic state passes contrast and non-color communication tests.
-- Candidate scale from C may guide implementation: spacing 4/8/12/16/24/32/48; control
-  heights 40/48/56; radius 8/12/16. Exact constants may change through evidence.
-
-### 4.2 Shared component layer
-
-Prefer small typed components under `lib/app/widgets/`:
-
-- adaptive shell, expanded sidebar/rail and compact navigation/More surface;
-- page header, toolbar, section/surface card and responsive form grid;
-- summary/stat card, filter bar/filter sheet and status chip;
-- loading, empty, no-match, unavailable, error, unknown and success panels;
-- selection toolbar;
-- responsive data view supporting wide table and compact card builder;
-- Product row/card, Product details surface and Product selector/result;
-- local occurrence date/time field group;
-- reference selector/row rendering visible code + nickname;
-- quantity/unit/price calculator group;
-- typed failure banner.
-
-Components accept immutable application read models and callbacks. They do not own database
-queries or cross-page domain logic.
-
-### 4.3 Page and state ownership
-
-- Shell owns selected destination and adaptive navigation presentation.
-- Purchase page owns transient draft controllers, selected Product/reference and review mode.
-- Catalogue owns transient selection/filter/view state.
-- Lists owns transient view/filter state; projections come from application query port.
-- History owns transient selected Purchase-ID set and expanded/detail state.
-- Application/domain owns validation, identity, calculations and query/command outcomes.
-- Keep `IndexedStack` or an equivalent state-preserving shell only where it does not create
-  stale projections; refresh Lists/History through explicit invalidation after registration.
-
-Breakpoints begin at compact `<600`, medium `600–1023`, expanded `≥1024`. Treat them as
-presentation policy constants, not domain facts; tests may justify adjustment.
-
-## 5. Schema v4 architecture
-
-Current schema v3 already contains People, PaymentMethods, AccountPreferences, optional
-Purchase FKs and nullable BULK package count. Schema v4 adds only reconciled visible identity
-and Product-code constraints.
-
-### 5.1 People and Payment Methods visible codes
-
-Add immutable non-null text columns:
+Event envelope fields:
 
 ```text
-People.visibleCode          // @001, @002, …
-PaymentMethods.visibleCode  // #001, #002, …
+eventId UUID
+accountId UUID
+deviceId UUID
+deviceSequence positive integer
+eventType = purchase.registered
+payloadVersion = 3
+occurrenceTime UTC RFC3339
+payload complete immutable Purchase aggregate
+contentHash lowercase SHA-256 hex of canonical content
 ```
 
-Constraints:
+The Purchase payload includes stable Purchase/Store/Product/Item IDs, Product code and exact identity
+facts, quantity/unit/mode, currency/minor-unit totals, optional Person/Payment reference facts and
+timestamps required by the accepted aggregate. It excludes Lists projections, UI state, analytics,
+credentials, local file paths and mutable retry metadata.
 
-- unique `(accountId, visibleCode)` for each table;
-- format generated internally, never accepted as user input;
-- Account-scoped monotonically increasing numeric suffix;
-- suffix rendering minimum width 3, expanding naturally after 999;
-- archive never frees/reuses a code;
-- UUID remains PK/FK; code is stable user-facing organizational identity;
-- code has no update operation in repository/application/UI.
-
-Sequence ownership alternatives:
-
-1. transactionally compute `max(parsedSuffix)+1` over all active/archived Account rows;
-2. store explicit next counters in AccountPreferences or a dedicated Account-scoped sequence
-   table and allocate/update inside the create transaction.
-
-Select the smallest design that proves atomic monotonic allocation, no reuse, rollback and
-concurrent-create safety in Drift/SQLite. Do not infer next value from row count. If explicit
-counters are used, name them narrowly (`nextPersonCode`, `nextPaymentMethodCode`) and backfill
-them from the maximum assigned suffix plus one.
-
-Backfill order per Account:
+Upload Submission:
 
 ```text
-createdAt ascending → immutable UUID ascending
+submissionId UUID
+deviceId UUID
+requestHash SHA-256
+events non-empty bounded array
 ```
 
-Assign `@001...` and `#001...` independently. Preserve UUID, nickname, active/archive state,
-timestamps and every Purchase FK. Reopening must reproduce stored codes, not recalculate them.
+AccountId is derived from verified auth context at the server. If retained in an event for hash/
+domain identity, it must equal that verified Account; it is never authorization by itself.
 
-Repository/application contract becomes create/list/archive/reactivate as currently supported,
-but Sprint 02 UI exposes no rename/edit/delete. Remove or keep internal rename methods only if
-tests/current architecture require them; no public presentation path may invoke them. Physical
-delete remains absent.
+Define explicit batch and payload byte limits in shared fixtures/config. Reject unknown protocol
+versions and unknown security-relevant fields.
 
-### 5.2 Product visible code NOT NULL and immutability
+## 4. Local schema v5
 
-Current Product code columns are nullable in Drift even though creation/migration usually
-supply values. In v4:
+Handwritten Drift authority must add or evolve these logical units:
 
-- `userProductCode` and normalized code representation become NOT NULL;
-- `(accountId, normalizedProductCode)` remains unique;
-- new Product command requires a nonblank user-entered code;
-- repository update operations cannot change code;
-- Product UUID and exact identity normalization remain separate;
-- PACKAGED exact identity includes normalized Name/Brand/mode and canonical package amount,
-  kind/unit; BULK exact identity includes normalized Name/Brand/mode and no package facts.
+### InstallationMetadata
 
-Preflight v3 rows before rebuild. Preserve every valid existing code exactly in display form.
-For null/blank legacy rows only, derive a reserved deterministic code from immutable Product
-UUID, collision-check it Account-wide and persist it before NOT NULL. Use a clearly reserved
-format that cannot be confused with ordinary user entry; document it in G/I and prevent new
-user codes from using that reserved namespace if necessary.
+- singleton key or uniqueness ensuring one current installation row;
+- InstallationId UUID v4;
+- AccountId FK;
+- currentDeviceId FK to Devices;
+- createdAt/updatedAt;
+- unique Account/current-installation invariant suitable for one app-private DB.
 
-SQLite/Drift migration may require a table rebuild. Preserve all columns, unique keys, FKs,
-PurchaseItem references and normalization versions. Foreign keys, migration ledger and
-transactional/no-silent-reset behavior remain mandatory.
+Bootstrap transaction:
 
-### 5.3 Migration sequence
+1. load singleton metadata;
+2. if present, require referenced Account/Device and reuse it;
+3. if absent, inspect existing Devices;
+4. exactly one usable UUID Device for the provisional Account → backfill metadata;
+5. none → create Device + metadata atomically;
+6. multiple usable Devices without metadata → typed ambiguity; do not choose earliest.
 
-Implement an explicit sequential v3→v4 branch. Existing v1/v2 routes must chain through v3
-then v4. Required structural tests:
+Preserve historical/non-current Devices and sequence ownership.
 
-- fresh v4 create;
-- empty v3→v4;
-- populated v3→v4 with active/archived references and Purchases;
-- deterministic multi-Account backfill;
-- Product null/blank and reserved-code collision fixture;
-- close/reopen and FK checks;
-- injected failure leaving original file/facts recoverable;
-- unsupported upgrade origin stops without reset.
+### SyncSubmissions
 
-Do not combine schema v4 with Store redesign, Product merge/correction, SubmissionId, draft
-persistence, error tables or projection caches.
+- SubmissionId PK, AccountId, DeviceId;
+- requestHash, state, createdAt/updatedAt;
+- attemptCount, nextAttemptAt nullable, leaseUntil nullable;
+- outcome and response/error code nullable;
+- stable retry uses same row and request hash.
 
-## 6. Product resolution and immutable details
+### SyncSubmissionEvents
 
-Application ports must support:
+- SubmissionId FK + EventId FK composite key;
+- deterministic membership/order;
+- no Event appears twice in one Submission.
+
+### PendingEvents
+
+Retain EventId ownership and lifecycle. It may gain acceptedAt/lastErrorCode, but Submission attempt
+facts belong to SyncSubmissions, not duplicated per Event. Valid transitions are explicit and tested.
+
+### SyncInbox
+
+- AccountId + EventId PK/unique;
+- contentHash, serverCursor, state/appliedAt;
+- same ID/hash replay is equivalent;
+- same ID/different hash is terminal conflict.
+
+### SyncState
+
+Cursor advances only in the same transaction that inserts inbox entries and applies all accepted
+facts for the contiguous page. Never advance past a rejected/gapped Event.
+
+## 5. Local application ports
+
+Define framework-independent interfaces/results for:
+
+- `CurrentInstallationRepository`;
+- `SyncOutboxRepository`;
+- `SyncInboxRepository` or one atomic `RemoteEventApplier`;
+- `SyncTransport.uploadSubmission`;
+- `SyncTransport.downloadAfter`;
+- `SyncTransport.acknowledge`;
+- `UploadPendingEvents`;
+- `DownloadAndApplyEvents`;
+- `AcknowledgeAppliedCursor`;
+- injected Clock/UUID/backoff policy where deterministic tests require them.
+
+The HTTP adapter converts typed transport/protocol results but does not decide domain conflict or
+mutate Drift outside repositories. Synchronization is disabled by default in composition.
+
+## 6. Remote apply transaction
+
+For each downloaded contiguous page, one Drift transaction must:
+
+1. validate Account, version, cursor order and hash;
+2. detect inbox duplicate/conflict;
+3. create/reuse Product, Store and optional reference facts only under stable-ID/content rules;
+4. insert Purchase and Items idempotently;
+5. insert applied inbox record;
+6. invalidate/rebuild relevant derived Lists state;
+7. advance Account cursor only after every Event in the accepted page applies.
+
+Equivalent existing stable facts are reused. Same stable ID with differing immutable content yields
+typed conflict and no partial page commit. No automatic Product merge or visible-code reassignment.
+
+## 7. API boundaries
+
+Required routes:
 
 ```text
-productByCode(AccountId, ProductCode) → zero or one exact Product
-productByExactIdentity(AccountId, ProductIdentityDraft) → zero or one exact Product
-similarProducts(AccountId, advisory draft) → candidates
-productDetails(AccountId, ProductId) → immutable Product detail read model
+GET  /health/live
+GET  /health/ready
+POST /v1/sync/submissions
+GET  /v1/sync/events?after=<opaque>&limit=<bounded>
+POST /v1/sync/acknowledgements
 ```
 
-Purchase exact-code flow:
+Health responses reveal no secrets/schema internals. All sync routes require `AuthVerifier` output
+containing AccountId and authorized DeviceId. Payload Account/Device must match verified context.
 
-1. normalize and validate entered code;
-2. call exact code port;
-3. if found, bind `ProductId` and return immutable Product facts needed by presentation;
-4. autofill Name, Brand, mode, measurement kind and PACKAGED quantity/unit;
-5. leave Purchase Item amount/count/price/notes for user input;
-6. do not add an Item until explicit `Add staged Item`.
+Fixture auth:
 
-Clearing selection returns to lookup/new-Product mode without mutating the Product. Existing
-Product identity fields are presentation-read-only. No correction/edit flow is authorized.
+- exists only as an injected test adapter;
+- may use deterministic claims without real bearer tokens;
+- cannot be selected by normal CLI/environment configuration;
+- server entrypoint refuses startup without a non-fixture verifier;
+- integration tests may construct the app directly with fixture verifier and loopback listener.
 
-Details are a shared application read model and presentation surface. Expanded layouts may
-use a pane; compact uses a route/sheet with equivalent content. Explicit details action and
-keyboard path always exist; Product double-click opens details as convenience.
+No enrollment/revocation endpoint or production auth adapter is implemented in C10-S01. Test fixtures
+seed Accounts/Devices through migration-owned helpers.
 
-## 7. Purchase occurrence architecture
+## 8. Server PostgreSQL model
 
-The persisted fact remains `Purchases.occurrenceTime` as a UTC `DateTime`; schema change is
-not required.
+Forward SQL migrations create logical tables:
 
-Presentation keeps separate blank date/time text values or picker values until both are
-valid. Introduce a small parser/formatter or controlled Clock abstraction where needed:
+- `accounts`;
+- `devices` with Account, status, next expected sequence and timestamps;
+- `account_cursor_state` with next cursor;
+- `submissions` with request hash and stored JSON result;
+- `sync_events` with EventId, Account, Device, sequence, cursor, type/version, occurrence, JSONB
+  payload, content hash and received time;
+- `device_acknowledgements` with greatest contiguous cursor;
+- migration ledger owned by the migration tool.
 
-```text
-dd/mm/yyyy + HH:mm
-→ validated local civil DateTime
-→ toUtc()
-→ RegisterPurchaseCommand.occurrenceTime
-```
+Required uniqueness/indexes:
 
-Do not call `DateTime.now()` during submission and do not auto-initialize the fields. The
-insertion/upsertion timestamp remains an implementation event and is not substituted for
-occurrence. Review/back preserves the entered values. History converts persisted UTC to local
-display. Document that zone/offset history and ambiguous repeated DST hour are not retained.
+- EventId unique;
+- Account + Device + DeviceSequence unique;
+- Account + ServerCursor unique;
+- Account + Device + SubmissionId unique;
+- Account + ServerCursor download index;
+- Account + Device status lookup.
 
-Parser tests must not depend on the test host's current clock/timezone without controlling or
-explicitly binding them. Reject impossible calendar/time values and preserve draft state.
+Store UUIDs as UUID, cursor/sequence as BIGINT, hashes with exact length checks, payload as JSONB and
+timestamps as `timestamptz`. Add positive/bounded checks. Do not use floating currency values.
 
-## 8. Quantity and BULK money architecture
+## 9. Upload transaction and idempotency
 
-Retain one fixed-decimal normalization boundary accepting comma or point and producing
-locale-neutral values. Domain canonical dimensions remain:
+Within one serializable/retryable transaction:
 
-```text
-MASS → kg at 1e6 microunits
-VOLUME → L at 1e6 microunits
-COUNT → un at 1e6 microunits, integral display quantity only
-```
+1. derive Account/Device from verified context and lock relevant Device/Account cursor state;
+2. look up SubmissionId;
+3. same SubmissionId/request hash → return stored response;
+4. same SubmissionId/different hash → terminal conflict;
+5. validate each Event schema/hash/Account/Device and exact next DeviceSequence;
+6. same EventId/hash already accepted → duplicate-equivalent result;
+7. same EventId/different hash → terminal conflict;
+8. allocate per-Account cursors and append new Events;
+9. update expected Device sequence;
+10. store complete Submission response;
+11. commit once.
 
-For BULK, accept positive amount and positive price rate using the same selected display unit:
-`kg/kg`, `g/g`, `L/L`, `ml/ml` or integral `un/un`. Reject a mixed amount/rate basis. Parse
-the rate at fixed precision sufficient for small `per g`/`per ml` values (at least six
-decimal currency units), then normalize amount and rate before final currency rounding.
+Retry the whole transaction after PostgreSQL serialization failure with bounded attempts. Do not
+return accepted before commit. A timeout after commit is recovered by the same SubmissionId.
 
-One suitable nonnegative fixed-point representation is:
+## 10. Download and acknowledgement
 
-```text
-(amountInSelectedUnitMicros * pricePerSelectedUnitMicroMinor + 500000000000)
-  ~/ 1000000000000
-→ lineTotalMinorUnits
-```
+Download returns Account-scoped Events strictly after the cursor, ascending, bounded and with next
+cursor metadata. Cursor is opaque to clients even if represented numerically in the lab.
 
-Here `pricePerSelectedUnitMicroMinor` is minor currency units scaled by 1e6. Equivalent pure
-integer math is acceptable when it produces the same half-up result. Use checked/bounded
-arithmetic appropriate to Dart/SQLite limits and reject overflow.
-The result is read-only. Persist the existing authoritative facts: normalized amount/unit and
-line total. Do not add a persisted unit-price column; History/Lists derive comparable unit
-price with explicit truncation/rounding policy.
+Acknowledgement accepts only a cursor that the Device can claim contiguously applied under the
+contract. Server stores monotonic max; lower/equal replay is equivalent. It does not mean all Devices
+acknowledged and does not trigger deletion in this unit.
 
-PACKAGED behavior remains package quantity + positive packages bought + derived/entered
-amount under existing contract. BULK package count remains null/not applicable.
+## 11. Authorization and database roles
 
-## 9. Lists query and read-model architecture
+- Migration role owns DDL and is never used by runtime.
+- Runtime role has only required DML/sequence/function grants and cannot alter schema/roles.
+- API derives AccountId from AuthVerifier and uses Account-scoped transactions.
+- Implement/test RLS defense in depth on coordination tables where feasible; set Account context
+  transaction-locally and fail closed when absent.
+- RLS does not replace API authorization, constraints or tests.
+- Connections, tokens and passwords never enter tracked files or logs.
 
-The current projection begins from Products but loses important relational facts in its read
-model and unavailable presentation. Replace/extend it without a List table.
+## 12. Conflict and retention boundary
 
-### 9.1 Typed result algebra
+First slice is append-only Purchase registration. Different Purchase IDs coexist. Same stable ID with
+different immutable content is quarantined/conflict. Settings, reference mutation, edits/deletes,
+Product merge and Store correction are excluded.
 
-Use sealed/typed states equivalent to:
+No TTL/deletion/snapshot is implemented. Disposable lab teardown deletes only inventoried lab data.
+Live bounded retention requires a later accepted snapshot/rebootstrap and eligible-Device policy.
 
-```text
-NoPurchaseHistory
-LearningHistory(observationCount, latestFacts)
-IncompatibleHistory(reason, latestFacts)
-AvailableCycle(cycleDays, expectedDate, remainingDays, status, latestFacts)
-ProjectionQueryFailure(AppFailure)
-```
+## 13. Verification architecture
 
-Read models should expose Product ID/code/name/brand/mode/package facts, latest Purchase ID and
-occurrence, amount/unit, line total/currency, compatible derived unit price, Store and optional
-Person display label. Absence remains nullable/typed, never fabricated zero.
+Required layers:
 
-### 9.2 Bounded adapter query
+- shared v3 fixture validation and cross-language hash parity;
+- Dart domain/application unit tests;
+- Drift fresh/v4→v5/failure/reopen/concurrency/crash tests;
+- TypeScript domain/application/route tests;
+- PostgreSQL migration/constraint/role/RLS/concurrency tests;
+- API idempotency, isolation and typed failure integration tests;
+- two-file Drift + API/Postgres local system harness;
+- existing Flutter/Python regression suites.
 
-1. fetch all Account Products;
-2. fetch observations using one joined query or bounded batch relating PurchaseItems,
-   Purchases and optional Store/Person labels;
-3. enforce Account isolation in each relation;
-4. group by Product in adapter memory;
-5. order latest deterministically by occurrence UTC, then Purchase ID, then Item ID;
-6. convert occurrence to local date and deduplicate same local dates for cycle intervals;
-7. group compatible measurement kind/canonical unit/currency observations;
-8. feed ordered distinct dates to pure versioned `personal-cycle-v1`;
-9. return every Product even when observations are absent/incompatible.
+Do not use mocks as the only evidence for transactions, constraints, migrations or cross-language
+protocol compatibility.
 
-No per-row query, static placeholder, persisted status or projection cache. Add indexes only
-after query-plan/volume evidence identifies a need; report each index and migration impact.
+## 14. I evidence requirements
 
-### 9.3 Accepted classification
+Replace only `DEV_STAGE/I_DSN_CODEX.md`. Report final dependency direction, added modules, local/server
+schema and migration IDs, protocol version/hash rules, transaction/idempotency behavior, auth fixture
+containment, RLS/role evidence, deferred decisions, generated files and architectural deviations.
 
-- fewer than two compatible distinct local dates → unavailable;
-- two or more → derive cycle from compatible intervals using the existing versioned rule;
-- expected date = latest compatible local date + cycle;
-- remaining = expected date − today local date;
-- remaining > configured threshold → Storage;
-- remaining from 0 through threshold inclusive → Shortage;
-- remaining < 0 → Market;
-- All includes all Products and unavailable states.
-
-Changing threshold invalidates presentation projection only. Registration invalidates Lists
-and History projections. No external analytics or measured stock claim.
-
-## 10. Error registry architecture
-
-Do not create an error database table. Define a typed/version-controlled source registry or
-sealed mapping owned by application/presentation boundaries:
-
-```text
-failure code
-operation
-optional field
-outcome: notApplied | applied | unknown
-retryability
-safe user message/recovery key
-diagnostic cause retained internally
-```
-
-Repositories translate domain/Drift/platform failures into typed application failures.
-Presentation maps typed failures to E's visible contract. Unknown Purchase outcome instructs
-verification through History before retry. Raw exceptions remain diagnostic only.
-
-Keep registry copy/localization-ready but do not introduce localization infrastructure beyond
-Sprint 02 needs. Tests assert mapping coverage and draft/selection preservation.
-
-## 11. History export and native sharing architecture
-
-Preserve transient `Set<PurchaseId>` selection. Export DTO contains ordered selected Purchase
-and Item facts only:
-
-- Purchase ID, manual occurrence time, Store, optional `code · nickname` references,
-  currency/total;
-- Product immutable code/name/brand, amount/unit/package facts, line total and notes where
-  already authorized.
-
-CSV remains deterministic UTF-8, properly quoted, one row per Item with repeated Purchase
-columns. PDF groups selected Purchases. Keep layers separate:
-
-```text
-Export DTO builder
-→ deterministic CSV encoder / PDF renderer
-→ temporary or user-selected file adapter
-→ native share adapter
-→ typed share outcome
-```
-
-Evaluate one maintained native share dependency supporting Windows and Android. Hide it
-behind an application port so tests use fakes and unsupported platforms return a typed result.
-Platform manifests/registrants may change only as required by that dependency. Handle
-cancellation, temporary-file cleanup and adapter failure. Do not upload, retain externally or
-claim recipient delivery.
-
-If the chosen plugin cannot support a required host safely, retain renderer + deterministic
-save/export and report native share blocked/host-unvalidated instead of adding multiple broad
-plugins or platform-specific feature forks.
-
-## 12. Incremental materialization structure
-
-Recommended source checkpoints/commits:
-
-1. `ui-foundation`: tokens, theme, shell and shared states; no schema/query/plugin.
-2. `identity-schema-v4`: migration, generated code, repositories and fixtures; minimal UI.
-3. `purchase-slice`: manual occurrence, code autofill, details and BULK calculator.
-4. `catalogue-slice`: responsive selection/details and immutable code.
-5. `lists-slice`: read model, bounded query and responsive composition.
-6. `history-settings-slice`: reference codes and selection/action hierarchy.
-7. `native-share-adapter`: audited dependency, adapter, fakes and host integration.
-8. `convergence-validation`: remaining page composition, accessibility and platform fixes.
-
-Codex may combine adjacent checkpoints only when the diff remains independently testable and
-rollback-safe. It must not combine schema v4, Lists query and native plugin introduction into
-one unvalidated change.
-
-## 13. Architecture tests and invariants
-
-At minimum, establish tests for:
-
-- token/component semantics and responsive shell state preservation;
-- reference sequence format, monotonic allocation, Account scope, archive non-reuse,
-  rollback and deterministic migration;
-- Product code NOT NULL, user-required creation, immutability, exact autofill and collision;
-- manual-required occurrence parsing, UTC round-trip and Review/History consistency;
-- Product selection/details/add separation and double-click/keyboard equivalence;
-- BULK canonical conversion, half-up boundaries, overflow and read-only total;
-- Lists zero/one/two/same-day/incompatible/boundary states, Account isolation, deterministic
-  ordering and bounded query count;
-- typed error mapping/outcomes and retained draft/selection;
-- selected-only deterministic CSV/PDF and native share success/cancel/failure/unsupported;
-- v4 fresh/migration/reopen/injected-failure behavior;
-- protected Python regression and app-private database isolation.
-
-## 14. Architectural stop conditions
-
-Stop and return to Main if:
-
-- reference codes cannot be generated atomically without reuse or schema scope expansion;
-- Product NOT NULL migration requires identity merge, user interaction during migration or
-  PurchaseItem rewrite;
-- date/time correctness requires zone metadata to meet the accepted visible contract;
-- a second persisted BULK price truth appears necessary;
-- Lists cannot satisfy all-Products/no-N+1 from existing facts;
-- native sharing requires unsupported dependencies, cloud services or broad host rewrites;
-- UI composition violates dependency direction or loses accessible action equivalence;
-- implementation requires Store redesign, Product edit/merge, Person/Payment edit/delete,
-  persisted drafts, SubmissionId, registered Purchase mutation, sync/API, Analytics logic,
-  Household logic, dark mode or production release.
-
-## 15. I report contract
-
-Replace I with a precise Design evidence report containing:
-
-- implemented layer/component/page architecture and changed paths;
-- schema v4 definitions, chosen sequence strategy, migration/backfill behavior and invariants;
-- Product lookup/autofill, occurrence, BULK and Lists contracts actually materialized;
-- native share dependency/adapter decision and platform boundary;
-- tests and evidence supporting each invariant;
-- deviations from target/reference intent and reason;
-- unresolved risks, stopped scope and rollback seams.
-
-I remains observational evidence. Keep I at or below 250 lines; do not promote permanent
-Design memory or edit J/D/E/F.
+Explicitly state that local proof is not Neon, production authentication, deployment, retention,
+backup, UI/UX or release acceptance.

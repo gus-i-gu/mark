@@ -1,227 +1,230 @@
-# J_MAIN_STAGE — Cycle 10 Opening Charter and Investigation Conciliation
+# J_MAIN_STAGE — Cycle 10 Pre-Neon Protocol Reconciliation
 
-> Sequence: Cycle 09 closure → human scope expansion → A/B/C investigation → later Main reconciliation
-> Cycle: 10 — Cross-Platform Local Beta Consolidation and Inter-Device Coordination
-> Status: OPENING CHARTER; A/B/C INVESTIGATION AUTHORIZED; SOURCE IMPLEMENTATION INACTIVE
+> Sequence: A/B/C investigation → Main synthesis → D/E/F materialization staging
+> Unit: C10-S01 — Disposable local synchronization proof
+> Status: RECONCILED; D/E/F CODEX AUTHORITY PREPARED; LIVE PROVIDER MUTATION BLOCKED
 > Branch: `intermid-cycle-recovery`
-> Required starting ancestry: `7ac003e754a486dc7f24016386a737bdb6dee830`
+> Reconciled investigation HEAD: `ad7107b602bd3820e8ef357491f57b1aab2ba632`
 > Cycle 09 implementation baseline: `1d817972aea0229c9f109f236f4d224671927aab`
-> Authority: human direction reconciled by Main Chat [M]
+> Inputs: Cycle 10 A/B/C, repository source/tests, permanent memory and official platform evidence
+> Authority: human-supervised Main synthesis
 
 ---
 
-<!-- ROUND_MARKER:C10-OPENING-CHARTER-2026-07-14 -->
+<!-- ROUND_MARKER:C10-S01-PRE-NEON-RECONCILIATION-2026-07-14 -->
 
-## 1. Purpose and current authority
+## 1. Purpose and authority
 
-This J opens Cycle 10 and describes the investigation envelope for A/B/C. It supersedes the
-Cycle 09 closure assumption that API/Neon/synchronization would remain outside Cycle 10.
+This J reconciles the Cycle 10 investigations into one bounded Codex unit. D/E/F jointly
+authorize implementation only through a disposable local API/PostgreSQL proof. Codex must not
+create or mutate Neon, authentication-provider, API-hosting or other external resources.
 
-Cycle 10 now combines:
+The ten-phase Cycle 10 plan remains the cycle map. This unit advances phases 01–04 far enough to
+prove one local vertical slice and prepares—not executes—MCG-01. Phases 05–10 remain future units.
 
-1. the already proposed local-beta consolidation work; and
-2. an API-mediated Neon/PostgreSQL foundation for inter-device updating.
+## 2. Investigation reconciliation
 
-This is an investigative charter, not D/E/F and not Codex authority. Functional chats may inspect
-the repository, existing documentation and relevant authoritative external specifications, then
-write only their A/B/C stages. No source, schema, dependency, cloud resource or permanent-domain
-mutation is authorized by this file.
+A/B/C agree that the repository already owns useful local preparation: Account/Device rows,
+Device sequence, immutable SyncEvent, PendingEvent, cursor scaffold and atomic Purchase/event
+persistence. They also agree this is not synchronization.
 
-## 2. Reconciled starting state
+Blocking gaps before networking are explicit installation ownership, retry/submission identity,
+inbox/applied-event deduplication, atomic apply/cursor advancement, authenticated Account/Device
+authorization, a server transaction model and executable protocol contracts.
 
-Cycle 09 closed with schema v4, mandatory Product codes, local Person/Payment references, manual
-Purchase occurrence, exact-code autofill, same-unit BULK calculation and local export generation.
-Its named automated and Windows build/smoke evidence remains narrow; Android and complete manual
-platform evidence remain open.
+The three domains converge on:
 
-Repository inspection shows existing synchronization preparation:
+- offline-first Drift remains the operational database;
+- Flutter never receives privileged PostgreSQL/Neon credentials;
+- a controlled API owns authentication, authorization, validation and transactions;
+- Neon-hosted PostgreSQL later owns bounded coordination persistence;
+- `purchase.registered` is the only first-slice event;
+- EventId, SubmissionId, DeviceSequence and ServerCursor are distinct;
+- synchronization is neither backup nor export;
+- target-image UI/UX work remains Cycle 11.
 
-- local Account and app-private Device identities;
-- Device-owned monotonic sequence allocation;
-- immutable local `SyncEvent` envelopes;
-- `PendingEvent` state;
-- synchronization metadata and migration ledger;
-- atomic Purchase/event/pending-event persistence;
-- older architecture preference for a controlled API in front of Neon Postgres.
+## 3. Main decisions for C10-S01
 
-These are foundations, not proof of upload, download, authentication, acknowledgement, conflict
-resolution, convergence or secure cloud operation. Existing local identity selection is explicitly
-prototype-bounded and must be revisited before realistic multi-device history.
+### 3.1 Implementation boundary
 
-## 3. Governing topology and security boundary
+Implement and validate against a disposable local PostgreSQL lab. The last successful state must
+remain a fully working local-only Flutter application with synchronization disabled.
 
-The accepted direction to investigate is:
+Codex stops after local proof, G/H/I and a sanitized MCG-01 checklist. Status at exit:
 
 ```text
-local01 Drift database
-    ↕ authenticated HTTPS synchronization
-controlled application API
-    ↕ least-privilege server connection
-Neon-hosted PostgreSQL coordination state
-    ↕ controlled application API
-local02 Drift database
+WAITING_FOR_MCG_01
 ```
 
-Neon is the managed PostgreSQL layer, not a client-facing application API. Flutter clients must
-not contain privileged PostgreSQL/Neon credentials or connect directly to the database.
+### 3.2 API/runtime selection
 
-Local Drift remains the offline-first operational store. Server-side coordination exists only for
-accepted synchronization purposes. No developer analytics, unrelated profiling, advertising data
-use or silent external export enters scope.
+Use a repository-local TypeScript API targeting Node 24 LTS, Fastify-style JSON-schema routes,
+the `pg` driver and forward-only plain SQL migrations. Pin dependencies and lockfile. No ORM,
+provider-specific data API or direct Flutter→Postgres connection is authorized.
 
-“Ephemeral” cannot mean deletion before an offline receiving Device can recover an update. A/B/C
-must investigate a bounded retention lifecycle involving acknowledgement, expiry, retry, recovery
-and account deletion. Exact retention time is not yet accepted.
+Use Docker Compose with disposable PostgreSQL 18 for the lab when the host supports it. If the
+container runtime is absent or cannot start, Codex must still implement static/unit contracts,
+report the host blocker and not substitute a live Neon database.
 
-## 4. Manual configuration break rule
+### 3.3 Authentication boundary
 
-Cycle 10 uses explicit Manual Configuration Gates (MCGs). An MCG is a minimal localized sprint
-performed by the human when external Neon/API configuration is required.
+Create an `AuthVerifier` port. C10-S01 may use only an injected fixture adapter in automated tests.
+Fixture authentication must be impossible in a deployable/default runtime: it is allowed only
+under the test process and loopback-bound lab harness. No authentication provider is selected.
 
-At every MCG:
+### 3.4 Local identity and schema v5
 
-1. Codex and domain work stop before the external mutation;
-2. the repository remains runnable at the last verified checkpoint;
-3. the human receives a short provider-console/local-environment checklist;
-4. secrets remain outside Git, notebook prose, screenshots, logs and chat output;
-5. only secret names, scopes, fingerprints or redacted presence may be reported;
-6. a bounded connectivity/permission probe is recorded;
-7. continuation requires explicit human confirmation.
+Add an explicit singleton/current-installation relation that references exactly one current Device
+for the Account. Preserve historical Devices and their sequence/event ownership. Remove startup
+selection by scanning the earliest UUID as the normal path after migration.
 
-No repo refactoring may continue merely because a configuration step was assumed successful.
+Schema v5 must add bounded durable structures for:
 
-Proposed manual gates, subject to A/B/C investigation:
+- installation metadata and current Device;
+- upload Submission/attempt state with request hash, lease/retry/result fields;
+- Submission→Event membership;
+- applied inbox EventId/content hash/server cursor;
+- atomic cursor/apply bookkeeping.
 
-- **MCG-01 — isolated Neon environment:** create/select project, branch, database and least-privilege
-  roles; establish secret injection and disposal boundaries.
-- **MCG-02 — API runtime:** configure deployment/local runtime variables, TLS endpoint, migration
-  identity and server-only database access.
-- **MCG-03 — Account/Device test identities:** configure the minimum authentication or pairing
-  material for two controlled test Devices without embedding permanent secrets.
-- **MCG-04 — two-device evidence environment:** prepare local01/local02 fixtures, server cleanup,
-  retention observation and teardown.
+Backfill the current valid UUID Device deterministically for existing single-installation files.
+Ambiguous/no-valid-Device states must fail safely without resetting data.
 
-## 5. Ten Cycle 10 phases
+### 3.5 Protocol identities
 
-### C10-01 — Baseline, vocabulary and threat model
+- EventId: immutable identity of one domain event.
+- SubmissionId: identity of one logical upload request; an uncertain HTTP retry reuses it and
+  must receive the same stored result.
+- DeviceSequence: monotonic order per enrolled Device.
+- ServerCursor: opaque monotonic Account coordination position.
+- Inbox identity: AccountId + EventId with content hash and applied cursor.
 
-Freeze the implementation/documentation baseline; inventory existing sync scaffolding; define
-assets, trust boundaries, threats, evidence matrix, fixtures and rollback rules. Decide which
-external facts require current official documentation. Prepare MCG-01; do not configure it yet.
+For the lab, the server requires the exact next DeviceSequence. A gap is a typed rejection. Sequence
+epoch/reset/rebootstrap remains unresolved and must not be invented in this unit.
 
-### C10-02 — Account, installation and Device identity
+### 3.6 First event and collision policy
 
-Resolve provisional `local-account`, current-installation ownership, Device lifecycle, pairing,
-credential storage, revoked/lost Device behavior and preserved historical Devices. Identity must
-not be inferred from hardware identifiers, labels or Product/User nicknames.
+Version the executable protocol as `purchase.registered` payload v3. It carries the complete
+immutable Purchase aggregate and stable Product, Store and optional reference facts required for
+another Device to apply it without querying the origin Device.
 
-### C10-03 — Local outbox/inbox and idempotent event model
+- same EventId + same content hash → duplicate-equivalent success;
+- same SubmissionId + same request hash → replay stored response;
+- same EventId/SubmissionId + different hash → terminal conflict;
+- stable Product/code/exact-identity collision with different content → typed quarantine/conflict;
+- no automatic merge, edit, deletion or blanket last-write-wins.
 
-Reconcile existing SyncEvent/PendingEvent structures with upload and download needs. Define event
-identity, SubmissionId/retry identity, sequence/cursor rules, payload versioning, inbox deduplication,
-atomic apply, unknown outcomes and crash recovery before network implementation.
+Lists remain derived and are rebuilt/invalidated locally after apply.
 
-### C10-04 — API contract and Neon/PostgreSQL transition schema
+### 3.7 Local API and server persistence
 
-Define authenticated endpoints, request/response envelopes, authorization, validation, error
-semantics, physical server ownership, migrations, indexes and least-privilege roles. Prove locally
-or disposition MCG-01/MCG-02 before repo integration. Exact framework/tooling remains investigative.
-
-### C10-05 — Upload, download, acknowledgement and retention
-
-Define batching, cursors, safe retries, accepted/rejected outcomes, per-Device acknowledgement,
-bounded retention, expiry, cleanup, account deletion and recovery when a Device remains offline or
-never acknowledges. Demonstrate that server deletion cannot silently strand required updates.
-
-### C10-06 — Conflict, retry and convergence policy
-
-Classify entities and facts as immutable, append-only, replaceable or derived. Define duplicate,
-concurrent and out-of-order handling; conflict surfacing; deterministic convergence; and rebuild of
-derived Lists. Do not use blanket last-write-wins without entity-specific justification.
-
-### C10-07 — Local migration, recovery and export integrity
-
-Complete representative v1/v2/v3→v4 migration/reopen/failure evidence; test rollback and no-silent-
-reset; validate deterministic CSV/PDF artifacts; and decide export-only versus local backup/restore.
-Cloud synchronization must not become an undocumented backup substitute.
-
-### C10-08 — Measurement and behavior-preserving modularization
-
-Measure Lists, lookup, History, export and sync queues before indexes/paging. Extract oversized
-Purchase/Catalogue/History code only behind regression evidence and without intentional UI/UX change.
-Pause around MCGs rather than mixing provider configuration with broad refactoring.
-
-### C10-09 — Windows, Android and two-device evidence
-
-After MCG-03/MCG-04, validate offline operation, upload, download, retry, duplicate delivery,
-interrupted transfer, acknowledgement, convergence and teardown across controlled local01/local02.
-Classify Windows, Android, emulator, physical-device, lifecycle and manual evidence separately.
-
-### C10-10 — Promotion, reconciliation and closure
-
-Codex reports G/H/I after authorized materialization. Domain chats perform PRC-01 promotion into
-permanent memory. Main reconciles evidence, human observations, configuration records and domain
-checkpoints before refreshing 00/05/06. No cloud/security/release claim is closed by code presence.
-
-## 6. Cycle 11 boundary
-
-Cycle 11 continues to own target-image UI polishing, page-level UX recomposition, full Lists visual
-presentation, shared-component adoption, Product-detail/History interaction refinement, native-share
-presentation, accessibility improvement and the proposed minimum Analytics page.
-
-Cycle 10 may extract code without intentional visible change and may record UX/accessibility
-observations. It must not consume the Cycle 11 redesign merely to make synchronization visible.
-
-## 7. Required A/B/C investigation outputs
-
-All domains must classify claims with PRC-01 vocabulary and distinguish accepted direction,
-existing implementation, named validation, host-unvalidated state, proposals, blockers and deferral.
-
-### A — Operational
-
-Own the executable phase/checkpoint plan, environments, MCG runbooks, secret-safe evidence,
-dependency/toolchain inventory, rollback, validation matrix, failure injection and stop conditions.
-
-### B — Didactic/UX
-
-Own stable synchronization vocabulary, user-visible state/recovery semantics, offline/online truth,
-privacy explanations, configuration learning risks and evidence boundaries. Do not redesign Cycle 11 UI
-or change learner maturity without learner evidence.
-
-### C — Design/Architecture
-
-Own trust boundaries, Account/installation/Device identity, event protocol, API responsibilities,
-Neon/Postgres schema alternatives, acknowledgement/retention, conflict/convergence, local/cloud
-authority and migration boundaries. Do not operationally validate or select tools without evidence.
-
-## 8. Decisions Main must reconcile after A/B/C
-
-1. Account authentication and Device enrollment model.
-2. Explicit current-installation→Device invariant and migration.
-3. SubmissionId/event/cursor/inbox identity rules.
-4. API language/framework, hosting and migration tooling.
-5. Neon project/branch/database/role layout and environment separation.
-6. Payload scope: which facts synchronize in the first vertical slice.
-7. Per-entity conflict and convergence policy.
-8. Acknowledgement, retention, expiry, cleanup and account-deletion policy.
-9. Export-only versus local backup/restore boundary.
-10. Required Windows/Android/two-device acceptance matrix.
-
-## 9. Preserved prohibitions
-
-- never commit or print credentials, tokens, connection strings or private keys;
-- no privileged client database access;
-- no implicit upload, analytics or unrelated retention;
-- no production environment before disposable/local protocol evidence;
-- no cloud claim from local queue preparation alone;
-- no broad refactor across an unresolved manual configuration gate;
-- no source implementation until A/B/C are reconciled into active D/E/F;
-- no public release, store publication, Household behavior or Cycle 11 UI/Analytics work.
+Implement loopback lab endpoints:
 
 ```text
-Cycle 10: investigation opened
-A/B/C staging: authorized
-manual Neon/API configuration: gated and human-confirmed
-D/E/F: not prepared
-Codex/source/cloud mutation: inactive
+GET  /health/live
+GET  /health/ready
+POST /v1/sync/submissions
+GET  /v1/sync/events?after=<cursor>&limit=<bounded>
+POST /v1/sync/acknowledgements
+```
+
+Logical server persistence: Accounts, Devices, AccountCursorState, Submissions, Events,
+DeviceAcknowledgements and migration ledger. Event append, exact sequence check, per-Account cursor
+allocation and stored Submission result commit atomically.
+
+Use separate migration/runtime roles in the local lab. Runtime cannot DDL. Account isolation must
+be proven through server-derived identity, scoped transactions/constraints and RLS defense in depth
+where the local harness can test it. Never accept AccountId authority from an unverified payload.
+
+### 3.8 Retention and acknowledgement
+
+The local lab records the greatest contiguous cursor applied by each Device. Cursor-only local
+application is forbidden; the inbox ledger is required.
+
+Do not implement deletion/TTL in C10-S01. Retain lab events only for the disposable test lifetime.
+Snapshots, Device eligibility, expiry, rebootstrap and account deletion must be reconciled before
+MCG-01/live retention configuration. A fixed TTL that can strand an offline Device is rejected.
+
+## 4. Required local proof
+
+The minimum executable story is:
+
+```text
+two isolated Drift files + one disposable Postgres/API
+→ A registers Purchase offline
+→ A uploads one v3 event
+→ timeout after server commit is retried with same SubmissionId
+→ duplicate returns equivalent stored result
+→ B downloads after cursor
+→ B inbox insert + fact apply + cursor advance commit atomically
+→ B acknowledges greatest contiguous cursor
+→ both clients reopen
+→ Purchase facts and derived Lists compare deterministically
+```
+
+Also test wrong Account, unknown/revoked Device, sequence gap, hash mismatch, invalid version,
+oversized batch, duplicate/reordered download, crash before/inside/after local apply, serialization
+retry, runtime DDL denial and migration failure/no-silent-reset.
+
+## 5. User-visible and privacy semantics
+
+No page redesign is authorized. Application results/error codes may expose truthful minimum states:
+
+`saved-local`, `waiting-upload`, `uploading`, `server-accepted`, `waiting-peer`,
+`downloaded-applied`, `duplicate-ignored`, `conflict`, `auth-required`, `device-revoked`,
+`cursor-expired`, `protocol-upgrade-required`, `unknown-outcome`.
+
+“Uploaded” must not mean applied elsewhere. “Synchronized” must not mean backup. Logs and reports
+contain IDs, codes, counts, timings and hashes only—never credentials or Purchase payloads.
+
+## 6. Manual actions and gates
+
+### Before/during Codex local proof
+
+Human action is required only if the local host asks for it:
+
+1. start an already installed Docker Desktop/Podman service;
+2. approve installation of Node 24 LTS or a container runtime if not already available;
+3. confirm that disposable local ports/volumes may be used;
+4. never provide Neon credentials during C10-S01.
+
+Codex must report a missing host capability instead of silently using a live service.
+
+### MCG-01 — after Codex stops
+
+The human—not Codex—must:
+
+1. create/select an isolated Neon project and development branch;
+2. choose region and supported PostgreSQL version;
+3. create a disposable database, migration role and least-privilege runtime role;
+4. review provider limits/cost/expiry and record teardown ownership;
+5. store connection strings only in local/deployment secret storage;
+6. run the supplied sanitized migration/runtime privilege probe;
+7. return only redacted evidence: aliases, region/version, role names, migration hash, timestamps
+   and pass/fail results.
+
+Secret values, URLs, tokens and keys must never enter Git, notebook files, screenshots or chat.
+MCG-02/03/04 remain inactive until MCG-01 is reconciled by Main.
+
+## 7. File and scope discipline
+
+- Keep ordinary source/docs near 250 lines; split modules by responsibility.
+- Generated Drift output may exceed the limit and remains derived.
+- Do not modify the protected Python/PySide6 database or behavior.
+- Do not refactor Home/Lists/Purchase/History/Catalogue UI composition.
+- Do not implement native sharing, Analytics, Household, production auth, live Neon, deployment,
+  background synchronization, edits/deletes, snapshots or public release.
+- D/E/F conflicts or an unsafe migration stop implementation before mutation.
+
+## 8. Evidence and reporting
+
+Codex replaces only G/H/I as its notebook evidence. Reports must list files, commands, passes,
+failures, skipped gates, dependency versions, provider non-use and the exact final commit/path
+inventory. Local lab artifacts and secrets remain untracked.
+
+```text
+A/B/C: reconciled
+D/E/F: jointly active for C10-S01 only
+local disposable protocol proof: authorized
+live Neon/API/auth configuration: prohibited
+expected terminal gate: WAITING_FOR_MCG_01
 ```
