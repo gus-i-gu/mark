@@ -616,3 +616,61 @@ Windows Flutter build and Python regression evidence remain intact. The ordinary
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+---
+
+# 20. Intermid Cycle Accepted Staged-Item Edit Boundary
+
+## 20.1 Presentation-local edit identity
+
+A staged Purchase line has distinct presentation and domain-bearing responsibilities:
+
+```text
+line key
+    presentation list/edit identity
+
+ProductReference
+    Product identity/reference carried by the staged Item
+
+Product label
+    presentation text associated with that retained reference
+
+editable Item values
+    package count, purchased quantity/unit, and line total
+```
+
+When a line enters edit mode, `PurchasePage` owns the line key, original `ProductReference`, and original Product label as one presentation-local edit state. Saving an edit rebuilds only the `PurchaseItemDraft` values from editable controls and reuses the retained reference and label. It must not reconstruct Product identity from visible Product fields, current dropdown selection, similarity results, or a replacement Product draft.
+
+This responsibility applies polymorphically to `ExistingProductReference` and `NewProductReference`. Direct regression evidence currently covers the existing-Product variant. The new-Product variant is supported by the common `ProductReference` state and save path but lacks its own dedicated regression.
+
+## 20.2 Edit-state lifecycle
+
+Associated edit state is cleared coherently after:
+
+- a successful staged-line save;
+- removal of the line currently being edited;
+- successful Purchase registration.
+
+A failed registration retains the staged draft under the existing session-lifetime boundary. Product dropdown selection is not the owner of staged-line Product identity.
+
+The correction is presentation-local and does not change application ports, domain identity types, local repository transaction ownership, Drift schema v2, migration behavior, composition, or navigation.
+
+## 20.3 Evidence boundary
+
+The existing-Product regression verifies that editing Item values and registering retains the original Product ID and does not create a duplicate Product. Recorded materialization evidence comprises 7 focused widget tests, 32 total Flutter tests, and clean Flutter analysis. This is local widget/in-memory behavior evidence, not platform, file-backed restart, migration, manual, release, or synchronization acceptance.
+
+## 20.4 Separate unresolved decisions
+
+The edit correction does not decide or imply:
+
+- schema v3 contents or migration strategy;
+- Store normalization, branch identity, aliases, or merge policy;
+- durable registration-attempt identity or `SubmissionId`;
+- installation–Device ownership and lifecycle;
+- persisted Purchase drafts;
+- query indexes, pagination, or analytics caches;
+- backup/export/restore identity;
+- authentication, API/Neon, upload/download, convergence, or synchronization.
+
+These remain independent Design decisions with separate evidence, reversibility, and migration consequences.
