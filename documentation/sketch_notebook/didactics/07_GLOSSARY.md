@@ -1,338 +1,146 @@
 # 07_GLOSSARY.md
 
 > Domain: Didactic
-> Status: Persistent derivative — Cycle 06 Sprint 02
+> Status: Persistent derivative — Cycle 09 Sprint 02
 > Authority source: `didactics/02_KANBAN.md`
-> Purpose: Compact retrieval without independent truth
-
----
-
-# Release-Evidence Spine
-
-```text
-installer configuration
-→ compiled installer
-→ per-user installation
-→ Start Menu launch
-→ technical workflow evidence
-→ close/reopen
-→ same-version reinstall
-→ uninstall retention
-→ reinstall recovery
-→ human-visible acceptance — pending
-```
-
-Current evidence:
-
-```text
-configured: validated
-built: validated
-launched: validated — frozen and installed shortcut
-installed: validated — automated per-user lifecycle
-validated: partial-to-strong technical evidence
-accepted: no
-SmartScreen visible behavior: unknown
-```
-
-## Evidence State
-**KANBAN ID:** `&&&05`  
-The strongest truthful claim supported by observed evidence. Sprint 02 reached compiled installer, installed execution, technical workflows, retention, and recovery.
-
-## Validation Boundary
-**KANBAN ID:** `&&&05`  
-The environment, lifecycle stage, conditions, and behavior covered by evidence. Automated service-backed workflow evidence is not a complete human UI walkthrough.
-
-## Source Execution
-**KANBAN ID:** `&&%04`  
-Repository modules run through a development Python interpreter.
-
-## Frozen Application
-**KANBAN ID:** `&&%04`  
-A generated executable distribution containing collected code, resources, and runtime dependencies.
-
-## Installed Application
-**KANBAN ID:** `&&%04`  
-A frozen runtime placed and registered through an installer. Markei was launched through its Start Menu shortcut under the current ordinary Windows user.
-
-## Packaging Artifact
-**KANBAN ID:** `&%%06`  
-The generated one-folder distribution produced from `Markei.spec`.
-
-## Installer Configuration
-**KANBAN ID:** `&%%06`  
-Source instructions for producing setup media. `installer/Markei.iss` is configuration, not the installer executable.
-
-## Installer Artifact
-**KANBAN ID:** `&%%06`  
-Compiled setup media. Sprint 02 produced `dist/installer/Markei-Setup-0.1.0-x64.exe`.
-
-## Installed Program Files
-**KANBAN ID:** `&%%06`, `%%%05`  
-Replaceable application files placed under `%LOCALAPPDATA%\Programs\Markei`.
-
-## Retained User Data
-**KANBAN ID:** `%%%05`  
-Mutable state under `%LOCALAPPDATA%\Markei`. The database survived uninstall and reopened after reinstall.
-
-## Structural Default
-**KANBAN ID:** `%%%01`  
-A required baseline row or setting needed for valid application operation. Category `F` / `General` and store `1` / `Default Store` are structural defaults, not sample business data.
-
-## Seed Data
-**KANBAN ID:** `%%%01`  
-Optional predefined rows used for development, testing, or demonstrations. Production excludes `seed.sql`.
-
-## Build-Time Dependency
-**KANBAN ID:** `%%%06`  
-A dependency required to produce the frozen artifact. PyInstaller is the Markei example.
-
-## Runtime Dependency
-**KANBAN ID:** `%%%06`  
-A dependency required by the executing application. Collected PySide6/Qt components are Markei examples.
-
-## Installer-Time Dependency
-**KANBAN ID:** `%%%06`  
-A dependency required to compile installation tooling. Inno Setup's `ISCC.exe` is installed on the builder and is not required by installed Markei.
-
-## Same-Version Reinstall
-**KANBAN ID:** `&%%06`  
-Reapplying the same installer identity/version. Sprint 02 observed retained compatible data.
-
-## Uninstall Retention
-**KANBAN ID:** `&%%06`, `%%%05`  
-Removal of installed program files while preserving accepted external user state. Markei's database remained after uninstall.
-
-## Reinstall Recovery
-**KANBAN ID:** `&%%06`, `%%%05`  
-Reinstalling program files and reopening previously retained compatible user data.
-
-## Windows Reputation Observation
-**KANBAN ID:** `&&&05`  
-A platform-security or reputation observation distinct from application correctness. Defender was enabled and binaries were unsigned; human-visible SmartScreen behavior remains unknown.
-
----
-
-# Existing Retrieval Terms
-
-- **Responsibility boundary** — allocation of knowledge and behavior. `&&&01`
-- **Naming as data contract** — precise labels preserve meaning. `&&&03`
-- **Resource ownership and lifetime** — creation, use, and release responsibility. `&&&04`
-- **Deterministic cleanup** — release tied to a visible scope or lifecycle event. `&&%03`
-- **Statement versus workflow atomicity** — one statement can be atomic while a multi-step use case is not. `&%%05`
-- **SQLite initialization versus migration** — fresh structure versus compatible adaptation; seeding is distinct. `%%%01`
-- **SQLite connection ownership** — session and cursor lifetime. `%%%02`
-- **Bundled resource versus writable user data** — replaceable application content versus retained mutable state. `%%%05`
-
----
-
-# Supervision Notes
-
-- `02_KANBAN.md` remains authoritative.
-- No concept became Green.
-- Installed technical validation does not prove learner mastery.
-- Human-visible Register, Lists, History, Settings, close/reopen, and SmartScreen observations remain learner-facing evidence gaps.
-- Tool names remain project examples rather than standalone concepts.
-
----
-
-# Flutter Shared-Beta Canonical Derivations
-
-## Stable Identity
-**KANBAN ID:** `&&&06`  
-**Type:** Foundational Computer Science  
-**Definition:** A durable identifier for one logical subject independent of mutable labels.  
-**Project Usage:** Account, device, Product, Purchase, Item, and event UUIDs.  
-**Related Concepts:** See `&&&06` in `02_KANBAN.md`.
-
-## Authentication
-**KANBAN ID:** `&&&07`  
-**Type:** Foundational Computer Science  
-**Definition:** Verification that establishes an authenticated principal.  
-**Project Usage:** Verified sign-in resolves the internal account UUID.  
-**Related Concepts:** See `&&&07` in `02_KANBAN.md`.
-
-## Authorization
-**KANBAN ID:** `&&&08`  
-**Type:** Foundational Computer Science  
-**Definition:** Policy deciding which operations a principal may perform on resources.  
-**Project Usage:** The API restricts events to the authenticated account; row ownership is an example.  
-**Related Concepts:** See `&&&08` in `02_KANBAN.md`.
-
-## Eventual Consistency
-**KANBAN ID:** `&&&09`  
-**Type:** Foundational Computer Science  
-**Definition:** Replicas converge after receiving and deterministically applying the same accepted facts.  
-**Project Usage:** Offline Markei clients catch up through cursor synchronization.  
-**Related Concepts:** See `&&&09` in `02_KANBAN.md`.
-
-## Historical Integrity
-**KANBAN ID:** `&&&10`  
-**Type:** Foundational Computer Science  
-**Definition:** Preservation of the identity and facts required to interpret accepted history.  
-**Project Usage:** Package or brand change creates a new Product ID without rewriting old Purchase Items.  
-**Related Concepts:** See `&&&10` in `02_KANBAN.md`.
-
-## Immutable Dart Model
-**KANBAN ID:** `&&%05`  
-**Type:** Dart Language  
-**Definition:** Typed Dart data whose identity-bearing fields do not mutate after construction.  
-**Project Usage:** Events, catalogue identities, Money, and Quantity use immutable values.  
-**Related Concepts:** See `&&%05` in `02_KANBAN.md`.
-
-## Reusable Catalogue
-**KANBAN ID:** `&%%07`  
-**Type:** Project / Model  
-**Definition:** An account-scoped set of recurring identities referenced by historical transactions.  
-**Project Usage:** Products and Stores are reused across Purchases.  
-**Related Concepts:** See `&%%07` in `02_KANBAN.md`.
-
-## Product Identification Set and Deterministic Normalization
-**KANBAN ID:** `&%%08`  
-**Type:** Project / Model  
-**Definition:** Canonical identity attributes mapped deterministically to one account-scoped Product ID.  
-**Project Usage:** Packaged and BULK identities normalize units; fuzzy matches never auto-merge.  
-**Related Concepts:** See `&%%08` in `02_KANBAN.md`.
-
-## Purchase Aggregate
-**KANBAN ID:** `&%%09`  
-**Type:** Project / Model  
-**Definition:** Consistency boundary owning Purchase header, Items, and required persistence effects.  
-**Project Usage:** Purchase, Items, and pending event commit atomically.  
-**Related Concepts:** See `&%%09` in `02_KANBAN.md`.
-
-## Purchase Item
-**KANBAN ID:** `&%%10`  
-**Type:** Project / Model  
-**Definition:** Product-specific commercial observation belonging to a Purchase.  
-**Project Usage:** Stores Product reference, quantity, line total, package count, and promotion.  
-**Related Concepts:** See `&%%10` in `02_KANBAN.md`.
-
-## Append-Only Synchronization Event
-**KANBAN ID:** `&%%11`  
-**Type:** Project / Synchronization  
-**Definition:** Immutable identified protocol fact appended to shared history.  
-**Project Usage:** `purchase.registered` carries one atomic Purchase and its Item lines.  
-**Related Concepts:** See `&%%11` in `02_KANBAN.md`.
-
-## Offline Queue and Idempotent Delivery
-**KANBAN ID:** `&%%12`  
-**Type:** Project / Synchronization  
-**Definition:** Durable pending events plus retry rules that prevent duplicate effect.  
-**Project Usage:** The same event UUID/content returns prior acceptance.  
-**Related Concepts:** See `&%%12` in `02_KANBAN.md`.
-
-## Device Ordering and Synchronization Cursor
-**KANBAN ID:** `&%%13`  
-**Type:** Project / Synchronization  
-**Definition:** Device sequence records local creation order; server cursor records accepted download order.  
-**Project Usage:** Clients detect sequence gaps and page unseen account events.  
-**Related Concepts:** See `&%%13` in `02_KANBAN.md`.
-
-## Sync Protocol
-**KANBAN ID:** `&%%14`  
-**Type:** Project / Synchronization  
-**Definition:** Versioned cross-runtime rules for validated, authorized, ordered event exchange.  
-**Project Usage:** Dart client and TypeScript API share language-neutral payload and error semantics.  
-**Related Concepts:** See `&%%14` in `02_KANBAN.md`.
-
-## Dimensional Quantity
-**KANBAN ID:** `&%%15`  
-**Type:** Project / Value Model  
-**Definition:** Fixed-precision magnitude qualified by physical dimension and unit.  
-**Project Usage:** MASS/KG, VOLUME/L, and COUNT/UNIT remain distinct.  
-**Related Concepts:** See `&%%15` in `02_KANBAN.md`.
-
-## Monetary Minor Unit
-**KANBAN ID:** `&%%16`  
-**Type:** Project / Value Model  
-**Definition:** Currency code paired with integer count of the currency's minor unit.  
-**Project Usage:** BRL 8.79 is BRL plus 879.  
-**Related Concepts:** See `&%%16` in `02_KANBAN.md`.
-
-## Versioned Analytic
-**KANBAN ID:** `&%%17`  
-**Type:** Project / Analytics  
-**Definition:** Derived algorithm with stable identity and immutable semantic version.  
-**Project Usage:** Improved price-change rules create a new version without rewriting purchases.  
-**Related Concepts:** See `&%%17` in `02_KANBAN.md`.
-
-## Flutter Framework and Responsive Widget Composition
-**KANBAN ID:** `%%%07`  
-**Type:** Framework / Dependency  
-**Definition:** Flutter-managed responsive widget tree rendered from application state across platforms.  
-**Project Usage:** Markei adapts one client presentation to Windows, Android, and iOS.  
-**Related Concepts:** See `%%%07` in `02_KANBAN.md`.
-
----
-
-<!-- TEMPORAL_MARKER:C07-S02-CLOSURE -->
-> **Temporal boundary — Cycle 07 Sprint 02 closure (2026-07-12).** Content above this marker belongs to the preparation and first-reconciliation state. Content below is a rebuildable current retrieval surface derived from `02_KANBAN.md`.
-
-# Sprint 05 Current-Evidence Retrieval
-
-## Platform Evidence Ladder
-**KANBAN ID:** `%%%07`  
-Flutter SDK selection, Android SDK recognition, emulator availability, APK build, install, launch, interaction, lifecycle, and persistence are different evidence levels. Sprint 05 reached emulator launch and human-observed registration, with only partial lifecycle evidence.
-
-## Android Application ID and Display Label
-**KANBAN IDs:** `%%%07`, `&&&06`  
-`com.gusigu.markei` identifies the installed Android package and sandbox. `Markei` is the visible label. Neither identifies the account, device, Product, Purchase, or event.
-
-## Installation-Local Device UUID
-**KANBAN IDs:** `&&&06`, `&%%13`  
-A UUID v4 stored in the app-private database identifies one local installation for event sequencing. Tests show reuse after reopen and distinct identities for distinct fresh databases. It is not authentication or a hardware ID.
-
-## Identity Taxonomy
-**KANBAN IDs:** `&&&06`, `&%%07`–`&%%11`, `&%%13`  
-Account ID owns local data provisionally; Device UUID owns one installation’s sequence; Product user code is a visible account-private reference; Product UUID identifies a local record; Purchase UUID identifies one registered aggregate; Event UUID identifies one event/delivery fact; Device sequence orders that Device’s events.
-
-## Purchase Registration
-**KANBAN IDs:** `&%%09`, `&%%10`, `&&&10`  
-Current source creates and inserts a new immutable Purchase aggregate. “Upsert” is not supported terminology for replacing an existing Purchase.
-
-## Local Queue Is Not Synchronization
-**KANBAN IDs:** `&%%11`–`&%%14`, `&&&09`  
-A local event and pending row prepare later delivery. They do not prove API upload, server idempotency, cursor download, replay, conflict handling, or convergence.
-
-## Phone-Width Widget Evidence
-**KANBAN ID:** `%%%07`  
-A widget test demonstrates that the controlled Purchase/History path works at a narrow logical width. It does not prove Android keyboard, Back, rotation, background/resume, process recreation, physical-device compatibility, or final visual quality.
-
-## Functional UI Scaffold
-**KANBAN ID:** `%%%07`  
-SafeArea, scrolling, staged total, and navigation support the bounded workflow. The scaffold is implemented and usable for evidence gathering, while visual design and accessibility acceptance remain provisional.
-
-## Evidence Is Not Mastery
-**KANBAN IDs:** all referenced concepts  
-Source representation, passing tests, host execution, and human-observed application use strengthen project evidence. Maturity changes require explicit learner evidence such as explanation, comparison, or transfer.
-
----
-
-<!-- TEMPORAL_MARKER:C08-ENTRY-2026-07-12 -->
-> Temporal boundary — Cycle 08 begins here. Content above belongs to Cycle 07 or earlier reviewed project history; content below belongs to Cycle 08 work and later reconciliation.
-
----
-
-<!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
-> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
-
-
-# Intermid Recovery Current-Evidence Retrieval
-
-## ProductReference Identity Versus Editable Item Values
-**KANBAN IDs:** `&&&06`, `&%%07`, `&%%10`  
-A `ProductReference` identifies which reusable Product a staged Purchase Item concerns. Package count, purchased quantity, unit, and line total are transaction-specific Item values and may change without changing Product identity. A draft-line key identifies the staged line, not the Product.
-
-## Existing-Product Edit Evidence
-**KANBAN IDs:** `&&&05`, `&&&06`, `&%%10`  
-The focused widget regression edits Item values, registers the Purchase, verifies the original Product ID, and verifies that only one Product row exists. This is direct evidence for `ExistingProductReference`; the shared reference-polymorphic source path for `NewProductReference` remains source-structure evidence without a separate regression.
-
-## Project Evidence Is Not Learner Maturity
-**KANBAN IDs:** all referenced concepts  
-Implementation, widget tests, and analysis show that the distinction exists and behaves within the tested boundary. Maturity still requires the learner to explain or transfer the distinction independently.
-
-
----
-
-<!-- TEMPORAL_MARKER:C09-S02-ENTRY-2026-07-14 -->
-> Temporal boundary — Cycle 09 Sprint 02 begins here. Content above is the reviewed pre-Sprint-02 baseline and retains its existing authority and semantic role. Content below belongs to Sprint 02 investigation, current-UI archival evidence, aesthetic reconciliation, staging, implementation, and later closure. This marker alone authorizes no source change, semantic promotion, or methodology revision.
+> Purpose: Compact terminology retrieval; no independent truth or maturity change
+
+## Evidence and execution
+
+### Evidence state and validation boundary
+
+**KANBAN ID:** `&&&05`
+The strongest claim supported within a named environment and scope. Source presence, unit/widget tests, platform builds, manual workflows, accessibility checks and learner evidence are different levels.
+
+### Project evidence is not learner maturity
+
+**KANBAN ID:** `&&&05`
+Implementation and tests may stabilize project vocabulary and relationships. Green/Yellow/Red maturity requires direct learner explanation, application or transfer evidence.
+
+### Local queue is not synchronization
+
+**KANBAN IDs:** `&%%11`–`&%%14`, `&&&09`
+A local event and pending row prepare later delivery; they do not prove API exchange, acknowledgement, cursor replay or convergence.
+
+## Identity and catalogue
+
+### Stable identity
+
+**KANBAN ID:** `&&&06`
+A durable identifier for one logical subject independent of mutable labels. Markei UUIDs are opaque relational identities.
+
+### Product code
+
+**KANBAN IDs:** `&&&03`, `&&&06`, `&%%08`
+A mandatory, user-established, immutable visible code for a new Product. It is not the Product UUID, local organizational reference code, nickname or exact identifying-field set.
+
+### Local organizational reference code
+
+**KANBAN IDs:** `&&&03`, `&&&06`
+A generated visible Account-local sequence such as `@001` for Person or `#001` for Payment Method. It aids recognition and is not the database primary/foreign-key identity.
+
+### Nickname
+
+**KANBAN IDs:** `&&&03`, `&&&06`
+The human-readable label paired with a Person or Payment Method reference. It may be shown as `@001 · Nickname`; `Archived` preserves historical meaning.
+
+### Reusable Catalogue
+
+**KANBAN ID:** `&%%07`
+The Account-private set of recurring Products referenced by Purchases. Catalogue Products are reusable subjects, not Purchase Items.
+
+### Product identification set and normalization
+
+**KANBAN ID:** `&%%08`
+Exact normalized identity facts resolve one Product: PACKAGED uses name, Brand, package quantity and unit; BULK uses name and Brand. Similarity is advisory and never auto-merges.
+
+### Exact Product-code lookup
+
+**KANBAN IDs:** `&%%07`, `&%%08`
+An exact code match selects one existing Product and autofills immutable Product facts. It does not automatically add a staged Purchase Item.
+
+### Product selection, details and Item addition
+
+**KANBAN IDs:** `&&&03`, `&%%07`, `&%%10`
+Selection identifies the current Product; Product details presents its facts; adding a staged Item records transaction values. These are separate actions.
+
+## Purchase and history
+
+### Purchase aggregate
+
+**KANBAN ID:** `&%%09`
+The consistency boundary that owns one Purchase, its Items and required persistence effects.
+
+### Purchase occurrence time
+
+**KANBAN IDs:** `&&&03`, `&&&10`, `&%%09`
+The local civil date/time when buying happened, displayed as `dd/mm/yyyy · HH:mm`. It is distinct from database insertion/creation time and does not by itself decide storage-timezone architecture.
+
+### Purchase Item
+
+**KANBAN ID:** `&%%10`
+A Product-specific commercial observation inside one Purchase. It owns transaction quantities, rates and totals while retaining the Product reference.
+
+### PACKAGED Product and Item facts
+
+**KANBAN IDs:** `&%%08`, `&%%10`, `&%%15`
+Package quantity/unit belongs to Product identity; packages bought and amount bought belong to the Purchase Item.
+
+### BULK rate and calculated line total
+
+**KANBAN IDs:** `&%%10`, `&%%15`, `&%%16`
+The Item records amount bought and a rate in the same selected unit; fixed-point calculation derives a read-only line total rounded half-up to currency minor units.
+
+### Historical integrity
+
+**KANBAN ID:** `&&&10`
+Registered Purchase facts keep their original Product and optional reference identities. Archiving or relabelling does not make older History unassigned or editable.
+
+### History selection and details
+
+**KANBAN IDs:** `&&&03`, `%%%07`
+Checkbox/multi-selection chooses Purchases for actions. Opening/focusing details is separate; current History double-click opens/focuses detail rather than toggling selection.
+
+### Deterministic export and native share
+
+**KANBAN IDs:** `&&&05`, `&%%09`
+Selected Purchase DTOs can produce deterministic CSV/PDF bytes or a saved file. Native OS share completion is a separate, currently unimplemented boundary.
+
+## Lists and presentation
+
+### Lists projection
+
+**KANBAN IDs:** `&&&02`, `&%%17`
+A rebuildable view derived from registered Catalogue/Purchase history. Storage, Shortage/Ending soon and Market/Expected ended are personal estimates, not manually maintained or measured inventory.
+
+### No Purchase history
+
+**KANBAN IDs:** `&&&02`, `&%%17`
+No compatible registered observation exists for the Product, so no cycle can begin.
+
+### Not enough history
+
+**KANBAN IDs:** `&&&02`, `&%%17`
+Exactly one compatible observation exists; the Product has history but not enough intervals to estimate a personal cycle.
+
+### Functional UI scaffold
+
+**KANBAN ID:** `%%%07`
+Current navigation and page controls support bounded workflows. Theme/component presence does not prove that pages use the system or match target images.
+
+### Responsive and accessible equivalence
+
+**KANBAN IDs:** `%%%07`, `&&&05`
+Desktop and compact layouts should preserve meaning and reachable actions. Current keyboard, screen-reader and full accessibility equivalence remain unvalidated.
+
+### Error and recovery contract
+
+**KANBAN IDs:** `&&&03`, `&&&05`, `&%%03`
+A user-facing failure identifies the operation/field, explains the known reason, preserves safe input, and offers a next action without raw database exceptions. Unknown outcomes require History verification before retry.
+
+## Current evidence boundary
+
+- Implemented/tested within reported scope: schema-v4 visible references, mandatory Product code, occurrence parsing, exact code autofill, same-unit BULK calculation, Lists unavailable-state distinction, selected CSV/PDF generation.
+- Partial/open: target visual composition, page consumption of shared components, History double-click semantics, native share and full relational Lists presentation.
+- Unvalidated: keyboard, screen-reader and complete manual accessibility equivalence.
+- Maturity: unchanged; consult `02_KANBAN.md` for canonical status and `08_CONCEPT_MAP.md` for current recovery.

@@ -68,7 +68,7 @@ The use of stable, precise, responsibility-aware names to define the meaning and
 #### Language Implementation
 Naming contracts appear in attributes, signatures, dictionary keys, constants, settings keys, artifacts, and status reports.
 #### Project Implementation
-Cycle 06 keeps automated technical validation distinct from human-visible UI acceptance and final Main/human acceptance.
+Markei keeps Product code, local reference code, nickname, UUID, selection, details, Item addition, occurrence time, insertion time, observed facts, and derived estimates as distinct contracts.
 #### Required Concepts
 `&&&01`.
 #### Related Concepts
@@ -511,7 +511,7 @@ An account number remains the same after its contact email changes.
 #### Language Implementation
 Dart can represent UUID identities with immutable typed value objects.
 #### Project Implementation
-Markei uses distinct account, device, Product, Purchase, Purchase Item, and event UUIDs.
+Markei uses opaque UUIDs for relational identity, immutable user-established Product codes, and generated `@001` / `#001` local organizational references; nicknames remain labels.
 #### Required Concepts
 `&&&01`, `&&&03`.
 #### Related Concepts
@@ -599,7 +599,7 @@ A package-size change creates a new identity instead of altering an old receipt.
 #### Language Implementation
 Immutable Dart identities and append-only events preserve earlier references.
 #### Project Implementation
-Markei Purchase Items retain original Product IDs and commercial observations; analytic evolution does not rewrite purchases.
+Registered Purchases retain Product and optional archived-reference identities, the buying occurrence, and Item facts without being rewritten by later labels, insertion time, or projections.
 #### Required Concepts
 `&&&02`, `&&&06`.
 #### Related Concepts
@@ -643,7 +643,7 @@ Several receipts reference the same household product identity.
 #### Language Implementation
 Dart repositories and use cases expose immutable catalogue models to Flutter.
 #### Project Implementation
-Markei keeps account-private Products and Stores that Purchase Items reference repeatedly.
+Markei reuses account-private Products across Purchases; selecting a Product, opening Product details, autofilling exact facts, and adding a staged Item are separate actions.
 #### Required Concepts
 `&&&06`, `&%%02`.
 #### Related Concepts
@@ -665,7 +665,7 @@ Mechanically equivalent 350 g and 0.350 kg inputs resolve to one packaged identi
 #### Language Implementation
 Pure Dart normalization converts text, dimensions, units, and amounts before UUID derivation.
 #### Project Implementation
-Markei distinguishes PACKAGED and BULK modes; fuzzy similarity warns but never automatically merges.
+New Products require an immutable visible Product code. Exact code lookup is distinct from PACKAGED/BULK exact identity and advisory similarity; no route auto-merges Products.
 #### Required Concepts
 `&%%07`, `&&&06`, `&&&03`.
 #### Related Concepts
@@ -687,7 +687,7 @@ A receipt header and all valid lines commit together or none commit.
 #### Language Implementation
 A Dart Purchase command coordinates models and repository transaction through one use case.
 #### Project Implementation
-Markei commits Purchase, Purchase Items, and pending synchronization event atomically.
+Markei commits Purchase, Items, and pending event atomically while preserving the user-entered buying occurrence separately from record insertion time.
 #### Required Concepts
 `&%%01`, `&%%05`.
 #### Related Concepts
@@ -709,7 +709,7 @@ One receipt line records two packages of a product and its line total.
 #### Language Implementation
 An immutable Dart item model belongs to a Purchase aggregate model.
 #### Project Implementation
-Markei stores Product reference, package count, dimensional amount, money, promotion, and related observations.
+PACKAGED Items distinguish package quantity, packages bought, amount and total; BULK Items own amount, same-unit price rate and the derived line total.
 #### Required Concepts
 `&%%09`, `&%%08`.
 #### Related Concepts
@@ -819,7 +819,7 @@ One litre is VOLUME/L and is not inferred to equal one kilogram MASS/KG.
 #### Language Implementation
 Dart can use immutable Quantity values and enums for MASS/KG, VOLUME/L, and COUNT/UNIT.
 #### Project Implementation
-Markei separates Product package amount, Purchase Item package count, and normalized purchased amount.
+Markei separates Product package amount, Item package count, purchased amount, measurement kind and unit; BULK rate must use the same selected unit as its amount.
 #### Required Concepts
 `&&&03`, `&&%05`.
 #### Related Concepts
@@ -841,7 +841,7 @@ BRL 8.79 is represented as BRL and 879 minor units.
 #### Language Implementation
 Dart uses an immutable Money value rather than binary floating-point for ordinary currency facts.
 #### Project Implementation
-Markei stores Purchase currency and authoritative line totals in minor units; UI may default territorial currency.
+Markei derives BULK line total from fixed-point amount and same-unit rate, rounds half-up to currency minor units, and presents the result read-only.
 #### Required Concepts
 `&&&03`, `&&%05`.
 #### Related Concepts
@@ -863,7 +863,7 @@ An improved price-change formula becomes version 2 while version 1 keeps its mea
 #### Language Implementation
 A Dart analytics registry selects pure algorithms by identifier/version and validates them with fixtures.
 #### Project Implementation
-Markei versions normalized price, purchase interval, and personalized inflation/deflation projections while purchases remain authoritative.
+Markei derives Lists from registered history: zero observations mean `No Purchase history`, one compatible observation means `Not enough history`, and projected statuses never become measured inventory.
 #### Required Concepts
 `&&&02`, `&&&10`.
 #### Related Concepts
@@ -885,7 +885,7 @@ A wide layout uses a navigation rail while a phone uses compact navigation.
 #### Language Implementation
 Flutter supplies widgets, constraints, navigation, lifecycle hooks, plugins, and platform build targets; Dart remains the language.
 #### Project Implementation
-Markei uses Flutter for shared Windows/Android/iOS presentation while durable state remains outside widget memory.
+Markei has responsive navigation and a partial theme/component foundation, but page-level target composition, keyboard equivalence, screen-reader behavior, and visual convergence remain unvalidated.
 #### Required Concepts
 `&&%05`, `&%%03`, `&&&04`.
 #### Related Concepts
