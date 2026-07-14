@@ -63,6 +63,7 @@ Rules:
 8. A write task still requires explicit writable paths and authority.
 9. Repository implementation is inspected only when the task needs implementation truth.
 10. Prompts in this file must remain concise; task-specific instructions belong in the invoking prompt.
+11. A sequence-based task must select one SEQ prompt and follow its localized FLUX/PRC-01 reading route before broader methodology recovery.
 
 ---
 
@@ -88,6 +89,10 @@ Rules:
 | `FCA-02` | Functional Cumulative Append | Append cumulative repository-derived investigation to the paired A/B/C stage |
 | `MJR-03` | Main J Reconciliation and Structural Grouping | Append a pruned, grouped Main synthesis with prospective structural views |
 | `MDE-04` | Main Consecutive D/E/F Enrichment | Append provisional D/E/F enrichment from latest A/B/C and J |
+| `SEQ-ORD-01` | Ordinary Sequence Invocation | Select FLX-ORD-01 for one bounded pass |
+| `SEQ-INV-02` | Investigative Sequence Invocation | Select FLX-INV-02 for cumulative inner-cycle exploration |
+| `SEQ-PRN-03` | Pruning Sequence Invocation | Select FLX-PRN-03 for permanent-memory maintenance |
+| `SEQ-PRM-04` | Promotion/Reconciliation Invocation | Select FLX-PRM-04 for semantic-state change |
 
 ---
 
@@ -136,12 +141,13 @@ Do not read FLUX.md or PROMOTION_RULES.md before the first report.
 From retained context, report two compact blocks.
 
 FLUX orientation:
-1. the ordinary information route from functional investigation through Main, Codex, evidence, permanent-domain reconciliation, and Main continuity;
-2. which role owns A/B/C, D/E/F, G/H/I, J, permanent domain memory, and 00/05/06;
-3. the difference between analysis authority, materialization authority, and promotion authority;
-4. hierarchical recovery order and when deeper/source inspection is justified;
-5. the rule for creating, renaming, or modifying methodology and permanent files;
-6. the current workflow position and next valid transition.
+1. the controlling Sequence Protocol, or uncertainty when none has been selected;
+2. the ordinary information route from functional investigation through Main, Codex, evidence, permanent-domain reconciliation, and Main continuity;
+3. which role owns A/B/C, D/E/F, G/H/I, J, permanent domain memory, and 00/05/06;
+4. the difference between analysis authority, materialization authority, and promotion authority;
+5. hierarchical recovery order and when deeper/source inspection is justified;
+6. the rule for creating, renaming, or modifying methodology and permanent files;
+7. the current workflow position and next valid transition.
 
 PROMOTION_RULES orientation:
 1. the difference between raw, staged, observational, classified/permanent, derived, checkpoint, and Main-synthesized knowledge;
@@ -820,7 +826,7 @@ Run PDR2-[ROLE] against the active branch.
 # 18. PDR2-00 — Checkpoint-Centered Permanent Reconciliation
 
 ```text
-Run PDR2-00 through the selected role prompt PDR2-O, PDR2-A, or PDR2-D.
+Run SEQ-PRM-04, then run PDR2-00 through the selected role prompt PDR2-O, PDR2-A, or PDR2-D.
 
 Purpose:
 Translate Codex evidence and repository truth into complete permanent-domain memory while making the checkpoint the cheapest reliable recovery surface.
@@ -1113,7 +1119,7 @@ Do not claim Operational validation, alter Didactic maturity, edit source, or wr
 # 22. ERI-01 — Exploratory Repository Investigation
 
 ```text
-Run ERI-01: Exploratory Repository Investigation.
+Run SEQ-INV-02, then run ERI-01: Exploratory Repository Investigation.
 
 Purpose:
 Recover current application structure retrospectively from repository truth and prepare designation-specific evidence for cumulative functional staging.
@@ -1242,7 +1248,7 @@ It authorizes no source, schema, dependency, host, infrastructure, permanent-mem
 # 23. FCA-02 — Functional Cumulative Append
 
 ```text
-Run FCA-02: Functional Cumulative Append.
+Run SEQ-INV-02, then run FCA-02: Functional Cumulative Append.
 
 Purpose:
 Append one new functional-investigation round to the role's designated A/B/C file while preserving earlier rounds.
@@ -1352,7 +1358,7 @@ When publication is separately authorized:
 # 24. MJR-03 — Main J Reconciliation and Structural Grouping
 
 ```text
-Run MJR-03: Main J Reconciliation and Structural Grouping.
+Run SEQ-INV-02, then run MJR-03: Main J Reconciliation and Structural Grouping.
 
 Role:
 Main Chat [M].
@@ -1476,7 +1482,7 @@ MJR-03 authorizes no source implementation, permanent promotion, or Codex execut
 # 25. MDE-04 — Main Consecutive D/E/F Enrichment
 
 ```text
-Run MDE-04: Main Consecutive D/E/F Enrichment.
+Run SEQ-INV-02, then run MDE-04: Main Consecutive D/E/F Enrichment.
 
 Role:
 Main Chat [M], after MJR-03.
@@ -1604,7 +1610,184 @@ D/E/F ≠ Codex authority
 
 ---
 
-# 26. Maintenance Rule
+# 26. Sequence Protocol Prompt Index
+
+The SEQ prompts select one FLUX Sequence Protocol and enforce localized methodology reading.
+
+| ID | FLUX protocol | Use |
+| --- | --- | --- |
+| SEQ-ORD-01 | FLX-ORD-01 | Run one bounded ordinary investigation-to-materialization unit |
+| SEQ-INV-02 | FLX-INV-02 | Run one cumulative investigative inner-cycle round |
+| SEQ-PRN-03 | FLX-PRN-03 | Prune and regenerate permanent memory without inventing truth |
+| SEQ-PRM-04 | FLX-PRM-04 | Classify, promote, and reconcile knowledge semantically |
+
+Shared localized boot:
+
+1. Read AGENTS.md.
+2. Read INDEX.md.
+3. Read this prompt.
+4. Read FLUX.md FLX-SEQ-00.
+5. Read only the selected FLUX protocol.
+6. Read PROMOTION_RULES.md PRC-01.
+7. Read deeper methodology only for a named uncertainty that the selected sections cannot resolve.
+8. Report every deeper section read and why.
+
+---
+
+# 27. SEQ-ORD-01 — Ordinary Sequence Invocation
+
+~~~text
+Run SEQ-ORD-01 under FLX-ORD-01.
+
+Use the shared localized boot.
+
+State:
+- bounded objective;
+- role and authority;
+- branch and baseline;
+- checkpoint recovery route;
+- A/B/C scope;
+- Main synthesis requirement;
+- controlling D/E/F requirement;
+- Codex validation and G/H/I requirement;
+- FLX-PRM-04 post-evidence route;
+- writable and prohibited surfaces;
+- stop conditions.
+
+Reject the Ordinary Sequence if repeated exploration, unresolved human decisions, stale permanent memory, or ambiguous materialization authority prevents one bounded pass.
+
+Do not introduce J unless cross-domain reconciliation or accumulated context requires it.
+
+End with the Sequence Handoff Envelope from FLUX.
+~~~
+
+---
+
+# 28. SEQ-INV-02 — Investigative Sequence Invocation
+
+~~~text
+Run one FLX-INV-02 investigative round.
+
+Use the shared localized boot.
+
+Before investigation, read:
+- latest relevant active-J reconciliation;
+- paired provisional D/E/F cache;
+- role checkpoint;
+- preceding paired A/B/C round;
+- exact repository surfaces required by the new question.
+
+Functional roles:
+- run ERI-01 for repository truth;
+- run FCA-02 to append only the new paired A/B/C delta.
+
+Main:
+- run MJR-03 to group and reconcile the newest A/B/C deltas into J;
+- run MDE-04 to compress active domain findings and next questions into provisional D/E/F;
+- publish the narrower next-round question.
+
+Every output must classify retained, new, corrected, superseded, contradicted, unresolved, prospective, and deferred claims.
+
+Every round must reduce ambiguity, duplication, unknown repository surface, unbounded validation, or unresolved decision cost.
+
+D/E/F remain PROVISIONAL — NOT AUTHORIZED FOR CODEX.
+
+Do not promote, implement, edit permanent memory, or activate Codex during an investigative round.
+
+End with:
+- performance improvement achieved;
+- evidence still requested;
+- decisions Main cannot infer;
+- next round or exit gate;
+- Sequence Handoff Envelope.
+~~~
+
+---
+
+# 29. SEQ-PRN-03 — Pruning Sequence Invocation
+
+~~~text
+Run FLX-PRN-03 for the named domain or Main-memory scope.
+
+Use the shared localized boot.
+
+For each file:
+- state semantic role;
+- identify canonical owner;
+- identify stale, duplicated, misplaced, or expensive content;
+- classify keep, summarize, reference, regenerate, correct, or remove;
+- preserve observational history;
+- route semantic changes to FLX-PRM-04.
+
+Domain order:
+1. inspect checkpoint as hypothesis;
+2. reconcile and restructure canon;
+3. regenerate/improve derived memory;
+4. preserve or append observational history;
+5. regenerate checkpoint last.
+
+Main continuity follows only after domain work and only when global state changed.
+
+Pruning does not promote proposals, rewrite history for convenience, create files from line count alone, or modify source.
+
+Final report:
+- files reviewed and changed;
+- ownership decisions;
+- pruned or referenced material;
+- derivatives regenerated;
+- history disposition;
+- checkpoint size and pointers;
+- unresolved promotion questions;
+- next sequence;
+- Sequence Handoff Envelope.
+~~~
+
+---
+
+# 30. SEQ-PRM-04 — Promotion/Reconciliation Invocation
+
+~~~text
+Run FLX-PRM-04 and PROMOTION_RULES PRC-01.
+
+Use the shared localized boot.
+
+Complete the PRC-01 Required Classification Record for every material claim.
+
+Verify:
+- evidence and its boundary;
+- current and target claim state;
+- one semantic owner;
+- canonical/derived/checkpoint/observational destination;
+- contradictions;
+- history disposition;
+- human/Main authority;
+- required derivative/checkpoint/Main regeneration.
+
+For full domain reconciliation, update in this order:
+1. observational;
+2. canonical;
+3. derived;
+4. checkpoint;
+5. Main continuity when affected.
+
+A valid outcome may contain no canonical change.
+
+Do not treat implementation, validation, Main preference, repeated staging, or file mutation as automatic promotion.
+
+Use the applicable PDR2 role prompt for complete post-Codex domain reconciliation.
+
+End with:
+- claims promoted;
+- claims retained as provisional, blocked, deferred, host-unvalidated, contradicted, or superseded;
+- files and semantic roles;
+- history preserved;
+- next authority boundary;
+- Sequence Handoff Envelope.
+~~~
+
+---
+
+# 31. Maintenance Rule
 
 This file should change when:
 
