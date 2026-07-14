@@ -277,3 +277,91 @@ PDR2-A may publish these four permanent Didactic files. Main must then reconcile
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+# Intermid Cycle Recovery Didactic Checkpoint
+
+> Branch: `intermid-cycle-recovery`  
+> Inspected implementation head: `84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8`  
+> Materialization commit: `409e5f1e013a282165efd5f31bed17a396ad6543`  
+> Evidence: `DEV_STAGE/H_DDC_CODEX.md`  
+> Main reconciliation: `[M]_STAGE/J_MAIN_STAGE.md` §§20–25
+
+## Current Truth
+
+The Flutter client implements Products, a session Purchase draft, registered Purchase Items, and History. The Intermid Recovery correction now preserves the staged line's original `ProductReference` and Product label while allowing package count, purchased quantity, unit, and line total to change.
+
+The focused existing-Product regression registers the edited Item, retains the original Product ID, confirms changed Item values, and confirms that no duplicate Product row is created. At materialization time the focused app suite passed 7 tests, the full Flutter suite passed 32 tests, and Flutter analysis reported no issues.
+
+## Canonical Ownership
+
+The distinction reinforces existing concepts and creates no duplicate concept:
+
+- `&&&06 Stable Identity`: Product reference identity survives mutable presentation activity.
+- `&%%07 Reusable Catalogue`: a staged Item refers to an existing reusable Product.
+- `&%%10 Purchase Item`: quantity and monetary facts belong to the transaction Item.
+- `&&&05 Evidence State and Validation Boundary`: direct regression evidence and source-structure inference remain distinct.
+
+## Maturity
+
+No KANBAN maturity changed. Project implementation, passing tests, and the corrected regression do not demonstrate that the learner can explain, compare, predict, debug, or transfer the concepts.
+
+## Evidence Classification
+
+### Implemented and validated within the named local boundary
+
+- edit state retains `_editingReference` and `_editingProductLabel`;
+- saving rebuilds editable Item values using the retained Product reference;
+- “Create anyway” is unavailable while editing;
+- the existing-Product widget regression preserves Product ID and Product row count;
+- focused/full Flutter tests and analysis passed as recorded in H.
+
+### Implemented by shared source structure, not separately regression-tested
+
+- `NewProductReference` passes through the same retained base-`ProductReference` edit path.
+
+### Host-unvalidated or outside scope
+
+- file-backed restart and migration behavior;
+- Windows manual runtime acceptance;
+- Android/iOS build, runtime, lifecycle, and physical-device evidence;
+- accessibility and release acceptance.
+
+### Deferred
+
+- Store normalization and branch identity;
+- durable SubmissionId/idempotency;
+- persisted drafts;
+- schema v3 and migration strategy;
+- authentication, API, Neon, upload/download, and synchronization.
+
+## Distinctions to Preserve
+
+- Product reference identity ≠ Product label ≠ draft-line key.
+- Product identity ≠ editable Purchase Item quantity or price.
+- editing a staged Item ≠ creating or replacing a Product.
+- direct existing-Product regression ≠ separately tested new-Product edit behavior.
+- local queue preparation ≠ synchronization.
+- passing project regression ≠ learner maturity.
+
+## Next Learner Evidence Needed
+
+1. Explain in the learner's own words why Product identity remains stable while Item values change.
+2. Identify which fields belong to ProductReference, staged-line presentation state, and PurchaseItemDraft.
+3. Predict how relying on the current dropdown selection could create or reference the wrong Product.
+4. Apply the distinction to both existing- and new-Product reference variants.
+5. Distinguish a passing widget regression from platform, persistence, and lifecycle acceptance.
+
+## Recovery Pointers
+
+- Canonical concepts and maturity: `02_KANBAN.md`, Intermid Recovery ProductReference evidence reconciliation.
+- Derived terminology: `07_GLOSSARY.md`, Intermid Recovery current-evidence retrieval.
+- Observational history: `13_LECTURE_REGISTER.md`, Observation 009.
+- Codex evidence: `DEV_STAGE/H_DDC_CODEX.md`.
+- Controlling semantics: `DEV_STAGE/E_DDC_STAGE.md`.
+- Functional assessment: `DEV_STAGE/B_DIDACTIC.md`.
+- Main classification: `[M]_STAGE/J_MAIN_STAGE.md` §§20–25.
+
+## Next Valid Route and Authority
+
+Didactic permanent reconciliation is complete for this bounded claim. Main may reconcile the refreshed domain checkpoints into Main-root continuity. Further source work, maturity promotion, and next-cycle D/E/F require separate authority.
