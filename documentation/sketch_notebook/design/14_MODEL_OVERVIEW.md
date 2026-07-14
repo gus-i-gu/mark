@@ -161,3 +161,80 @@ optional bounded Android lifecycle/ergonomics supplement
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
 > Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+
+
+---
+
+# Intermid Cycle Current Design Map
+
+## 1. Active client topology
+
+```text
+Flutter presentation
+→ application commands and query ports
+→ independent Dart domain
+← local repository/query adapters
+→ Drift schema v2 / app-private SQLite
+```
+
+The protected Python/PySide6 beta remains isolated and recoverable. Local event/pending structures remain synchronization preparation, not synchronization.
+
+## 2. Staged Purchase edit ownership
+
+```text
+_PurchasePageState
+├── _editingKey             line/edit identity
+├── _editingReference       retained ProductReference
+├── _editingProductLabel    retained display label
+└── editable controls       rebuild Item values only
+```
+
+Edit entry captures key, reference, and label. Edit save rebuilds package count, purchased quantity/unit, and line total while reusing Product identity and label. Save, edited-line removal, and successful registration clear edit state. The Product dropdown does not own staged-line identity.
+
+## 3. Evidence classification
+
+| Claim | State and evidence |
+| --- | --- |
+| Existing-Product edit retains Product ID | implemented and directly regression-validated |
+| Existing Product is not duplicated | directly regression-validated |
+| Edited Item values are persisted | directly regression-validated |
+| NewProductReference follows the same retained-reference path | implemented structural support; no separate regression |
+| Focused/full Flutter behavior | 7 focused and 32 total tests recorded as passing |
+| Source quality gate | Flutter analysis recorded clean |
+| Platform/restart/migration behavior | outside this correction's evidence boundary |
+
+## 4. Current identity and lifecycle boundaries
+
+- Product identity remains carried by `ProductReference`, distinct from editable Item values.
+- Draft and edit state remain mounted-session presentation state.
+- Registered Purchase facts remain owned by the atomic local repository transaction.
+- Drift schema remains version 2.
+- Event/pending ownership remains local preparation only.
+- Store, submission-attempt, installation–Device, draft-persistence, and distributed identities remain unresolved separately.
+
+## 5. Deferred Design decisions
+
+```text
+schema v3
+Store identity/normalization
+durable SubmissionId/idempotency
+installation–Device lifecycle
+persisted drafts
+measured query/index policy
+backup/export/restore identity
+authentication and authorization
+API/Neon
+upload/download, cursor, convergence, synchronization
+```
+
+None is implied by the edit correction.
+
+## 6. Recovery pointers
+
+- Canonical: `design/01_ARCHITECTURE.md`, section 20.
+- Observational: `design/03_DECISION_LOG.md`, Event 18.
+- Checkpoint: `design/09_DESIGN_STATE.md`, current Intermid Cycle segment.
+- Functional assessment: `DEV_STAGE/C_DESIGN.md`.
+- Controlling Design stage: `DEV_STAGE/F_DSN_STAGE.md`.
+- Materialization evidence: `DEV_STAGE/I_DSN_CODEX.md`.
+- Main reconciliation: `[M]_STAGE/J_MAIN_STAGE.md`, sections 20–24.
