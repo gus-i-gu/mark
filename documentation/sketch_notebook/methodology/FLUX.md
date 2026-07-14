@@ -791,70 +791,503 @@ Observational records should be append-oriented unless explicitly corrected by M
 
 ---
 
-# 13. Standard Flow
+# 13. Sequence Protocols
 
-The standard workflow is:
+Sequence Protocols define the controlling operational route for a bounded unit of work.
 
-```text
+They do not create new roles, files, knowledge states, or promotion authority. They select how the existing roles and memory surfaces are used.
+
+## 13.1 Sequence Index and Shared Contract — FLX-SEQ-00
+
+| ID | Sequence | Use when | Primary result |
+| --- | --- | --- | --- |
+| FLX-ORD-01 | Ordinary Sequence | a bounded change can move once through investigation, synthesis, materialization, evidence, and reconciliation | implemented and reconciled project change |
+| FLX-INV-02 | Investigative Sequence | the problem requires repeated repository exploration and cross-domain confrontation before implementation authority can be frozen | cumulative evidence, compressed Main synthesis, and progressively improved provisional staging |
+| FLX-PRN-03 | Pruning Sequence | permanent memory has become stale, repetitive, disordered, or expensive to recover | reorganized canon, regenerated derivatives, preserved history, and compact checkpoints |
+| FLX-PRM-04 | Promotion/Reconciliation Sequence | knowledge must change semantic state or be absorbed after evidence, investigation, or pruning | uniquely owned, evidence-qualified permanent knowledge |
+
+Shared constraints:
+
+1. One Sequence Protocol is controlling at a time.
+2. A controlling sequence may invoke another only at an explicit transition gate.
+3. Every invocation states sequence ID, role, branch, baseline, writable surfaces, evidence boundary, and next handoff.
+4. Human direction may select the sequence. Main may recommend a sequence but must not disguise a sequence change.
+5. Stage content is never canon merely because a sequence repeats it.
+6. Repository evidence is not promotion.
+7. Materialization is not promotion.
+8. Promotion follows PRC-01 in PROMOTION_RULES.md.
+9. Observational history is preserved unless a factual correction is explicitly authorized.
+10. New files, renames, methodology changes, source changes, commits, and pushes require their ordinary authority even when a sequence is active.
+11. A sequence stops when its next transition lacks evidence, authority, a required human decision, or an unambiguous writable scope.
+12. Prompts should read FLX-SEQ-00, the selected protocol, and PRC-01 before opening broader methodology.
+
+Selection rule:
+
+~~~text
+bounded executable change
+    -> FLX-ORD-01
+
+repeated inquiry before authority
+    -> FLX-INV-02
+
+memory maintenance without new product truth
+    -> FLX-PRN-03
+
+semantic-state change or post-evidence absorption
+    -> FLX-PRM-04
+~~~
+
+Allowed transitions:
+
+~~~text
+FLX-ORD-01
+    -> FLX-PRM-04 after materialization evidence
+    -> FLX-PRN-03 when recovery drift blocks the ordinary route
+
+FLX-INV-02
+    -> another FLX-INV-02 round
+    -> FLX-PRM-04 when findings are ready for semantic acceptance
+    -> FLX-ORD-01 when D/E/F are frozen and implementation is authorized
+    -> FLX-PRN-03 when accumulated memory must be reorganized first
+
+FLX-PRN-03
+    -> FLX-PRM-04 only for claims that require semantic correction
+    -> FLX-ORD-01 or FLX-INV-02 after recovery surfaces are healthy
+
+FLX-PRM-04
+    -> FLX-ORD-01 for an accepted executable change
+    -> FLX-INV-02 when evidence remains insufficient
+    -> FLX-PRN-03 when accepted truth requires broad regeneration
+~~~
+
+Localized reading route:
+
+- always read this shared contract;
+- read only the selected protocol below;
+- read PROMOTION_RULES.md PRC-01;
+- use deeper FLUX or PROMOTION_RULES sections only for a named uncertainty;
+- use the corresponding SEQ prompt in PROMPT_COLLECTION.md.
+
+## 13.2 Ordinary Sequence — FLX-ORD-01
+
+Purpose:
+
+Move one bounded unit from human direction through functional staging, Main synthesis, materialization, evidence, permanent reconciliation, and forward continuity.
+
+Entry conditions:
+
+- one sufficiently bounded objective;
+- known branch and baseline;
+- recoverable role checkpoints;
+- no unresolved contradiction requiring repeated investigation;
+- writable scope and authority identifiable before mutation.
+
+Protocol:
+
+~~~text
 Human prompt
 ↓
-Methodological boot
+Methodological boot and FLX-ORD-01 selection
 ↓
-Global orientation from 00_PROJECT_STATE when needed
+Global orientation from 00_PROJECT_STATE and 06_SESSION_SCHEME when needed
 ↓
-Functional chats recover from domain checkpoints
+O/A/D recover from their checkpoints
 ↓
-Functional chats inspect canonical / derived / observational files only as needed
+O/A/D inspect deeper memory and repository truth only as required
 ↓
-Functional chats inspect repository when required
+O/A/D write or replace A/B/C for the bounded unit
 ↓
-Functional chats write A/B/C active stage reports
+Main reads A/B/C, human direction, checkpoints, and required evidence
 ↓
-Main Chat reads A/B/C + human prompt + domain checkpoints
+Main resolves contradictions and prepares controlling D/E/F
 ↓
-Main Chat inspects deeper domain files only as needed
+Codex reads D/E/F and materializes the authorized change
 ↓
-Main Chat writes D/E/F materialization stages
+Codex validates and writes G/H/I
 ↓
-Codex reads D/E/F
+FLX-PRM-04 absorbs G/H/I into permanent domain memory
 ↓
-Codex materializes application and/or notebook changes
+domain checkpoints regenerate
 ↓
-Codex writes G/H/I materialization reports
-↓
-Functional chats read G/H/I
-↓
-Functional chats update their own permanent domain folders
-↓
-Functional chats refresh their domain checkpoints
-↓
-Main Chat reads domain checkpoints + G/H/I + 00_PROJECT_STATE + 05_SESSION_LOG
-↓
-Main Chat checks consistency and records drift/resolution in 05_SESSION_LOG
-↓
-Main Chat refreshes 00_PROJECT_STATE and 06_SESSION_SCHEME when needed
+Main reconciles 00/05/06 and next-session direction
 ↓
 Git/GitHub persistence
+~~~
+
+Ordinary stage behavior:
+
+- A/B/C describe one bounded functional assessment.
+- D/E/F are controlling instructions, not exploratory drafts.
+- G/H/I report what physically happened.
+- permanent memory changes only through classification and promotion.
+- J is optional unless cross-domain contradiction, accumulated context, or explicit Main reconciliation requires it.
+
+Exit conditions:
+
+- implementation is validated or precisely classified as blocked/host-unvalidated;
+- G/H/I match the materialized scope;
+- permanent memory is reconciled;
+- checkpoints and Main continuity expose one current state;
+- residual work is explicitly deferred or staged.
+
+Ordinary failure conditions:
+
+- repeated rounds are needed to discover the problem;
+- D/E/F cannot be made controlling without unresolved product or architecture decisions;
+- permanent memory is too stale to support a reliable stage;
+- evidence ownership remains contradictory.
+
+When any failure condition holds, transition explicitly to FLX-INV-02, FLX-PRN-03, or FLX-PRM-04.
+
+Localized prompt route:
+
+~~~text
+PROMPT_COLLECTION: SEQ-ORD-01
+FLUX: FLX-SEQ-00 + FLX-ORD-01
+PROMOTION_RULES: PRC-01
+~~~
+
+## 13.3 Investigative Sequence — FLX-INV-02
+
+Purpose:
+
+Support repeated, sequential domain investigation when repository truth, product direction, architecture, vocabulary, and operational evidence must be confronted several times before implementation authority is safe.
+
+The sequence is cumulative but must become cheaper and more precise each round.
+
+Entry conditions:
+
+- Main defines the investigation question and expected decision boundary;
+- branch, baseline, round identifier, and repository scope are explicit;
+- A/B/C, active J, and D/E/F have declared round semantics;
+- D/E/F remain provisional unless a later activation explicitly freezes them;
+- Codex, source mutation, promotion, and permanent-memory mutation remain inactive during exploration.
+
+Round protocol:
+
+~~~text
+Main publishes the current question and recovery pointers
 ↓
-Next session boots from improved project memory
-```
+O/A/D read:
+    latest relevant J reconciliation
+    paired D/E/F cache
+    paired checkpoint
+    preceding paired A/B/C round
+↓
+O/A/D inspect repository truth for the new question
+↓
+O/A/D append a delta round to A/B/C
+↓
+Main reads the newest A/B/C deltas
+↓
+Main appends a grouped reconciliation to J
+↓
+Main compresses active domain conclusions and next questions into provisional D/E/F
+↓
+Main reads latest A/B/C + J + D/E/F as one investigation cache
+↓
+Main publishes the narrower next round
+↓
+repeat
+~~~
 
-This flow separates:
+A/B/C contract:
 
-- intention;
-- recovery;
-- reasoning;
-- staging;
-- synthesis;
-- materialization;
-- evidence;
-- domain memory;
-- checkpoint refresh;
-- global reconciliation;
-- forward recovery preparation;
-- persistence.
+- append one marked round;
+- lead with newly inspected evidence and corrections;
+- preserve prior rounds by reference rather than repetition;
+- identify retained, corrected, superseded, contradicted, unresolved, prospective, and deferred claims;
+- tie material claims to paths, symbols, tests, commands, or named evidence;
+- read the latest J reconciliation before repository exploration;
+- confront the paired D/E/F cache before recommending the next route.
 
----
+J contract:
+
+- reconcile, group, and compress rather than copy A/B/C;
+- preserve domain provenance and disagreement;
+- maintain one current structural model for the round;
+- classify every conclusion;
+- name decisions Main cannot infer;
+- transfer active domain-specific cache into D/E/F so J does not become the only usable working memory;
+- preserve prior J history through marked reconciliation sections until an authorized refresh replaces the active cache.
+
+D/E/F investigative contract:
+
+- remain explicitly PROVISIONAL — NOT AUTHORIZED FOR CODEX;
+- hold the smallest useful domain cache for the next round;
+- record retained, corrected, superseded, rejected, and new material;
+- expose evidence still requested;
+- separate schema-free, schema-bearing, dependency-bearing, host, and human-decision work;
+- end with the next paired-domain questions and stop conditions.
+
+Performance-improvement rule:
+
+Every new round must reduce at least one of:
+
+- unresolved ambiguity;
+- repository surfaces not yet indexed;
+- duplicated stage prose;
+- unclassified contradiction;
+- unknown dependency/schema consequence;
+- unbounded validation scope;
+- human decisions Main cannot yet formulate precisely.
+
+A round that only restates prior content is invalid.
+
+Implementation activation gate:
+
+FLX-INV-02 does not authorize Codex.
+
+To exit toward implementation, Main and the human must:
+
+1. identify the controlling findings;
+2. classify or carry every contradiction;
+3. freeze exact D/E/F sections;
+4. mark superseded provisional sections;
+5. name writable and prohibited files;
+6. define validation, rollback, and stop conditions;
+7. state ACTIVE — CODEX IMPLEMENTATION AUTHORIZED;
+8. transition explicitly to FLX-ORD-01 at the Codex/materialization boundary.
+
+Other exits:
+
+- use FLX-PRM-04 when findings should become permanent without source work;
+- use FLX-PRN-03 when accumulated memory needs restructuring;
+- close with an observational record when the investigation produces no accepted change.
+
+Localized prompt route:
+
+~~~text
+PROMPT_COLLECTION: SEQ-INV-02
+Concrete investigative prompts:
+    ERI-01
+    FCA-02
+    MJR-03
+    MDE-04
+FLUX: FLX-SEQ-00 + FLX-INV-02
+PROMOTION_RULES: PRC-01
+~~~
+
+## 13.4 Pruning Sequence — FLX-PRN-03
+
+Purpose:
+
+Restore recovery quality by sorting, parsing, pruning, regenerating, and restructuring existing permanent memory without silently inventing new project truth.
+
+Pruning is semantic maintenance, not deletion for brevity.
+
+Entry conditions:
+
+- recovery drift, duplicate ownership, stale derivatives, disordered canon, or checkpoint inflation is evidenced;
+- Main defines domain scope and protected history;
+- the sequence states whether each file is canonical, derived, checkpoint, observational, Main continuity, or stage;
+- no source implementation is implied.
+
+Domain protocol:
+
+~~~text
+recover checkpoint as an entry hypothesis
+↓
+inspect canonical owner and relevant evidence
+↓
+inspect derived document for stale or duplicate material
+↓
+inspect observational history only as needed
+↓
+classify keep / move-by-meaning / summarize / reference / regenerate / correct
+↓
+reconcile and restructure canon without changing unapproved meaning
+↓
+regenerate and improve derived documents
+↓
+preserve or append observational history
+↓
+regenerate the checkpoint last
+↓
+report ownership changes, removals, references, and unresolved promotion questions
+~~~
+
+Canonical maintenance:
+
+- sort and parse stable knowledge by responsibility;
+- consolidate duplicate canonical ownership under one owner;
+- preserve accepted meaning and traceable corrections;
+- do not convert proposals or observations into canon;
+- do not rewrite canon merely to match a derived summary;
+- report any semantic change that requires FLX-PRM-04.
+
+Derived maintenance:
+
+- regenerate from accepted canon and current unresolved work;
+- remove stale statements and duplicate explanation;
+- improve indexing, headings, references, and recovery order;
+- enhance clarity without creating independent truth;
+- prefer reference to repeated authority-bearing prose.
+
+Observational maintenance:
+
+- preserve chronology;
+- append a pruning/reconciliation event when useful;
+- correct factual error explicitly rather than silently rewriting history;
+- never use an observational file as the new current-state owner.
+
+Checkpoint regeneration:
+
+- occurs last;
+- represents current state after canon and derivatives are reconciled;
+- remains compact and points to deeper owners;
+- contains one unambiguous present-state segment;
+- does not preserve full rationale or chronology.
+
+Main continuity:
+
+After domain pruning, Main may refresh 00_PROJECT_STATE and 06_SESSION_SCHEME and append the event to 05_SESSION_LOG. Main-root files summarize; they do not replace domain ownership.
+
+Pruning report requirements:
+
+- files read and changed;
+- semantic role of each file;
+- canonical owner decisions;
+- content pruned or converted to reference;
+- derived sections regenerated;
+- history preserved or corrected;
+- checkpoint line count and recovery pointers;
+- claims requiring FLX-PRM-04;
+- no-change files and reason;
+- next sequence.
+
+Exit conditions:
+
+- each stable meaning has one canonical owner;
+- derivatives can be regenerated from named owners;
+- checkpoints recover current state cheaply;
+- history remains traceable;
+- unresolved semantic changes are routed to FLX-PRM-04.
+
+Localized prompt route:
+
+~~~text
+PROMPT_COLLECTION: SEQ-PRN-03
+FLUX: FLX-SEQ-00 + FLX-PRN-03
+PROMOTION_RULES: PRC-01 + targeted reconciliation rules when ownership changes
+~~~
+
+## 13.5 Promotion/Reconciliation Sequence — FLX-PRM-04
+
+Purpose:
+
+Change the semantic state of knowledge deliberately and reconcile it across domain, file role, implementation evidence, and Main continuity.
+
+This sequence operationalizes PROMOTION_RULES.md. FLUX controls route and authority; PROMOTION_RULES controls meaning.
+
+Entry sources may include:
+
+- Ordinary Sequence G/H/I evidence;
+- frozen Investigative Sequence findings;
+- Pruning Sequence ownership conflicts;
+- direct human decisions;
+- repository drift;
+- methodology refinement evidence.
+
+Protocol:
+
+~~~text
+state the candidate claim
+↓
+read PRC-01
+↓
+identify evidence and confidence
+↓
+identify one semantic owner
+↓
+classify current state and target state
+↓
+check contradictions and history
+↓
+choose canonical / derived / checkpoint / observational destination
+↓
+apply domain-specific reconciliation
+↓
+regenerate derivatives
+↓
+refresh checkpoint last
+↓
+reconcile Main continuity when global state changed
+↓
+audit that materialization and promotion remain distinct
+~~~
+
+Hard gates:
+
+- conversation is not persistence;
+- stage is not canon;
+- G/H/I is evidence, not canon;
+- implementation does not prove validation;
+- validation does not prove learner maturity;
+- Main preference does not prove acceptance;
+- derived and checkpoint files cannot create truth;
+- observational files do not define current truth;
+- canonical ownership is unique;
+- cross-domain repetition must be perspectival;
+- corrections preserve history;
+- blocked, deferred, host-unvalidated, and unresolved claims are not promoted as accepted or validated.
+
+Domain order for full permanent reconciliation:
+
+1. Observational — preserve what happened.
+2. Canonical — accept or correct stable truth.
+3. Derived — regenerate explanation or action views.
+4. Checkpoint — regenerate compact present state.
+5. Main continuity — summarize cross-domain truth when required.
+
+A promotion may validly produce no canonical change.
+
+Exit conditions:
+
+- claim state and evidence are explicit;
+- semantic owner is unique;
+- destination role is correct;
+- derivative/checkpoint content agrees with canon;
+- history and disagreement remain recoverable;
+- global continuity is refreshed only when affected.
+
+Localized prompt route:
+
+~~~text
+PROMPT_COLLECTION: SEQ-PRM-04
+Compatible concrete prompts:
+    PDR2-00
+    PDR2-O
+    PDR2-A
+    PDR2-D
+FLUX: FLX-SEQ-00 + FLX-PRM-04
+PROMOTION_RULES: PRC-01, then targeted deeper sections only when required
+~~~
+
+## 13.6 Sequence Handoff Envelope
+
+Every transition should publish a compact envelope:
+
+~~~text
+Sequence:
+Role:
+Round or unit:
+Branch:
+Baseline / inspected HEAD:
+Question or accepted objective:
+Inputs read:
+New evidence:
+Current claim states:
+Contradictions:
+Writable surfaces:
+Prohibited surfaces:
+Authority:
+Next sequence:
+Next prompt:
+Stop condition:
+~~~
+
+This envelope is a cache boundary. It should point to detailed evidence rather than reproduce it.
 
 # 14. Functional Chat Post-Codex Duties
 
