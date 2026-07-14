@@ -122,90 +122,82 @@ Additional implementation remains inactive until Main/human authority is express
 ---
 
 <!-- TEMPORAL_MARKER:INTERMID-CYCLE-RECOVERY-ENTRY-2026-07-14 -->
-> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above this marker belongs to Cycle 08 or earlier reviewed project history. Content below belongs to Intermid Cycle Recovery and later reconciliation.
+> Temporal boundary — Intermid Cycle Recovery begins here (2026-07-14). Content above is historical. This is the current Cycle 09 checkpoint.
 
-# Intermid Cycle Recovery Design Checkpoint
+# Cycle 09 Design Checkpoint
 
-> Branch: `intermid-cycle-recovery`  
-> Inspected implementation HEAD: `84fc6e4e49dedc7ce629a97a78dd86486dbf0cf8`  
-> Materialization commit: `409e5f1e013a282165efd5f31bed17a396ad6543`  
-> Evidence: `DEV_STAGE/I_DSN_CODEX.md`  
-> Main reconciliation: `[M]_STAGE/J_MAIN_STAGE.md`, sections 20–24  
-> Functional/directive inputs: `DEV_STAGE/C_DESIGN.md`, `DEV_STAGE/F_DSN_STAGE.md`
+> Branch: `intermid-cycle-recovery`
+> Inspected implementation: `e37cb700feeca4001cc7835b584c46bb81926af3`
+> Sequence: FLX-PRM-04
+> Evidence: C/F/I, post-Codex J, and targeted handwritten source
+> Generated Drift evidence: derived only
 
-## Current accepted architecture
+## Current architecture
 
 ```text
 Flutter presentation
-→ application commands/query ports
+→ application ports/read models/failures
 → independent Dart domain
-← local repository adapters
-→ Drift schema v2 / app-private SQLite
+← local adapters
+→ handwritten Drift schema v3 / app-private SQLite
 ```
 
-The protected Python/PySide6 beta remains isolated and recoverable. Presentation owns mounted-session draft and edit state; repository infrastructure retains the atomic local registration transaction. Local SyncEvent/PendingEvent structures are preparation only and do not establish synchronization.
+Cycle 09 expands the local product beta without changing the inward dependency direction or protected Python/PySide6 boundary.
 
-## Corrected edit boundary
+## Accepted and implemented
 
-The prior existing-Product staged-line edit defect is corrected.
+- Home-first responsive navigation and static descriptors.
+- schema v3 People, PaymentMethods, AccountPreferences and nullable Purchase references.
+- nullable package count for BULK.
+- normalization v3, exact-collision preflight and deterministic legacy-code backfill.
+- transient `personal-cycle-v1` Lists projections without persisted List/cache.
+- History selected IDs, stable export DTOs, deterministic CSV and PDF bytes.
+- exact Product lookup ports and Product-detail query.
+- typed application failures.
+- optional references preserve archived historical labels.
+- registered Purchase edit/delete, Analytics and Household remain inactive.
 
-`_PurchasePageState` now owns the edit-state trio:
+## Required classifications
 
-- `_editingKey` — presentation line/edit identity;
-- `_editingReference` — original `ProductReference`;
-- `_editingProductLabel` — original Product label.
+| Claim | Current state |
+| --- | --- |
+| BULK price-per-unit UI | contradicted completion: Line total remains the input |
+| active-only nickname uniqueness | contradicted: current key also limits archived duplicates |
+| Product-code columns | resolved as nullable compatibility storage; NOT NULL contradicted |
+| PDF generation | implemented |
+| OS-native/save-dialog sharing | deferred; temporary-file/manual flow only |
+| exact lookup ports | implemented |
+| exact lookup presentation | partial |
+| Product detail card/query | implemented bounded form |
+| adaptive shared Product details | partial/deferred |
+| complete typed error presentation | partial |
+| History double-click/select-all | partial |
 
-Entering edit mode captures all three. Saving rebuilds only editable Item values and reuses the retained Product reference and label. Saving, removal of the edited line, and successful registration clear associated edit state. Product dropdown selection does not own staged-line Product identity.
+## Evidence boundary
 
-## Evidence classification
+Reported: 39 Flutter tests, clean analysis, Windows release build and bounded launch, file-backed migration/reopen evidence, and five Python regressions.
 
-**Implemented and directly regression-validated**
+Not established: Android recovery/runtime, native share, injected migration-failure behavior, full manual workflow, comprehensive accessibility/responsive acceptance, or release readiness.
 
-- existing-Product edit retains the original Product ID;
-- editing package count, quantity, and line total persists the new Item values;
-- Product count remains one, so the edit does not duplicate the Product.
+## Remaining Design conflicts
 
-**Implemented with structural support**
+1. correct nickname uniqueness without losing archived history;
+2. implement BULK unit-price input and half-up line-total derivation;
+3. expose exact lookup in Catalogue UI;
+4. establish shared adaptive Product-details navigation;
+5. complete typed failure mapping;
+6. define user-controlled save/native-share behavior and cleanup;
+7. finish History selection conveniences.
 
-- `NewProductReference` passes through the same retained base-`ProductReference` edit state and save path;
-- no separate new-Product edit regression was produced.
+Deferred: auth/API/Neon/synchronization, Store redesign, SubmissionId, persisted drafts, Product merge/correction, registered Purchase mutation, Analytics/Household behavior and production release.
 
-**Recorded local validation**
+## Next Main handoff
 
-- focused app suite: 7 passed;
-- full Flutter suite: 32 passed;
-- Flutter analysis: no issues;
-- touched Dart files formatted.
-
-These results do not establish platform, file-backed restart, migration, manual, release, or synchronization acceptance.
-
-## Preserved boundaries
-
-- drafts remain mounted-session presentation state;
-- registered facts remain owned by the existing atomic local transaction;
-- schema remains v2;
-- no application contract, domain identity, repository transaction, composition, or navigation boundary changed;
-- local queue/event preparation remains distinct from real synchronization.
-
-## Deferred separate Design decisions
-
-- schema v3 and migration/recovery policy;
-- Store identity, normalization, branch, alias, and merge semantics;
-- durable `SubmissionId` and retry idempotency;
-- installation–Device lifecycle and uniqueness;
-- persisted drafts;
-- measured pagination/index/cache decisions;
-- backup/export/restore identity;
-- authentication, authorization, API/Neon, upload/download, cursor, convergence, and synchronization.
-
-## Next valid route
-
-Main may close the Intermid Cycle permanent-memory reconciliation after the other domains refresh their checkpoints. Any next implementation unit must select one deferred Design decision explicitly, gather its own evidence, and issue fresh controlling D/E/F. No further source or schema authority follows from this checkpoint.
+Main should classify the two contradicted items as a focused correction unit, decide whether exact lookup/adaptive details/native share remain deferred or enter that unit, and preserve Android/manual/release gaps as Operational evidence boundaries. Fresh D/E/F are required before source or schema changes.
 
 ## Recovery pointers
 
-- Canonical: `design/01_ARCHITECTURE.md`, section 20.
-- Derived: `design/14_MODEL_OVERVIEW.md`, “Intermid Cycle Current Design Map”.
-- Observational: `design/03_DECISION_LOG.md`, Event 18.
-- Evidence: `DEV_STAGE/I_DSN_CODEX.md`.
-- Main: `[M]_STAGE/J_MAIN_STAGE.md`, sections 20–24.
+- Canonical: `design/01_ARCHITECTURE.md`, section 21.
+- Observational: `design/03_DECISION_LOG.md`, Event 19.
+- Derived: `design/14_MODEL_OVERVIEW.md`, Cycle 09 map.
+- Evidence: C/F/I and post-Codex `J_MAIN_STAGE.md`.
