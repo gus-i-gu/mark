@@ -301,6 +301,20 @@ class RecoveryChunks extends Table {
   Set<Column<Object>> get primaryKey => {sessionId, chunkIndex};
 }
 
+class HostedAuthStates extends Table {
+  TextColumn get environmentAlias => text()();
+  TextColumn get installationId => text()();
+  TextColumn get enrollmentRequestId => text().nullable()();
+  TextColumn get enrollmentState => text()();
+  TextColumn get accountId => text().nullable()();
+  TextColumn get serverDeviceId => text().nullable()();
+  IntColumn get generation => integer().nullable()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {environmentAlias};
+}
+
 class MigrationLedger extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get schemaName => text()();
@@ -331,6 +345,7 @@ class MigrationLedger extends Table {
     SyncInbox,
     RecoverySessions,
     RecoveryChunks,
+    HostedAuthStates,
     MigrationLedger,
   ],
 )
@@ -353,7 +368,7 @@ class LocalDatabase extends _$LocalDatabase {
       LocalDatabase(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -365,7 +380,7 @@ class LocalDatabase extends _$LocalDatabase {
           schemaVersion: schemaVersion,
           fromVersion: const Value(null),
           toVersion: Value(schemaVersion),
-          migrationId: const Value('create-v6'),
+          migrationId: const Value('create-v7'),
           appliedAt: DateTime.utc(2026, 7, 12),
         ),
       );
@@ -476,7 +491,20 @@ SELECT id, 5, strftime('%s','now') * 1000 FROM local_accounts
           ),
         );
       }
-      if (from > 6) {
+      if (from < 7) {
+        await migrator.createTable(hostedAuthStates);
+        await into(migrationLedger).insert(
+          MigrationLedgerCompanion.insert(
+            schemaName: 'shared_beta_local',
+            schemaVersion: to,
+            fromVersion: Value(from),
+            toVersion: const Value(7),
+            migrationId: const Value('v6-to-v7-hosted-auth-readiness'),
+            appliedAt: DateTime.now().toUtc(),
+          ),
+        );
+      }
+      if (from > 7) {
         throw UnsupportedError(
           'Unsupported local database migration $from to $to.',
         );

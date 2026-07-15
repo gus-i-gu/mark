@@ -1,6 +1,8 @@
 import sensible from "@fastify/sensible";
 import Fastify from "fastify";
 import type { AuthVerifier } from "../application/auth.js";
+import { HostedAuthError } from "../application/hosted_contracts.js";
+import type { HostedIdentityService } from "../application/hosted_authorization.js";
 import {
   acceptSubmission,
   acknowledgeCursor,
@@ -20,14 +22,57 @@ export function buildApp(options: {
   auth: AuthVerifier;
   database?: Database;
   recovery?: RecoveryComposition;
+  hosted?: HostedIdentityService;
 }) {
   const app = Fastify({ logger: false });
   app.register(sensible);
 
   app.get("/health/live", async () => ({ status: "live" }));
   app.get("/health/ready", async () => ({
-    status: options.database ? "ready" : "not-ready",
+    status: await readyStatus(options.database),
   }));
+
+  app.setErrorHandler((error, request, reply) => {
+    if (error instanceof HostedAuthError) {
+      return reply.code(error.statusCode).send({
+        code: error.code,
+        operation: "hosted-authorization",
+        outcome: "not-applied",
+        retryable: false,
+        safeAction: "preserve local state",
+        correlationId: request.id,
+      });
+    }
+    return reply.code(500).send({
+      code: "service-unavailable",
+      operation: "server",
+      outcome: "unknown",
+      retryable: true,
+      safeAction: "retry later",
+      correlationId: request.id,
+    });
+  });
+
+  if (options.hosted) {
+    app.get("/v1/identity", async (request) =>
+      options.hosted!.identity(request),
+    );
+    app.post("/v1/devices/enroll", async (request) =>
+      options.hosted!.enroll(request, request.body as never),
+    );
+    app.get("/v1/devices/enrollments/:requestId", async (request) => {
+      const params = request.params as { requestId: string };
+      return options.hosted!.enrollmentStatus(request, params.requestId);
+    });
+    app.get("/v1/devices/:deviceId/status", async (request) => {
+      const params = request.params as { deviceId: string };
+      return options.hosted!.deviceStatus(request, params.deviceId);
+    });
+    app.post("/v1/devices/:deviceId/revoke", async (request) => {
+      const params = request.params as { deviceId: string };
+      return options.hosted!.revoke(request, params.deviceId);
+    });
+  }
 
   app.post("/v1/sync/submissions", async (request, reply) => {
     if (!options.database) {
@@ -177,4 +222,17 @@ function unavailable(operation: string, correlationId: string) {
     safeAction: "retry later",
     correlationId,
   };
+}
+
+async function readyStatus(database: Database | undefined) {
+  if (!database) return "not-ready";
+  try {
+    const result = await database.pool.query(
+      "select 1 from migration_ledger where migration_id=$1",
+      ["004_hosted_identity_enrollment"],
+    );
+    return result.rowCount ? "ready" : "not-ready";
+  } catch {
+    return "not-ready";
+  }
 }

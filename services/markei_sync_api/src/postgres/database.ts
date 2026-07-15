@@ -10,16 +10,27 @@ export async function inTransaction<T>(
   auth: AuthContext,
   action: (client: pg.PoolClient) => Promise<T>,
 ): Promise<T> {
+  return inTransactionWithContext(database, auth, action);
+}
+
+export async function inTransactionWithContext<T>(
+  database: Database,
+  context: Partial<AuthContext> & { identityId?: string },
+  action: (client: pg.PoolClient) => Promise<T>,
+): Promise<T> {
   const deadline = Date.now() + 5000;
   for (let attempt = 1; attempt <= 3; attempt++) {
     const client = await database.pool.connect();
     try {
       await client.query("begin isolation level serializable");
       await client.query("select set_config('markei.account_id', $1, true)", [
-        auth.accountId,
+        context.accountId ?? "",
       ]);
       await client.query("select set_config('markei.device_id', $1, true)", [
-        auth.deviceId,
+        context.deviceId ?? "",
+      ]);
+      await client.query("select set_config('markei.identity_id', $1, true)", [
+        context.identityId ?? "",
       ]);
       const result = await action(client);
       await client.query("commit");

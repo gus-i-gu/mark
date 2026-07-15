@@ -9,14 +9,18 @@
   "scripts": {
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint .",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/hosted.js",
     "lab": "tsx src/lab.ts",
     "lab:recovery": "tsx src/recovery_lab.ts",
+    "test:hosted-local": "tsx src/hosted_local_harness.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test --import tsx test/*.test.ts"
   },
   "dependencies": {
     "@fastify/sensible": "6.0.3",
     "fastify": "^5.10.0",
+    "jose": "^6.1.3",
     "pg": "8.16.3"
   },
   "devDependencies": {

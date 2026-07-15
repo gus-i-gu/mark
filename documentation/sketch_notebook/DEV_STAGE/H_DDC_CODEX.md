@@ -1,67 +1,77 @@
-# H_DDC_CODEX — C10-S02 Semantic Evidence
+# H_DDC_CODEX - C10-S03A Semantic Evidence
 
-Sequence: FLX-INV-02 -> Main D/E/F -> Codex materialization report
+Sequence: FLX-INV-02 -> Main J/D/E/F -> Codex materialization report
 Role: Codex semantic/test evidence
-Round or unit: C10-S02 disposable local retention, snapshot and rebootstrap proof
+Round or unit: C10-S03A local hosted-authentication readiness
 Branch: `intermid-cycle-recovery`
-Baseline / inspected HEAD: `dee41af3a24bf85e4dcd7db40d3e1179bf0a7471`
+Baseline SHA: `7bf3bc1c7acf5d4077cedc42ea2162a1bba99e35`
 Authority: `E_DDC_STAGE.md` plus J/D/F
-Evidence boundary: local implementation and tests only; learner maturity unchanged
+Evidence boundary: local proof only; no provider proof or learner-memory promotion
 
-## Vocabulary and statuses materialized
+## Materialized vocabulary and states
 
-- Preserved existing meanings for `saved-local`, `waiting-upload`, `server-accepted`, `downloaded-applied`, `duplicate-ignored`, `acknowledged`, `conflict`, `auth-required`, `unknown-outcome`.
-- Added typed recovery/status codes in Dart for `device-expired`, `recovery-unavailable`, `full-rebootstrap-required`, `local-changes-block-rebootstrap`.
-- Added recovery phases: `fullRebootstrapRequired`, `preparing`, `downloading`, `downloaded`, `applying`, `catchingUp`, `recoveryCompleted`, `recoveryInterrupted`.
-- Incremental download now checks retained floor before returning an empty page; old cursor returns typed failure when recovery exists.
-- Rebootstrap completion only returns applied after snapshot apply, catch-up cursor, acknowledgement and completion call in the harness.
+- `signed-in`: represented only by Flutter authentication-session port state.
+- `token-obtained`: represented only by token-source result.
+- `token-accepted`: external principal verified by JWT/JWKS.
+- `membership-confirmed`: exact issuer/subject identity has exactly one active Account membership.
+- `enrollment-required`: protected route has no active Device binding.
+- `device-enrolled`: server allocated and persisted Device for stable InstallationId.
+- `device-authorized`: active membership plus active Device enrollment inside route transaction.
+- `request-accepted`: sync submission accepted by existing protocol.
+- `acknowledged`: existing acknowledgement protocol preserved.
+- `converged`: local HTTP proof downloaded and acknowledged the synthetic event.
+- `hosted-auth-ready`: local provider-free S03A proof only.
 
-## Named semantic tests and results
+## Semantic test results
 
-- `v3 fixture hash matches TypeScript canonical serialization`: passed.
-- `recovery format 1 fixture hash is independent from v3 event payload`: passed.
-- `recovery routes are unavailable without explicit recovery composition`: passed.
-- `real_recovery_harness_test.dart`: passed with `RECOVERY_CONVERGED=true`.
-- Harness-equivalent semantic coverage:
-  - empty/old cursor distinction: old `c10b:0` after cleanup throws typed cursor-expiry path.
-  - snapshot download does not claim completion: progress saved as downloading before apply.
-  - corrupt snapshot leaves facts/cursor unchanged: corrupt target remained empty.
-  - interrupted recovery reuses same session: same session queried after first chunk.
-  - snapshot apply followed by incremental catch-up: `c10b:2` snapshot plus one later event.
-  - recovery completes after acknowledgement and reopen: C reopened with 3 purchases.
-  - pending local events block rebootstrap: `localChangesBlockRebootstrap`.
-  - server cleanup leaves local purchases unchanged: A retained 3 local purchases after server cleanup.
-  - revoked and expired are represented by distinct status concepts.
-  - snapshot is named recovery format 1, not provider backup.
+- JWT accepted valid RS256 access token and rejected wrong audience.
+- Missing bearer and oversized token rejected as hosted authentication failures.
+- Config parser rejected missing and non-HTTPS production-shaped keys by variable name only.
+- Fixture authentication remained direct-test/lab only; hosted entrypoint contains no `FixtureAuthVerifier`.
+- Identity endpoint distinguishes membership-required, account-selection-required and membership-confirmed outcomes.
+- Enrollment replay kept the same Device result.
+- Enrollment hash mismatch returned typed conflict.
+- Owner revocation denied the revoked member Device immediately.
+- Flutter v7 migration created hosted auth state without resetting existing v6 facts, events, queues, cursors or recovery state.
 
-## Diagnostics and privacy inspection
+## HTTP/domain failure mapping
 
-- Diagnostics used operation/status codes, cursors, counts, chunk indexes, hashes and synthetic IDs.
-- No Product/Purchase payload logging was added.
-- No token, password, provider URL, signed URL, Auth0, Neon credential or snapshot byte logging was added.
-- Fixture connection strings/passwords appear only in lab tests/process environment construction.
+- Authentication-required/token-rejected map to generic hosted authorization failures.
+- Missing Device binding maps to `device-enrollment-required`.
+- Disabled/absent membership maps to `membership-required`.
+- Multiple membership maps to `account-selection-required`.
+- Revoked/unknown Device maps to `device-revoked`.
+- Foreign/unauthorized operation maps to `forbidden`.
+- Enrollment mismatch maps to `conflict`.
+
+## Neutral diagnostics and privacy
+
+- Health reports only `live`, `ready` or `not-ready`.
+- Hosted errors expose code, operation, outcome, retryable, safeAction and correlationId only.
+- No token, JWT claims, JWKS body, provider URLs, database URLs, emails, profiles, PKCE values or Purchase payloads are logged.
+- `.env.example` contains no usable hostname, identifier, credential or secret.
+
+## Local-first behavior
+
+- Normal Flutter composition remains local-first.
+- Hosted auth is represented by ports and additive local state only.
+- Existing local Device/Event identities are not rewritten.
+- Pending local events are not silently reassigned to server Device identity.
 
 ## Unsupported wording intentionally absent
 
-- No UI claims of `recovered`, `restored` or `up-to-date` were added.
-- No claim that application snapshots are provider backups or user exports.
-- No production duration promise.
-- No claim that server acknowledgement means all Devices converged.
+- No claim of MCG-02 completion.
+- No claim of Auth0 callback, Neon, Render, live hosted development or production acceptance.
+- No UI wording for completed hosted login or provider readiness.
 
-## No UI or learner promotion
+## No Cycle 11 or learner promotion
 
-- No pages, widgets, navigation, dialogs, cards, progress UI, accessibility composition or analytics were changed.
-- Didactic KANBAN, glossary, concept map and lecture history were not modified.
-- Learner maturity remains unchanged.
-
-## Deviations
-
-- `python -m pytest` could not run because pytest is not installed; `python -m unittest discover -s tests` passed 5 tests.
-- The proof is local-only and synthetic; it does not prove production retention policy, hosted auth, Neon behavior or provider backup behavior.
+- No Cycle 11 UI/UX, navigation, Device management UI, account selection UI, Analytics or polished retry UX was added.
+- Didactic KANBAN, glossary, concept map, lecture register and learner maturity files were unchanged.
 
 Terminal state:
 
 ```text
-C10-S02_LOCAL_RECOVERY_PROVED
-MCG-01_EVIDENCE_NOT_RECONCILED
+C10-S03A_LOCAL_HOSTED_AUTH_READY
+MCG-02_PROVIDER_PROOF_PENDING
 ```

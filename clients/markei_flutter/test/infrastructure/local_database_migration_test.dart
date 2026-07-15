@@ -5,65 +5,58 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 
 void main() {
-  test(
-    'migrates v1 database to v6 local references sync and recovery progress',
-    () async {
-      final temp = await Directory.systemTemp.createTemp('markei_migration_');
-      addTearDown(() => temp.delete(recursive: true));
-      final file = File('${temp.path}/markei.sqlite');
+  test('migrates v1 database to v7 with hosted auth readiness state', () async {
+    final temp = await Directory.systemTemp.createTemp('markei_migration_');
+    addTearDown(() => temp.delete(recursive: true));
+    final file = File('${temp.path}/markei.sqlite');
 
-      final migratingDb = LocalDatabase(
-        NativeDatabase.createInBackground(file, setup: _createV1Database),
-      );
-      addTearDown(migratingDb.close);
+    final migratingDb = LocalDatabase(
+      NativeDatabase.createInBackground(file, setup: _createV1Database),
+    );
+    addTearDown(migratingDb.close);
 
-      expect(migratingDb.schemaVersion, 6);
-      final products = await migratingDb.select(migratingDb.products).get();
-      final ledger = await migratingDb
-          .select(migratingDb.migrationLedger)
-          .get();
+    expect(migratingDb.schemaVersion, 7);
+    final products = await migratingDb.select(migratingDb.products).get();
+    final ledger = await migratingDb.select(migratingDb.migrationLedger).get();
 
-      expect(products, hasLength(1));
-      expect(products.single.userProductCode, startsWith('legacy:'));
-      expect(products.single.normalizedUserProductCode, isNotEmpty);
-      expect(products.single.normalizationVersion, 3);
-      expect(products.single.exactIdentityKey, contains('|v3|'));
-      expect(products.single.displayName, 'arroz branco');
-      expect(ledger.last.fromVersion, 1);
-      expect(ledger.last.toVersion, 6);
-      expect(ledger.last.migrationId, 'v5-to-v6-recovery-progress');
-      expect(
-        await migratingDb.select(migratingDb.installationMetadata).get(),
-        isEmpty,
-      );
-      expect(await migratingDb.select(migratingDb.people).get(), isEmpty);
-      expect(
-        await migratingDb.select(migratingDb.paymentMethods).get(),
-        isEmpty,
-      );
-      expect(
-        await migratingDb.select(migratingDb.recoverySessions).get(),
-        isEmpty,
-      );
-      expect(
-        await migratingDb.select(migratingDb.recoveryChunks).get(),
-        isEmpty,
-      );
-      await migratingDb.close();
+    expect(products, hasLength(1));
+    expect(products.single.userProductCode, startsWith('legacy:'));
+    expect(products.single.normalizedUserProductCode, isNotEmpty);
+    expect(products.single.normalizationVersion, 3);
+    expect(products.single.exactIdentityKey, contains('|v3|'));
+    expect(products.single.displayName, 'arroz branco');
+    expect(ledger.last.fromVersion, 1);
+    expect(ledger.last.toVersion, 7);
+    expect(ledger.last.migrationId, 'v6-to-v7-hosted-auth-readiness');
+    expect(
+      await migratingDb.select(migratingDb.installationMetadata).get(),
+      isEmpty,
+    );
+    expect(await migratingDb.select(migratingDb.people).get(), isEmpty);
+    expect(await migratingDb.select(migratingDb.paymentMethods).get(), isEmpty);
+    expect(
+      await migratingDb.select(migratingDb.recoverySessions).get(),
+      isEmpty,
+    );
+    expect(await migratingDb.select(migratingDb.recoveryChunks).get(), isEmpty);
+    expect(
+      await migratingDb.select(migratingDb.hostedAuthStates).get(),
+      isEmpty,
+    );
+    await migratingDb.close();
 
-      final reopened = LocalDatabase.file(file);
-      addTearDown(reopened.close);
-      expect(await reopened.select(reopened.products).get(), hasLength(1));
-    },
-  );
+    final reopened = LocalDatabase.file(file);
+    addTearDown(reopened.close);
+    expect(await reopened.select(reopened.products).get(), hasLength(1));
+  });
 
   test(
-    'fresh v6 database creates reference, sync and recovery tables',
+    'fresh v7 database creates local, recovery and hosted auth tables',
     () async {
       final db = LocalDatabase.memory();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
       expect(await db.select(db.people).get(), isEmpty);
       expect(await db.select(db.paymentMethods).get(), isEmpty);
       expect(await db.select(db.accountPreferences).get(), isEmpty);
@@ -71,10 +64,11 @@ void main() {
       expect(await db.select(db.syncInbox).get(), isEmpty);
       expect(await db.select(db.recoverySessions).get(), isEmpty);
       expect(await db.select(db.recoveryChunks).get(), isEmpty);
+      expect(await db.select(db.hostedAuthStates).get(), isEmpty);
     },
   );
 
-  test('migrates file-backed v2 database to v6 and reopens', () async {
+  test('migrates file-backed v2 database to v7 and reopens', () async {
     final temp = await Directory.systemTemp.createTemp('markei_migration_v2_');
     addTearDown(() => temp.delete(recursive: true));
     final file = File('${temp.path}/markei.sqlite');
@@ -90,7 +84,7 @@ void main() {
     expect(products.single.normalizationVersion, 3);
     expect(products.single.exactIdentityKey, contains('|v3|'));
     expect(items.single.packageCount, 1);
-    expect(ledger.last.migrationId, 'v5-to-v6-recovery-progress');
+    expect(ledger.last.migrationId, 'v6-to-v7-hosted-auth-readiness');
     expect(
       await migratingDb.select(migratingDb.installationMetadata).get(),
       hasLength(1),
@@ -100,6 +94,7 @@ void main() {
     final reopened = LocalDatabase.file(file);
     addTearDown(reopened.close);
     expect(await reopened.select(reopened.purchases).get(), hasLength(1));
+    expect(await reopened.select(reopened.hostedAuthStates).get(), isEmpty);
     expect(await reopened.select(reopened.people).get(), isEmpty);
   });
 

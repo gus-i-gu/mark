@@ -8723,6 +8723,563 @@ class RecoveryChunksCompanion extends UpdateCompanion<RecoveryChunk> {
   }
 }
 
+class $HostedAuthStatesTable extends HostedAuthStates
+    with TableInfo<$HostedAuthStatesTable, HostedAuthState> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HostedAuthStatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _environmentAliasMeta = const VerificationMeta(
+    'environmentAlias',
+  );
+  @override
+  late final GeneratedColumn<String> environmentAlias = GeneratedColumn<String>(
+    'environment_alias',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _installationIdMeta = const VerificationMeta(
+    'installationId',
+  );
+  @override
+  late final GeneratedColumn<String> installationId = GeneratedColumn<String>(
+    'installation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _enrollmentRequestIdMeta =
+      const VerificationMeta('enrollmentRequestId');
+  @override
+  late final GeneratedColumn<String> enrollmentRequestId =
+      GeneratedColumn<String>(
+        'enrollment_request_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _enrollmentStateMeta = const VerificationMeta(
+    'enrollmentState',
+  );
+  @override
+  late final GeneratedColumn<String> enrollmentState = GeneratedColumn<String>(
+    'enrollment_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverDeviceIdMeta = const VerificationMeta(
+    'serverDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> serverDeviceId = GeneratedColumn<String>(
+    'server_device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _generationMeta = const VerificationMeta(
+    'generation',
+  );
+  @override
+  late final GeneratedColumn<int> generation = GeneratedColumn<int>(
+    'generation',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    environmentAlias,
+    installationId,
+    enrollmentRequestId,
+    enrollmentState,
+    accountId,
+    serverDeviceId,
+    generation,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'hosted_auth_states';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HostedAuthState> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('environment_alias')) {
+      context.handle(
+        _environmentAliasMeta,
+        environmentAlias.isAcceptableOrUnknown(
+          data['environment_alias']!,
+          _environmentAliasMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_environmentAliasMeta);
+    }
+    if (data.containsKey('installation_id')) {
+      context.handle(
+        _installationIdMeta,
+        installationId.isAcceptableOrUnknown(
+          data['installation_id']!,
+          _installationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_installationIdMeta);
+    }
+    if (data.containsKey('enrollment_request_id')) {
+      context.handle(
+        _enrollmentRequestIdMeta,
+        enrollmentRequestId.isAcceptableOrUnknown(
+          data['enrollment_request_id']!,
+          _enrollmentRequestIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enrollment_state')) {
+      context.handle(
+        _enrollmentStateMeta,
+        enrollmentState.isAcceptableOrUnknown(
+          data['enrollment_state']!,
+          _enrollmentStateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_enrollmentStateMeta);
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    }
+    if (data.containsKey('server_device_id')) {
+      context.handle(
+        _serverDeviceIdMeta,
+        serverDeviceId.isAcceptableOrUnknown(
+          data['server_device_id']!,
+          _serverDeviceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('generation')) {
+      context.handle(
+        _generationMeta,
+        generation.isAcceptableOrUnknown(data['generation']!, _generationMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {environmentAlias};
+  @override
+  HostedAuthState map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HostedAuthState(
+      environmentAlias: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}environment_alias'],
+      )!,
+      installationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}installation_id'],
+      )!,
+      enrollmentRequestId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}enrollment_request_id'],
+      ),
+      enrollmentState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}enrollment_state'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      ),
+      serverDeviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_device_id'],
+      ),
+      generation: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}generation'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $HostedAuthStatesTable createAlias(String alias) {
+    return $HostedAuthStatesTable(attachedDatabase, alias);
+  }
+}
+
+class HostedAuthState extends DataClass implements Insertable<HostedAuthState> {
+  final String environmentAlias;
+  final String installationId;
+  final String? enrollmentRequestId;
+  final String enrollmentState;
+  final String? accountId;
+  final String? serverDeviceId;
+  final int? generation;
+  final DateTime updatedAt;
+  const HostedAuthState({
+    required this.environmentAlias,
+    required this.installationId,
+    this.enrollmentRequestId,
+    required this.enrollmentState,
+    this.accountId,
+    this.serverDeviceId,
+    this.generation,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['environment_alias'] = Variable<String>(environmentAlias);
+    map['installation_id'] = Variable<String>(installationId);
+    if (!nullToAbsent || enrollmentRequestId != null) {
+      map['enrollment_request_id'] = Variable<String>(enrollmentRequestId);
+    }
+    map['enrollment_state'] = Variable<String>(enrollmentState);
+    if (!nullToAbsent || accountId != null) {
+      map['account_id'] = Variable<String>(accountId);
+    }
+    if (!nullToAbsent || serverDeviceId != null) {
+      map['server_device_id'] = Variable<String>(serverDeviceId);
+    }
+    if (!nullToAbsent || generation != null) {
+      map['generation'] = Variable<int>(generation);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  HostedAuthStatesCompanion toCompanion(bool nullToAbsent) {
+    return HostedAuthStatesCompanion(
+      environmentAlias: Value(environmentAlias),
+      installationId: Value(installationId),
+      enrollmentRequestId: enrollmentRequestId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(enrollmentRequestId),
+      enrollmentState: Value(enrollmentState),
+      accountId: accountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accountId),
+      serverDeviceId: serverDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverDeviceId),
+      generation: generation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generation),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory HostedAuthState.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HostedAuthState(
+      environmentAlias: serializer.fromJson<String>(json['environmentAlias']),
+      installationId: serializer.fromJson<String>(json['installationId']),
+      enrollmentRequestId: serializer.fromJson<String?>(
+        json['enrollmentRequestId'],
+      ),
+      enrollmentState: serializer.fromJson<String>(json['enrollmentState']),
+      accountId: serializer.fromJson<String?>(json['accountId']),
+      serverDeviceId: serializer.fromJson<String?>(json['serverDeviceId']),
+      generation: serializer.fromJson<int?>(json['generation']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'environmentAlias': serializer.toJson<String>(environmentAlias),
+      'installationId': serializer.toJson<String>(installationId),
+      'enrollmentRequestId': serializer.toJson<String?>(enrollmentRequestId),
+      'enrollmentState': serializer.toJson<String>(enrollmentState),
+      'accountId': serializer.toJson<String?>(accountId),
+      'serverDeviceId': serializer.toJson<String?>(serverDeviceId),
+      'generation': serializer.toJson<int?>(generation),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  HostedAuthState copyWith({
+    String? environmentAlias,
+    String? installationId,
+    Value<String?> enrollmentRequestId = const Value.absent(),
+    String? enrollmentState,
+    Value<String?> accountId = const Value.absent(),
+    Value<String?> serverDeviceId = const Value.absent(),
+    Value<int?> generation = const Value.absent(),
+    DateTime? updatedAt,
+  }) => HostedAuthState(
+    environmentAlias: environmentAlias ?? this.environmentAlias,
+    installationId: installationId ?? this.installationId,
+    enrollmentRequestId: enrollmentRequestId.present
+        ? enrollmentRequestId.value
+        : this.enrollmentRequestId,
+    enrollmentState: enrollmentState ?? this.enrollmentState,
+    accountId: accountId.present ? accountId.value : this.accountId,
+    serverDeviceId: serverDeviceId.present
+        ? serverDeviceId.value
+        : this.serverDeviceId,
+    generation: generation.present ? generation.value : this.generation,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  HostedAuthState copyWithCompanion(HostedAuthStatesCompanion data) {
+    return HostedAuthState(
+      environmentAlias: data.environmentAlias.present
+          ? data.environmentAlias.value
+          : this.environmentAlias,
+      installationId: data.installationId.present
+          ? data.installationId.value
+          : this.installationId,
+      enrollmentRequestId: data.enrollmentRequestId.present
+          ? data.enrollmentRequestId.value
+          : this.enrollmentRequestId,
+      enrollmentState: data.enrollmentState.present
+          ? data.enrollmentState.value
+          : this.enrollmentState,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      serverDeviceId: data.serverDeviceId.present
+          ? data.serverDeviceId.value
+          : this.serverDeviceId,
+      generation: data.generation.present
+          ? data.generation.value
+          : this.generation,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HostedAuthState(')
+          ..write('environmentAlias: $environmentAlias, ')
+          ..write('installationId: $installationId, ')
+          ..write('enrollmentRequestId: $enrollmentRequestId, ')
+          ..write('enrollmentState: $enrollmentState, ')
+          ..write('accountId: $accountId, ')
+          ..write('serverDeviceId: $serverDeviceId, ')
+          ..write('generation: $generation, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    environmentAlias,
+    installationId,
+    enrollmentRequestId,
+    enrollmentState,
+    accountId,
+    serverDeviceId,
+    generation,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HostedAuthState &&
+          other.environmentAlias == this.environmentAlias &&
+          other.installationId == this.installationId &&
+          other.enrollmentRequestId == this.enrollmentRequestId &&
+          other.enrollmentState == this.enrollmentState &&
+          other.accountId == this.accountId &&
+          other.serverDeviceId == this.serverDeviceId &&
+          other.generation == this.generation &&
+          other.updatedAt == this.updatedAt);
+}
+
+class HostedAuthStatesCompanion extends UpdateCompanion<HostedAuthState> {
+  final Value<String> environmentAlias;
+  final Value<String> installationId;
+  final Value<String?> enrollmentRequestId;
+  final Value<String> enrollmentState;
+  final Value<String?> accountId;
+  final Value<String?> serverDeviceId;
+  final Value<int?> generation;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const HostedAuthStatesCompanion({
+    this.environmentAlias = const Value.absent(),
+    this.installationId = const Value.absent(),
+    this.enrollmentRequestId = const Value.absent(),
+    this.enrollmentState = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.serverDeviceId = const Value.absent(),
+    this.generation = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HostedAuthStatesCompanion.insert({
+    required String environmentAlias,
+    required String installationId,
+    this.enrollmentRequestId = const Value.absent(),
+    required String enrollmentState,
+    this.accountId = const Value.absent(),
+    this.serverDeviceId = const Value.absent(),
+    this.generation = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : environmentAlias = Value(environmentAlias),
+       installationId = Value(installationId),
+       enrollmentState = Value(enrollmentState),
+       updatedAt = Value(updatedAt);
+  static Insertable<HostedAuthState> custom({
+    Expression<String>? environmentAlias,
+    Expression<String>? installationId,
+    Expression<String>? enrollmentRequestId,
+    Expression<String>? enrollmentState,
+    Expression<String>? accountId,
+    Expression<String>? serverDeviceId,
+    Expression<int>? generation,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (environmentAlias != null) 'environment_alias': environmentAlias,
+      if (installationId != null) 'installation_id': installationId,
+      if (enrollmentRequestId != null)
+        'enrollment_request_id': enrollmentRequestId,
+      if (enrollmentState != null) 'enrollment_state': enrollmentState,
+      if (accountId != null) 'account_id': accountId,
+      if (serverDeviceId != null) 'server_device_id': serverDeviceId,
+      if (generation != null) 'generation': generation,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HostedAuthStatesCompanion copyWith({
+    Value<String>? environmentAlias,
+    Value<String>? installationId,
+    Value<String?>? enrollmentRequestId,
+    Value<String>? enrollmentState,
+    Value<String?>? accountId,
+    Value<String?>? serverDeviceId,
+    Value<int?>? generation,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return HostedAuthStatesCompanion(
+      environmentAlias: environmentAlias ?? this.environmentAlias,
+      installationId: installationId ?? this.installationId,
+      enrollmentRequestId: enrollmentRequestId ?? this.enrollmentRequestId,
+      enrollmentState: enrollmentState ?? this.enrollmentState,
+      accountId: accountId ?? this.accountId,
+      serverDeviceId: serverDeviceId ?? this.serverDeviceId,
+      generation: generation ?? this.generation,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (environmentAlias.present) {
+      map['environment_alias'] = Variable<String>(environmentAlias.value);
+    }
+    if (installationId.present) {
+      map['installation_id'] = Variable<String>(installationId.value);
+    }
+    if (enrollmentRequestId.present) {
+      map['enrollment_request_id'] = Variable<String>(
+        enrollmentRequestId.value,
+      );
+    }
+    if (enrollmentState.present) {
+      map['enrollment_state'] = Variable<String>(enrollmentState.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (serverDeviceId.present) {
+      map['server_device_id'] = Variable<String>(serverDeviceId.value);
+    }
+    if (generation.present) {
+      map['generation'] = Variable<int>(generation.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HostedAuthStatesCompanion(')
+          ..write('environmentAlias: $environmentAlias, ')
+          ..write('installationId: $installationId, ')
+          ..write('enrollmentRequestId: $enrollmentRequestId, ')
+          ..write('enrollmentState: $enrollmentState, ')
+          ..write('accountId: $accountId, ')
+          ..write('serverDeviceId: $serverDeviceId, ')
+          ..write('generation: $generation, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MigrationLedgerTable extends MigrationLedger
     with TableInfo<$MigrationLedgerTable, MigrationLedgerData> {
   @override
@@ -9226,6 +9783,9 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
     this,
   );
   late final $RecoveryChunksTable recoveryChunks = $RecoveryChunksTable(this);
+  late final $HostedAuthStatesTable hostedAuthStates = $HostedAuthStatesTable(
+    this,
+  );
   late final $MigrationLedgerTable migrationLedger = $MigrationLedgerTable(
     this,
   );
@@ -9252,6 +9812,7 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
     syncInbox,
     recoverySessions,
     recoveryChunks,
+    hostedAuthStates,
     migrationLedger,
   ];
   @override
@@ -18708,6 +19269,285 @@ typedef $$RecoveryChunksTableProcessedTableManager =
       RecoveryChunk,
       PrefetchHooks Function({bool sessionId})
     >;
+typedef $$HostedAuthStatesTableCreateCompanionBuilder =
+    HostedAuthStatesCompanion Function({
+      required String environmentAlias,
+      required String installationId,
+      Value<String?> enrollmentRequestId,
+      required String enrollmentState,
+      Value<String?> accountId,
+      Value<String?> serverDeviceId,
+      Value<int?> generation,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$HostedAuthStatesTableUpdateCompanionBuilder =
+    HostedAuthStatesCompanion Function({
+      Value<String> environmentAlias,
+      Value<String> installationId,
+      Value<String?> enrollmentRequestId,
+      Value<String> enrollmentState,
+      Value<String?> accountId,
+      Value<String?> serverDeviceId,
+      Value<int?> generation,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$HostedAuthStatesTableFilterComposer
+    extends Composer<_$LocalDatabase, $HostedAuthStatesTable> {
+  $$HostedAuthStatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get installationId => $composableBuilder(
+    column: $table.installationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get enrollmentRequestId => $composableBuilder(
+    column: $table.enrollmentRequestId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get enrollmentState => $composableBuilder(
+    column: $table.enrollmentState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverDeviceId => $composableBuilder(
+    column: $table.serverDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get generation => $composableBuilder(
+    column: $table.generation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HostedAuthStatesTableOrderingComposer
+    extends Composer<_$LocalDatabase, $HostedAuthStatesTable> {
+  $$HostedAuthStatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get installationId => $composableBuilder(
+    column: $table.installationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get enrollmentRequestId => $composableBuilder(
+    column: $table.enrollmentRequestId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get enrollmentState => $composableBuilder(
+    column: $table.enrollmentState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverDeviceId => $composableBuilder(
+    column: $table.serverDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get generation => $composableBuilder(
+    column: $table.generation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HostedAuthStatesTableAnnotationComposer
+    extends Composer<_$LocalDatabase, $HostedAuthStatesTable> {
+  $$HostedAuthStatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get installationId => $composableBuilder(
+    column: $table.installationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get enrollmentRequestId => $composableBuilder(
+    column: $table.enrollmentRequestId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get enrollmentState => $composableBuilder(
+    column: $table.enrollmentState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverDeviceId => $composableBuilder(
+    column: $table.serverDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get generation => $composableBuilder(
+    column: $table.generation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$HostedAuthStatesTableTableManager
+    extends
+        RootTableManager<
+          _$LocalDatabase,
+          $HostedAuthStatesTable,
+          HostedAuthState,
+          $$HostedAuthStatesTableFilterComposer,
+          $$HostedAuthStatesTableOrderingComposer,
+          $$HostedAuthStatesTableAnnotationComposer,
+          $$HostedAuthStatesTableCreateCompanionBuilder,
+          $$HostedAuthStatesTableUpdateCompanionBuilder,
+          (
+            HostedAuthState,
+            BaseReferences<
+              _$LocalDatabase,
+              $HostedAuthStatesTable,
+              HostedAuthState
+            >,
+          ),
+          HostedAuthState,
+          PrefetchHooks Function()
+        > {
+  $$HostedAuthStatesTableTableManager(
+    _$LocalDatabase db,
+    $HostedAuthStatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HostedAuthStatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HostedAuthStatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HostedAuthStatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> environmentAlias = const Value.absent(),
+                Value<String> installationId = const Value.absent(),
+                Value<String?> enrollmentRequestId = const Value.absent(),
+                Value<String> enrollmentState = const Value.absent(),
+                Value<String?> accountId = const Value.absent(),
+                Value<String?> serverDeviceId = const Value.absent(),
+                Value<int?> generation = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HostedAuthStatesCompanion(
+                environmentAlias: environmentAlias,
+                installationId: installationId,
+                enrollmentRequestId: enrollmentRequestId,
+                enrollmentState: enrollmentState,
+                accountId: accountId,
+                serverDeviceId: serverDeviceId,
+                generation: generation,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String environmentAlias,
+                required String installationId,
+                Value<String?> enrollmentRequestId = const Value.absent(),
+                required String enrollmentState,
+                Value<String?> accountId = const Value.absent(),
+                Value<String?> serverDeviceId = const Value.absent(),
+                Value<int?> generation = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => HostedAuthStatesCompanion.insert(
+                environmentAlias: environmentAlias,
+                installationId: installationId,
+                enrollmentRequestId: enrollmentRequestId,
+                enrollmentState: enrollmentState,
+                accountId: accountId,
+                serverDeviceId: serverDeviceId,
+                generation: generation,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HostedAuthStatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalDatabase,
+      $HostedAuthStatesTable,
+      HostedAuthState,
+      $$HostedAuthStatesTableFilterComposer,
+      $$HostedAuthStatesTableOrderingComposer,
+      $$HostedAuthStatesTableAnnotationComposer,
+      $$HostedAuthStatesTableCreateCompanionBuilder,
+      $$HostedAuthStatesTableUpdateCompanionBuilder,
+      (
+        HostedAuthState,
+        BaseReferences<
+          _$LocalDatabase,
+          $HostedAuthStatesTable,
+          HostedAuthState
+        >,
+      ),
+      HostedAuthState,
+      PrefetchHooks Function()
+    >;
 typedef $$MigrationLedgerTableCreateCompanionBuilder =
     MigrationLedgerCompanion Function({
       Value<int> id,
@@ -18998,6 +19838,8 @@ class $LocalDatabaseManager {
       $$RecoverySessionsTableTableManager(_db, _db.recoverySessions);
   $$RecoveryChunksTableTableManager get recoveryChunks =>
       $$RecoveryChunksTableTableManager(_db, _db.recoveryChunks);
+  $$HostedAuthStatesTableTableManager get hostedAuthStates =>
+      $$HostedAuthStatesTableTableManager(_db, _db.hostedAuthStates);
   $$MigrationLedgerTableTableManager get migrationLedger =>
       $$MigrationLedgerTableTableManager(_db, _db.migrationLedger);
 }
