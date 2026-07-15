@@ -1,266 +1,369 @@
-# F_DSN_STAGE — C10-S03A-R2 Design Materialization Authority
+# F_DSN_STAGE — C10-S03A-R3 Design Materialization Authority
 
-> Baseline: `34bc032df26d4b6d727d3ba6f2e08bbb0b11e13f`
-> Joint authority: J + D/E/F
-> Scope: local hosted-authorization correction
+> Sequence: FLX-ORD-01
+> Controlling reconciliation: `421d79405e0435d150b61ca092a6923fc603e53e`
+> Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
+> Boundary: local project architecture and proof only
 
 ## 1. Selected architecture
 
-R2 is one bounded local unit with two internal proof slices:
+R3 is one bounded correction/proof unit:
 
 ```text
-R2A server authorization + migration 005 + route registry + JWT/JWKS
-R2B Flutter real HTTP enrollment + file-backed persistence
+closed HTTP authorization composition
++ operation-specific Device target semantics
++ actual Fastify route inventory
++ semantic JWKS key-set revision
++ closed Flutter transport result under an absolute deadline
++ migration-006 exact readiness capability
++ deterministic multi-producer local proof
 ```
 
-Both must pass before the unit may report local-security proof.
+No external dependency/version change is selected. Existing Fastify, `jose`, `pg`, PostgreSQL,
+Dart `http`, Drift and Flutter primitives are sufficient unless compilation proves a specific
+missing cancellation primitive. In that case Codex stops for Main; it does not upgrade silently.
 
 ## 2. Dependency direction
 
-Preserve:
+Retain:
 
 ```text
 domain contracts
-  ← application ports/services
-  ← PostgreSQL, Fastify, HTTP and Drift adapters
-  ← hosted/lab composition roots
+    ↑
+application ports/use cases
+    ↑
+Fastify / PostgreSQL / HTTP / Drift adapters
+    ↑
+hosted / fixture / disabled / local-proof composition roots
 ```
 
-Provider SDKs and provider credentials remain absent. `jose` remains the cryptographic adapter.
-Fastify types must not leak into domain contracts beyond existing application boundaries where a
-bounded refactor can remove them safely.
+`jose` verifies JOSE/JWT/JWK cryptography. Markei owns issuer/audience policy, JWKS retrieval and
+cache/cooldown behavior. `package:http` performs request/stream mechanics. Markei owns deadlines,
+resource lifecycle and application outcome translation. PostgreSQL provides locks/RLS/functions;
+Markei owns predicates, ACLs and transaction ordering.
 
-## 3. Hosted authorization ports
+Do not extract broad new ports merely to remove existing `FastifyRequest`/`PoolClient` coupling;
+those couplings are not causes of the six defects. Small types/helpers may be added where they make
+invalid R3 states unrepresentable.
 
-Replace capability detection with explicit composition types equivalent to:
+## 3. HTTP composition model
 
-```text
-FixtureAuthorization
-  verify(request) -> AuthContext
-
-HostedTransactionAuthorizer
-  authorize(request, operation, callback(client, AuthContext)) -> result
-```
-
-Hosted composition requires `HostedTransactionAuthorizer`; it cannot accept fixture authorization.
-Fixture/non-hosted composition may use its existing verifier through a separate registration path.
-Do not expose a hosted method that returns a trusted `AuthContext` after its transaction commits.
-
-## 4. Migration 005 authorization fence
-
-Add a forward-only SQL migration. Exact names may follow repository conventions, but its logical
-contract is fixed.
-
-### Authorization function
-
-A security-definer function accepts bounded issuer and subject, resolves the active external
-identity, and locks that identity plus all active membership rows in deterministic Account order.
-It returns only:
+Replace capability detection with an exhaustive discriminated union equivalent to:
 
 ```text
-identity_id
-account_id
-role
+type AuthorizationComposition =
+  | { kind: "hosted"; identityService; transactionAuthorizer }
+  | { kind: "fixture"; verifier }
+  | { kind: "disabled" };
 ```
 
 Constraints:
 
-- owner is the migration role that owns the referenced objects;
-- fixed `search_path` and qualified table/function names;
-- no dynamic SQL or caller-selected function/schema;
-- explicit status predicates;
-- row locks survive until caller transaction end;
-- multiple/zero memberships are returned faithfully for application-level closed handling;
-- revoke execute from `PUBLIC`; grant execute to runtime;
-- runtime receives no identity/membership write privilege;
-- test the function definition, owner, ACL, row-lock ordering and rollback behavior.
+- hosted identity/enrollment/Device routes use the hosted identity service;
+- hosted protected sync/recovery routes require the transaction authorizer;
+- fixture verification exists only in the fixture branch;
+- disabled composition refuses protected work;
+- no independent optional hosted authorizer remains;
+- branch selection is exhaustive and construction-time checked;
+- all composition roots select explicitly;
+- shared route behavior may remain centralized.
 
-All controlled identity/membership state writers used by R2 must acquire this function’s fence
-before update. Production membership administration remains deferred, but future writers inherit
-the invariant.
+The current hosted entrypoint's safe convention is retained through the stronger type; the unsafe
+fallback is removed, not merely guarded by a runtime warning.
 
-### Readiness function
+## 4. Transaction and Device-management model
 
-A second security-definer function returns one boolean for the exact required migration identity.
-It must not accept arbitrary SQL or expose ledger rows/checksums. Runtime receives execute only;
-direct ledger SELECT/INSERT/UPDATE/DELETE remains denied.
+Protected operation path remains:
 
-### Security-definer safety
+```text
+verify JWT outside DB transaction
+→ begin bounded-retry serializable transaction
+→ invoke migration-005 identity/membership fence
+→ require exactly one active membership
+→ set Account/identity context
+→ lock identity-bound active actor enrollment and Device
+→ set Device/operation context
+→ execute protected callback on same PoolClient
+→ commit once or roll back all
+```
 
-Functions must use bounded scalar inputs, safe search path, qualified references, minimal return
-shape and no provider/environment secrets. Include tests against search-path/object-shadowing and
-unauthorized function invocation.
+Device-management path becomes:
 
-## 5. Transaction invariants
+```text
+principal
+→ fenced membership
+→ active actor authorization
+→ stable actor/target locks
+→ locked same-Account target snapshot(active|revoked)
+→ status or conditional revoke transition
+```
 
-For every hosted protected operation:
+Separate responsibilities:
 
-1. verify bearer token outside the database transaction;
-2. begin bounded-retry serializable transaction;
-3. invoke authorization fence;
-4. require exactly one active membership;
-5. set identity and Account context from database result;
-6. lock active actor enrollment and Device bound to identity;
-7. set Device/operation context;
-8. perform target policy and deterministic locks if management route;
-9. execute protected callback using the same `PoolClient`;
-10. commit once or roll back all state.
+- actor helper proves identity binding, active enrollment/Device and owner/member target scope;
+- target snapshot records current state without requiring target active;
+- status maps the snapshot;
+- revoke conditionally updates active→revoked and inserts one event;
+- already-revoked target maps to duplicate-equivalent for an active authorized actor.
 
-Principal verification outside the transaction is acceptable because identity/membership/Device
-authorization is re-resolved and fenced inside it. Token expiry remains verified at request entry.
+Self-revoke is one accepted transition. After commit the actor is revoked and cannot authenticate a
+retry. Do not add a durable revoke request/result contract or active-actor exception in R3.
 
-## 6. Device-management invariants
+Stable UUID lock order and one lock for identical IDs are required. Enrollment, Device state and
+security event share one transaction. A unique event constraint is unnecessary for the selected
+single-transition model; tests prove the locked conditional update.
 
-- Actor identity comes from verified principal plus database rows.
-- Actor Device comes from header plus identity-owned active enrollment/Device rows.
-- Target Device comes from path and never authenticates actor.
-- Owner may target any same-Account Device; member only the actor Device.
-- Lock actor and target by stable UUID ordering; identical target uses one lock.
-- Revoke updates enrollment and Device state and inserts its security event in one transaction.
-- A unique/idempotency condition or locked-state check ensures one revocation event per transition.
-- Status/revoke failures do not reveal foreign existence.
+## 5. Actual route registry
 
-Do not implement replacement/reactivation or UI.
-
-## 7. Route registry
-
-Create one typed descriptor model containing at least:
+One project-owned route registration gateway records:
 
 ```text
 method
 path
 operation
-authorizationClass
-handler registration
+authorization class
 ```
 
-Use descriptor helpers to register actual routes. If Fastify typing makes a fully data-driven table
-unreasonably unsafe, a single wrapper may register each route and record the same descriptor; no
-route may bypass it.
-
-At build/test time compare Fastify’s actual non-health route inventory with descriptors. Reject
-duplicates and missing/extra classifications. Identity/Device routes and all sync/recovery routes
-must be included.
-
-## 8. HTTP contract
-
-The server response is a discriminated contract:
-
-- 2xx: closed `DeviceEnrollmentResult` success variants only;
-- 409: typed `conflict` failure;
-- other 4xx: closed non-retryable authorization/request failure;
-- 5xx/timeout/connection loss: retryable or unknown outcome with safe replay action.
-
-The route layer owns HTTP status mapping. Application services return typed success/failure data and
-must not rely on Flutter-specific behavior.
-
-## 9. Flutter ports and transport
-
-Change the port so a request credential is explicit, equivalent to:
-
-```text
-enroll(command, accessToken)
-query(requestId, accessToken)
-```
-
-or one immutable request context containing only the ephemeral credential and request values.
-
-The coordinator:
-
-- signs in/checks state;
-- obtains one accepted token for that attempt;
-- passes that same token to transport;
-- never persists it;
-- stores only provider-neutral enrollment progress/result;
-- re-acquires a new token for a later retry/query attempt.
-
-The HTTP adapter:
-
-- accepts an injected client/base URI and bounded policy;
-- sends the supplied bearer token once;
-- uses streamed reading with a byte ceiling and timeout;
-- rejects redirects, malformed/extra/missing fields and unexpected statuses;
-- maps closed failures to typed application exceptions/results;
-- has explicit owned/borrowed client lifecycle.
-
-Do not modify ordinary local registration or reassign existing outbox event identity.
-
-## 10. JWT/JWKS state machine
-
-Model deterministic state with injected Clock:
-
-```text
-no-cache
-→ fresh
-→ expired-but-stale-allowed
-→ stale-expired
-```
+Install a root Fastify `onRoute` hook before application/plugin routes. Capture normalized actual
+registrations independently from descriptor intent, then compare exact sets before readiness/use.
 
 Rules:
 
-- production JWKS normalized origin equals normalized issuer origin and uses HTTPS;
-- a successful fetch records fresh expiry and absolute stale expiry;
-- refresh failure may retain cached keys only before absolute stale expiry;
-- after absolute stale expiry, key lookup rejects even if cache memory exists;
-- concurrent refresh is one promise;
-- failed refresh sets global cooldown;
-- unknown `kid` sets bounded per-key negative cooldown even if refresh succeeded unchanged;
-- genuine rotation clears relevant negative state and accepts the new key;
-- any duplicate `kid` rejects the document;
-- cache/cooldown defaults are explicit, bounded and overrideable only through validated config;
-- public errors/logs contain no token, claims, URI, key IDs or bodies.
+- descriptor drives or wraps every application route;
+- actual non-health inventory equals the descriptor set;
+- `/health/live` and `/health/ready` are named exceptions or explicit descriptors;
+- Fastify automatic HEAD forms are normalized only through evidence for the pinned version;
+- duplicates, extras, missing routes, wrong operation/class and hosted-authorizer absence reject;
+- an injected direct `app.get`/plugin route must be detected;
+- never use `printRoutes()` text parsing.
 
-## 11. Readiness and role topology
+An optional `src/http/route_registry.ts` extraction is allowed if it keeps `app.ts` reviewable. Do
+not create a generalized framework.
 
-Hosted topology remains:
+## 6. JWKS state machine
+
+Retain `Auth0JwtVerifier`/`BoundedJwksSource`, injected Clock/fetch and `jose`. Introduce a stable
+semantic key-set revision.
+
+Pipeline:
 
 ```text
-controlled migrator session → migrations/fixture provisioning → close
-runtime pool only → Fastify
+bounded fetch
+→ JSON parse
+→ closed JWK validation
+→ reject any duplicate kid
+→ normalize accepted public JWK fields
+→ deterministic order-independent canonical bytes/hash
+→ changed | unchanged
+→ createLocalJWKSet(validated set)
 ```
 
-Runtime readiness calls only the narrow function. Runtime never receives migrator URL or recovery
-worker authority.
+Cache state includes:
 
-Migration 003 remains immutable. Local lab may pre-create the worker role. Later Neon application
-requires a human owner to pre-create exact `NOLOGIN` non-elevated `markei_recovery_worker`; this is
-outside R2 and must not be automated or simulated as provider success.
+```text
+local key set
+semantic revision
+fresh-until
+absolute stale-until
+global next-refresh-after
+per-kid negative-until
+one shared refresh promise
+```
 
-## 12. Evidence architecture
+State rules:
 
-Split proof producers by responsibility:
+- time changes never imply key-set change;
+- successful unchanged refresh preserves revision and sets negative cooldown for a still-absent
+  requested key;
+- failed refresh may retain known cached keys only before absolute stale expiry;
+- forced unknown-key refresh cannot bypass global failure cooldown;
+- concurrent refreshes share one promise;
+- genuine revision change invalidates only negative entries affected by the new set;
+- a changed set still lacking the requested key establishes negative cooldown;
+- stale expiry rejects even when memory retains the local set;
+- unknown key is never resolved from stale material.
 
-- TypeScript unit tests: JWT, contracts, registry, authorization services;
-- PostgreSQL/HTTP harness: migrations, roles, RLS, barriers and API operations;
-- Flutter test: real HTTP transport, token coherence, Drift file reopen/outbox;
-- optional aggregator: invokes all gates and prints final result only if each returned success.
+Use Node's existing cryptographic hash only for deterministic cache identity, never as token
+signature verification. Keep public failures generic.
 
-No producer claims another producer’s work. Diagnostics carry no secrets or fact payloads.
+## 7. Flutter closed transport model
 
-## 13. Version and compatibility boundary
+Prefer a closed application port result over raw adapter exceptions, equivalent to:
 
-- Event payload remains v3.
-- Cursor remains `c10b:*`.
-- Recovery snapshot remains format 1.
-- Hosted identity/enrollment contract remains v1 unless the closed HTTP mapping requires an
-  additive versioned contract; prefer retaining v1 with corrected status semantics.
-- Drift remains v7 unless durable schema change is genuinely necessary. If v8 is unavoidable,
-  prove v7→v8 migrate/reopen/failure/no-reset; do not reset databases.
-- PostgreSQL adds migration 005 only.
+```text
+sealed DeviceEnrollmentTransportResult
+  success(result)
+  conflict
+  unavailable
+  unknownOutcome
+```
 
-## 14. Rollback and stop boundary
+The exact Dart representation may use sealed classes or an equally exhaustive typed structure. It
+must be exhaustively handled by `HostedEnrollmentCoordinator`.
 
-- Source rollback is the bounded R2 commit.
-- Migration 005 is forward history; application rollback must tolerate it remaining installed.
-- No destructive down migration.
-- Stop if security-definer ownership cannot be made least privilege, if a broad table grant is
-  required, if route inventory cannot be mechanically verified, or if decisive proof depends on a
-  provider.
-- Do not edit 001–004, permanent memory, methodology, J, A/B/C or unrelated code.
-- Do not begin provider SDK, deployment, MCG-03/04 or Cycle closure work.
+Ownership:
 
-## 15. Design report requirements
+- coordinator: authentication session, one token, durable enrollment state transition;
+- transport port: closed result vocabulary, no HTTP types;
+- HTTP adapter: request construction, redirect refusal, absolute deadline, cancellation, response
+  ceiling, closed decode and raw exception translation;
+- Drift repository: progress/result persistence only; facts/outbox remain authoritative and intact.
 
-I must report final dependency direction, migration/function names and ACLs, transaction/lock order,
-route descriptor model, actor/target policy, JWT state machine, Flutter credential flow, protocol and
-Drift versions, fixture containment, deviations and deferred provider decisions.
+One deadline is calculated at attempt start. Every connect/header/body wait consumes remaining time.
+Slow chunks cannot renew it. On expiry cancel request-owned resources.
+
+Client lifecycle options:
+
+1. use a proven request-scoped abort/cancel primitive from pinned `http 1.6.0`; or
+2. inject an owned per-attempt client factory and close only that client.
+
+A borrowed shared client must not be closed by one attempt. Codex must compile/test the selected
+mechanism. Do not catch all objects or translate programmer errors to service-unavailable.
+
+No Drift schema change is selected. File-backed tests use existing v7 tables and real pending
+outbox/facts.
+
+## 8. Migration 006 exact capability
+
+Create forward migration:
+
+```text
+006_hosted_authorization_r3.sql
+```
+
+It registers `006_hosted_authorization_r3` with an explicit repository-style checksum and creates:
+
+```sql
+public.markei_hosted_runtime_ready()
+```
+
+Contract:
+
+- no arguments;
+- returns boolean only;
+- checks only the exact migration condition selected for this hosted R3 binary;
+- language SQL unless evidence requires PL/pgSQL;
+- `SECURITY DEFINER`, `STABLE`;
+- fixed `search_path = pg_catalog, public` and qualified table references;
+- no dynamic SQL or caller-selected identifiers;
+- owner is the migration identity used by the disposable harness;
+- execute revoked from `PUBLIC` and granted to `markei_runtime` only;
+- runtime execute on `markei_required_migration_present(text)` revoked;
+- runtime direct ledger access remains revoked.
+
+The migration ledger insert, function/ACL changes and revocation occur in one transaction. Do not
+edit/drop migration 005 objects. Application readiness calls only the qualified no-argument function.
+
+The exact readiness predicate must be internally constant and include the R3 migration identity;
+Codex must align it with the existing migration runner/ledger semantics. It may not expose an array,
+identifier or general history result.
+
+Application rollback is allowed while migration 006 remains forward history. An R2 binary may
+report not-ready after old-probe execute is revoked; rollback/deployment evidence must state this.
+
+## 9. Evidence architecture
+
+Use four producer families:
+
+```text
+TypeScript/Fastify/JWT unit producer
+disposable PostgreSQL authorization/migration producer
+Flutter real-HTTP/file-backed producer
+bounded aggregate orchestrator
+```
+
+Each producer emits named machine-readable case IDs and a truthful terminal result. The orchestrator
+consumes producer exit/results and prints `R3_LOCAL_SECURITY_PROVED=true` only when every D/E case
+ran and passed.
+
+Authorization races use explicit test-only phase hooks/barriers or controlled SQL sessions:
+
+- no sleeps;
+- bounded waits;
+- same migration-005 fence for controlled membership/identity writers;
+- stable lock-order assertions;
+- before/after database state queries;
+- bounded serialization/deadlock retry and exhaustion.
+
+Flutter proof must cross the real boundaries:
+
+```text
+HostedEnrollmentCoordinator
+→ HttpDeviceEnrollmentTransport
+→ loopback Fastify
+→ disposable PostgreSQL
+and LocalDatabase.file close/reopen
+```
+
+Fake transport or in-memory-only Drift remains useful unit evidence but cannot satisfy the decisive
+gate.
+
+## 10. Authorization and privacy boundaries
+
+- Auth0 subject becomes `ExternalPrincipal`, never AccountId/DeviceId.
+- Active identity/membership/Device database rows remain required on every protected request.
+- Cross-Account and cross-Device access fails closed.
+- Runtime receives only the runtime pool; migrator/worker credentials never enter Fastify.
+- Fixture authentication remains test/loopback-only.
+- No token, claim, URI, key, password, connection string, fact/snapshot payload or generated
+  credential is logged.
+- Provider helper files remain unread and untouched.
+- No Auth0, Neon or Render request occurs.
+
+## 11. Versions and compatibility
+
+Unchanged:
+
+```text
+event payload v3
+cursor c10b:*
+recovery snapshot format 1
+hosted enrollment contract v1
+Drift schema v7
+migrations 001–005
+package-lock/pubspec.lock dependency set
+```
+
+Added:
+
+```text
+PostgreSQL migration 006
+local R3 diagnostic/case vocabulary
+```
+
+No provider SDK, callback protocol, platform secret, UI contract, Device replacement/reactivation,
+Account selection UI or Cycle 11 feature is introduced.
+
+## 12. Rollback and stopping boundary
+
+Rollback is application rollback/hosted disablement; migration 006 remains inert forward history.
+No destructive down migration.
+
+Stop before mutation or report partial if:
+
+- D/E/F conflict;
+- self-revoke requires weakening the active actor rule;
+- hosted fallback remains representable;
+- actual inventory cannot reject an injected extra route;
+- JWKS fingerprint is based only on time/`kid` or forced refresh bypasses global cooldown;
+- one absolute deadline/cancellation cannot be proven with pinned APIs;
+- a broad runtime grant, provider access or dependency upgrade is required;
+- migrations 001–005, Drift schema or permanent memory would need editing;
+- race proof depends on sleeps;
+- any decisive producer is unavailable/skipped;
+- repository credential containment is unresolved for provider work.
+
+## 13. I report requirements
+
+I must report:
+
+- final dependency/composition direction;
+- exact changed source boundaries;
+- migration 006 identity, checksum, function definition, owner and ACLs;
+- actor/target state and scoped idempotence rules;
+- actual route capture/normalization rules;
+- JWKS semantic fingerprint and complete state transitions;
+- Flutter result type, deadline/cancellation and client ownership;
+- transaction/barrier/aggregate proof architecture;
+- versions retained;
+- deviations, partial gates and deferred provider/self-replay decisions.
