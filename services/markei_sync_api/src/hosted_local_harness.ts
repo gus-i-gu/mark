@@ -9,7 +9,6 @@ import {
   HostedIdentityService,
   HostedTransactionAuthorizer,
 } from "./application/hosted_authorization.js";
-import { RefusingAuthVerifier } from "./application/auth.js";
 import { systemClock } from "./application/hosted_contracts.js";
 
 const labMigratorUrl = process.env.LAB_MIGRATOR_URL;
@@ -60,10 +59,15 @@ try {
   });
   const hosted = new HostedIdentityService(database, verifier, systemClock);
   const app = buildApp({
-    auth: new RefusingAuthVerifier(),
-    hostedAuthorizer: new HostedTransactionAuthorizer(database, verifier),
+    authorization: {
+      kind: "hosted",
+      identityService: hosted,
+      transactionAuthorizer: new HostedTransactionAuthorizer(
+        database,
+        verifier,
+      ),
+    },
     database,
-    hosted,
   });
   await app.listen({ host: "127.0.0.1", port: 0 });
   const apiPort = (app.server.address() as { port: number }).port;
@@ -185,7 +189,7 @@ try {
   process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
   process.stdout.write("ROUTE_AUTHORIZATION_INVENTORY=true\n");
   process.stdout.write("LEAST_PRIVILEGE_HTTP=true\n");
-  process.stdout.write("R2_LOCAL_SECURITY_PROVED=false\n");
+  process.stdout.write("R3_LOCAL_SECURITY_PROVED=false\n");
 } finally {
   await pool.end().catch(() => undefined);
   await migratorPool.end().catch(() => undefined);
@@ -201,6 +205,7 @@ async function migrate(pool: pg.Pool) {
       "003_retention_snapshot_recovery",
       "004_hosted_identity_enrollment",
       "005_hosted_authorization_fence",
+      "006_hosted_authorization_r3",
     ]) {
       const path = new URL(`../migrations/${id}.sql`, import.meta.url);
       await client.query(readFileSync(path, "utf8"));
@@ -245,13 +250,16 @@ async function proveLeastPrivilege(pool: pg.Pool) {
     throw new Error("runtime current_user was not isolated");
   }
   const ready = await pool.query(
-    "select markei_required_migration_present($1) as ready",
-    ["005_hosted_authorization_fence"],
+    "select public.markei_hosted_runtime_ready() as ready",
   );
   if (ready.rows[0].ready !== true) {
     throw new Error("runtime readiness function failed");
   }
   await expectDenied(pool, "select count(*) from migration_ledger");
+  await expectDenied(
+    pool,
+    "select markei_required_migration_present('005_hosted_authorization_fence')",
+  );
   await expectDenied(pool, "create table runtime_must_not_create(id int)");
   await expectDenied(pool, "update external_identities set status='disabled'");
   await expectDenied(pool, "update account_memberships set status='disabled'");

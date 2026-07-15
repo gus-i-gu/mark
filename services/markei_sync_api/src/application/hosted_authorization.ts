@@ -227,23 +227,17 @@ export class HostedIdentityService {
       await setIdentity(client, membership.identityId);
       await setDevice(client, actorDeviceId);
       await setOperation(client, "device-management");
-      await authorizeActorAndTargetDevice(
+      const target = await authorizeActorAndTargetDevice(
         client,
         membership,
         actorDeviceId,
         deviceId,
       );
-      const row = await client.query(
-        `select state, generation from device_enrollments
-          where account_id=$1 and device_id=$2`,
-        [membership.accountId, deviceId],
-      );
-      if (!row.rowCount) throw new HostedAuthError("forbidden", 404);
       return {
         contractVersion: 1,
         deviceId,
-        status: row.rows[0].state,
-        generation: Number(row.rows[0].generation),
+        status: target.enrollmentState,
+        generation: target.generation,
       };
     });
   }
@@ -259,12 +253,19 @@ export class HostedIdentityService {
       await setIdentity(client, membership.identityId);
       await setDevice(client, actorDeviceId);
       await setOperation(client, "device-management");
-      await authorizeActorAndTargetDevice(
+      const target = await authorizeActorAndTargetDevice(
         client,
         membership,
         actorDeviceId,
         deviceId,
       );
+      if (target.deviceStatus === "revoked") {
+        return {
+          contractVersion: 1,
+          status: "duplicate-equivalent",
+          deviceId,
+        };
+      }
       const updated = await client.query(
         `update device_enrollments
             set state='revoked', updated_at=now()
@@ -294,6 +295,13 @@ export class HostedIdentityService {
     });
   }
 }
+
+type DeviceTargetSnapshot = {
+  deviceId: string;
+  deviceStatus: "active" | "revoked";
+  enrollmentState: "active" | "revoked" | "replaced";
+  generation: number;
+};
 
 async function resolveOneMembership(
   client: PoolClient,
@@ -359,7 +367,7 @@ async function authorizeActorAndTargetDevice(
   membership: Membership,
   actorDeviceId: string,
   targetDeviceId: string,
-) {
+): Promise<DeviceTargetSnapshot> {
   if (membership.role !== "owner" && actorDeviceId !== targetDeviceId) {
     throw new HostedAuthError("forbidden", 403);
   }
@@ -376,14 +384,14 @@ async function authorizeActorAndTargetDevice(
   if (rows.rowCount !== ordered.length) {
     throw new HostedAuthError("forbidden", 403);
   }
-  const actorEnrollment = await client.query(
-    `select state
+  const enrollments = await client.query(
+    `select device_id, identity_id, state, generation
        from device_enrollments
       where account_id=$1
-        and device_id=$2
-        and identity_id=$3
+        and device_id = any($2::uuid[])
+      order by device_id
       for update`,
-    [membership.accountId, actorDeviceId, membership.identityId],
+    [membership.accountId, ordered],
   );
   const actor = rows.rows.find(
     (row) => String(row.device_id) === actorDeviceId,
@@ -391,17 +399,30 @@ async function authorizeActorAndTargetDevice(
   const target = rows.rows.find(
     (row) => String(row.device_id) === targetDeviceId,
   );
-  if (
-    !actor ||
-    actor.device_status !== "active" ||
-    !actorEnrollment.rowCount ||
-    actorEnrollment.rows[0].state !== "active"
-  ) {
+  const actorEnrollment = enrollments.rows.find(
+    (row) =>
+      String(row.device_id) === actorDeviceId &&
+      String(row.identity_id) === membership.identityId &&
+      row.state === "active",
+  );
+  const targetEnrollment = enrollments.rows.find(
+    (row) => String(row.device_id) === targetDeviceId,
+  );
+  if (!actor || actor.device_status !== "active" || !actorEnrollment) {
     throw new HostedAuthError("device-revoked", 403);
   }
-  if (!target || target.device_status !== "active") {
+  if (!target || !targetEnrollment) {
     throw new HostedAuthError("forbidden", 403);
   }
+  return {
+    deviceId: String(target.device_id),
+    deviceStatus: target.device_status as "active" | "revoked",
+    enrollmentState: targetEnrollment.state as
+      | "active"
+      | "revoked"
+      | "replaced",
+    generation: Number(targetEnrollment.generation),
+  };
 }
 
 function requestedDeviceId(request: FastifyRequest): string | null {

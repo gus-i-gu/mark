@@ -18,7 +18,10 @@ if (host !== "127.0.0.1" && host !== "::1" && host !== "localhost") {
 
 const pool = new pg.Pool({ connectionString, max: 4 });
 const app = buildApp({
-  auth: new FixtureAuthVerifier({ accountId, deviceId }),
+  authorization: {
+    kind: "fixture",
+    verifier: new FixtureAuthVerifier({ accountId, deviceId }),
+  },
   database: { pool },
   recovery: {
     clock: systemClock,

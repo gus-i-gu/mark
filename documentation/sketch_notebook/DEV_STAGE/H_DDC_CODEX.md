@@ -1,8 +1,8 @@
-# H_DDC_CODEX - C10-S03A-R2 Semantic Evidence
+# H_DDC_CODEX - C10-S03A-R3 Semantic Evidence
 
 Sequence: FLX-ORD-01 corrective Codex materialization
 Role: Codex semantic/test evidence
-Unit: C10-S03A-R2 local hosted-authorization correction
+Unit: C10-S03A-R3 local hosted-authorization correction and decisive proof
 Branch: `intermid-cycle-recovery`
 Authority: `E_DDC_STAGE.md` plus J/D/F
 Evidence boundary: local proof only; provider proof and learner-memory promotion excluded
@@ -10,13 +10,13 @@ Evidence boundary: local proof only; provider proof and learner-memory promotion
 ## Result
 
 ```text
-C10-S03A_R2_PARTIAL
+C10-S03A_R3_PARTIAL
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Exact blocker: deterministic barrier proof is incomplete for the full membership, identity, Device revocation, owner/member target management and denied-state-no-mutation matrix. Real Flutter HTTP/file-backed hosted enrollment proof against loopback Fastify was not added.
+Exact blocker: full deterministic race/failure proof and real Flutter HTTP/file-backed hosted enrollment proof remain incomplete. The local aggregate is therefore false.
 
-## Materialized distinctions
+## Materialized Distinctions
 
 - `token-obtained != principal-verified`
 - `principal-verified != active-identity`
@@ -26,32 +26,41 @@ Exact blocker: deterministic barrier proof is incomplete for the full membership
 - `transaction-authorized != operation-committed`
 - `local-proof-passed != provider-proof-passed`
 
-The hosted server now treats JWT verification as `ExternalPrincipal` only. Active identity, membership, actor Device, target Device and operation authority are resolved within the same serializable transaction that executes protected sync/recovery operations.
+Hosted code continues to treat JWT verification as an external principal only. Active identity, membership, actor Device, target policy and operation authority are separate states.
 
-## Named semantic evidence
+## Scoped Revoke Semantics
 
-- Principal verification is not membership: identity and hosted operations use the database authorization fence for active identity/membership.
-- Membership is not actor Device authority: protected sync/recovery requires the actor Device header and active enrollment/device state.
-- Actor Device is not target Device: Device status/revoke distinguishes header actor from path target.
-- Owner/member target policy is explicit: owner can inspect/revoke same-Account targets; member only its actor Device.
-- Authorization is not commit: protected route callbacks run through `HostedTransactionAuthorizer` and commit once after callback success.
-- Conflict is closed: enrollment request-hash conflict returns HTTP 409 and Flutter maps it to conflict, not success.
-- Token is not durable client state: coordinator passes one token per attempt into transport; transport never fetches or persists a second token.
-- Local proof is not provider proof: reports keep provider proof pending and do not claim hosted provider readiness.
+- Actor authorization is sourced from `x-markei-device-id` and active identity-owned enrollment.
+- Target authorization is sourced from the path and same-Account policy.
+- Owner may inspect or revoke a same-Account target Device.
+- Member may inspect or revoke only the actor Device.
+- Foreign and cross-Account targets remain bounded non-enumerating failures.
+- Active-to-revoked target transitions are atomic across enrollment and Device state.
+- Authorized repeat revoke of an already revoked target returns duplicate-equivalent.
+- After self-revoke commits, that actor is no longer active for later protected operations.
 
-## Privacy and local-first behavior
+## Named Semantic Evidence
+
+- Closed composition: hosted, fixture and disabled authorization branches are explicit construction states.
+- Hosted fallback denial: hosted protected operations cannot use fixture or precommitted authorization fallback.
+- Route inventory: Fastify actual registrations are compared to typed descriptors rather than to another hard-coded constant.
+- Unknown-key behavior: unchanged and stale-retained JWKS refreshes do not authorize unknown keys and establish bounded negative cooldown.
+- Closed Flutter outcomes: conflict, unavailable and unknown-outcome are not decoded as success.
+- Credential flow: one token is obtained per attempt, passed in memory to transport and never persisted by the new code.
+
+## Privacy And Local-First Behavior
 
 - Normal local registration and local-first Flutter composition were not changed.
-- Pending local event identity is not reassigned by hosted enrollment code.
-- Cancellation, token rejection and service-unavailable paths preserve local hosted enrollment progress without storing token bytes.
-- New server errors remain generic and bounded to public failure codes and correlation IDs.
-- No token, claims, provider URI, JWKS body, generated credential or fact payload was intentionally logged by new code.
+- Existing local event identities and pending outbox behavior are preserved by the coordinator failure paths.
+- No token, claims, JWKS body, provider URL, generated credential, connection string or fact payload was intentionally logged by the new code.
+- Public failures remain generic and bounded.
 
-## Unsupported wording absent
+## Unsupported Wording Absent
 
-No successful report claims:
+No report claims:
 
 ```text
+HOSTED_AUTH_READY=true
 Auth0 success
 Render success
 Neon acceptance
@@ -61,6 +70,6 @@ production authentication ready
 Cycle 10 closed
 ```
 
-## Didactic boundary
+## Didactic Boundary
 
 No KANBAN, glossary, Concept Map, Lecture Register, permanent didactic memory, methodology, A/B/C or J file was modified. Learner maturity and Cycle 11 state remain unchanged.

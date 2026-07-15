@@ -46,6 +46,15 @@ type RouteDescriptor = {
 
 type RouteAuthorizationDescriptor = Omit<RouteDescriptor, "handler">;
 
+export type AuthorizationComposition =
+  | {
+      kind: "hosted";
+      identityService: HostedIdentityService;
+      transactionAuthorizer: HostedTransactionAuthorizer;
+    }
+  | { kind: "fixture"; verifier: AuthVerifier }
+  | { kind: "disabled" };
+
 export const ROUTE_AUTHORIZATION_DESCRIPTORS: readonly RouteAuthorizationDescriptor[] =
   [
     {
@@ -134,19 +143,30 @@ export const ROUTE_AUTHORIZATION_DESCRIPTORS: readonly RouteAuthorizationDescrip
   ] as const;
 
 export function buildApp(options: {
-  auth: AuthVerifier;
-  hostedAuthorizer?: HostedTransactionAuthorizer;
+  authorization: AuthorizationComposition;
   database?: Database;
   recovery?: RecoveryComposition;
-  hosted?: HostedIdentityService;
+  registerUnclassifiedRouteForTest?: (app: FastifyInstance) => void;
 }) {
   const app = Fastify({ logger: false });
-  app.register(sensible);
+  const actualRoutes: Array<{ method: string; path: string }> = [];
+  app.addHook("onRoute", (routeOptions) => {
+    const methods = Array.isArray(routeOptions.method)
+      ? routeOptions.method
+      : [routeOptions.method];
+    for (const method of methods) {
+      actualRoutes.push({
+        method: method.toUpperCase(),
+        path: routeOptions.url,
+      });
+    }
+  });
 
   app.get("/health/live", async () => ({ status: "live" }));
   app.get("/health/ready", async () => ({
     status: await readyStatus(options.database),
   }));
+  app.register(sensible);
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof HostedAuthError) {
@@ -170,14 +190,17 @@ export function buildApp(options: {
   });
 
   const routes: RouteDescriptor[] = [];
-  if (options.hosted) {
+  if (options.authorization.kind === "hosted") {
     routes.push(
       route(
         "GET",
         "/v1/identity",
         "identity-resolution",
         "principal-only",
-        async (request: FastifyRequest) => options.hosted!.identity(request),
+        async (request: FastifyRequest) =>
+          options.authorization.kind === "hosted"
+            ? options.authorization.identityService.identity(request)
+            : unreachableHostedRoute(),
       ),
       route(
         "POST",
@@ -185,7 +208,10 @@ export function buildApp(options: {
         "enroll-device",
         "active-membership",
         async (request: FastifyRequest, reply: FastifyReply) => {
-          const result = await options.hosted!.enroll(
+          if (options.authorization.kind !== "hosted") {
+            return unreachableHostedRoute();
+          }
+          const result = await options.authorization.identityService.enroll(
             request,
             request.body as never,
           );
@@ -199,10 +225,14 @@ export function buildApp(options: {
         "active-membership",
         async (request: FastifyRequest, reply: FastifyReply) => {
           const params = request.params as { requestId: string };
-          const result = await options.hosted!.enrollmentStatus(
-            request,
-            params.requestId,
-          );
+          if (options.authorization.kind !== "hosted") {
+            return unreachableHostedRoute();
+          }
+          const result =
+            await options.authorization.identityService.enrollmentStatus(
+              request,
+              params.requestId,
+            );
           return sendHostedResult(reply, result);
         },
       ),
@@ -213,7 +243,12 @@ export function buildApp(options: {
         "active-actor-device-management",
         async (request: FastifyRequest) => {
           const params = request.params as { deviceId: string };
-          return options.hosted!.deviceStatus(request, params.deviceId);
+          return options.authorization.kind === "hosted"
+            ? options.authorization.identityService.deviceStatus(
+                request,
+                params.deviceId,
+              )
+            : unreachableHostedRoute();
         },
       ),
       route(
@@ -223,7 +258,12 @@ export function buildApp(options: {
         "active-actor-device-management",
         async (request: FastifyRequest) => {
           const params = request.params as { deviceId: string };
-          return options.hosted!.revoke(request, params.deviceId);
+          return options.authorization.kind === "hosted"
+            ? options.authorization.identityService.revoke(
+                request,
+                params.deviceId,
+              )
+            : unreachableHostedRoute();
         },
       ),
     );
@@ -248,8 +288,7 @@ export function buildApp(options: {
         }
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "upload-submission",
           (client, auth) =>
@@ -278,8 +317,7 @@ export function buildApp(options: {
         const query = request.query as { after?: string; limit?: string };
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "download-events",
           (client, auth) =>
@@ -313,8 +351,7 @@ export function buildApp(options: {
         const body = request.body as { greatestContiguousCursor: string };
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "acknowledgement",
           (client, auth) =>
@@ -335,8 +372,7 @@ export function buildApp(options: {
         }
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "capabilities",
           (client, auth) => getCapabilities(client, auth, options.recovery!),
@@ -358,8 +394,7 @@ export function buildApp(options: {
         }
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "start-rebootstrap",
           (client, auth) =>
@@ -388,8 +423,7 @@ export function buildApp(options: {
         const params = request.params as { sessionId: string };
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "query-rebootstrap",
           (client, auth) =>
@@ -418,8 +452,7 @@ export function buildApp(options: {
         const params = request.params as { sessionId: string; index: string };
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "download-rebootstrap-chunk",
           (client, auth) =>
@@ -450,8 +483,7 @@ export function buildApp(options: {
         const body = request.body as Record<string, unknown>;
         const result = await protectedOperation(
           options.database,
-          options.auth,
-          options.hostedAuthorizer,
+          options.authorization,
           request,
           "complete-rebootstrap",
           (client, auth) =>
@@ -467,7 +499,7 @@ export function buildApp(options: {
     ),
   );
 
-  assertRouteDescriptors(routes, Boolean(options.hosted));
+  assertRouteDescriptors(routes, options.authorization.kind === "hosted");
   for (const descriptor of routes) {
     app.route({
       method: descriptor.method,
@@ -475,24 +507,35 @@ export function buildApp(options: {
       handler: descriptor.handler,
     });
   }
-  assertFastifyRouteInventory(app, routes);
+  options.registerUnclassifiedRouteForTest?.(app);
+  assertFastifyRouteInventory(actualRoutes, routes);
 
   return app;
 }
 
 async function protectedOperation<T>(
   database: Database,
-  authVerifier: AuthVerifier,
-  authorizer: HostedTransactionAuthorizer | undefined,
+  authorization: AuthorizationComposition,
   request: Parameters<AuthVerifier["verify"]>[0],
   operation: string,
   action: (client: PoolClient, auth: AuthContext) => Promise<T>,
 ): Promise<T> {
-  if (authorizer) {
-    return authorizer.authorizeOperation(request, operation, action);
+  if (authorization.kind === "hosted") {
+    return authorization.transactionAuthorizer.authorizeOperation(
+      request,
+      operation,
+      action,
+    );
   }
-  const auth = await authVerifier.verify(request);
+  if (authorization.kind === "disabled") {
+    throw new HostedAuthError("authentication-required", 401);
+  }
+  const auth = await authorization.verifier.verify(request);
   return inTransaction(database, auth, (client) => action(client, auth));
+}
+
+function unreachableHostedRoute(): never {
+  throw new HostedAuthError("forbidden", 403);
 }
 
 function unavailable(operation: string, correlationId: string) {
@@ -510,8 +553,7 @@ async function readyStatus(database: Database | undefined) {
   if (!database) return "not-ready";
   try {
     const result = await database.pool.query(
-      "select markei_required_migration_present($1) as ready",
-      ["005_hosted_authorization_fence"],
+      "select public.markei_hosted_runtime_ready() as ready",
     );
     return result.rows[0]?.ready ? "ready" : "not-ready";
   } catch {
@@ -569,16 +611,43 @@ function assertRouteDescriptors(
 }
 
 function assertFastifyRouteInventory(
-  app: FastifyInstance,
+  actualRoutes: Array<{ method: string; path: string }>,
   routes: RouteDescriptor[],
 ) {
-  for (const descriptor of routes) {
-    if (!app.hasRoute({ method: descriptor.method, url: descriptor.path })) {
-      throw new Error(
-        `route missing from Fastify inventory: ${descriptorKey(descriptor)}`,
-      );
-    }
+  const expected = routes
+    .map((route) => `${route.method} ${route.path}`)
+    .sort();
+  const actual = normalizeActualRoutes(actualRoutes).sort();
+  if (new Set(actual).size !== actual.length) {
+    throw new Error("duplicate actual route registration");
   }
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error("actual route authorization inventory mismatch");
+  }
+}
+
+function normalizeActualRoutes(
+  routes: Array<{ method: string; path: string }>,
+) {
+  const raw = routes
+    .filter((route) => !isHealthRoute(route))
+    .map((route) => `${route.method} ${route.path}`);
+  const getRoutes = new Set(
+    raw
+      .filter((key) => key.startsWith("GET "))
+      .map((key) => key.replace(/^GET /, "")),
+  );
+  return raw.filter((key) => {
+    if (!key.startsWith("HEAD ")) return true;
+    return !getRoutes.has(key.replace(/^HEAD /, ""));
+  });
+}
+
+function isHealthRoute(route: { method: string; path: string }) {
+  return (
+    (route.method === "GET" || route.method === "HEAD") &&
+    (route.path === "/health/live" || route.path === "/health/ready")
+  );
 }
 
 function descriptorKey(

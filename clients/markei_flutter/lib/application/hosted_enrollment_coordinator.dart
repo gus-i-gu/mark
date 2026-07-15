@@ -53,27 +53,23 @@ final class HostedEnrollmentCoordinator {
       );
     }
     await _mark(environmentAlias, command, 'enrolling');
-    try {
-      final result = await _transport.enroll(command, token.accessToken!);
-      final state = HostedIdentityState(
-        environmentAlias: environmentAlias,
-        installationId: result.installationId,
-        enrollmentRequestId: command.enrollmentRequestId,
-        enrollmentState: 'device-enrolled',
-        accountId: result.accountId,
-        serverDeviceId: result.deviceId,
-        generation: result.generation,
-        updatedAt: _now(),
+    final result = await _transport.enroll(command, token.accessToken!);
+    if (result is DeviceEnrollmentTransportSuccess) {
+      return _complete(
+        environmentAlias,
+        command.enrollmentRequestId,
+        result.result,
       );
-      await _repository.save(state);
-      return HostedEnrollmentOutcome.applied(state);
-    } on DeviceEnrollmentConflict {
+    }
+    if (result is DeviceEnrollmentTransportConflict) {
       await _mark(environmentAlias, command, 'conflict');
       return const HostedEnrollmentOutcome.notApplied('conflict');
-    } on DeviceEnrollmentUnavailable {
-      await _mark(environmentAlias, command, 'service-unavailable');
-      return const HostedEnrollmentOutcome.unknown('service-unavailable');
     }
+    final state = result is DeviceEnrollmentTransportUnavailable
+        ? 'service-unavailable'
+        : 'unknown-outcome';
+    await _mark(environmentAlias, command, state);
+    return HostedEnrollmentOutcome.unknown(state);
   }
 
   Future<HostedEnrollmentOutcome> replay({
@@ -92,29 +88,43 @@ final class HostedEnrollmentCoordinator {
         token.errorCode ?? 'token-rejected',
       );
     }
-    try {
-      final result = await _transport.query(
-        state.enrollmentRequestId!,
-        token.accessToken!,
+    final result = await _transport.query(
+      state.enrollmentRequestId!,
+      token.accessToken!,
+    );
+    if (result is DeviceEnrollmentTransportSuccess) {
+      return _complete(
+        environmentAlias,
+        state.enrollmentRequestId,
+        result.result,
       );
-      if (result == null) {
-        return const HostedEnrollmentOutcome.unknown('unknown-outcome');
-      }
-      final completed = HostedIdentityState(
-        environmentAlias: environmentAlias,
-        installationId: result.installationId,
-        enrollmentRequestId: state.enrollmentRequestId,
-        enrollmentState: 'device-enrolled',
-        accountId: result.accountId,
-        serverDeviceId: result.deviceId,
-        generation: result.generation,
-        updatedAt: _now(),
-      );
-      await _repository.save(completed);
-      return HostedEnrollmentOutcome.applied(completed);
-    } on DeviceEnrollmentUnavailable {
+    }
+    if (result is DeviceEnrollmentTransportConflict) {
+      return const HostedEnrollmentOutcome.notApplied('conflict');
+    }
+    if (result is DeviceEnrollmentTransportUnavailable) {
       return const HostedEnrollmentOutcome.unknown('service-unavailable');
     }
+    return const HostedEnrollmentOutcome.unknown('unknown-outcome');
+  }
+
+  Future<HostedEnrollmentOutcome> _complete(
+    String environmentAlias,
+    String? enrollmentRequestId,
+    DeviceEnrollmentResult result,
+  ) async {
+    final completed = HostedIdentityState(
+      environmentAlias: environmentAlias,
+      installationId: result.installationId,
+      enrollmentRequestId: enrollmentRequestId,
+      enrollmentState: 'device-enrolled',
+      accountId: result.accountId,
+      serverDeviceId: result.deviceId,
+      generation: result.generation,
+      updatedAt: _now(),
+    );
+    await _repository.save(completed);
+    return HostedEnrollmentOutcome.applied(completed);
   }
 
   Future<void> _mark(

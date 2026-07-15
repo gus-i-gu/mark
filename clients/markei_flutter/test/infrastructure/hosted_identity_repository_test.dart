@@ -178,22 +178,24 @@ final class _FakeEnrollmentTransport implements DeviceEnrollmentTransport {
   String? lastCredential;
 
   @override
-  Future<DeviceEnrollmentResult> enroll(
+  Future<DeviceEnrollmentTransportResult> enroll(
     DeviceEnrollmentCommand command,
     String bearerCredential,
   ) async {
     lastCredential = bearerCredential;
-    if (unavailable) throw const DeviceEnrollmentUnavailable();
-    return result!;
+    if (unavailable) return const DeviceEnrollmentTransportUnavailable();
+    return DeviceEnrollmentTransportSuccess(result!);
   }
 
   @override
-  Future<DeviceEnrollmentResult?> query(
+  Future<DeviceEnrollmentTransportResult> query(
     String enrollmentRequestId,
     String bearerCredential,
   ) async {
     lastCredential = bearerCredential;
-    if (unavailable) throw const DeviceEnrollmentUnavailable();
-    return result;
+    if (unavailable) return const DeviceEnrollmentTransportUnavailable();
+    final value = result;
+    if (value == null) return const DeviceEnrollmentTransportUnknown();
+    return DeviceEnrollmentTransportSuccess(value);
   }
 }

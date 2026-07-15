@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_initializing_formals
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -25,39 +26,45 @@ final class HttpDeviceEnrollmentTransport implements DeviceEnrollmentTransport {
   final bool _closeClient;
 
   @override
-  Future<DeviceEnrollmentResult> enroll(
+  Future<DeviceEnrollmentTransportResult> enroll(
     DeviceEnrollmentCommand command,
     String bearerCredential,
   ) async {
-    final response = await _send(
-      'POST',
-      _origin.resolve('/v1/devices/enroll'),
-      bearerCredential,
-      jsonEncode({
-        'contractVersion': command.contractVersion,
-        'installationId': command.installationId,
-        'enrollmentRequestId': command.enrollmentRequestId,
-        'platform': command.platform,
-        'applicationId': command.applicationId,
-        'applicationVersion': command.applicationVersion,
-      }),
-    );
-    return _decode(response);
+    return _closed(() async {
+      final response = await _send(
+        'POST',
+        _origin.resolve('/v1/devices/enroll'),
+        bearerCredential,
+        jsonEncode({
+          'contractVersion': command.contractVersion,
+          'installationId': command.installationId,
+          'enrollmentRequestId': command.enrollmentRequestId,
+          'platform': command.platform,
+          'applicationId': command.applicationId,
+          'applicationVersion': command.applicationVersion,
+        }),
+      );
+      return _decode(response);
+    });
   }
 
   @override
-  Future<DeviceEnrollmentResult?> query(
+  Future<DeviceEnrollmentTransportResult> query(
     String enrollmentRequestId,
     String bearerCredential,
   ) async {
-    final response = await _send(
-      'GET',
-      _origin.resolve('/v1/devices/enrollments/$enrollmentRequestId'),
-      bearerCredential,
-      null,
-    );
-    if (response.statusCode == 404) return null;
-    return _decode(response);
+    return _closed(() async {
+      final response = await _send(
+        'GET',
+        _origin.resolve('/v1/devices/enrollments/$enrollmentRequestId'),
+        bearerCredential,
+        null,
+      );
+      if (response.statusCode == 404) {
+        return const DeviceEnrollmentTransportUnknown();
+      }
+      return _decode(response);
+    });
   }
 
   void close() {
@@ -70,17 +77,25 @@ final class HttpDeviceEnrollmentTransport implements DeviceEnrollmentTransport {
     String bearerCredential,
     String? body,
   ) async {
+    final deadline = DateTime.now().add(_timeout);
     final request = http.Request(method, uri)
       ..followRedirects = false
       ..headers.addAll(_headers(bearerCredential));
     if (body != null) request.body = body;
-    final streamed = await _client.send(request).timeout(_timeout);
-    if (streamed.isRedirect) throw const DeviceEnrollmentUnavailable();
+    final streamed = await _client.send(request).timeout(_remaining(deadline));
+    if (streamed.isRedirect) {
+      return http.Response.bytes([], 302, request: streamed.request);
+    }
     final chunks = <int>[];
-    await for (final chunk in streamed.stream.timeout(_timeout)) {
+    await for (final chunk in streamed.stream.timeout(_remaining(deadline))) {
       chunks.addAll(chunk);
       if (chunks.length > _maxResponseBytes) {
-        throw const DeviceEnrollmentUnavailable();
+        return http.Response.bytes(
+          [],
+          413,
+          request: streamed.request,
+          reasonPhrase: 'response too large',
+        );
       }
     }
     return http.Response.bytes(
@@ -97,16 +112,20 @@ final class HttpDeviceEnrollmentTransport implements DeviceEnrollmentTransport {
     'content-type': 'application/json',
   };
 
-  DeviceEnrollmentResult _decode(http.Response response) {
-    if (response.statusCode == 409) throw const DeviceEnrollmentConflict();
+  DeviceEnrollmentTransportResult _decode(http.Response response) {
+    if (response.statusCode == 409) {
+      return const DeviceEnrollmentTransportConflict();
+    }
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw const DeviceEnrollmentUnavailable();
+      return response.statusCode >= 500
+          ? const DeviceEnrollmentTransportUnknown()
+          : const DeviceEnrollmentTransportUnavailable();
     }
     final Object parsed;
     try {
       parsed = jsonDecode(response.body);
     } catch (_) {
-      throw const DeviceEnrollmentUnavailable();
+      return const DeviceEnrollmentTransportUnavailable();
     }
     if (parsed is! Map<String, Object?> ||
         parsed.length != 6 ||
@@ -117,13 +136,35 @@ final class HttpDeviceEnrollmentTransport implements DeviceEnrollmentTransport {
         parsed['deviceId'] is! String ||
         parsed['accountId'] is! String ||
         parsed['generation'] is! int) {
-      throw const DeviceEnrollmentUnavailable();
+      return const DeviceEnrollmentTransportUnavailable();
     }
-    return DeviceEnrollmentResult(
-      installationId: parsed['installationId'] as String,
-      deviceId: parsed['deviceId'] as String,
-      accountId: parsed['accountId'] as String,
-      generation: parsed['generation'] as int,
+    return DeviceEnrollmentTransportSuccess(
+      DeviceEnrollmentResult(
+        installationId: parsed['installationId'] as String,
+        deviceId: parsed['deviceId'] as String,
+        accountId: parsed['accountId'] as String,
+        generation: parsed['generation'] as int,
+      ),
     );
+  }
+
+  Future<DeviceEnrollmentTransportResult> _closed(
+    Future<DeviceEnrollmentTransportResult> Function() action,
+  ) async {
+    try {
+      return await action();
+    } on TimeoutException {
+      return const DeviceEnrollmentTransportUnknown();
+    } on http.ClientException {
+      return const DeviceEnrollmentTransportUnavailable();
+    } on FormatException {
+      return const DeviceEnrollmentTransportUnavailable();
+    }
+  }
+
+  Duration _remaining(DateTime deadline) {
+    final remaining = deadline.difference(DateTime.now());
+    if (!remaining.isNegative && remaining > Duration.zero) return remaining;
+    throw TimeoutException('device enrollment deadline expired');
   }
 }

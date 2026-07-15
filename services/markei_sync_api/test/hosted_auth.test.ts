@@ -6,7 +6,7 @@ import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { parseHostedConfig } from "../src/application/hosted_config.js";
 import { Auth0JwtVerifier } from "../src/application/jwt_verifier.js";
 import { HostedAuthError } from "../src/application/hosted_contracts.js";
-import { ROUTE_AUTHORIZATION_DESCRIPTORS } from "../src/http/app.js";
+import { buildApp, ROUTE_AUTHORIZATION_DESCRIPTORS } from "../src/http/app.js";
 
 test("hosted config requires closed production keys without values", () => {
   assert.throws(
@@ -241,6 +241,19 @@ test("protected route policy inventory covers hosted sync and recovery routes", 
     "start-rebootstrap",
     "upload-submission",
   ]);
+});
+
+test("actual route inventory rejects an injected unclassified route", () => {
+  assert.throws(
+    () =>
+      buildApp({
+        authorization: { kind: "disabled" },
+        registerUnclassifiedRouteForTest: (app) => {
+          app.get("/v1/unclassified", async () => ({ ok: true }));
+        },
+      }),
+    /actual route authorization inventory mismatch/,
+  );
 });
 
 async function jwtFixture() {

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { FastifyRequest } from "fastify";
 import {
   createLocalJWKSet,
@@ -105,9 +106,13 @@ class BoundedJwksSource {
   private local: ReturnType<typeof createLocalJWKSet> | null = null;
   private freshUntil = 0;
   private staleUntil = 0;
+  private revision = "";
+  private kids = new Set<string>();
   private nextRefreshAfter = 0;
   private negativeKidUntil = new Map<string, number>();
-  private refreshPromise: Promise<void> | null = null;
+  private refreshPromise: Promise<
+    "changed" | "unchanged" | "stale-retained"
+  > | null = null;
   private readonly uri: URL;
 
   constructor(private readonly options: BoundedJwksOptions) {
@@ -130,32 +135,32 @@ class BoundedJwksSource {
       if (kid && now < (this.negativeKidUntil.get(kid) ?? 0)) {
         throw error;
       }
-      const previousFreshUntil = this.freshUntil;
-      await this.refresh({ force: true });
-      if (kid && this.freshUntil === previousFreshUntil) {
+      const outcome = await this.refresh();
+      if (kid && outcome !== "changed") {
         this.negativeKidUntil.set(
           kid,
           this.options.clock.now().getTime() +
             this.options.unknownKidCooldownMs,
         );
-      } else if (kid) {
+      } else if (kid && this.hasKid(kid)) {
         this.negativeKidUntil.delete(kid);
       }
       return this.local!(header, token);
     }
   }
 
-  private async refresh(options: { force?: boolean } = {}) {
+  private async refresh(): Promise<"changed" | "unchanged" | "stale-retained"> {
     const now = this.options.clock.now().getTime();
     if (this.refreshPromise) return this.refreshPromise;
-    if (!options.force && now < this.nextRefreshAfter) {
-      if (this.local && now < this.staleUntil) return;
+    if (now < this.nextRefreshAfter) {
+      if (this.local && now < this.staleUntil) return "stale-retained";
       throw new HostedAuthError("token-rejected");
     }
     this.refreshPromise = this.fetchAndCache()
       .catch((error) => {
         this.nextRefreshAfter = now + this.options.cooldownMs;
-        if (this.local && now < this.staleUntil) return;
+        if (this.local && now < this.staleUntil)
+          return "stale-retained" as const;
         throw error;
       })
       .finally(() => {
@@ -164,7 +169,7 @@ class BoundedJwksSource {
     return this.refreshPromise;
   }
 
-  private async fetchAndCache() {
+  private async fetchAndCache(): Promise<"changed" | "unchanged"> {
     const controller = new AbortController();
     const timeout = setTimeout(
       () => controller.abort(),
@@ -181,18 +186,31 @@ class BoundedJwksSource {
       const text = await boundedText(response, this.options.maxBytes);
       const parsed = JSON.parse(text) as unknown;
       const jwks = validateJwks(parsed);
+      const revision = keySetRevision(jwks.keys);
+      const outcome = revision === this.revision ? "unchanged" : "changed";
       this.local = createLocalJWKSet(jwks);
+      this.revision = revision;
+      this.kids = new Set(jwks.keys.map((key) => key.kid as string));
       const now = this.options.clock.now().getTime();
       this.freshUntil = now + this.options.cacheMaxAgeMs;
       this.staleUntil = now + this.options.staleIfErrorMs;
       this.nextRefreshAfter = 0;
-      this.negativeKidUntil.clear();
+      if (outcome === "changed") {
+        for (const kid of this.negativeKidUntil.keys()) {
+          if (this.hasKid(kid)) this.negativeKidUntil.delete(kid);
+        }
+      }
+      return outcome;
     } catch (error) {
       if (error instanceof HostedAuthError) throw error;
       throw new HostedAuthError("token-rejected");
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  private hasKid(kid: string) {
+    return this.kids.has(kid);
   }
 }
 
@@ -264,6 +282,29 @@ function validateJwks(value: unknown): { keys: JWK[] } {
     seen.set(key.kid, fingerprint);
   }
   return { keys };
+}
+
+function keySetRevision(keys: JWK[]): string {
+  const normalized = keys
+    .map((key) => canonicalJson(key))
+    .sort()
+    .join("\n");
+  return createHash("sha256").update(normalized).digest("hex");
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalJson).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => item !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right));
+    return `{${entries
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
 }
 
 function bearer(value: string | string[] | undefined): string {

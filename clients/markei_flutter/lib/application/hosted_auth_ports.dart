@@ -9,11 +9,11 @@ abstract interface class AccessTokenSource {
 }
 
 abstract interface class DeviceEnrollmentTransport {
-  Future<DeviceEnrollmentResult> enroll(
+  Future<DeviceEnrollmentTransportResult> enroll(
     DeviceEnrollmentCommand command,
     String bearerCredential,
   );
-  Future<DeviceEnrollmentResult?> query(
+  Future<DeviceEnrollmentTransportResult> query(
     String enrollmentRequestId,
     String bearerCredential,
   );
@@ -78,6 +78,32 @@ final class DeviceEnrollmentResult {
   final String deviceId;
   final String accountId;
   final int generation;
+}
+
+sealed class DeviceEnrollmentTransportResult {
+  const DeviceEnrollmentTransportResult();
+}
+
+final class DeviceEnrollmentTransportSuccess
+    extends DeviceEnrollmentTransportResult {
+  const DeviceEnrollmentTransportSuccess(this.result);
+
+  final DeviceEnrollmentResult result;
+}
+
+final class DeviceEnrollmentTransportConflict
+    extends DeviceEnrollmentTransportResult {
+  const DeviceEnrollmentTransportConflict();
+}
+
+final class DeviceEnrollmentTransportUnavailable
+    extends DeviceEnrollmentTransportResult {
+  const DeviceEnrollmentTransportUnavailable();
+}
+
+final class DeviceEnrollmentTransportUnknown
+    extends DeviceEnrollmentTransportResult {
+  const DeviceEnrollmentTransportUnknown();
 }
 
 final class HostedIdentityState {

@@ -37,10 +37,13 @@ test("normal runtime auth verifier refuses fixture escape", async () => {
 
 test("fixture auth is injectable only by direct test construction", async () => {
   const app = buildApp({
-    auth: new FixtureAuthVerifier({
-      accountId: "11111111-1111-4111-8111-111111111111",
-      deviceId: "22222222-2222-4222-8222-222222222222",
-    }),
+    authorization: {
+      kind: "fixture",
+      verifier: new FixtureAuthVerifier({
+        accountId: "11111111-1111-4111-8111-111111111111",
+        deviceId: "22222222-2222-4222-8222-222222222222",
+      }),
+    },
   });
   const response = await app.inject({ method: "GET", url: "/health/live" });
   assert.equal(response.statusCode, 200);
@@ -48,10 +51,13 @@ test("fixture auth is injectable only by direct test construction", async () => 
 
 test("recovery routes are unavailable without explicit recovery composition", async () => {
   const app = buildApp({
-    auth: new FixtureAuthVerifier({
-      accountId: "11111111-1111-4111-8111-111111111111",
-      deviceId: "22222222-2222-4222-8222-222222222222",
-    }),
+    authorization: {
+      kind: "fixture",
+      verifier: new FixtureAuthVerifier({
+        accountId: "11111111-1111-4111-8111-111111111111",
+        deviceId: "22222222-2222-4222-8222-222222222222",
+      }),
+    },
   });
   const response = await app.inject({
     method: "GET",
