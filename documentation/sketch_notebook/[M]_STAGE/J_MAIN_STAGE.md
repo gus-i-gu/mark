@@ -369,6 +369,123 @@ It does not prove migration 003/004 application, pooled RLS, hosted authenticati
 backup/PITR or production acceptance. No provider hostname, connection string, credential, endpoint
 ID or token belongs in J.
 
+### 7.1 Recovered MCG-01 human evidence
+
+Main recovers the following from the human-observed 2026-07-15 session as sanitized operational
+evidence. It was previously present in conversation but not promoted into permanent domain memory.
+
+Environment observations:
+
+- Neon Free development environment in `us-west-2` with PostgreSQL 18.4;
+- child development branch `markei-cycle10-development` derived from `production`;
+- disposable database `markei_sync_dev`;
+- production branch not used for probes;
+- branch expiry was adjusted during the session, but its current expiry requires reconfirmation.
+
+Role and connectivity observations:
+
+- SQL-created `markei_migrator` and `markei_runtime` login identities;
+- neither identity reported superuser, role-administration, replication, bypass-RLS or
+  `neon_superuser` membership;
+- migrator connected through the direct endpoint and could create schema objects;
+- runtime connected and could not create schema objects;
+- client connection negotiated TLS 1.3 and the separate channel-binding configuration worked;
+- credentials remained outside Git and were not included in sanitized evidence.
+
+Transactional and privilege probes:
+
+- migrator created and inserted into a disposable table inside a transaction;
+- rollback removed both inserted data and the table;
+- runtime performed explicitly granted SELECT, INSERT, UPDATE and DELETE on a probe table;
+- runtime `CREATE TABLE` failed with permission denied for schema `public`;
+- the unauthorized table was absent;
+- all three probe objects were absent after cleanup.
+
+PRC-01 result:
+
+```text
+MCG-01_SANITIZED_DEVELOPMENT_ENVIRONMENT_PASS
+```
+
+Evidence boundary: manual observation and pasted terminal output. No secret or provider identifier
+is preserved. This does not establish migration 003/004 application, production RLS, hosted API
+behavior, backup/PITR, provider availability or production acceptance.
+
+### 7.2 Recovered MCG-02 preparation evidence
+
+Main recovers the following as provider-dashboard preparation only:
+
+- Render Web Service and Auth0 were selected as the provisional development providers;
+- separate Auth0 Native Applications were prepared for Android and Windows;
+- the Android application identifier was configured and its certificate/deep-link steps were
+  traversed in the Auth0 quickstart;
+- a Windows Native Application and callback/protocol preparation were traversed;
+- a Markei custom API/audience and RS256-shaped token boundary were prepared;
+- no native client secret was intended or authorized;
+- Render was connected to the GitHub repository and the New Web Service form was reached;
+- the intended service was recognized as a Node service under `services/markei_sync_api`, although
+  the dashboard initially inferred the repository as Python;
+- environment-variable entry was identified, but no approved hosted secret set was established;
+- no Render deployment, Neon migration, real hosted login, token acceptance, Device enrollment or
+  hosted synchronization proof was completed.
+
+The exact Auth0 tenant/app identifiers, callbacks, certificate fingerprint, audience, Render URL,
+Neon hostname and all credentials remain excluded from J and permanent documentation.
+
+PRC-01 result:
+
+```text
+MCG-02_PROVIDER_DASHBOARD_PREPARATION_PARTIAL
+MCG-02_HOSTED_PROOF_NOT_PERFORMED
+```
+
+This recovered evidence cannot activate C10-S03B because the C10-S03A transaction-time
+authorization contradiction remains unresolved.
+
+### 7.3 Manual-action methodology recovery
+
+Future Manual Configuration Gates use this evidence route:
+
+```text
+human observation
+→ sanitized evidence block
+→ Main staging and PRC-01 boundary
+→ Operational/Didactic/Design promotion by semantic ownership
+→ Main reconciliation
+→ next provider gate
+```
+
+Dashboard completion marks configuration state, not application validation. A provider mutation is
+not permanent project truth until its sanitized evidence, environment, exclusions and unknown
+outcomes are staged and reconciled. Main may capture cross-domain gate state in J, but permanent
+Operational, Didactic and Design meaning remains owned by the corresponding domain chats.
+
+### 7.4 Permanent-domain promotion handoff for recovered MCG evidence
+
+Operational promotion candidates:
+
+- MCG-01 sanitized pass, commands/probes, cleanup and current branch-expiry recheck;
+- MCG-02 dashboard preparation, incomplete deployment and exact remaining manual gates;
+- the rule separating direct migrator and pooled runtime connections.
+
+Didactic promotion candidates:
+
+- manual configuration versus validation;
+- authentication versus membership, enrollment and authorization;
+- build/deployment evidence versus hosted workflow acceptance.
+
+No learner maturity or Lecture Register change follows automatically.
+
+Design promotion candidates:
+
+- provider trust boundaries and server-only secrets;
+- migrator/runtime responsibility separation;
+- separate Native Applications and no embedded native client secret;
+- dashboard/provider choices as provisional until hosted proof.
+
+Domain chats must use PRC-01 and must retain `C10-S03A_CONTRADICTED_STOP`. They may promote MCG-01
+evidence and MCG-02 preparation state, but not hosted-auth readiness or Cycle 10 closure.
+
 ## 8. C10-S03B / MCG-02 readiness
 
 `C10-S03B` is **not ready**. Do not migrate Neon, deploy Render, enter provider secrets, provision
