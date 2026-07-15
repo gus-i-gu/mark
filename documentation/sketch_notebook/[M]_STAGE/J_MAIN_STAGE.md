@@ -4,9 +4,10 @@
 > Branch: `intermid-cycle-recovery`
 > Controlling stage: `812a19842bfa3066adaf843c419bfda78c9fc8de`
 > Codex implementation: `032e13ae7c19f2639d2a60ff6c12c6104c59fd54`
+> Reconciled repository head: `8087238f206e27ef2ade8c2b7d45a5e0ea0b3aa3`
 > Evidence: G/H/I plus direct repository inspection
-> Date: 2026-07-16
-> Status: R2 bounded progress accepted; decisive proof incomplete
+> Date: 2026-07-15
+> Status: R2 bounded progress accepted; R3 not materialized; credential containment required
 
 ## 1. Methodology retained
 
@@ -26,12 +27,17 @@ Retained:
 - J reconciles evidence; it does not replace domain canon or authorize provider mutation.
 - D/E/F at `812a198` authorized R2 only. They do not silently authorize another refactor.
 
+Round numbering is determined by the controlling D/E/F authority and the G/H/I unit labels, not by
+the number of Git recovery, reconciliation or Codex attempts. The current evidence is R2. No R3
+implementation commit or R3 G/H/I report exists.
+
 ## 2. Ancestry and exact repository delta
 
-The controlling staging commit is an ancestor of the implementation commit:
+The controlling staging commit is an ancestor of the implementation commit, reconciliation commit
+and current branch head:
 
 ```text
-812a198 → 032e13a
+812a198 → 032e13a → a4ce0d4 → 8087238
 ```
 
 Git reports exactly 14 changed paths:
@@ -60,6 +66,34 @@ No migration 001–004, permanent memory, methodology, A/B/C, D/E/F or J was cha
 G lists `hosted_config.ts`, `hosted_contracts.ts` and `postgres/database.ts` as changed, but Git does
 not. G also leaves Final SHA as pending. These are report defects. The authoritative implementation
 inventory is the 14-path Git list above and Final SHA is `032e13a`.
+
+### Subsequent repository exposure commit
+
+Commit `8087238` does not advance C10-S03A to R3. It adds only:
+
+```text
+.vscode/settings.json
+documentation/NEON_DOC.md
+documentation/NEON_SESSION.ps1
+```
+
+These paths are unrelated to the R2 implementation and G/H/I evidence. Their contents were
+deliberately not inspected during this reconciliation. The human reports that database connection
+information was pushed, so Main treats affected credentials as exposed until rotation proves
+otherwise.
+
+Before any provider proof:
+
+1. rotate both Neon login passwords (`markei_migrator` and `markei_runtime`);
+2. replace any copied runtime credential in Render or other provider configuration;
+3. remove the three private paths from Git tracking while preserving needed local copies outside
+   Git;
+4. restore ignore rules for local editor/provider helper files;
+5. scan reachable Git history without reproducing secrets in logs or chat;
+6. if secret material was committed, perform explicit history removal only after rotation, with a
+   safety bundle and coordinated force-update authority.
+
+Deleting the paths in a later commit does not remove already published material from Git history.
 
 ## 3. Codex classification accepted
 
@@ -300,12 +334,15 @@ still requires the later human Neon-owner bootstrap for the exact non-login reco
 No Neon migration 001–006, Auth0 token flow or Render deployment has been proved here.
 
 Provider proof remains stopped until local R3 succeeds and Main reconciles its G/H/I.
+Credential rotation and repository containment are an additional prerequisite; they do not count as
+R3 implementation evidence.
 
 ## 10. Terminal status
 
 ```text
 C10-S03A_R2_PARTIAL_ACCEPTED
 C10-S03A_R3_RESTAGING_REQUIRED
+CREDENTIAL_ROTATION_AND_REPOSITORY_CONTAINMENT_REQUIRED
 MCG-02_PROVIDER_PROOF_NOT_AUTHORIZED
 ```
 
