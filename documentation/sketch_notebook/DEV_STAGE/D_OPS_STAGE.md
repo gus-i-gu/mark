@@ -1,55 +1,52 @@
-# D_OPS_STAGE — C10-S03A-R3B Operational Materialization Authority
+# D_OPS_STAGE — C10-S03A-R3C Operational Materialization Authority
 
 > Sequence: FLX-ORD-01
 > Branch: `intermid-cycle-recovery`
-> Controlling Main reconciliation: `2468c3912f1d0f3582e5eb241f104226b14c876f`
-> Accepted implementation baseline: `a995bd1385d5754f0a278b05df1c1f8f8431ec45`
+> Controlling Main reconciliation: `51e1db09e9c00bf2650d1cf791b571cfa4f6a0c6`
+> Accepted implementation baseline: `d95d3a2a94935b850f10b9e4b0228ba128b3e728`
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Boundary: local contract correction and decisive proof only
+> Boundary: decisive local proof completion
 
-## 1. Objective and terminal condition
+## 1. Objective
 
-Complete the five R3 source contradictions and the missing decisive evidence without reopening the
-accepted architecture:
+Complete the four missing local proof producers without reopening accepted R3B contracts:
 
 ```text
-absolute cancellable Flutter attempt
-+ lossless durable enrollment outcomes
-+ bounded normalized JWKS refresh behavior
-+ readiness-time exact route inventory
-+ Device status semantic correction
-+ complete local authorization/migration/HTTP/file-backed proof
+authorization/revocation race matrix
++ migration-006 lifecycle and ACL proof
++ real Flutter HTTP/file-backed Drift proof
++ closed multi-producer aggregation
 ```
 
-Success requires every named producer to pass and the aggregate to emit:
+Success requires:
 
 ```text
 R3_LOCAL_SECURITY_PROVED=true
-C10-S03A_R3B_LOCAL_SECURITY_PROVED
+C10-S03A_R3C_LOCAL_SECURITY_PROVED
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-If any case is failed, skipped, unavailable, partial or host-unvalidated, emit:
+If any required case is missing, skipped, partial, unavailable, host-unvalidated or false:
 
 ```text
 R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3B_PARTIAL
+C10-S03A_R3C_PARTIAL
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Report the exact missing producer/case. Never infer success from test counts or builds.
+Name the exact producer/case. Never infer proof from compilation, builds or total test counts.
 
-## 2. Repository and security safety
+## 2. Safety and authority boot
 
 Before editing:
 
 1. read root `AGENTS.md`, `INDEX.md`, notebook `AGENTS.md`, then
    `METHOD_FOUNDATIONS → FLUX → PROMOTION_RULES → CHAT_PROTOCOL`;
-2. read J at `2468c39` and this D/E/F together;
+2. read current J and this D/E/F together;
 3. fetch and pull `intermid-cycle-recovery` fast-forward-only;
-4. confirm `2468c39` is an ancestor of HEAD;
-5. inspect status and stop on divergence, conflicts or dirty overlap;
-6. preserve unrelated and untracked files;
+4. confirm the published D/E/F authority is an ancestor of HEAD;
+5. inspect status and stop on divergence, conflict or dirty overlap;
+6. preserve unrelated and untracked work;
 7. never stash, reset, clean, discard, overwrite or force-push.
 
 Never read or modify:
@@ -61,174 +58,32 @@ documentation/NEON_SESSION.ps1
 secret-bearing provider files
 ```
 
-No Auth0, Neon, Render, deployment, provider credential or public endpoint use is authorized.
-Use synthetic identities/facts and loopback disposable services only.
+No Auth0, Neon, Render, deployment, public endpoint or provider credential use is authorized.
 
-## 3. Retain accepted R3 structure
+## 3. Accepted contracts are frozen
 
-Preserve unless a narrow correction below requires a local change:
+Retain:
 
-- migration 006 and its exact readiness function;
-- hosted/fixture/disabled authorization composition;
-- identity/membership transaction fence;
-- actor/target Device separation and stable locking;
-- scoped repeat-revoke semantics and one transition event;
-- typed route descriptors and `onRoute` capture;
-- `jose` cryptographic verification;
-- closed Flutter transport result family;
-- event v3, `c10b:*`, recovery format 1, enrollment contract v1 and Drift v7.
+- per-attempt owned Flutter HTTP client and one absolute deadline;
+- distinct `device-enrolled` and `duplicate-equivalent` outcomes;
+- durable replay conflict/unavailable/unknown outcomes;
+- normalized one-refresh JWKS state machine;
+- Fastify readiness-time route inventory;
+- Device-row active/revoked status projection;
+- hosted/fixture/disabled composition and transaction authorizer;
+- actor/target policy and scoped repeat revoke;
+- migrations 001–006 and Drift schema v7.
 
-Do not add migration 007, edit migrations 001–006, change Drift schema, add provider SDKs, redesign
-UI or perform broad refactoring.
+R3C is proof-first. Production source may change only when a named decisive test demonstrates a
+defect in these contracts. Record the failing case before the correction and retain a regression
+test. Stop if correction requires a new architecture, dependency, migration or schema.
 
-## 4. CP1 — Absolute Flutter deadline and cancellation
+## 4. CP1 — Deterministic authorization/race producer
 
-Correct `HttpDeviceEnrollmentTransport` so one monotonic deadline covers:
+Extend the disposable PostgreSQL/Fastify harness with explicit barriers. Do not use sleeps or
+probabilistic timing.
 
-```text
-request start → connection → response headers → complete bounded body
-```
-
-Requirements:
-
-- calculate one deadline at attempt start;
-- recompute remaining duration before each asynchronous phase and body read;
-- reject when the total deadline expires even if chunks keep arriving;
-- do not use a renewable stream inactivity timeout as the total deadline;
-- on expiry, cancel request-owned work by closing a per-attempt owned `http.Client` or another
-  compile-proven cancellation primitive;
-- a caller-borrowed client must never be closed;
-- do not claim borrowed-client cancellation unless the pinned API proves it;
-- late transport completion must not mutate coordinator/repository state;
-- body ceiling, redirect refusal and malformed-response handling remain closed.
-
-Preferred bounded mechanism: inject a client factory for hosted attempts; create and close one
-owned client per attempt. If an existing borrowed-client constructor remains for unit tests, its
-ownership limits must be explicit and it cannot satisfy the decisive cancellation claim.
-
-Prove with loopback HTTP:
-
-- response before deadline succeeds;
-- headers stall past deadline;
-- body trickles below inactivity thresholds but exceeds total deadline;
-- oversized body fails;
-- redirect fails;
-- timeout closes request-owned resources;
-- borrowed client remains usable after failure;
-- no late state change occurs.
-
-If the pinned `package:http` API cannot implement a truthful cancellation boundary without a
-dependency change, stop and report the compile/runtime evidence. Do not upgrade silently.
-
-## 5. CP2 — Lossless enrollment outcomes and durable replay state
-
-Preserve the server success variant through the transport and coordinator:
-
-```text
-device-enrolled
-duplicate-equivalent
-```
-
-The generic transport-success type must carry a closed success status or use two distinct success
-types. The coordinator must return `applied` only for `device-enrolled` and
-`duplicate-equivalent` only for that server result.
-
-For first attempt and replay, persist a truthful terminal/recoverable state for every known result:
-
-```text
-device-enrolled
-duplicate-equivalent
-conflict
-unavailable
-unknown-outcome
-```
-
-Requirements:
-
-- replay conflict/unavailable/unknown must not leave durable state as `enrolling`;
-- request identity remains unchanged across query/replay;
-- local facts, outbox rows and cursors remain unchanged by enrollment failures;
-- interrupted/unknown outcomes remain queryable and never become success by inference;
-- malformed or unrecognized server success status becomes `unknown-outcome`, not success;
-- close/reopen reproduces the same stored meaning.
-
-Use the existing Drift v7 persistence model. No schema change is authorized.
-
-## 6. CP3 — Bounded normalized JWKS behavior
-
-Retain `jose` for signature and claim verification. Correct only Markei-owned retrieval/cache state.
-
-For one `getKey(kid)` lookup:
-
-- permit at most one eligible network refresh;
-- if expired cache refresh already occurred, do not immediately refresh again for the same miss;
-- whenever the requested key is absent after the eligible refresh, install its negative cooldown,
-  including when another key changed the semantic revision;
-- failed refresh uses global failed-refresh cooldown;
-- stale known keys may be retained only within the accepted stale window;
-- stale/unknown keys never authorize a token.
-
-Normalize each accepted signing key to a closed public RSA/RS256 projection equivalent to:
-
-```text
-{ kty, kid, use, alg, n, e }
-```
-
-Validate bounded strings, unique non-empty `kid`, `kty=RSA`, `use=sig`, `alg=RS256`, and required
-public modulus/exponent. Reject private key material and malformed/duplicate entries. Fingerprint
-only the normalized projection in deterministic order. Irrelevant provider metadata must not alter
-semantic revision; genuine public-key changes must.
-
-Named frozen-clock tests must cover:
-
-- expired cache miss performs one fetch, not two;
-- changed set still missing requested `kid` installs cooldown;
-- irrelevant metadata does not rotate revision;
-- genuine `n`/`e` or key membership change rotates revision;
-- concurrent same-key misses coalesce;
-- different unknown keys remain bounded;
-- outage cooldown and retry after expiry;
-- stale known-key boundary and stale expiry;
-- malformed, duplicate, private or non-RS256 key rejection.
-
-## 7. CP4 — Readiness-time exact route inventory
-
-Move the exact route comparison to Fastify's readiness lifecycle after registered plugins/routes
-have materialized. Keep root `onRoute` capture installed before application/plugin registration.
-
-Requirements:
-
-- `app.ready()`, `app.listen()` and `app.inject()` cannot proceed when inventory is invalid;
-- all current non-health method/path registrations exactly match typed descriptors;
-- automatic HEAD and the two health routes are handled only by explicit normalization;
-- unexpected, missing, duplicate, wrong-operation or wrong-class routes reject readiness;
-- a route registered directly after `buildApp` but before readiness is detected;
-- a route registered through an encapsulated plugin is detected;
-- no `printRoutes()` parsing and no second parallel expected-route constant;
-- ordinary valid construction still proves the expected current inventory.
-
-Use a readiness hook or equivalent pinned-Fastify mechanism. Tests must await readiness/injection;
-a construction-time-only assertion is insufficient.
-
-## 8. CP5 — Device status semantic correction
-
-`deviceStatus()` must return the locked target Device state:
-
-```text
-active | revoked
-```
-
-It must not return enrollment state. `replaced` remains an enrollment-only value and must never
-appear as public Device status. Preserve owner/member target policy, non-enumerating denial and the
-existing revoke transaction. Do not add replacement or reactivation behavior.
-
-Prove active target, revoked target, deliberately divergent fixture state, member self-target,
-owner other-target and denied foreign/cross-Account cases.
-
-## 9. CP6 — Deterministic authorization and race matrix
-
-Extend the disposable PostgreSQL/loopback harness with deterministic barriers, not timing sleeps.
-Prove every protected operation class:
+Cover every protected operation class:
 
 ```text
 upload
@@ -243,110 +98,165 @@ Device status
 Device revoke
 ```
 
-Required barriers/races:
+Required cases:
 
-- membership disabled before authorization lock;
-- membership removed before authorization lock;
+- membership disabled before the transaction authorization fence;
+- membership removed before the fence;
 - external identity disabled before protected mutation;
 - actor Device revoked before each operation class;
-- owner and member target status/revoke policy;
-- concurrent equivalent enrollment identities;
-- conflicting enrollment identity/hash;
-- response loss followed by query/replay and process restart;
-- concurrent target revoke produces one transition and exactly one event;
-- scoped repeat by an independently active authorized actor is duplicate-equivalent;
-- self-revoked actor is denied on subsequent work.
+- owner status/revoke of same-Account target;
+- member status/revoke of self only;
+- foreign and cross-Account target denial;
+- concurrent target revoke results in one transition and one security event;
+- repeat by an independently active authorized actor returns duplicate-equivalent;
+- self-revoked actor is denied on later work;
+- equivalent concurrent enrollment identities converge;
+- conflicting request hash/identity rejects;
+- response loss supports query/replay with the same request identity;
+- process restart preserves replay meaning;
+- bounded serialization/deadlock retry and exhaustion fail closed.
 
-For every denial compare before/after snapshots of:
+Use named test-only hooks at transaction phases. Hooks must not enter normal hosted composition.
+
+For every denied case capture Account-scoped before/after state:
 
 ```text
-facts and events
-cursors and acknowledgements
-recovery sessions/chunk progress
-Device and enrollment rows
+fact/event count and stable IDs
+cursor and acknowledgement positions
+rebootstrap sessions and chunk progress
+Device rows
+enrollment rows
 security-event count
 ```
 
-Denied work must advance none of them. SQL errors must fail closed and roll back.
+All must remain unchanged. Avoid logging payload content.
 
-## 10. CP7 — Migration 006 proof without migration edits
+Emit a machine-readable producer record with version, exact required case set and booleans.
 
-Do not edit migrations 001–006. Prove the existing migration 006 against disposable PostgreSQL:
+## 5. CP2 — Migration-006 lifecycle/ACL producer
 
-- fresh `001→006`;
-- upgrade `001→005`, then 006;
-- duplicate runner/ledger behavior;
-- failure rollback on a disposable modified copy while originals remain unchanged;
-- function owner and `SECURITY DEFINER`, `STABLE`, no-arg shape;
-- fixed search path and qualified ledger lookup;
-- `PUBLIC` denial;
-- runtime execute only on `markei_hosted_runtime_ready()`;
-- runtime denial on old parameterized probe and direct ledger;
-- migrator/owner expected authority;
-- hostile temp/public shadow objects do not affect result;
-- absent/tampered ledger state returns false or fails closed as specified.
+Do not edit migrations 001–006 and do not add migration 007.
 
-If the existing migration fails, report the contradiction to Main. Migration 007 and edits to 006
-remain unauthorized.
+Run isolated disposable PostgreSQL scenarios:
 
-## 11. CP8 — Real Flutter HTTP/file-backed proof
+1. fresh `001→006`;
+2. upgrade `001→005`, then 006;
+3. duplicate migration runner/ledger attempt;
+4. failure rollback using only a disposable copied migration set;
+5. canonical migration hashes unchanged before/after;
+6. exact migration identity/checksum row;
+7. exact no-argument function shape;
+8. expected owner, `SECURITY DEFINER`, `STABLE` and fixed search path;
+9. qualified ledger lookup and no dynamic SQL;
+10. `PUBLIC` execute denied;
+11. runtime execute allowed only on `public.markei_hosted_runtime_ready()`;
+12. runtime denied on old parameterized probe and direct ledger;
+13. migrator/owner expected authority;
+14. hostile temporary/public shadow objects cannot change result;
+15. absent or tampered ledger state returns false or fails closed;
+16. runtime remains unable to perform DDL or role administration.
 
-Run the actual `HttpDeviceEnrollmentTransport` against loopback Fastify and a real file-backed
-Drift v7 database.
+Failure injection must alter only a temporary copy outside tracked source. Original hashes and a
+previous 001–005 database must remain intact.
 
-The fixture must contain:
+Emit a closed machine-readable producer record. Tear down all databases, roles and containers.
 
-- one synthetic Account and local identity;
-- authoritative local facts;
+If canonical migration 006 fails, report the contradiction; do not repair SQL in R3C.
+
+## 6. CP3 — Real Flutter HTTP/file-backed producer
+
+Complete the existing lab-gated proof using:
+
+```text
+temporary file-backed Drift v7
+→ real HostedIdentityRepository/coordinator
+→ real HttpDeviceEnrollmentTransport
+→ loopback Fastify routes
+→ disposable PostgreSQL where required
+```
+
+Seed through real repositories/application workflows where possible:
+
+- one synthetic Account and identity;
+- authoritative local Store/Product/Purchase/Item facts;
 - one real pending outbox event;
 - one durable enrollment request identity/state.
 
-Prove:
+Required cases:
 
-1. enrollment success and duplicate-equivalent remain distinct;
-2. conflict, unavailable, malformed response, timeout and unknown outcome are persisted truthfully;
-3. response loss supports query/replay with the same request identity;
-4. close/reopen preserves facts, outbox, request identity and outcome;
-5. no token is persisted or logged;
-6. provider/API unavailability does not prevent ordinary local registration;
-7. slow-trickle deadline and request-owned cancellation pass.
+- `device-enrolled` persists and returns applied;
+- `duplicate-equivalent` remains distinct;
+- conflict persists and leaves facts/outbox unchanged;
+- unavailable persists and leaves facts/outbox unchanged;
+- malformed/oversized/redirect responses fail closed;
+- response loss persists unknown outcome;
+- query/replay uses the same request identity;
+- close/reopen preserves facts, outbox, identity and result;
+- normal response completes before absolute deadline;
+- stalled headers time out;
+- slow body trickle exceeds the total deadline despite progress;
+- owned client/request resources close on timeout;
+- borrowed client remains usable after failure;
+- late response cannot mutate durable state;
+- local registration succeeds while API is unavailable;
+- tokens are neither persisted nor logged.
 
-Direct repository fakes or in-memory-only Drift do not satisfy this gate.
+Use deterministic loopback barriers and bounded waits. Fakes and in-memory-only Drift do not satisfy
+this producer. Delete temporary files and close clients/databases/servers in `finally` paths.
 
-## 12. CP9 — Truthful aggregation
+Emit a closed machine-readable producer record with all required cases.
 
-Create or finish one local orchestrator that consumes explicit machine-readable results from:
+## 7. CP4 — Truthful aggregator
 
-- TypeScript/JWT/route tests;
-- migration/ACL probes;
-- authorization/race harness;
-- Flutter HTTP/file-backed harness;
-- relevant static/build checks.
+Create one orchestrator consuming closed producer records for:
 
-The aggregate is true only when every required producer and named case is present and true. Missing,
-skipped, malformed, partial, unavailable or false input makes it false and identifies the blocker.
-Do not infer producer success from process exit alone.
+```text
+authorization-race
+migration-006-lifecycle-acl
+jwks-state-machine
+route-inventory
+flutter-http-file-backed
+static-regression
+```
 
-## 13. Validation floor
+The accepted R3B JWKS/route/static tests may provide their own machine-readable producers or be
+wrapped without duplicating test logic.
 
-Run all applicable checks and record exact commands, environment, counts and exclusions:
+Aggregator requirements:
 
-- TypeScript format, lint, typecheck, tests and build;
+- validate producer name and schema version;
+- require the exact exported case set for every producer;
+- reject missing, duplicate or unknown producers/cases;
+- reject malformed, skipped, partial, unavailable or false results;
+- print safe exact blockers;
+- never infer truth from process exit alone;
+- emit the success diagnostic only when every required boolean is true.
+
+Add aggregator self-tests for all failure modes and the complete-success fixture. The complete
+fixture does not replace running real producers.
+
+## 8. Validation floor
+
+Run and record exact commands, environment, counts, results and exclusions:
+
+- server format, lint, typecheck, complete tests and build;
 - `npm audit --omit=dev`;
-- migration/ACL and hosted-local decisive harness;
-- Dart format and Flutter analysis/tests;
-- real Flutter HTTP/file-backed lab gate;
+- complete migration producer;
+- complete authorization/race producer;
+- Dart format, Flutter analysis and complete tests;
+- real HTTP/file-backed producer with no lab skip;
 - Android debug and Windows release builds when host-supported;
 - protected Python regressions;
+- final aggregator over real producer outputs;
 - `git diff --check`;
-- tracked/staged secret scan without opening excluded private files;
-- disposable resource teardown.
+- tracked/staged secret scan without reading excluded files;
+- disposable-resource teardown verification.
 
-A build is not runtime acceptance. Host-unvalidated is not pass or product failure.
+Do not convert a build into runtime acceptance. Host-unvalidated remains explicit.
 
-## 14. Reports, file discipline and publication
+## 9. Reports
 
-After implementation replace only:
+Replace only:
 
 ```text
 documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
@@ -354,26 +264,30 @@ documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
 documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
 ```
 
-G must derive baseline/final SHA and changed paths from Git and include the full producer matrix,
-migration/ACL evidence, race counts, Flutter file path type (not secret path), teardown and exact
-blockers. H must record closed meanings and named semantic tests. I must record final dependency
-direction, deadline/cancellation ownership, JWKS state, readiness inventory and deviations.
+G must derive baseline/final SHA and changed paths from Git; list every producer/case, database and
+HTTP/Drift evidence, counts, teardown, validation and exclusions. H must record semantic meanings,
+named tests and privacy/local-first evidence. I must record proof architecture, test-only hooks,
+resource ownership, producer schemas, versions and any narrow defect correction.
 
-Keep handwritten files near 250 lines where practical; split source/tests by responsibility. Do not
-modify methodology, permanent memory, A/B/C, J, D/E/F, Main-root continuity or unrelated files.
+## 10. File and publication discipline
 
-Review the full diff, commit one bounded R3B unit and push only `intermid-cycle-recovery` without
-force. No success diagnostic is permitted unless CP1–CP9 all pass.
+- Keep production changes minimal and evidence-driven.
+- Test/lab helpers may be split by responsibility.
+- Do not modify methodology, permanent memory, A/B/C, J, D/E/F, Main-root continuity, migrations,
+  dependency/lockfiles or private helpers.
+- Do not include unrelated cleanup.
+- Review the complete diff and ensure no disposable artifact or secret is tracked.
+- Commit one bounded R3C unit and push only `intermid-cycle-recovery` without force.
 
-## 15. Stop conditions
+## 11. Stop conditions
 
-Stop before mutation or completion claim if:
+Stop and report partial if:
 
-- D/E/F contradict each other or current J;
-- a dependency upgrade, migration change, provider action or secret access appears necessary;
-- deterministic proof cannot observe a required state boundary;
-- an unrelated dirty change overlaps the task;
-- any decisive producer remains skipped or partial.
+- a required host/tool cannot run a decisive producer;
+- a dependency, migration or Drift schema change is required;
+- provider/private data becomes necessary;
+- deterministic barriers cannot establish a required race;
+- a proof exposes an architectural contradiction beyond a narrow correction;
+- any producer/case remains skipped, partial or unavailable.
 
-Partial implementation may be committed only with truthful R3B partial diagnostics and the exact
-remaining evidence boundary.
+Do not proceed to provider proof, MCG-03, MCG-04, permanent promotion or Cycle closure.
