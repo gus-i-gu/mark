@@ -1,52 +1,61 @@
-# D_OPS_STAGE — C10-S03A-R3C Operational Materialization Authority
+# D_OPS_STAGE — C10-S03A-R3D1 Operational Materialization Authority
 
 > Sequence: FLX-ORD-01
 > Branch: `intermid-cycle-recovery`
-> Controlling Main reconciliation: `51e1db09e9c00bf2650d1cf791b571cfa4f6a0c6`
-> Accepted implementation baseline: `d95d3a2a94935b850f10b9e4b0228ba128b3e728`
+> Controlling Main reconciliation: `190e9df78c285179d57a2b728b5cf07ecdd7aadb`
+> Accepted implementation baseline: `00b3c090d25bd2f266ec65d358090a876efcd5d9`
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Boundary: decisive local proof completion
+> Boundary: evidence-contract integrity and migration-006 lifecycle proof
 
-## 1. Objective
+## 1. Objective and terminal condition
 
-Complete the four missing local proof producers without reopening accepted R3B contracts:
+Complete one bounded proof-infrastructure unit:
 
 ```text
-authorization/revocation race matrix
-+ migration-006 lifecycle and ACL proof
-+ real Flutter HTTP/file-backed Drift proof
-+ closed multi-producer aggregation
+closed producer/aggregator integrity
++ real JWKS producer
++ real route-inventory producer
++ real static-regression producer
++ complete migration-006 lifecycle/ACL producer
++ aggregation over all six real records
 ```
 
-Success requires:
+R3D1 does not complete authorization barriers or the full Flutter hosted gate. Global local-security
+proof must remain false for those two explicit producer families.
+
+R3D1 success requires:
 
 ```text
-R3_LOCAL_SECURITY_PROVED=true
-C10-S03A_R3C_LOCAL_SECURITY_PROVED
-MCG-02_PROVIDER_PROOF_PENDING
-```
-
-If any required case is missing, skipped, partial, unavailable, host-unvalidated or false:
-
-```text
+PROOF_PIPELINE_INTEGRITY=true
+MIGRATION_006_LIFECYCLE_ACL=true
+JWKS_STATE_MACHINE_PRODUCER=true
+ROUTE_INVENTORY_PRODUCER=true
+STATIC_REGRESSION_PRODUCER=true
 R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3C_PARTIAL
+C10-S03A_R3D1_PROVED
+R3D2_AUTHORIZATION_PENDING
+R3D3_FLUTTER_PENDING
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Name the exact producer/case. Never infer proof from compilation, builds or total test counts.
+If any R3D1 case is missing, skipped, partial, unavailable or false, report:
 
-## 2. Safety and authority boot
+```text
+C10-S03A_R3D1_PARTIAL
+R3_LOCAL_SECURITY_PROVED=false
+```
+
+## 2. Safety and boot
 
 Before editing:
 
 1. read root `AGENTS.md`, `INDEX.md`, notebook `AGENTS.md`, then
    `METHOD_FOUNDATIONS → FLUX → PROMOTION_RULES → CHAT_PROTOCOL`;
-2. read current J and this D/E/F together;
-3. fetch and pull `intermid-cycle-recovery` fast-forward-only;
-4. confirm the published D/E/F authority is an ancestor of HEAD;
-5. inspect status and stop on divergence, conflict or dirty overlap;
-6. preserve unrelated and untracked work;
+2. read J and this D/E/F together;
+3. fetch/pull `intermid-cycle-recovery` fast-forward-only;
+4. confirm the published R3D1 authority is an ancestor of HEAD;
+5. stop on divergence, conflict or dirty overlap;
+6. preserve unrelated/untracked work;
 7. never stash, reset, clean, discard, overwrite or force-push.
 
 Never read or modify:
@@ -60,201 +69,200 @@ secret-bearing provider files
 
 No Auth0, Neon, Render, deployment, public endpoint or provider credential use is authorized.
 
-## 3. Accepted contracts are frozen
+## 3. Frozen scope
 
-Retain:
+Do not:
 
-- per-attempt owned Flutter HTTP client and one absolute deadline;
-- distinct `device-enrolled` and `duplicate-equivalent` outcomes;
-- durable replay conflict/unavailable/unknown outcomes;
-- normalized one-refresh JWKS state machine;
-- Fastify readiness-time route inventory;
-- Device-row active/revoked status projection;
-- hosted/fixture/disabled composition and transaction authorizer;
-- actor/target policy and scoped repeat revoke;
-- migrations 001–006 and Drift schema v7.
+- implement the missing authorization barrier matrix;
+- expand the Flutter proof beyond emitting a truthful partial producer for current observed cases;
+- edit migrations 001–006 or add migration 007;
+- change dependencies/lockfiles or Drift schema;
+- change production auth/sync/enrollment behavior unless a focused R3D1 test exposes a direct
+  evidence-contract integration defect;
+- add UI, provider SDKs or unrelated refactoring.
 
-R3C is proof-first. Production source may change only when a named decisive test demonstrates a
-defect in these contracts. Record the failing case before the correction and retain a regression
-test. Stop if correction requires a new architecture, dependency, migration or schema.
+R3D2 owns authorization barriers. R3D3 owns the full Fastify/PostgreSQL Flutter gate and final
+global success.
 
-## 4. CP1 — Deterministic authorization/race producer
+## 4. CP1 — Close producer schema and aggregator
 
-Extend the disposable PostgreSQL/Fastify harness with explicit barriers. Do not use sleeps or
-probabilistic timing.
+Correct `producer.ts`, `aggregate.ts` and their tests.
 
-Cover every protected operation class:
+One accepted producer record has exactly these closed fields:
 
 ```text
-upload
-download
-acknowledgement
-capabilities
-rebootstrap start
-rebootstrap status
-rebootstrap chunk
-rebootstrap complete
-Device status
-Device revoke
+schemaVersion
+producer
+requiredCases
+resultsByCase
+blockers
+passed
 ```
 
-Required cases:
-
-- membership disabled before the transaction authorization fence;
-- membership removed before the fence;
-- external identity disabled before protected mutation;
-- actor Device revoked before each operation class;
-- owner status/revoke of same-Account target;
-- member status/revoke of self only;
-- foreign and cross-Account target denial;
-- concurrent target revoke results in one transition and one security event;
-- repeat by an independently active authorized actor returns duplicate-equivalent;
-- self-revoked actor is denied on later work;
-- equivalent concurrent enrollment identities converge;
-- conflicting request hash/identity rejects;
-- response loss supports query/replay with the same request identity;
-- process restart preserves replay meaning;
-- bounded serialization/deadlock retry and exhaustion fail closed.
-
-Use named test-only hooks at transaction phases. Hooks must not enter normal hosted composition.
-
-For every denied case capture Account-scoped before/after state:
+One case result has exactly:
 
 ```text
-fact/event count and stable IDs
-cursor and acknowledgement positions
-rebootstrap sessions and chunk progress
-Device rows
-enrollment rows
-security-event count
+passed
+blocker?   only when false
 ```
 
-All must remain unchanged. Avoid logging payload content.
+Requirements:
 
-Emit a machine-readable producer record with version, exact required case set and booleans.
+- reject unknown top-level and case-result fields;
+- require schema version 1 and a known producer;
+- require unique exact required cases and exact result keys;
+- validate bounded case/blocker strings;
+- validate blockers as a unique deterministic list derived from false cases;
+- `passed` must equal “all exact cases true and blockers empty”;
+- reject a true producer with false cases/stale blockers;
+- reject a false producer with all-true cases or inconsistent blockers;
+- reject missing, duplicate and unknown producers/cases;
+- malformed file/JSON/input becomes a safe blocker and nonzero CLI result, not an uncaught stack;
+- no filesystem path, record payload or exception detail enters public blocker output;
+- canonical ordering produces deterministic JSON/output;
+- process exit is secondary to validated record meaning.
 
-## 5. CP2 — Migration-006 lifecycle/ACL producer
+Add named tests for every rule, including skipped/partial/unavailable encoded as false named cases,
+unknown fields and inconsistent `passed`/`blockers`.
 
-Do not edit migrations 001–006 and do not add migration 007.
+Do not use synthetic `allPassed` records as evidence outside aggregator unit tests.
 
-Run isolated disposable PostgreSQL scenarios:
+## 5. CP2 — Real JWKS producer
+
+Turn the accepted R3B JWKS cases into one machine-readable producer generated by actual executed
+scenarios, not hand-set booleans.
+
+Required cases remain those exported by `REQUIRED_PROOF_CASES`, including:
+
+- expired miss fetches once;
+- changed set still missing requested key installs cooldown;
+- irrelevant metadata preserves revision;
+- public key change rotates revision;
+- membership change rotates revision;
+- concurrent same-key misses coalesce;
+- distinct unknown-key pressure is bounded;
+- outage cooldown and later retry;
+- stale known-key boundary/final expiry;
+- malformed, duplicate, private and non-RS256 rejection.
+
+Use injected clock/fetch and local generated keys only. `jose` remains the cryptographic verifier.
+Each case result must originate from its assertion/scenario. Emit one validated producer record.
+
+## 6. CP3 — Real route-inventory producer
+
+Generate the route-inventory record from actual Fastify readiness scenarios:
+
+- valid current inventory;
+- late direct route rejected;
+- encapsulated plugin route rejected;
+- missing descriptor rejected;
+- duplicate route rejected;
+- wrong operation/classification rejected.
+
+Do not mark cases passed from the existence of earlier tests. Execute/reuse the real scenario and
+capture its boolean result. Preserve typed descriptors, root `onRoute` capture and `onReady` exact
+comparison. Emit one validated producer record.
+
+## 7. CP4 — Real static-regression producer
+
+Add a local orchestrator for the exact commands represented by the static case inventory:
+
+```text
+server format/lint/typecheck/tests/build/audit
+Dart format/Flutter analyze/tests
+Android debug build
+Windows release build
+protected Python regressions
+git diff --check
+tracked/staged secret scan
+resource teardown
+```
+
+For these command-defined cases, the bounded command exit/result is the case evidence. Capture
+stdout/stderr only for local diagnosis; the producer record contains safe booleans/blocker IDs.
+
+Use the repository's actual project working directories. Do not install/upgrade dependencies. A
+host-unavailable required build makes the producer false and R3D1 partial; never call it pass.
+
+The secret scan must inspect tracked/staged content without reading excluded private files. The
+teardown case must inspect only disposable R3D1 resources.
+
+## 8. CP5 — Complete migration-006 lifecycle/ACL producer
+
+Replace the single already-migrated-database probe with an orchestrated disposable PostgreSQL 18
+matrix. Use loopback Docker or an equivalent already available disposable local lab; never Neon.
+
+Required independent scenarios:
 
 1. fresh `001→006`;
-2. upgrade `001→005`, then 006;
-3. duplicate migration runner/ledger attempt;
-4. failure rollback using only a disposable copied migration set;
-5. canonical migration hashes unchanged before/after;
-6. exact migration identity/checksum row;
-7. exact no-argument function shape;
-8. expected owner, `SECURITY DEFINER`, `STABLE` and fixed search path;
-9. qualified ledger lookup and no dynamic SQL;
-10. `PUBLIC` execute denied;
-11. runtime execute allowed only on `public.markei_hosted_runtime_ready()`;
-12. runtime denied on old parameterized probe and direct ledger;
-13. migrator/owner expected authority;
-14. hostile temporary/public shadow objects cannot change result;
-15. absent or tampered ledger state returns false or fails closed;
-16. runtime remains unable to perform DDL or role administration.
+2. upgrade `001→005`, verify usable, then 006;
+3. duplicate 006 execution/ledger behavior with one correct ledger row;
+4. failure injection using only a temporary copied migration set;
+5. failure rolls back ledger, function and ACL changes atomically;
+6. canonical migration hashes unchanged before/after;
+7. exact ledger identity/checksum;
+8. no-argument readiness function shape;
+9. actual function owner equals the expected migration identity;
+10. `SECURITY DEFINER`, `STABLE`, fixed safe search path;
+11. qualified ledger reference and no dynamic SQL;
+12. execute denied to `PUBLIC`;
+13. runtime can execute readiness and no unintended application function capability is introduced;
+14. old parameterized probe and direct ledger denied to runtime;
+15. runtime DDL/role administration denied;
+16. migrator/owner authority confirmed explicitly;
+17. hostile temp/public shadow objects do not alter readiness;
+18. absent/tampered ledger state returns false or fails closed.
 
-Failure injection must alter only a temporary copy outside tracked source. Original hashes and a
-previous 001–005 database must remain intact.
+Split the previous combined owner/security case so each boolean measures what its name states.
+Enumerate relevant function ACLs rather than calling readiness alone “ready-only.”
 
-Emit a closed machine-readable producer record. Tear down all databases, roles and containers.
+Hash canonical migration bytes before creating temporary copies and after cleanup. Never edit
+tracked migrations. Generate roles/passwords only inside the disposable lab, keep them in memory and
+never log them. Tear down databases/roles/container in `finally`.
 
-If canonical migration 006 fails, report the contradiction; do not repair SQL in R3C.
+Emit one complete validated producer record. Any missing scenario keeps it false.
 
-## 6. CP3 — Real Flutter HTTP/file-backed producer
+## 9. CP6 — Partial authorization and Flutter records
 
-Complete the existing lab-gated proof using:
+Retain the authorization producer as truthful partial evidence. Do not implement missing barriers.
 
-```text
-temporary file-backed Drift v7
-→ real HostedIdentityRepository/coordinator
-→ real HttpDeviceEnrollmentTransport
-→ loopback Fastify routes
-→ disposable PostgreSQL where required
-```
+Make the existing three Flutter file-backed tests emit/map only the exact cases they truly observe.
+Do not call the body-stall case slow-trickle or client-closure proof. Cases not measured remain false
+with `not-yet-r3d3` blockers.
 
-Seed through real repositories/application workflows where possible:
+Both records must satisfy the corrected schema and remain false. This is required so aggregation
+receives six real producer records rather than missing producers.
 
-- one synthetic Account and identity;
-- authoritative local Store/Product/Purchase/Item facts;
-- one real pending outbox event;
-- one durable enrollment request identity/state.
+## 10. CP7 — Real aggregate for R3D1
 
-Required cases:
-
-- `device-enrolled` persists and returns applied;
-- `duplicate-equivalent` remains distinct;
-- conflict persists and leaves facts/outbox unchanged;
-- unavailable persists and leaves facts/outbox unchanged;
-- malformed/oversized/redirect responses fail closed;
-- response loss persists unknown outcome;
-- query/replay uses the same request identity;
-- close/reopen preserves facts, outbox, identity and result;
-- normal response completes before absolute deadline;
-- stalled headers time out;
-- slow body trickle exceeds the total deadline despite progress;
-- owned client/request resources close on timeout;
-- borrowed client remains usable after failure;
-- late response cannot mutate durable state;
-- local registration succeeds while API is unavailable;
-- tokens are neither persisted nor logged.
-
-Use deterministic loopback barriers and bounded waits. Fakes and in-memory-only Drift do not satisfy
-this producer. Delete temporary files and close clients/databases/servers in `finally` paths.
-
-Emit a closed machine-readable producer record with all required cases.
-
-## 7. CP4 — Truthful aggregator
-
-Create one orchestrator consuming closed producer records for:
+Run the aggregator over actual records from:
 
 ```text
-authorization-race
-migration-006-lifecycle-acl
-jwks-state-machine
-route-inventory
-flutter-http-file-backed
-static-regression
+authorization-race               expected partial
+migration-006-lifecycle-acl       required complete
+jwks-state-machine                required complete
+route-inventory                   required complete
+flutter-http-file-backed          expected partial
+static-regression                 required complete
 ```
 
-The accepted R3B JWKS/route/static tests may provide their own machine-readable producers or be
-wrapped without duplicating test logic.
+The aggregate must be false. Its blockers must be attributable only to the intentionally deferred
+authorization and Flutter case families. Missing producers, malformed records, contract-integrity
+blockers, migration/JWKS/route/static failures or unexpected families make R3D1 partial.
 
-Aggregator requirements:
+Emit:
 
-- validate producer name and schema version;
-- require the exact exported case set for every producer;
-- reject missing, duplicate or unknown producers/cases;
-- reject malformed, skipped, partial, unavailable or false results;
-- print safe exact blockers;
-- never infer truth from process exit alone;
-- emit the success diagnostic only when every required boolean is true.
+```text
+PROOF_PIPELINE_INTEGRITY=true
+R3_LOCAL_SECURITY_PROVED=false
+```
 
-Add aggregator self-tests for all failure modes and the complete-success fixture. The complete
-fixture does not replace running real producers.
+Never emit global R3 success during R3D1.
 
-## 8. Validation floor
+## 11. Validation and reports
 
-Run and record exact commands, environment, counts, results and exclusions:
-
-- server format, lint, typecheck, complete tests and build;
-- `npm audit --omit=dev`;
-- complete migration producer;
-- complete authorization/race producer;
-- Dart format, Flutter analysis and complete tests;
-- real HTTP/file-backed producer with no lab skip;
-- Android debug and Windows release builds when host-supported;
-- protected Python regressions;
-- final aggregator over real producer outputs;
-- `git diff --check`;
-- tracked/staged secret scan without reading excluded files;
-- disposable-resource teardown verification.
-
-Do not convert a build into runtime acceptance. Host-unvalidated remains explicit.
-
-## 9. Reports
+Run all commands in CP7 and record exact environment/counts/results. Also run focused producer and
+aggregator tests, migration teardown verification and `git diff --check`.
 
 Replace only:
 
@@ -264,30 +272,17 @@ documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
 documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
 ```
 
-G must derive baseline/final SHA and changed paths from Git; list every producer/case, database and
-HTTP/Drift evidence, counts, teardown, validation and exclusions. H must record semantic meanings,
-named tests and privacy/local-first evidence. I must record proof architecture, test-only hooks,
-resource ownership, producer schemas, versions and any narrow defect correction.
+G derives SHAs/paths from Git and reports each record/case, commands and teardown. H records closed
+evidence meanings and corrects prior overclaims. I records schemas, scenario runner, real-producer
+flow, resource ownership and deviations.
 
-## 10. File and publication discipline
+## 12. Publication and stop rules
 
-- Keep production changes minimal and evidence-driven.
-- Test/lab helpers may be split by responsibility.
-- Do not modify methodology, permanent memory, A/B/C, J, D/E/F, Main-root continuity, migrations,
-  dependency/lockfiles or private helpers.
-- Do not include unrelated cleanup.
-- Review the complete diff and ensure no disposable artifact or secret is tracked.
-- Commit one bounded R3C unit and push only `intermid-cycle-recovery` without force.
+- Keep handwritten files focused and split by proof responsibility.
+- Do not modify methodology, permanent memory, A/B/C, J, D/E/F, Main-root files or private helpers.
+- Review the complete diff and secret/disposable inventory.
+- Commit one bounded R3D1 unit and push only `intermid-cycle-recovery` without force.
 
-## 11. Stop conditions
-
-Stop and report partial if:
-
-- a required host/tool cannot run a decisive producer;
-- a dependency, migration or Drift schema change is required;
-- provider/private data becomes necessary;
-- deterministic barriers cannot establish a required race;
-- a proof exposes an architectural contradiction beyond a narrow correction;
-- any producer/case remains skipped, partial or unavailable.
-
-Do not proceed to provider proof, MCG-03, MCG-04, permanent promotion or Cycle closure.
+Stop and report partial if a required R3D1 producer cannot run, canonical migration 006 fails,
+dependency/schema/migration changes appear necessary, or provider/private access is required.
+Do not start R3D2, R3D3, MCG-02 provider proof, MCG-03/04 or Cycle closure.

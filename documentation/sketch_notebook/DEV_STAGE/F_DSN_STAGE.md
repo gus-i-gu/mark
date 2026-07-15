@@ -1,239 +1,187 @@
-# F_DSN_STAGE — C10-S03A-R3C Design Materialization Authority
+# F_DSN_STAGE — C10-S03A-R3D1 Design Materialization Authority
 
 > Sequence: FLX-ORD-01
-> Controlling reconciliation: `51e1db09e9c00bf2650d1cf791b571cfa4f6a0c6`
+> Controlling reconciliation: `190e9df78c285179d57a2b728b5cf07ecdd7aadb`
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Boundary: local proof architecture and narrow evidence-driven correction
+> Boundary: proof pipeline integrity and migration lifecycle architecture
 
 ## 1. Selected architecture
 
-R3C adds proof infrastructure around accepted production components:
+R3D1 completes this bounded topology:
 
 ```text
-deterministic transaction barriers and state observer
-+ immutable migration scenario runner
-+ loopback HTTP/file-backed Drift system harness
-+ versioned producer records and fail-closed aggregator
+executed scenario/command
+→ closed versioned producer record
+→ deterministic record validation
+→ fail-closed aggregation
 ```
 
-It does not select a new runtime architecture.
+Migration evidence adds an isolated scenario runner. No production runtime architecture changes.
 
 ## 2. Dependency direction
+
+```text
+production components
+    ↑ exercised by
+test/lab scenarios and command runners
+    ↑ emit
+closed producer records
+    ↑ consumed by
+aggregator/CLI
+```
+
+Production code does not depend on proof modules. Producer inventory may be imported by scenario
+code and aggregator. No new dependency, migration or Drift schema is selected.
+
+## 3. Producer schema architecture
+
+Retain schema version 1 but make runtime validation closed and structural.
+
+Equivalent invariant:
+
+```text
+passed = exactCasesPresent
+         AND everyCasePassed
+         AND blockers.isEmpty
+```
+
+For a false producer, `blockers` is the canonical sorted unique projection of false-case blockers.
+The builder derives this field; callers do not supply an independent truth. Parser validation
+recomputes and compares it.
+
+Use bounded safe identifiers. Reject extra object keys recursively. Canonical serialization sorts
+producer/case/blocker fields deterministically. File/JSON errors become safe error categories at the
+CLI boundary.
+
+Aggregator unit tests may construct synthetic records. Runtime producer paths must use executed
+scenario results.
+
+## 4. Real JWKS and route producers
+
+Refactor existing named scenarios into reusable test-local functions only where needed:
+
+```text
+scenario assertion
+→ boolean/captured safe failure
+→ makeProducerResult
+```
+
+Ordinary unit tests and producer execution must call the same scenario function so they cannot
+drift. Do not parse Node test-runner prose or mark a case true because a test file exists.
+
+JWKS uses generated local RSA keys, injected clock/fetch and existing `jose`. Route inventory uses
+real Fastify construction/readiness. Scenario helpers remain test/proof infrastructure.
+
+## 5. Static command producer
+
+Implement a bounded command runner with:
+
+- fixed repository-owned command definitions;
+- explicit working directory per command;
+- bounded execution and captured exit status;
+- safe blocker ID per failed command;
+- no shell interpolation from external input;
+- no secret environment/output in producer records;
+- cleanup/resource verification after commands.
+
+Command exit is evidence because the static case is defined as that exact command passing. It does
+not establish provider/runtime claims beyond the command.
+
+## 6. Migration scenario runner
+
+Use one local PostgreSQL 18 disposable environment with independent databases/scenarios, or separate
+containers if simpler. The runner owns:
+
+```text
+provision loopback lab
+→ create migration/runtime identities
+→ execute isolated scenario
+→ query ledger/catalog/ACL/behavior
+→ emit case result
+→ drop scenario resources
+→ tear down lab
+```
+
+Passwords are generated in memory and never logged. Runtime/migrator connections remain distinct.
+
+Scenario groups:
+
+- fresh and upgrade migration paths;
+- duplicate application;
+- copied-migration injected rollback;
+- canonical hash preservation;
+- ledger/function owner/mode/config/body catalog inspection;
+- exhaustive selected runtime/migrator ACL behavior;
+- temp/public shadowing;
+- absent/tampered ledger readiness.
+
+Failure-copy architecture:
+
+```text
+hash tracked migrations
+→ copy to temporary directory
+→ inject failure into copied 006 only
+→ apply copied set to disposable database
+→ prove transaction rollback
+→ remove copy
+→ re-hash tracked migrations
+```
+
+Do not edit tracked SQL or infer owner from security-definer metadata. Query `proowner` explicitly.
+Enumerate relevant function privileges to support `ready-only` wording.
+
+## 7. Partial producer integration
+
+Authorization continues emitting its observed four cases plus false deferred cases. Flutter maps its
+three current tests only to meanings they actually prove. Both use the closed schema and remain
+false.
+
+Use blocker category `not-yet-r3d2` for authorization cases and `not-yet-r3d3` for Flutter cases.
+Do not rename unmeasured cases to match existing tests.
+
+## 8. Aggregation architecture
+
+One R3D1 orchestrator collects six actual record files/objects in a private temporary directory,
+validates them, runs aggregation and deletes them in `finally`.
+
+R3D1 acceptance requires:
+
+- migration, JWKS, route and static producers true;
+- authorization and Flutter producers false only for their declared future-unit cases;
+- no missing/malformed/schema/consistency blockers;
+- global aggregate false;
+- explicit pipeline-integrity true.
+
+The orchestrator must never transform expected partial producer results into global pass.
+
+## 9. Versions and boundaries
 
 Retain:
 
 ```text
-accepted application/domain contracts
-    ↑
-production adapters and authorization services
-    ↑
-test/lab composition and deterministic controls
-    ↑
-machine-readable producer records
-    ↑
-truthful aggregator
-```
-
-Test hooks depend inward on explicitly exposed test seams or lab composition; production code must
-not depend on the harness, producer or aggregator.
-
-No new package, lockfile version, migration or Drift schema is selected.
-
-## 3. Authorization proof architecture
-
-Use test-only barrier interfaces at named phases equivalent to:
-
-```text
-principal verified
-before identity/membership fence
-after membership lock
-before actor-Device lock
-before target transition
-before protected mutation
-before commit
-```
-
-Barriers are injected only by local lab/test composition. Normal hosted, fixture and disabled roots
-must not expose externally controllable hooks.
-
-Use a reusable Account-scoped state observer returning only stable IDs, positions and counts for:
-
-```text
-facts/events
-cursors/acknowledgements
-recovery sessions/chunks
-Devices/enrollments
-security events
-```
-
-The observer compares before/after snapshots without logging fact content. Each scenario owns a
-fresh transaction/setup or restores a deterministic fixture. Stable UUID ordering and bounded retry
-remain production behavior.
-
-## 4. Migration proof architecture
-
-Canonical migrations are read-only inputs. Build a scenario runner that creates independent
-disposable databases/roles for fresh, upgrade, duplicate and ACL cases.
-
-For failure injection:
-
-```text
-copy canonical migration set to disposable temp directory
-→ record canonical hashes
-→ modify only copied migration
-→ run copied failure scenario
-→ prove transaction rollback
-→ re-hash canonical sources
-```
-
-Inspect PostgreSQL catalog metadata for function arguments, owner, volatility, security mode,
-search path and ACLs. Use distinct runtime/migrator sessions. Create hostile temp/public shadow
-objects only in disposable databases and prove the qualified capability is unaffected.
-
-The producer owns cleanup in `finally` and emits no credentials or connection data.
-
-## 5. Flutter HTTP/file-backed architecture
-
-Compose existing real components:
-
-```text
-temporary LocalDatabase.file (Drift v7)
-→ HostedIdentityRepository
-→ HostedEnrollmentCoordinator
-→ HttpDeviceEnrollmentTransport
-→ deterministic loopback Fastify responder
-```
-
-Use disposable PostgreSQL behind Fastify only when existing routes require it. Fixture
-authentication is permitted solely in this loopback proof composition.
-
-The loopback responder exposes internal test barriers for:
-
-- delayed headers;
-- controlled body chunks;
-- response loss after server commit;
-- redirect, malformed and oversized responses;
-- query/replay result selection.
-
-These controls are not public production routes.
-
-Seed facts and pending outbox through existing repositories/application workflows. Compare stable
-IDs and counts before the attempt, after it, and after database close/reopen.
-
-Resource ownership:
-
-- harness owns server and temporary files;
-- transport owns factory-created attempt clients;
-- caller owns borrowed clients;
-- every client, server, database, iterator and temporary directory closes in `finally`;
-- late callbacks are fenced from durable mutation after terminal attempt state.
-
-## 6. Producer contract
-
-Use one small versioned representation, equivalent to:
-
-```text
-ProofProducerResult {
-  schemaVersion
-  producer
-  requiredCases
-  resultsByCase
-  blockers
-  passed
-}
-```
-
-Each producer exports its own exact required-case identifiers adjacent to its tests/harness. The
-aggregator imports/consumes those contracts rather than maintaining a divergent second list.
-
-Producer families:
-
-```text
-authorization-race
-migration-006-lifecycle-acl
-jwks-state-machine
-route-inventory
-flutter-http-file-backed
-static-regression
-```
-
-Records may be JSON or another already supported deterministic format. Canonical ordering and
-closed field validation are required. Do not place fact data or secret configuration in them.
-
-## 7. Aggregator architecture
-
-The aggregator:
-
-1. loads only explicitly supplied local producer records;
-2. validates schema/name/case structure;
-3. rejects missing, duplicate and unknown inputs;
-4. verifies exact required-case equality;
-5. requires every case and producer boolean true;
-6. emits safe blocker IDs and false on every incomplete state;
-7. prints the R3 success diagnostic only after complete real inputs.
-
-Aggregator unit fixtures prove rejection rules. The decisive harness must invoke actual producers,
-collect their records and then invoke the aggregator.
-
-## 8. Narrow correction rule
-
-If a decisive test fails because accepted production code violates D/E:
-
-1. preserve the failing test/case;
-2. identify the smallest responsible production function;
-3. correct only that function/adjacent type;
-4. rerun focused and complete regression suites;
-5. record the deviation in I.
-
-Stop instead of changing architecture, dependencies, migrations, schema, protocols or provider
-configuration.
-
-## 9. Versions retained
-
-```text
-PostgreSQL migrations 001–006
-event payload v3
+migrations 001–006
+event v3
 cursor c10b:*
-recovery snapshot format 1
+recovery format 1
 hosted enrollment contract v1
-Drift schema v7
+Drift v7
 JWT RS256
 existing dependency/lockfile set
 ```
 
-## 10. Security and teardown
+Expected changes are proof modules/tests/scripts, migration lab helpers and G/H/I. Production source
+changes require a directly failing R3D1 integration test and must remain narrow.
 
-- loopback and synthetic fixtures only;
-- no Auth0, Neon, Render or public network request;
-- no private helper/editor file access;
-- no token, claims, keys, credentials, URLs or fact payloads in output;
-- runtime and migrator remain distinct;
-- temporary resources are inventoried and torn down;
-- failure paths execute cleanup.
+## 10. Security, rollback and stop
 
-Credential containment is a separate human/provider sequence and is not an R3C producer.
+- loopback/synthetic/disposable resources only;
+- no provider or private helper access;
+- no secrets/fact payloads in records;
+- all containers/databases/roles/files/processes close in `finally`;
+- R3D1 rollback is one bounded commit; migrations do not change.
 
-## 11. Expected file boundary
+Stop if completion requires provider behavior, dependencies, migration 007, editing 001–006, Drift
+v8, authorization barrier work, full Flutter hosted work or a production architecture change.
 
-Expected changes are test/lab harnesses, proof helpers/orchestrator, package-local scripts already
-supported by the repository, and G/H/I. Production source changes require a captured proof failure.
-
-Do not modify:
-
-```text
-migrations 001–006
-dependency/lockfiles
-Drift schema
-methodology or permanent memory
-A/B/C, J, D/E/F or Main-root continuity
-private provider/helper files
-```
-
-## 12. Rollback and stop boundary
-
-R3C rollback is one bounded implementation commit; no database rollback migration exists because
-canonical migrations do not change.
-
-Stop for Main when a proof requires provider behavior, a new dependency/version, migration 007,
-Drift v8, public test hooks, a new product workflow or an architectural revision. Partial evidence
-must remain explicitly false rather than being omitted from aggregation.
+I must report the final schema, migration runner, real producer flow, aggregate blockers, resource
+ownership, exact versions and any narrow deviation.

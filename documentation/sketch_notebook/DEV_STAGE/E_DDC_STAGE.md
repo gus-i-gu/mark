@@ -1,154 +1,104 @@
-# E_DDC_STAGE — C10-S03A-R3C Semantic Materialization Authority
+# E_DDC_STAGE — C10-S03A-R3D1 Semantic Materialization Authority
 
 > Sequence: FLX-ORD-01
-> Controlling reconciliation: `51e1db09e9c00bf2650d1cf791b571cfa4f6a0c6`
+> Controlling reconciliation: `190e9df78c285179d57a2b728b5cf07ecdd7aadb`
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Boundary: decisive local evidence semantics only
+> Boundary: evidence integrity and migration semantics
 
 ## 1. Purpose
 
-R3C proves already selected contracts. It does not introduce new product vocabulary or relax a
-meaning to obtain a passing aggregate.
+R3D1 makes proof claims correspond exactly to observed evidence. It does not complete global local
+security and must not upgrade a partial authorization/Flutter record to pass.
 
-## 2. Evidence distinctions
-
-Preserve:
+## 2. Required distinctions
 
 ```text
-source-corrected != decisive-proof-complete
-unit-test-passed != system-producer-passed
-build-passed != runtime-passed
-deadline-wait-ended != request-resource-cancelled
-in-memory-database != file-backed-reopen
-fixture-success != real-adapter-success
-denial-response != denied-no-state-advance
-migration-present != migration-lifecycle-proved
-producer-exited-zero != producer-schema-and-cases-passed
-local-proof-passed != provider-proof-passed
+case-name-present != case-measured
+producer-record-created != producer-valid
+producer-valid != producer-passed
+synthetic-complete-fixture != real-producer-success
+body-stall-timeout != repeated-slow-progress-deadline
+unavailable-result != owned-resource-closure-observed
+security-definer-checked != function-owner-checked
+readiness-call-allowed != all-other-runtime-execute-denied
+migration-present != lifecycle-proved
+R3D1-proved != R3-local-security-proved
+local-proof != provider-proof
 ```
 
-## 3. Authorization meanings
+## 3. Closed producer meaning
 
-An operation is authorized only by identity, membership and actor Device state observed inside the
-accepted transaction boundary. A previously verified JWT does not freeze later database authority.
+A producer is passed only when:
 
-Required meanings:
+- its schema and producer identity are exact;
+- its required cases and results exactly match the canonical inventory;
+- every case was executed and is true;
+- every false case has one safe deterministic blocker;
+- the top-level blocker list exactly represents false cases;
+- `passed` is consistent with case truth and blockers;
+- no unknown field/case/result is present.
 
-```text
-membership disabled/removed before fence → operation denied
-identity disabled before mutation → operation denied
-actor Device revoked before authorization → operation denied
-authorization or SQL failure → transaction rolled back
-```
+Skipped, partial, unavailable, host-unvalidated and not-yet-implemented are false evidence states,
+not missing text and not success.
 
-`Denied without state advance` means facts/events, cursors/acks, recovery sessions, Device rows,
-enrollment rows and security-event count are identical before and after the attempt.
+## 4. Real versus synthetic evidence
 
-Concurrent target revoke means exactly one active→revoked transition and one event. An independently
-active authorized repeat may be `duplicate-equivalent`. A self-revoked actor is denied later.
+`allPassed` fixtures may validate aggregator logic only. They cannot appear in a real proof record.
+JWKS and route booleans come from executed named scenarios. Static booleans come from the exact
+commands their case names represent. Migration booleans come from isolated database scenarios and
+catalog/ACL observations.
 
-## 4. Migration evidence meanings
+The R3D1 aggregate is correctly false because authorization and Flutter remain intentionally
+partial. It is valid only when all six records are real, structurally valid, and every other producer
+passes.
 
-Migration-006 validation requires more than the function returning true once. It includes fresh and
-upgrade paths, duplicate handling, atomic failure rollback, immutable canonical hashes, exact owner
-and function attributes, least-privilege ACLs, hostile shadowing resistance and tamper/absence
-failure behavior.
+## 5. Migration meanings
 
-`Runtime ready` means the exact no-argument capability reports the selected ledger condition. It
-does not mean runtime may read migration history, call the old general probe, perform DDL or manage
-roles.
+- **Fresh**: pristine database receives 001–006 in order.
+- **Upgrade**: a usable 001–005 database receives only 006 afterward.
+- **Duplicate**: repeating 006 preserves one correct ledger identity and compatible objects.
+- **Failure rollback**: injected failure in a disposable copy leaves none of that transaction's
+  ledger/function/ACL changes.
+- **Owner**: `proowner` resolves to the expected migration identity; security mode is separate.
+- **Runtime-ready-only**: runtime may call the narrow readiness capability while selected general
+  history, DDL, role and unintended function capabilities remain denied.
+- **Shadow resistant**: attacker-controlled temp/public names cannot change the qualified result.
+- **Tampered/absent ledger**: readiness cannot return true.
 
-## 5. Flutter system meanings
+Canonical migration source remains byte-identical.
 
-The decisive Flutter producer must cross all real local boundaries:
+## 6. Correction of prior wording
 
-```text
-coordinator → real HTTP adapter → loopback Fastify → durable file-backed Drift → close/reopen
-```
+The existing Flutter test proves a body-delay deadline outcome, not yet repeated slow progress or
+instrumented client closure. The existing migration probe proves security-definer/volatility/search
+path but not owner. G/H/I must correct these earlier overstatements.
 
-It must contain real authoritative facts and a pending outbox row. Failure outcomes preserve them.
+## 7. Terminal vocabulary
 
-An absolute deadline spans connection, headers and the entire body. Slow progress cannot renew it.
-Cancellation means request-owned resources are closed, not merely that the caller stopped awaiting.
-A borrowed client remains caller-owned and usable.
-
-Enrollment meanings remain closed:
-
-```text
-device-enrolled → applied
-duplicate-equivalent → duplicate-equivalent
-conflict → conflict
-known unavailable → unavailable
-commit ambiguity/response loss → unknown-outcome and query-required
-```
-
-Replay uses the same request identity. None of these failures implies facts/outbox reset.
-
-## 6. Producer semantics
-
-Each producer record has:
+R3D1 success:
 
 ```text
-producer name
-schema version
-exact case identifiers
-case boolean results
-safe blocker identifiers
-terminal producer boolean
-```
-
-Missing, duplicate, unknown, malformed, skipped, partial, unavailable or false input makes the
-aggregate false. Exit code alone is not evidence. A synthetic successful aggregator fixture proves
-aggregator logic only, not system completion.
-
-## 7. Required named evidence
-
-Reports/tests must name at least:
-
-- membership-disable and membership-remove barriers for every operation class;
-- external-identity and actor-Device barriers;
-- owner/member/cross-Account target cases;
-- concurrent revoke one-transition/one-event;
-- denied-no-state-advance snapshots;
-- migration fresh, upgrade, duplicate, rollback, ACL, shadow and tamper cases;
-- real HTTP success, duplicate, conflict, unavailable and unknown outcome;
-- slow-trickle absolute timeout and owned-resource closure;
-- borrowed-client preservation and no late mutation;
-- file-backed close/reopen fact/outbox/request preservation;
-- aggregator missing/unknown/duplicate/skipped/partial/false rejection;
-- aggregator over real producer outputs.
-
-## 8. Completion wording
-
-Only complete real producer results permit:
-
-```text
-R3_LOCAL_SECURITY_PROVED=true
-C10-S03A_R3C_LOCAL_SECURITY_PROVED
-MCG-02_PROVIDER_PROOF_PENDING
-```
-
-Otherwise:
-
-```text
+PROOF_PIPELINE_INTEGRITY=true
+MIGRATION_006_LIFECYCLE_ACL=true
+C10-S03A_R3D1_PROVED
 R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3C_PARTIAL
+R3D2_AUTHORIZATION_PENDING
+R3D3_FLUTTER_PENDING
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Never claim `HOSTED_AUTH_READY`, Auth0/Neon/Render acceptance, MCG-02 completion, production
-readiness or Cycle 10 closure.
+R3D1 incomplete:
 
-## 9. Privacy, learning and UI boundary
+```text
+C10-S03A_R3D1_PARTIAL
+R3_LOCAL_SECURITY_PROVED=false
+```
 
-- tokens remain ephemeral and absent from durable state/logs;
-- producer output excludes payloads, claims, credentials, URLs and secrets;
-- local registration remains available during hosted failure;
-- no Account/Device UI or Cycle 11 work is authorized;
-- no KANBAN, glossary, Lecture Register, learner maturity or permanent-memory change is authorized;
-- G/H/I remain observational evidence.
+Never claim hosted readiness, provider acceptance, MCG-02 completion, production readiness or Cycle
+10 closure.
 
-## 10. Stop rule
+## 8. Privacy and learning boundary
 
-Do not weaken definitions when a producer fails. Report the precise evidence boundary and stop if
-proof requires provider behavior, migration/schema/dependency changes or a new architecture.
+Producer records/logs contain no tokens, claims, JWK bodies, credentials, URLs, passwords, source
+payloads or private paths. No UI, KANBAN, glossary, learner maturity or permanent memory changes are
+authorized. G/H/I remain observational evidence.
