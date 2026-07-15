@@ -1,567 +1,448 @@
-# J_MAIN_STAGE — C10-S03A Post-Codex Reconciliation
+# J_MAIN_STAGE — C10-S03A-R1 Post-Codex Reconciliation
 
-> Sequence: FLX-PRM-04 post-materialization reconciliation
-> Role: Main Chat
-> Cycle/unit: Cycle 10 / C10-S03A
-> Branch: `intermid-cycle-recovery`
-> Staging authority: `7bf3bc1c7acf5d4077cedc42ea2162a1bba99e35`
-> Codex evidence commit: `d345f5800b55206f5352232c5a12ac383ccdee34`
-> Status: `C10-S03A_CONTRADICTED_STOP`
+> Sequence: FLX-ORD-01 → Main evidence reconciliation
+> Cycle/unit: Cycle 10 / C10-S03A-R1
+> Staging baseline: `8b84c4442e2e7be2a28fc1b34bdc60d45256d25d`
+> Codex commit: `02d6f1fb76ef28492038c054fdd4c0f8da898fcb`
+> Status: `C10-S03A_R1_CONTRADICTED_STOP`
 > Provider authority: none
 
 ## 1. Methodology retained
 
-Main loaded root and notebook `AGENTS.md`, `INDEX.md`, then the complete
-`METHOD_FOUNDATIONS → FLUX → PROMOTION_RULES → CHAT_PROTOCOL` route.
+Main retained:
 
-Retained controls:
+- D/E/F jointly defined the materialization contract.
+- G/H/I are observational evidence and cannot promote their own terminal claim.
+- PRC-01 keeps implemented, validated, partial, host-unvalidated and contradicted states distinct.
+- Source inspection may contradict reports; the contradiction must remain visible.
+- Provider dashboards, local mechanisms and hosted validation are separate evidence classes.
+- Permanent promotion and learner maturity do not follow automatically from code changes.
 
-- Main owns cross-domain reconciliation and the next materialization authority.
-- D/E/F jointly define the accepted implementation contract.
-- G/H/I are observational reports and cannot promote their own terminal claim.
-- Repository inspection establishes existence; named validation establishes bounded behavior.
-- PRC-01 keeps implemented, validated, host-unvalidated, contradicted and deferred claims distinct.
-- A security-boundary deviation is a stop condition, not an ordinary implementation detail.
-- Permanent memory remains owned by the Operational, Didactic and Design domains.
-- Provider mutation, provider credentials and interactive identity remain human-controlled.
-- Learner maturity does not advance from repository implementation alone.
+The human requested parallel domain studies. Operational, Didactic and Design reviews were run
+read-only while Main inspected source, tests, reports and Git history. They did not edit A/B/C or
+permanent memory. J owns the cross-domain reconciliation below.
 
-## 2. Ancestry and evidence inventory
+## 2. Evidence inventory
 
-The remote branch is linear through:
+Git ancestry:
 
 ```text
-75ce8a10  C10-S03 investigations reconciled
-↓
-7bf3bc1c  J/D/E/F C10-S03A materialization authority
-↓
-d345f580  Codex implementation plus G/H/I
+d411e4e  recovered permanent Cycle 10 memory
+8b84c44  C10-S03A-R1 D/E/F authority
+02d6f1f  Codex R1 implementation and G/H/I
 ```
 
-Git confirms `7bf3bc1c` is an ancestor of `d345f580`. The Codex commit changes 23 paths:
+Codex changed 13 paths:
 
-- 6 Flutter/Drift source or test paths;
-- 14 server, migration, dependency or test paths;
-- G, H and I.
+- five Flutter application/infrastructure/test paths;
+- five TypeScript authorization/JWKS/harness/HTTP/test paths;
+- G/H/I.
 
-G's changed-path inventory matches Git and includes G/H/I. Migrations 001, 002 and 003 are
-byte-identical to the pre-S03A baseline; migration 004 is the only PostgreSQL migration added.
+No migration, dependency lockfile, permanent domain file, methodology file, J or D/E/F changed.
+Migrations 001–004, Drift v7, event payload v3, cursor format and recovery format remain unchanged.
 
-Evidence consulted:
+Controlling evidence read together:
 
-- J/D/E/F at `7bf3bc1c`;
-- G/H/I at `d345f580`;
-- the complete `7bf3bc1c..d345f580` Git inventory;
-- migration 004, hosted configuration and entrypoint;
-- JWT/JWKS verifier and tests;
-- hosted identity/enrollment/authorization service;
-- all sync/recovery HTTP routes and transaction helpers;
-- hosted-local harness;
-- Drift v7 schema, repository and migration tests;
-- package build/start definitions.
+- D/E/F at `8b84c44`;
+- G/H/I at `02d6f1f`;
+- changed source and tests;
+- migration 003/004 and database transaction helper;
+- current permanent Operational, Didactic and Design checkpoints;
+- three independent read-only domain studies.
 
-## 3. Implementation summary
+## 3. Codex result and Main disposition
 
-Codex materially added:
-
-- forward-only PostgreSQL migration 004 for external identities, memberships, enrollment
-  requests/bindings and security events;
-- a `jose`-based RS256 access-token verifier;
-- hosted configuration and a compiled Node entrypoint;
-- identity, enrollment, status and revocation routes;
-- hosted authorization in front of existing sync/recovery routes;
-- Drift v7 hosted-identity state and application ports;
-- a disposable PostgreSQL/JWKS/HTTP harness;
-- refreshed G/H/I evidence.
-
-The harness emitted `HOSTED_AUTH_READY=true`, and G reported the terminal pair
-`C10-S03A_LOCAL_HOSTED_AUTH_READY / MCG-02_PROVIDER_PROOF_PENDING`. Main does not accept that
-terminal classification because the implementation contradicts a controlling transaction-time
-authorization invariant and leaves other decisive gates incomplete.
-
-## 4. D/E/F checkpoint reconciliation
-
-| Area | Evidence | Main result |
-| --- | --- | --- |
-| Closed contracts/configuration | Hosted config and typed contracts exist; value-redacted failures are partly tested | implemented, partially validated |
-| Migration 004 | Additive schema, RLS/grants, ledger evidence and rollback probes reported | implemented, locally validated within reported probes |
-| JWT/JWKS | RS256, issuer, audience, time and subject checks use `jose`; only a narrow test subset exists | implemented, decisive validation incomplete |
-| Identity/membership | Exact issuer+subject resolves database membership; Account is not token-derived | implemented and locally exercised |
-| Enrollment/revocation | Basic replay, hash conflict, two enrollments and revocation denial exercised | implemented; race and privilege matrix incomplete |
-| Route authorization | Auth is checked before each route transaction, not rechecked within that mutation transaction | **security contradiction** |
-| Hosted entrypoint | Compiled entrypoint, config-before-listen, generic health and no fixture import | implemented and smoke-tested by G |
-| Drift v7 | Additive hosted-auth state; existing state reported preserved | implemented and locally validated |
-| Flutter hosted lab | Ports/repository exist; no opt-in authentication/enrollment lab composition or transport was added | incomplete |
-| Decisive topology | Real loopback HTTP/JWKS/PostgreSQL used; harness connection performs migration, seeding and runtime calls | partial; least-privilege runtime HTTP proof absent |
-| Regression/builds | TS and Flutter suites reported; Android passed; Windows blocked by host Developer Mode | accepted with host exclusion |
-| Provider boundary | G/H/I report no Auth0, Neon or Render access | accepted local evidence only |
-
-### 4.1 Controlling security contradiction
-
-F requires authorization to lock or recheck membership, enrollment and Device state inside the
-protected operation transaction, and explicitly prohibits authorizing once outside the transaction
-then mutating without recheck.
-
-Materialized flow:
+Codex correctly reported:
 
 ```text
-HostedAuthVerifier.verify
-  → inTransactionWithContext
-  → resolve membership and Device enrollment
-  → COMMIT
-
-HTTP route
-  → inTransaction
-  → sync/recovery operation
-  → COMMIT
+C10-S03A_R1_PARTIAL
+MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Membership may be removed or enrollment revoked between those transactions. Some existing service
-operations recheck the base `devices.status`, but they do not all recheck external identity,
-membership and enrollment under the same transaction/lock. The derived `AuthContext` therefore
-crosses a transaction boundary without satisfying D/F's required recheck.
-
-Consequences:
-
-- route-wide hosted authorization is not transactionally established;
-- membership-removal and enrollment-revocation races remain open;
-- H's `device-authorized` description and I's route-transaction claim overstate the source;
-- provider deployment must remain blocked.
-
-### 4.2 Additional decisive gaps
-
-- G explicitly lists the required JWT/JWKS cases not exhaustively represented: duplicate/malformed
-  bearer, invalid signature, wrong issuer/algorithm, expiry/nbf, missing subject/kid, rotation,
-  cached outage, timeout, malformed/oversized JWKS and refresh stampede.
-- The verifier delegates JWKS retrieval to `createRemoteJWKSet`; the required explicit maximum JWKS
-  response-size control is not materialized or tested.
-- The harness uses one supplied database URL to migrate, seed and serve HTTP. Separate SQL probes
-  show runtime denials, but the decisive HTTP path is not proved under the least-privilege runtime
-  identity required by D/F.
-- The harness does not prove two Accounts or the required cross-Account, membership-disable/removal,
-  concurrent enrollment/revocation and restart matrix.
-- Flutter contains ports and durable state only; the opt-in hosted-auth lab composition authorized by
-  J/D/F is absent.
-- Independent reconciliation test execution was not repeated because this clean checkout has no
-  installed `tsx` dependency. This environment exclusion does not negate G's recorded run, but it
-  adds no new validation evidence.
-
-## 5. PRC-01 material-claim classification
-
-The fields below are the controlling classification cache. Human/Main authority is Main unless
-otherwise stated; no result grants provider authority.
-
-### 5.1 C10-S02 recovery behavior
-
-- Claim: prior retention, snapshot and rebootstrap convergence remains available.
-- Source: `de1319d`, prior G/H/I, unchanged regression surface.
-- Prior/current state: locally validated / retained.
-- Evidence: prior `RECOVERY_CONVERGED=true`; current full suites reported passing.
-- Boundary: local disposable topology.
-- Contradictions: none found in this reconciliation.
-- Semantic owner/target: Operational + Design / permanent-domain review later.
-- History disposition: retain prior evidence by reference.
-- Confidence: high.
-- Result: accepted retained local behavior.
-
-### 5.2 Migration 004
-
-- Claim: additive hosted identity/enrollment persistence exists.
-- Source: migration 004, G and I.
-- Prior/current state: staged / implemented and locally probed.
-- Evidence: fresh and incremental migration, ledger, rollback, RLS and denial reports.
-- Boundary: disposable PostgreSQL 18; not Neon-applied.
-- Contradictions: decisive HTTP harness does not use separated runtime identity.
-- Semantic owner/target: Design + Operational / retain for corrective unit.
-- History disposition: preserve implementation and evidence.
-- Confidence: medium-high.
-- Result: accepted existence; hosted acceptance deferred.
-
-### 5.3 Drift v7
-
-- Claim: additive hosted identity state preserves v6 data.
-- Source: Drift schema/repository/tests, G/H/I.
-- Prior/current state: staged / implemented and locally validated.
-- Evidence: reported migration, reopen and no-reset tests.
-- Boundary: local Flutter databases; Windows runtime unproved.
-- Contradictions: no hosted Flutter composition exists.
-- Semantic owner/target: Design / retain for corrective unit.
-- History disposition: preserve.
-- Confidence: high for schema, low for provider workflow.
-- Result: accepted additive schema only.
-
-### 5.4 JWT/JWKS verification
-
-- Claim: production-shaped access-token verification is ready.
-- Source: verifier, tests and G.
-- Prior/current state: staged / implemented but under-validated.
-- Evidence: valid RS256, wrong audience, missing bearer and oversized token.
-- Boundary: local loopback issuer.
-- Contradictions: required adversarial/rotation/outage matrix and JWKS size bound absent.
-- Semantic owner/target: Design + Operational / corrective D/F and Codex tests.
-- History disposition: preserve partial implementation; supersede ready claim.
-- Confidence: high in gap classification.
-- Result: partial, not readiness evidence.
-
-### 5.5 External identity and membership
-
-- Claim: token identity is distinct from Account membership.
-- Source: migration 004 and hosted authorization service.
-- Prior/current state: staged / implemented.
-- Evidence: exact issuer+subject lookup and database membership resolution.
-- Boundary: synthetic identities; provisioning remains manual.
-- Contradictions: membership is not rechecked in each mutation transaction.
-- Semantic owner/target: Design / corrective F.
-- History disposition: retain model; correct transaction use.
-- Confidence: high.
-- Result: model accepted; authorization readiness contradicted.
-
-### 5.6 Device enrollment and revocation
-
-- Claim: installations enroll idempotently and revocation is immediately enforced.
-- Source: service, migration and harness.
-- Prior/current state: staged / basic path implemented.
-- Evidence: equivalent replay, hash conflict, two Devices and sequential revocation denial.
-- Boundary: one Account; no concurrent race proof.
-- Contradictions: authorization/mutation split and incomplete concurrency/role matrix.
-- Semantic owner/target: Design + Operational / corrective D/F.
-- History disposition: retain basic evidence; reject complete claim.
-- Confidence: high.
-- Result: partial.
-
-### 5.7 Route-wide authorization
-
-- Claim: every sync/recovery mutation rechecks hosted authority transactionally.
-- Source: D/F requirement, H/I claim, HTTP and database source.
-- Prior/current state: required / contradicted.
-- Evidence: `verify()` commits before route `inTransaction()` begins.
-- Boundary: all hosted protected routes using this composition.
-- Contradictions: direct contradiction with F section 5.
-- Semantic owner/target: Design / new D/E/F before correction.
-- History disposition: record contradiction; supersede H/I wording.
-- Confidence: high.
-- Result: security blocker.
-
-### 5.8 Hosted server entrypoint
-
-- Claim: a production-shaped compiled entrypoint exists without fixture fallback.
-- Source: `hosted.ts`, package scripts, config and G.
-- Prior/current state: staged / implemented and smoke-tested.
-- Evidence: compiled start, generic health, config failure and source inspection.
-- Boundary: local process; no Render/TLS acceptance.
-- Contradictions: application authorization beneath it is not ready.
-- Semantic owner/target: Operational + Design / retain.
-- History disposition: preserve.
-- Confidence: high.
-- Result: accepted component, not deployable unit.
-
-### 5.9 Flutter hosted-auth boundary
-
-- Claim: an opt-in neutral Flutter hosted-auth lab is ready for later provider proof.
-- Source: J/D/F requirement, Flutter diff and H/I.
-- Prior/current state: required / incomplete.
-- Evidence: ports and local repository only.
-- Boundary: no Auth0 SDK, callbacks, token source, HTTP enrollment transport or lab entrypoint.
-- Contradictions: G/H/I do not identify a materialized lab composition.
-- Semantic owner/target: Operational + Design / corrective staging.
-- History disposition: retain ports; keep lab pending.
-- Confidence: high.
-- Result: partial.
-
-### 5.10 Local decisive harness
-
-- Claim: decisive hosted-auth readiness was proved.
-- Source: harness and G terminal diagnostic.
-- Prior/current state: required / diagnostic passed but gate invalidated.
-- Evidence: real HTTP/JWKS/PostgreSQL, enrollment, sync, ack and revocation.
-- Boundary: one Account and one connection authority.
-- Contradictions: runtime-role topology, race matrix and transaction invariant are unproved.
-- Semantic owner/target: Operational / corrective harness.
-- History disposition: preserve diagnostic as partial evidence.
-- Confidence: high.
-- Result: `HOSTED_AUTH_READY=true` is insufficient for terminal readiness.
-
-### 5.11 Provider non-use
-
-- Claim: implementation did not contact Auth0, Neon or Render.
-- Source: G/H/I and synthetic configuration.
-- Prior/current state: prohibited / respected.
-- Evidence: reported local-only execution and no provider values in inventory.
-- Boundary: Codex report; no external audit.
-- Contradictions: none found.
-- Semantic owner/target: Operational / later permanent record.
-- History disposition: preserve.
-- Confidence: medium-high.
-- Result: accepted local evidence.
-
-### 5.12 MCG-01 evidence
-
-- Claim: an isolated Neon development environment and separated roles were manually proved.
-- Source: sanitized human evidence dated 2026-07-15.
-- Prior/current state: sanitized evidence ready / accepted with unchanged boundary.
-- Evidence: PostgreSQL 18.4, development branch, TLS, rollback, CRUD, DDL denial, teardown.
-- Boundary: no migration 003/004, hosted auth or production proof.
-- Contradictions: none.
-- Semantic owner/target: Operational / permanent promotion after corrective reconciliation.
-- History disposition: preserve sanitized summary only.
-- Confidence: medium-high.
-- Human/Main authority: human observation accepted by Main.
-- Result: accepted development-environment evidence.
-
-### 5.13 MCG-02 and Cycle 10 closure
-
-- Claim: repository readiness permits MCG-02 and Cycle 10 closure progression.
-- Source: G terminal claim versus source reconciliation.
-- Prior/current state: blocked pending S03A / remains blocked.
-- Evidence: security contradiction and decisive validation gaps above.
-- Boundary: this reconciliation does not assess real providers.
-- Contradictions: G claims local readiness; Main rejects it.
-- Semantic owner/target: Main / new corrective D/E/F.
-- History disposition: record blocked state; do not promote.
-- Confidence: high.
-- Result: MCG-02 not ready; Cycle 10 not closable.
-
-## 6. Accepted, partial, contradicted and deferred claims
-
-Accepted:
-
-- migrations 001–003 unchanged and migration 004 added forward-only;
-- additive Drift v7 hosted state;
-- identity/membership/installation/Device concepts remain distinct;
-- hosted entrypoint excludes `FixtureAuthVerifier` and uses compiled JavaScript;
-- basic local enrollment, sync, acknowledgement and sequential revocation flow;
-- Android debug build and other validations recorded by G;
-- provider non-use and local-first preservation within reported evidence;
-- sanitized MCG-01 development-environment evidence.
-
-Partial:
-
-- JWT/JWKS hardening and failure injection;
-- enrollment/revocation concurrency and role behavior;
-- least-privilege decisive topology;
-- Flutter hosted-auth lab composition;
-- Windows build/runtime evidence.
-
-Contradicted:
-
-- route-wide transaction-time hosted authorization;
-- H/I wording that membership/enrollment/Device are rechecked inside each operation transaction;
-- the terminal `C10-S03A_LOCAL_HOSTED_AUTH_READY` classification.
-
-Deferred:
-
-- all real Auth0, Neon and Render evidence;
-- provider tuning and production acceptance;
-- Account selection, invitations, replacement/reactivation and product UI;
-- MCG-03/04 definition and execution;
-- Cycle 10 closure.
-
-## 7. MCG-01 classification
-
-Retain MCG-01 as accepted sanitized development-environment evidence only:
-
-- isolated Neon development branch and disposable `markei_sync_dev`;
-- PostgreSQL 18.4 in `us-west-2`;
-- separate direct migrator and pooled-intended runtime identities;
-- TLS, transactional rollback, explicit runtime CRUD, runtime DDL denial and teardown.
-
-It does not prove migration 003/004 application, pooled RLS, hosted authentication, deployment,
-backup/PITR or production acceptance. No provider hostname, connection string, credential, endpoint
-ID or token belongs in J.
-
-### 7.1 Recovered MCG-01 human evidence
-
-Main recovers the following from the human-observed 2026-07-15 session as sanitized operational
-evidence. It was previously present in conversation but not promoted into permanent domain memory.
-
-Environment observations:
-
-- Neon Free development environment in `us-west-2` with PostgreSQL 18.4;
-- child development branch `markei-cycle10-development` derived from `production`;
-- disposable database `markei_sync_dev`;
-- production branch not used for probes;
-- branch expiry was adjusted during the session, but its current expiry requires reconfirmation.
-
-Role and connectivity observations:
-
-- SQL-created `markei_migrator` and `markei_runtime` login identities;
-- neither identity reported superuser, role-administration, replication, bypass-RLS or
-  `neon_superuser` membership;
-- migrator connected through the direct endpoint and could create schema objects;
-- runtime connected and could not create schema objects;
-- client connection negotiated TLS 1.3 and the separate channel-binding configuration worked;
-- credentials remained outside Git and were not included in sanitized evidence.
-
-Transactional and privilege probes:
-
-- migrator created and inserted into a disposable table inside a transaction;
-- rollback removed both inserted data and the table;
-- runtime performed explicitly granted SELECT, INSERT, UPDATE and DELETE on a probe table;
-- runtime `CREATE TABLE` failed with permission denied for schema `public`;
-- the unauthorized table was absent;
-- all three probe objects were absent after cleanup.
-
-PRC-01 result:
+and named the missing barrier/hook race matrix. Main accepts the honesty of that partial result but
+finds additional source/report contradictions that make the controlling status stricter:
 
 ```text
-MCG-01_SANITIZED_DEVELOPMENT_ENVIRONMENT_PASS
+C10-S03A_R1_CONTRADICTED_STOP
+MCG-02_PROVIDER_PROOF_NOT_AUTHORIZED
 ```
 
-Evidence boundary: manual observation and pasted terminal output. No secret or provider identifier
-is preserved. This does not establish migration 003/004 application, production RLS, hosted API
-behavior, backup/PITR, provider availability or production acceptance.
+The contradiction is not that all R1 work failed. Substantial local mechanisms exist. The
+contradiction is that decisive diagnostics and some G/H/I wording claim proof beyond the paths and
+tests actually exercised, while Device-management authorization contains a live flaw.
 
-### 7.2 Recovered MCG-02 preparation evidence
+## 4. Materialized progress accepted within bounds
 
-Main recovers the following as provider-dashboard preparation only:
+### 4.1 Transaction callback for sync/recovery
 
-- Render Web Service and Auth0 were selected as the provisional development providers;
-- separate Auth0 Native Applications were prepared for Android and Windows;
-- the Android application identifier was configured and its certificate/deep-link steps were
-  traversed in the Auth0 quickstart;
-- a Windows Native Application and callback/protocol preparation were traversed;
-- a Markei custom API/audience and RS256-shaped token boundary were prepared;
-- no native client secret was intended or authorized;
-- Render was connected to the GitHub repository and the New Web Service form was reached;
-- the intended service was recognized as a Node service under `services/markei_sync_api`, although
-  the dashboard initially inferred the repository as Python;
-- environment-variable entry was identified, but no approved hosted secret set was established;
-- no Render deployment, Neon migration, real hosted login, token acceptance, Device enrollment or
-  hosted synchronization proof was completed.
+The eight existing synchronization/recovery routes now call `protectedOperation`, and hosted
+composition delegates to `HostedAuthVerifier.authorizeOperation`. JWT verification yields an
+external principal; membership, enrollment and Device state are read inside a serializable
+transaction; the protected service callback uses the same `PoolClient`.
 
-The exact Auth0 tenant/app identifiers, callbacks, certificate fingerprint, audience, Render URL,
-Neon hostname and all credentials remain excluded from J and permanent documentation.
+This corrects the earlier two-transaction shape for those eight routes. It is accepted as
+implemented and locally exercised for the narrow sequential upload/download/acknowledgement path.
 
-PRC-01 result:
+It does not yet establish every hosted route, concurrency outcome or future route registration.
+
+### 4.2 Bounded JWT/JWKS source
+
+The verifier now includes:
+
+- `RS256`, issuer, audience, time and subject checks;
+- bounded bearer/token and JWKS response bytes;
+- timeout/abort path;
+- cache maximum age and refresh cooldown;
+- redirect refusal;
+- bounded key count/identifier;
+- conflicting-key rejection;
+- refresh coalescing;
+- generic token-rejected errors.
+
+Named local generated-key tests cover a meaningful adversarial subset. Main accepts this as a major
+implemented and locally validated mechanism, not Auth0/provider acceptance.
+
+### 4.3 Separate connection variables
+
+The harness now requires `LAB_MIGRATOR_URL` and `LAB_RUNTIME_URL`, applies migrations/seeding
+through the first, closes its migrator pool, and starts Fastify using the second.
+
+This is implemented topology. It is not yet decisive least-privilege proof because the harness does
+not verify the connected role identities or perform the required runtime-denial probes.
+
+### 4.4 Synthetic Account/Device topology
+
+The harness creates:
+
+```text
+2 Markei Accounts
+2 external identities
+3 installations
+3 Devices
+```
+
+It exercises sequential enrollment/replay/conflict, two Devices for Account A, one Device for
+Account B, one cross-Account Device denial, upload/download/acknowledgement and one sequential
+revocation denial. These are accepted local facts within that exact path.
+
+### 4.5 Flutter scaffolding
+
+R1 adds:
+
+- lab authentication/token sources;
+- hosted enrollment coordinator;
+- HTTP enrollment transport;
+- Drift identity repository/guard behavior;
+- cancellation, token rejection, outage and replay tests using a fake transport.
+
+This is accepted as provider-neutral scaffolding and local state-machine evidence. End-to-end
+authenticated HTTP enrollment, file-backed reopen and real outbox non-mutation remain unproved.
+
+### 4.6 Regression reports
+
+G reports passing TypeScript checks, 21 tests, hosted-local harness, Flutter analysis, 56 Flutter
+tests, Android debug build, Windows release build and five Python regressions. It also reports
+container teardown and no provider access.
+
+Main preserves these as Codex-recorded evidence. Independent npm execution in this reconciliation
+checkout could not install dependencies because the host npm cache/filesystem repeatedly failed;
+therefore Main adds no independent test result and does not reinterpret that host failure as a
+product failure.
+
+## 5. Controlling security contradictions
+
+### 5.1 Non-owner Device revocation trusts an unproved actor header
+
+`HostedIdentityService.revoke` verifies principal and membership, but for a non-owner it permits
+revocation when the request header DeviceId equals the path target. It does not prove that the
+header Device is actively enrolled to the acting identity.
+
+An ordinary member can therefore present another DeviceId as both header and target and satisfy the
+self-revocation comparison. Owner revocation also does not require an active actor Device.
+
+This contradicts F's actor/target ownership rule and D's transaction-scoped Device authorization
+requirement. It is a source-level authorization flaw, not merely missing evidence.
+
+Required correction:
+
+```text
+resolve active actor identity/membership
+→ resolve and lock active actor enrollment/Device when Device-authenticated action is required
+→ validate actor role
+→ resolve and lock target Account/Device
+→ revoke target and append security event in the same transaction
+```
+
+The exact owner action policy must be explicit; an untrusted header cannot prove actor ownership.
+
+### 5.2 Device status lacks identity ownership
+
+Device status verifies Account membership and then queries by AccountId+DeviceId. It does not bind
+the requested Device to the acting identity or apply an explicit owner/member policy.
+
+Main does not assume every member may enumerate every Account Device. R2 must freeze and test the
+policy, with generic foreign/unknown results.
+
+### 5.3 Membership/removal ordering is not proved
+
+`authorizeOperation` runs under serializable isolation and locks enrollment/Device rows, but calls
+`resolveOneMembership` with its default `lock=false`. Identity/membership rows are not explicitly
+locked in the required order.
+
+Serializable isolation may reject an unsafe race, but no barrier-controlled membership
+disable/remove race proves that behavior or bounded retry. The implementation therefore does not
+establish E/F's deterministic ordering claim.
+
+Simply changing the call to `lock=true` is not yet an approved fix: migration 004 grants runtime
+only `SELECT` on `account_memberships`, while a row-locking clause may require additional table
+privilege. R2 must select a least-privilege concurrency mechanism shared with future membership
+administration—potentially a narrowly scoped database function/lock contract or additive migration
+005—without granting broad membership mutation authority to runtime. External-identity disable has
+the same concurrency question.
+
+### 5.4 Unsafe `verify` authority remains public
+
+`HostedAuthVerifier.verify` still creates and commits an authorization context independently.
+Hosted sync/recovery currently take the newer `authorizeOperation` path, but the old public method
+remains usable and future route code could reintroduce the original time-of-check/time-of-use defect.
+
+R2 must either remove/contain that authority from hosted composition or make omission structurally
+impossible through a typed protected-operation interface.
+
+## 6. Route-inventory contradiction
+
+`PROTECTED_ROUTE_POLICIES` lists only eight sync/recovery routes. It omits:
+
+```text
+/v1/identity
+/v1/devices/enroll
+/v1/devices/enrollments/:requestId
+/v1/devices/:deviceId/status
+/v1/devices/:deviceId/revoke
+```
+
+D/F required all protected hosted routes to declare authentication, membership, Device, role and
+transaction policy.
+
+The current test compares the manually maintained eight-entry constant with another hard-coded
+eight-operation list. It does not compare actual Fastify registrations with policy declarations and
+cannot detect a newly added unguarded route.
+
+Classification: eight-route callback conversion implemented; enforceable route inventory
+contradicted/incomplete.
+
+## 7. Concurrency and restart proof gaps
+
+No named barrier/hook tests prove:
+
+- membership disable/remove versus each protected operation;
+- Device/enrollment revocation versus each protected operation;
+- concurrent equivalent enrollment;
+- concurrent conflicting enrollment;
+- deterministic serialization/deadlock retry and exhaustion;
+- restart followed by server enrollment replay/revocation;
+- denied operation leaving every cursor/ack/sequence/recovery state unchanged.
+
+The sequential harness cannot substitute for this matrix. Codex correctly marked this blocker.
+
+## 8. JWT/JWKS residual gaps
+
+The new verifier is materially stronger, but D's complete named floor is not exhausted. Missing or
+insufficiently isolated evidence includes:
+
+- oversized subject;
+- identical duplicate `kid` handling (current validation rejects conflicting duplicates but permits
+  identical duplicates);
+- genuine key rotation from old to new key;
+- explicit timeout test;
+- refresh failure followed by cooldown and bounded retry;
+- issuer-origin binding for an explicitly configured JWKS URI;
+- a bounded stale-cache outage: current refresh failure accepts any existing local cache even after
+  its declared expiry, allowing repeated outage use without a separately enforced stale limit;
+- repeated unknown-`kid` refresh control after successful refreshes that still lack the key;
+- exact public failure mapping for every case.
+
+The harness prints `JWKS_FAILURE_FLOOR=true` without executing the JWT/JWKS suite. Main classifies
+the verifier/test subset as locally validated and the complete floor diagnostic as contradicted.
+
+## 9. Least-privilege proof contradiction
+
+Two URL variable names do not prove distinct roles or least privilege. The harness does not assert:
+
+```text
+current_user differs
+runtime DDL denial
+runtime migration-ledger denial
+runtime identity/membership provisioning denial
+runtime worker snapshot/cleanup denial
+RLS no-context failure
+```
+
+`LEAST_PRIVILEGE_HTTP=true` is printed after a successful sequential HTTP path regardless of those
+missing probes. G's claim that decisive least privilege passed is stronger than source evidence.
+
+Classification: split connection topology implemented; decisive least-privilege proof contradicted.
+
+## 10. Flutter integration contradictions
+
+### 10.1 Token seam is disconnected
+
+The coordinator obtains an access token but calls `DeviceEnrollmentTransport.enroll(command)`
+without passing that credential. `HttpDeviceEnrollmentTransport` separately reads a token from a
+different injected callback. Tests use a fake transport and do not prove the token obtained by the
+coordinator is the token sent by HTTP enrollment/query.
+
+### 10.2 HTTP conflict contract is inconsistent
+
+The server enrollment conflict is a typed `ProtocolFailure` returned with HTTP 200; the harness
+explicitly expects 200. The Flutter transport recognizes conflict only for HTTP 409 and otherwise
+decodes the 200 failure object as a success result with missing fields.
+
+This is a concrete interoperability defect.
+
+### 10.3 Real HTTP/reopen/outbox proof is absent
+
+- No test instantiates `HttpDeviceEnrollmentTransport`.
+- Coordinator tests use an in-memory database and do not close/reopen a file-backed database.
+- Local cancellation/outage state is tested, but real pending outbox rows are not created and
+  compared before/after enrollment attempts.
+- The HTTP transport does not show explicit response-size/timeout bounds.
+
+`FLUTTER_HOSTED_LAB=true` is emitted by the TypeScript harness without executing Flutter code.
+Main accepts the scaffolding/tests and rejects the decisive Flutter-lab diagnostic.
+
+## 11. Diagnostic and report integrity
+
+The harness unconditionally prints:
+
+```text
+LOCAL_TRANSACTION_AUTHORIZATION=true
+LEAST_PRIVILEGE_HTTP=true
+TWO_ACCOUNT_ISOLATION=true
+JWKS_FAILURE_FLOOR=true
+FLUTTER_HOSTED_LAB=true
+```
+
+after one narrow sequential server flow. It does not execute recovery routes, races, privilege
+denials, JWT failure suite or Flutter code. Diagnostics must be emitted only by the evidence that
+proves them, or aggregated by a runner that verifies each independent result.
+
+G also leaves `Final SHA` pending and omits exact environment-safe role/container creation commands,
+migration hashes, denial probes, barrier inventory and file-backed Flutter reopen evidence required
+by D.
+
+Classification: G/H/I preserve useful evidence and the correct PARTIAL terminal result; several
+individual proof claims/diagnostics are contradicted or incomplete.
+
+## 12. Neon migration authority conflict
+
+Migration 003 creates `markei_recovery_worker`. The accepted MCG-01 evidence says the real Neon
+`markei_migrator` is `NOCREATEROLE`. I reports that the disposable lab migrator needed
+`CREATEROLE` to execute migration 003.
+
+Therefore the current MCG-02 migration sequence cannot simply run 001→004 as the real migrator.
+Before provider activity, Main must select a human-controlled bootstrap such as:
+
+```text
+Neon owner pre-creates bounded NOLOGIN recovery-worker role
+→ markei_migrator applies immutable migrations
+```
+
+or another reviewed least-privilege mechanism compatible with immutable migration 003.
+
+Codex must not receive owner/migrator credentials. No Neon action is authorized by this J.
+
+## 13. PRC-01 claim classification
+
+| Claim | Result |
+| --- | --- |
+| eight sync/recovery callbacks share authorization transaction | implemented; narrow local path exercised |
+| route-wide hosted authorization | contradicted/incomplete |
+| active actor Device required for revocation | contradicted by source |
+| deterministic membership/revocation race ordering | provisional; decisive evidence absent |
+| bounded JWT/JWKS source | implemented; meaningful local subset validated |
+| complete JWT/JWKS floor | partial/contradicted diagnostic |
+| separate migrator/runtime URL topology | implemented |
+| decisive least-privilege HTTP topology | contradicted diagnostic |
+| two-Account model and one denial | locally exercised subset |
+| complete cross-Account matrix | partial |
+| Flutter provider-neutral scaffolding | implemented; fake-adapter tests passed per G |
+| Flutter authenticated HTTP enrollment | contradicted/incomplete |
+| file-backed Flutter reopen/outbox preservation | not validated |
+| migrations 001–004 unchanged | accepted by Git evidence |
+| no provider access | accepted from scope/report/source |
+| `C10-S03A_R1_LOCAL_SECURITY_PROVED` | rejected |
+| MCG-02 provider readiness | blocked |
+
+## 14. MCG-01 and MCG-02 status
+
+MCG-01 remains accepted only as sanitized development-environment capability:
+
+- isolated development branch/database;
+- PostgreSQL 18.4 and TLS;
+- separate `NOCREATEROLE` migrator/runtime identities;
+- rollback, runtime CRUD and runtime DDL denial probes.
+
+It does not prove migration 003/004 application, recovery-worker bootstrap, pooled RLS, hosted API or
+production behavior.
+
+MCG-02 remains:
 
 ```text
 MCG-02_PROVIDER_DASHBOARD_PREPARATION_PARTIAL
-MCG-02_HOSTED_PROOF_NOT_PERFORMED
+MCG-02_PROVIDER_PROOF_NOT_AUTHORIZED
 ```
 
-This recovered evidence cannot activate C10-S03B because the C10-S03A transaction-time
-authorization contradiction remains unresolved.
+Do not:
 
-### 7.3 Manual-action methodology recovery
+- apply migrations to Neon;
+- pre-create provider roles;
+- enter real secrets into Render;
+- deploy Render;
+- provision real Auth0 users/memberships;
+- begin Android/Windows callback proof.
 
-Future Manual Configuration Gates use this evidence route:
+The prepared provider UI runbook remains inactive.
+
+## 15. Required next corrective unit
+
+Authorize investigation/restaging for one narrow `C10-S03A-R2` only. It must address:
+
+1. Active actor Device/identity authorization for Device status and revocation.
+2. Explicit owner/member Device-management policy.
+3. Identity/membership lock or demonstrably equivalent concurrency ordering.
+4. Barrier-controlled removal/revocation/enrollment/retry tests.
+5. One enforceable policy registry bound to actual Fastify route registration.
+6. Removal/containment of the unsafe hosted `verify` authority.
+7. Complete remaining JWT/JWKS cases, issuer binding and time-bounded stale-cache policy.
+8. Distinct-role identity checks and runtime denial probes in the harness.
+9. One consistent HTTP enrollment failure contract.
+10. Token flow bound from coordinator to real HTTP transport.
+11. Real HTTP transport tests, bounded response/timeout behavior and file-backed reopen.
+12. Explicit outbox-before/after non-mutation evidence.
+13. Honest diagnostics emitted only after their own proof passes.
+14. Correct G final SHA, commands, hashes, counts and exclusions.
+15. A separately reconciled human recovery-worker bootstrap decision for later MCG-02.
+
+R2 remains local-only. It must not contact providers or broaden into production Account signup,
+invitation, Account-selection UI or Device-management UI.
+
+## 16. Permanent memory and future gates
+
+Permanent Operational/Didactic/Design memory already records the prior contradiction and MCG-02
+boundary. No permanent promotion is authorized from this J until R2 produces and Main reconciles
+new G/H/I. Domain chats may later append observational correction history without promoting
+readiness.
+
+MCG-03/04 remain undefined/inactive. Cycle 10 remains open. No Cycle 11 work is activated.
+
+## 17. Terminal Main result
 
 ```text
-human observation
-→ sanitized evidence block
-→ Main staging and PRC-01 boundary
-→ Operational/Didactic/Design promotion by semantic ownership
-→ Main reconciliation
-→ next provider gate
+C10-S03A_R1_CONTRADICTED_STOP
+MCG-02_PROVIDER_PROOF_NOT_AUTHORIZED
 ```
 
-Dashboard completion marks configuration state, not application validation. A provider mutation is
-not permanent project truth until its sanitized evidence, environment, exclusions and unknown
-outcomes are staged and reconciled. Main may capture cross-domain gate state in J, but permanent
-Operational, Didactic and Design meaning remains owned by the corresponding domain chats.
-
-### 7.4 Permanent-domain promotion handoff for recovered MCG evidence
-
-Operational promotion candidates:
-
-- MCG-01 sanitized pass, commands/probes, cleanup and current branch-expiry recheck;
-- MCG-02 dashboard preparation, incomplete deployment and exact remaining manual gates;
-- the rule separating direct migrator and pooled runtime connections.
-
-Didactic promotion candidates:
-
-- manual configuration versus validation;
-- authentication versus membership, enrollment and authorization;
-- build/deployment evidence versus hosted workflow acceptance.
-
-No learner maturity or Lecture Register change follows automatically.
-
-Design promotion candidates:
-
-- provider trust boundaries and server-only secrets;
-- migrator/runtime responsibility separation;
-- separate Native Applications and no embedded native client secret;
-- dashboard/provider choices as provisional until hosted proof.
-
-Domain chats must use PRC-01 and must retain `C10-S03A_CONTRADICTED_STOP`. They may promote MCG-01
-evidence and MCG-02 preparation state, but not hosted-auth readiness or Cycle 10 closure.
-
-## 8. C10-S03B / MCG-02 readiness
-
-`C10-S03B` is **not ready**. Do not migrate Neon, deploy Render, enter provider secrets, provision
-real identities or begin Android/Windows Auth0 proof.
-
-The previously proposed MCG-02 manual sequence remains staged but inactive. It may be reactivated
-only after C10-S03A-R1 corrects the security boundary, completes the decisive validation floor and
-Main reconciles new G/H/I evidence.
-
-## 9. Corrective restaging authority
-
-This J reconciliation does not itself authorize source correction. The next bounded sequence is:
-
-1. A/B/C investigate only the transaction-time authorization, JWT/JWKS failure floor,
-   least-privilege harness topology and missing Flutter lab boundary.
-2. Main reconciles new J/D/E/F for `C10-S03A-R1`.
-3. Corrective D/F must place membership, enrollment and Device rechecks/locks in the same database
-   transaction as each protected operation, without passing a trusted context across transactions.
-4. Corrective D/F must define a bounded JWKS fetch/parse layer or equivalent explicit response-size
-   control and the full named adversarial matrix.
-5. The decisive harness must migrate/provision with a migrator identity and run hosted HTTP with a
-   separate least-privilege runtime identity.
-6. The harness must add two Accounts, cross-Account denial, membership disable/removal,
-   concurrent enrollment/revocation, restart and route-wide recovery cases.
-7. D/E/F must decide whether the neutral Flutter lab composition remains required for S03A-R1 or is
-   explicitly moved to human MCG-02 without overstating readiness.
-8. Codex publishes corrected implementation and new G/H/I.
-9. Main performs a new post-Codex reconciliation before any provider activity.
-
-## 10. Permanent-domain handoff
-
-FLX-PRM-04 permanent promotion is blocked for the hosted-readiness claim. Domain chats may later
-retain the contradiction as observational history, but must not promote C10-S03A readiness.
-
-Future destinations after successful corrective reconciliation remain:
-
-- Operational: `operational/04_TODO.md`, `10_OPERATIONAL_STATE.md`,
-  `11_OPERATIONAL_RECORD.md`, `12_OPERATIONAL_MODEL.md`;
-- Didactic: `didactics/02_KANBAN.md`, `07_GLOSSARY.md`, `08_CONCEPT_MAP.md`,
-  `13_LECTURE_REGISTER.md`;
-- Design: `design/01_ARCHITECTURE.md`, `03_DECISION_LOG.md`, `09_DESIGN_STATE.md`,
-  `14_MODEL_OVERVIEW.md`.
-
-No file is assumed to require change. Learner maturity and lecture history still require explicit
-learner evidence.
-
-## 11. MCG-03 and MCG-04 definition gate
-
-The current runbook defines MCG-01 and MCG-02 only. Because MCG-02 is blocked, no MCG-03/04
-candidate is mature enough for authorization or provider instructions.
-
-Any future candidate must remain:
-
-```text
-CANDIDATE — NOT AUTHORIZED
-```
-
-and state the problem not already closed by MCG-02, manual/provider action, repository support,
-evidence, security/privacy boundary, MCG-02 dependency and Cycle ownership.
-
-## 12. Cycle 10 closure readiness
-
-Cycle 10 remains open. Current blockers are:
-
-- C10-S03A transaction-time authorization contradiction;
-- incomplete JWT/JWKS and concurrency failure evidence;
-- missing least-privilege decisive HTTP topology;
-- unresolved Flutter lab boundary;
-- incomplete MCG-02 provider proof.
-
-No Cycle 11 UI/UX or Analytics work is activated by this result.
-
-## 13. Terminal Main reconciliation status
-
-```text
-C10-S03A_CONTRADICTED_STOP
-```
-
-Provider progression stops. New D/E/F authority is required before corrective materialization.
+Confidence is high for source-level contradictions and medium-high for recorded validation results.
+Independent test execution in this checkout was host-blocked by dependency installation/cache
+failure; that exclusion does not weaken the directly inspected authorization/interoperability flaws.
