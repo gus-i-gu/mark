@@ -1,8 +1,8 @@
-# I_DSN_CODEX - C10-S03A-R3C Design Evidence
+# I_DSN_CODEX - C10-S03A-R3D1 Design Evidence
 
 Sequence: FLX-ORD-01 corrective Codex materialization
 Role: Codex design/architecture evidence
-Unit: C10-S03A-R3C decisive local proof completion
+Unit: C10-S03A-R3D1 evidence contract and migration lifecycle completion
 Branch: `intermid-cycle-recovery`
 Authority: `F_DSN_STAGE.md` plus J/D/E
 Evidence boundary: local architecture only; provider proof deferred
@@ -10,59 +10,70 @@ Evidence boundary: local architecture only; provider proof deferred
 ## Result
 
 ```text
+PROOF_PIPELINE_INTEGRITY=true
+C10-S03A_R3D1_PROVED
 R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3C_PARTIAL
+R3D2_AUTHORIZATION_PENDING
+R3D3_FLUTTER_PENDING
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Exact blocker: proof architecture now fails closed, but decisive producer coverage is incomplete.
-
 ## Dependency Direction
 
-Retained:
+Retained architecture:
 
-- `jose` owns JWT/JWK cryptography.
-- Markei JWT adapter owns issuer/audience policy, bounded JWKS retrieval, normalized key revision and cooldowns.
-- Fastify owns route lifecycle; Markei owns typed descriptors and inventory proof.
-- PostgreSQL owns migrations, transactions, locks, ACLs and RLS context.
-- `package:http` owns raw HTTP mechanics.
-- Markei Flutter transport owns attempt deadline, byte ceiling, redirect refusal and closed outcome translation.
-- Drift v7 owns durable local hosted identity state.
+```text
+executed scenario/command
+→ closed versioned producer record
+→ deterministic record validation
+→ fail-closed aggregation
+```
 
-No dependency, lockfile, migration or Drift schema change was made.
+Production code does not depend on proof modules. No production authorization, enrollment, JWT, route or HTTP contract was changed.
 
-## Proof Architecture Added
+## Closed Producer Schema
 
-`services/markei_sync_api/src/proof/producer.ts` defines the required producer and case inventory. Producers are explicit, versioned and case-addressable.
+One record has exactly:
 
-`services/markei_sync_api/src/proof/aggregate.ts` validates producer schema, exact case sets, duplicates, unknown producers, unknown cases, skipped/partial/false cases and missing producers before emitting success.
+```text
+schemaVersion, producer, requiredCases, resultsByCase, blockers, passed
+```
 
-`services/markei_sync_api/test/proof_aggregate.test.ts` proves the aggregator accepts complete synthetic evidence and rejects incomplete or malformed evidence. This is infrastructure proof only; it does not substitute for real producer execution.
+One case result has exactly:
 
-## Migration-006 Evidence Architecture
+```text
+passed
+blocker only when passed=false
+```
 
-`services/markei_sync_api/src/proof/migration_006_probe.ts` connects to disposable migrator/runtime pools supplied by lab environment variables and checks the already migrated local database. It intentionally does not edit migrations 001-006.
+The parser rejects unknown fields, malformed schema, unknown producers, case-set mismatch, result-key mismatch, stale blockers, unsafe blockers, inconsistent `passed` and inconsistent top-level blockers. Builder-derived blockers are canonical sorted `case:blocker` pairs.
 
-The probe currently covers function shape, security-definer metadata, fixed search path, SQL-body safety, ACLs and runtime denials. It does not yet orchestrate fresh/upgrade/duplicate/failure-copy/shadowing/tamper lifecycle matrices, so it correctly exits partial.
+## Real Producer Flow
 
-## Authorization/Race Evidence Architecture
+- JWKS producer executes generated RSA/JWKS scenarios with injected clock/fetch and existing `jose`.
+- Route producer executes real Fastify construction/readiness scenarios using typed descriptors and `onReady` inventory comparison.
+- Static producer executes fixed repository command definitions with explicit working directories and safe blocker IDs.
+- Migration producer starts disposable PostgreSQL 18, creates migrator/runtime roles and isolated databases, applies tracked or copied migrations, queries catalog/ACL state and tears down in `finally`.
+- Authorization producer starts disposable PostgreSQL 18 and runs the existing hosted-local harness to emit a truthful partial record.
+- Flutter producer runs the focused file-backed HTTP test and maps only observed meanings to true.
 
-The hosted-local harness now emits a structured `authorization-race` producer. Existing route inventory and least-privilege diagnostics remain separate from the race matrix. Missing cases are represented as false with `missing-case-result`, preserving the E distinction between observed subset and decisive matrix completion.
+## Aggregation Behavior
 
-The remaining design gap is a barrier-driven matrix that snapshots facts/events, cursors/acknowledgements, recovery state, Device/enrollment rows and security-event counts before and after every denied/losing path.
+`r3d1_orchestrator.ts` runs all six producers, parses their `PROOF_PRODUCER` records, validates schema integrity, aggregates all records and accepts R3D1 only when:
 
-## Flutter HTTP/File-Backed Evidence
+- migration/JWKS/route/static producers pass;
+- authorization and Flutter producers are valid but false;
+- aggregate is false only because blockers end in `not-yet-r3d2` or `not-yet-r3d3`.
 
-The new Flutter test uses:
+## Migration Scenario Runner
 
-- temporary `LocalDatabase.file`
-- real `LocalPurchaseRepository` to create authoritative local facts and one pending outbox event
-- real `DriftHostedIdentityRepository`
-- real `HostedEnrollmentCoordinator`
-- real `HttpDeviceEnrollmentTransport`
-- loopback `HttpServer`
+The runner proves fresh, upgrade, duplicate and failure-copy lifecycle paths. Failure injection copies migrations to a temporary directory and modifies only copied 006. Canonical migration hashes are captured before copying and after cleanup. The tracked SQL files are not edited.
 
-It proves success/replay distinction, closed failure persistence, outbox/fact preservation across close/reopen and a slow-body absolute-deadline case. It does not yet prove the full R3C Fastify/PostgreSQL-backed gate or every timeout/redirect/ownership variant.
+Catalog/ACL checks separately cover owner, `SECURITY DEFINER`, `STABLE`, fixed search path, qualified ledger reference, no dynamic SQL, `PUBLIC` denial, runtime readiness execute, old probe denial, direct ledger denial, runtime DDL/role denial, migrator authority, hostile shadowing and absent/tampered ledger behavior.
+
+## Resource Ownership
+
+Proof modules own disposable containers, databases, roles and temporary files. Containers are named with the `markei-c10-s03a-r3d1` prefix and are removed in `finally`. Static teardown verifies no R3D1 disposable resources remain.
 
 ## Versions Retained
 
@@ -72,6 +83,9 @@ It proves success/replay distinction, closed failure persistence, outbox/fact pr
 - Recovery snapshot format 1 unchanged.
 - Hosted enrollment contract v1 unchanged.
 - Drift schema v7 unchanged.
-- Existing dependency and lockfile versions unchanged.
+- JWT RS256 retained.
+- Dependency and lockfile versions unchanged.
 
-Provider proof, MCG-03, MCG-04 and Cycle 10 closure were not started.
+## Deferred Boundaries
+
+R3D2 owns authorization barrier/race completion. R3D3 owns the full Fastify/PostgreSQL Flutter hosted gate and final global aggregation. Provider proof, MCG-03, MCG-04 and Cycle 10 closure were not started.

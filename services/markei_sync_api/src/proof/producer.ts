@@ -57,21 +57,29 @@ export const REQUIRED_PROOF_CASES: Record<
   "migration-006-lifecycle-acl": [
     "fresh-001-to-006",
     "upgrade-001-to-005-then-006",
-    "duplicate-runner-ledger",
-    "failure-copy-rollback",
-    "canonical-hashes-unchanged",
+    "duplicate-006-one-ledger-row",
+    "failure-copy-only",
+    "failure-rollback-ledger-function-acl",
+    "canonical-migration-hashes-unchanged",
     "exact-ledger-identity-checksum",
-    "no-argument-function-shape",
-    "owner-security-definer-stable-search-path",
-    "qualified-ledger-no-dynamic-sql",
+    "no-argument-readiness-function",
+    "function-owner-is-migrator",
+    "security-definer",
+    "stable-function",
+    "fixed-safe-search-path",
+    "qualified-ledger-reference",
+    "no-dynamic-sql",
     "public-execute-denied",
-    "runtime-execute-ready-only",
+    "runtime-can-execute-readiness",
+    "no-unintended-runtime-function-capability",
     "runtime-old-probe-denied",
     "runtime-direct-ledger-denied",
+    "runtime-ddl-denied",
+    "runtime-role-admin-denied",
     "migrator-owner-authority",
     "hostile-shadowing-resistant",
-    "absent-or-tampered-ledger-fails-closed",
-    "runtime-ddl-role-admin-denied",
+    "absent-ledger-not-ready",
+    "tampered-ledger-not-ready",
   ],
   "jwks-state-machine": [
     "expired-cache-miss-fetches-once",
@@ -130,22 +138,35 @@ export const REQUIRED_PROOF_CASES: Record<
   ],
 };
 
+export const PRODUCER_FIELDS = [
+  "schemaVersion",
+  "producer",
+  "requiredCases",
+  "resultsByCase",
+  "blockers",
+  "passed",
+] as const;
+
+export const CASE_RESULT_FIELDS = ["passed", "blocker"] as const;
+
 export function makeProducerResult(
   producer: ProofProducerName,
   resultsByCase: Partial<Record<string, boolean | ProofCaseResult>>,
+  defaultBlocker = "missing-case-result",
 ): ProofProducerResult {
-  const requiredCases = REQUIRED_PROOF_CASES[producer];
+  const requiredCases = [...REQUIRED_PROOF_CASES[producer]];
   const normalized: Record<string, ProofCaseResult> = {};
-  const blockers: string[] = [];
   for (const caseId of requiredCases) {
     const value = resultsByCase[caseId];
     const result =
       typeof value === "boolean"
         ? { passed: value }
-        : (value ?? { passed: false, blocker: "missing-case-result" });
-    normalized[caseId] = result;
-    if (!result.passed) blockers.push(`${producer}:${caseId}`);
+        : (value ?? { passed: false, blocker: defaultBlocker });
+    normalized[caseId] = result.passed
+      ? { passed: true }
+      : { passed: false, blocker: safeBlocker(result.blocker) };
   }
+  const blockers = deriveBlockers(normalized);
   return {
     schemaVersion: 1,
     producer,
@@ -154,4 +175,46 @@ export function makeProducerResult(
     blockers,
     passed: blockers.length === 0,
   };
+}
+
+export function deriveBlockers(resultsByCase: Record<string, ProofCaseResult>) {
+  return Object.entries(resultsByCase)
+    .filter(([, result]) => !result.passed)
+    .map(([caseId, result]) => `${caseId}:${safeBlocker(result.blocker)}`)
+    .sort();
+}
+
+export function safeBlocker(value: unknown): string {
+  if (typeof value === "string" && isSafeIdentifier(value)) return value;
+  return "case-failed";
+}
+
+export function isSafeIdentifier(value: string): boolean {
+  return /^[a-z0-9][a-z0-9-]{0,95}$/.test(value);
+}
+
+export function proofProducerNames(): ProofProducerName[] {
+  return Object.keys(REQUIRED_PROOF_CASES) as ProofProducerName[];
+}
+
+export function canonicalProducerJson(record: ProofProducerResult): string {
+  return `${JSON.stringify(
+    {
+      schemaVersion: record.schemaVersion,
+      producer: record.producer,
+      requiredCases: record.requiredCases,
+      resultsByCase: Object.fromEntries(
+        Object.entries(record.resultsByCase).map(([caseId, result]) => [
+          caseId,
+          result.passed
+            ? { passed: true }
+            : { passed: false, blocker: safeBlocker(result.blocker) },
+        ]),
+      ),
+      blockers: record.blockers,
+      passed: record.passed,
+    },
+    null,
+    2,
+  )}\n`;
 }

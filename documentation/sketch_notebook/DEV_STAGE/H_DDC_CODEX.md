@@ -1,8 +1,8 @@
-# H_DDC_CODEX - C10-S03A-R3C Semantic Evidence
+# H_DDC_CODEX - C10-S03A-R3D1 Semantic Evidence
 
 Sequence: FLX-ORD-01 corrective Codex materialization
 Role: Codex semantic/test evidence
-Unit: C10-S03A-R3C decisive local proof completion
+Unit: C10-S03A-R3D1 evidence contract and migration lifecycle completion
 Branch: `intermid-cycle-recovery`
 Authority: `E_DDC_STAGE.md` plus J/D/F
 Evidence boundary: local proof only; provider proof and learner-memory promotion excluded
@@ -10,40 +10,53 @@ Evidence boundary: local proof only; provider proof and learner-memory promotion
 ## Result
 
 ```text
+PROOF_PIPELINE_INTEGRITY=true
+C10-S03A_R3D1_PROVED
 R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3C_PARTIAL
+R3D2_AUTHORIZATION_PENDING
+R3D3_FLUTTER_PENDING
 MCG-02_PROVIDER_PROOF_PENDING
 ```
 
-Exact blocker: the new evidence machinery is fail-closed and reports missing decisive cases rather than promoting partial local proof to readiness.
+## Closed Evidence Vocabulary
 
-## Semantics Materialized
+- `case-name-present != case-measured`: unmeasured cases remain false.
+- `producer-record-created != producer-valid`: records are parsed and structurally checked.
+- `producer-valid != producer-passed`: authorization and Flutter records are valid but false.
+- `synthetic-complete-fixture != real-producer-success`: synthetic all-pass records exist only in aggregator unit tests.
+- `body-stall-timeout != repeated-slow-progress-deadline`: Flutter body-delay evidence is not promoted to the slow-trickle case.
+- `unavailable-result != owned-resource-closure-observed`: no client-closure overclaim is made.
+- `security-definer-checked != function-owner-checked`: migration producer now queries owner separately.
+- `readiness-call-allowed != all-other-runtime-execute-denied`: runtime readiness and unintended function privileges are separate cases.
+- `migration-present != lifecycle-proved`: lifecycle is proved through fresh, upgrade, duplicate and failure-copy scenarios.
+- `R3D1-proved != R3-local-security-proved`: global proof remains false.
 
-- `implemented != validated`: source additions are reported separately from producer pass/fail.
-- `producer-present != producer-complete`: producer records must contain the exact required case set.
-- `process-exit-zero != proof-success`: aggregation inspects producer schema and case truth values.
-- `route-inventory-passed != authorization-race-passed`: hosted-local route/least-privilege successes do not satisfy the missing race matrix.
-- `migration-subset-proved != migration-lifecycle-proved`: ACL and function checks do not satisfy fresh/upgrade/rollback/shadowing/tamper proof.
-- `real HTTP/file-backed test != full Fastify/PostgreSQL Flutter gate`: the focused Flutter proof improves evidence but remains below the full R3C decisive gate.
-- `device-enrolled != duplicate-equivalent`: the real HTTP/file-backed test preserves applied and duplicate replay as distinct outcomes.
-- `service-unavailable/malformed/conflict != enrolling`: failure outcomes are persisted over transient `enrolling`.
+## Named Producer-Integrity Tests
 
-## Named Semantic Tests
+- Aggregator accepts a complete producer set.
+- Aggregator rejects missing and duplicate producers.
+- Aggregator rejects malformed records and unknown fields.
+- Aggregator rejects incomplete, duplicate and unknown case sets.
+- Aggregator rejects unknown case result fields and stale blockers.
+- Aggregator rejects inconsistent `passed` and `blockers`.
+- Aggregator treats skipped, partial and unavailable as false evidence.
 
-- Proof aggregator accepts a complete producer set.
-- Proof aggregator rejects missing, duplicate, malformed and false inputs.
-- Proof aggregator rejects unknown or incomplete case sets.
-- Real HTTP transport preserves file-backed enrollment and local outbox.
-- Real HTTP failures persist closed non-success outcomes without facts loss.
-- Absolute deadline closes an owned request against slow body trickle.
+## Migration Meanings Materialized
+
+- Fresh means pristine database receives 001-006.
+- Upgrade means 001-005 is usable before 006 is applied.
+- Duplicate means applying 006 again preserves one correct ledger row.
+- Failure rollback means copied failing 006 leaves no 006 ledger/function state.
+- Owner means `proowner` resolves to the migrator role.
+- Runtime capability means readiness execute is allowed while old probe, direct ledger, DDL, role admin and unintended function execute are denied.
+- Shadow resistance means hostile temp/public names do not change the qualified readiness result.
+- Absent/tampered ledger states cannot return ready.
 
 ## Privacy And Local-First Evidence
 
-- The Flutter proof passes the bearer credential in memory only; it is asserted through the server observation and not persisted in `HostedIdentityState`.
-- File-backed local purchases and pending outbox rows remain present after hosted enrollment success and closed failure paths.
-- Temporary HTTP servers and Drift files are lab/test-only.
-- No token, claim, JWK body, provider URL, connection string, generated credential or fact payload was intentionally logged by new code.
-- Ordinary local registration, local-first facts, pending outbox behavior and UI were not changed.
+Producer records contain safe booleans and blocker identifiers only. They do not contain tokens, claims, JWK bodies, passwords, provider configuration, connection strings, source payloads or private paths.
+
+Flutter remains a partial local file-backed evidence subset. Ordinary local registration, local facts, pending outbox behavior, Drift v7 and UI were not changed.
 
 ## Unsupported Wording Absent
 

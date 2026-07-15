@@ -187,12 +187,16 @@ try {
   if (denied.status !== 403) throw new Error("revoked Device was not denied");
   await app.close();
   await proveLeastPrivilege(pool);
-  const authorizationProducer = makeProducerResult("authorization-race", {
-    "owner-target-revoke": true,
-    "foreign-target-denial": true,
-    "cross-account-target-denial": true,
-    "conflicting-enrollment-request-hash": true,
-  });
+  const authorizationProducer = makeProducerResult(
+    "authorization-race",
+    {
+      "owner-target-revoke": true,
+      "foreign-target-denial": true,
+      "cross-account-target-denial": true,
+      "conflicting-enrollment-request-hash": true,
+    },
+    "not-yet-r3d2",
+  );
   process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
   process.stdout.write("ROUTE_AUTHORIZATION_INVENTORY=true\n");
   process.stdout.write("LEAST_PRIVILEGE_HTTP=true\n");

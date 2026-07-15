@@ -18,59 +18,147 @@ test("proof aggregator accepts a complete producer set", () => {
   });
 });
 
-test("proof aggregator rejects missing, duplicate, malformed and false inputs", () => {
-  const complete = allProducerNames().map((producer) =>
-    makeProducerResult(producer, allPassed(producer)),
+test("proof aggregator rejects missing and duplicate producers", () => {
+  const complete = completeRecords();
+
+  assertBlocker(aggregateProofResults(complete.slice(1)), "missing-producer:");
+  assertBlocker(
+    aggregateProofResults([complete[0], ...complete]),
+    "duplicate-producer:",
   );
-  const missing = aggregateProofResults(complete.slice(1));
-  assert.equal(missing.passed, false);
-  assert(missing.blockers.some((item) => item.startsWith("missing-producer:")));
+});
 
-  const duplicate = aggregateProofResults([complete[0], ...complete]);
-  assert.equal(duplicate.passed, false);
-  assert(
-    duplicate.blockers.some((item) => item.startsWith("duplicate-producer:")),
+test("proof aggregator rejects malformed records and unknown fields", () => {
+  const complete = completeRecords();
+  assertBlocker(
+    aggregateProofResults([{}, ...complete.slice(1)]),
+    "unknown-or-missing-record-field",
   );
+  assertBlocker(
+    aggregateProofResults([
+      { ...complete[0], extra: true },
+      ...complete.slice(1),
+    ]),
+    "unknown-or-missing-record-field",
+  );
+});
 
-  const malformed = aggregateProofResults([{}, ...complete.slice(1)]);
-  assert.equal(malformed.passed, false);
-  assert(malformed.blockers.includes("malformed-record"));
+test("proof aggregator rejects incomplete, duplicate and unknown case sets", () => {
+  const complete = completeRecords();
+  const route = complete.find(
+    (record) => record.producer === "route-inventory",
+  )!;
+  assertBlocker(
+    aggregateProofResults([
+      { ...route, requiredCases: ["valid-current-inventory"] },
+      ...complete.filter((record) => record.producer !== "route-inventory"),
+    ]),
+    "case-set-mismatch:route-inventory",
+  );
+  assertBlocker(
+    aggregateProofResults([
+      {
+        ...route,
+        resultsByCase: {
+          ...route.resultsByCase,
+          "unexpected-case": { passed: true },
+        },
+      },
+      ...complete.filter((record) => record.producer !== "route-inventory"),
+    ]),
+    "case-results-mismatch:route-inventory",
+  );
+});
 
+test("proof aggregator rejects unknown case result fields and stale blockers", () => {
+  const complete = completeRecords();
+  const record = complete[0];
+  const caseId = record.requiredCases[0];
+  assertBlocker(
+    aggregateProofResults([
+      {
+        ...record,
+        resultsByCase: {
+          ...record.resultsByCase,
+          [caseId]: { passed: true, blocker: "stale" },
+        },
+      },
+      ...complete.slice(1),
+    ]),
+    "stale-case-blocker:",
+  );
+  assertBlocker(
+    aggregateProofResults([
+      {
+        ...record,
+        resultsByCase: {
+          ...record.resultsByCase,
+          [caseId]: { passed: true, extra: true },
+        },
+      },
+      ...complete.slice(1),
+    ]),
+    "malformed-case:",
+  );
+});
+
+test("proof aggregator rejects inconsistent passed and blocker fields", () => {
+  const complete = completeRecords();
   const falseRecord = makeProducerResult("authorization-race", {
     ...allPassed("authorization-race"),
     "denied-no-state-advance": {
       passed: false,
-      blocker: "authorization-race:denied-no-state-advance",
+      blocker: "not-yet-r3d2",
     },
   });
-  const falseAggregate = aggregateProofResults([
-    falseRecord,
-    ...complete.slice(1),
-  ]);
-  assert.equal(falseAggregate.passed, false);
-  assert(
-    falseAggregate.blockers.includes(
-      "authorization-race:denied-no-state-advance",
-    ),
+  assertBlocker(
+    aggregateProofResults([falseRecord, ...complete.slice(1)]),
+    "denied-no-state-advance:not-yet-r3d2",
+  );
+  assertBlocker(
+    aggregateProofResults([
+      { ...falseRecord, passed: true },
+      ...complete.slice(1),
+    ]),
+    "passed-mismatch:authorization-race",
+  );
+  assertBlocker(
+    aggregateProofResults([
+      { ...complete[0], passed: false },
+      ...complete.slice(1),
+    ]),
+    "passed-mismatch:",
+  );
+  assertBlocker(
+    aggregateProofResults([
+      { ...falseRecord, blockers: [] },
+      ...complete.slice(1),
+    ]),
+    "blocker-mismatch:authorization-race",
   );
 });
 
-test("proof aggregator rejects unknown or incomplete case sets", () => {
-  const complete = allProducerNames().map((producer) =>
+test("proof aggregator treats skipped partial and unavailable as false evidence", () => {
+  const complete = completeRecords();
+  for (const blocker of ["skipped", "partial", "unavailable"]) {
+    const record = makeProducerResult("static-regression", {
+      ...allPassed("static-regression"),
+      "server-tests": { passed: false, blocker },
+    });
+    const result = aggregateProofResults([
+      record,
+      ...complete.filter((item) => item.producer !== "static-regression"),
+    ]);
+    assert.equal(result.passed, false);
+    assert(result.blockers.includes(`server-tests:${blocker}`));
+  }
+});
+
+function completeRecords() {
+  return allProducerNames().map((producer) =>
     makeProducerResult(producer, allPassed(producer)),
   );
-  const routeRecord = {
-    ...complete.find((record) => record.producer === "route-inventory")!,
-    requiredCases: ["valid-current-inventory"],
-  };
-  const result = aggregateProofResults([
-    routeRecord,
-    ...complete.filter((record) => record.producer !== "route-inventory"),
-  ]);
-
-  assert.equal(result.passed, false);
-  assert(result.blockers.includes("case-set-mismatch:route-inventory"));
-});
+}
 
 function allProducerNames(): ProofProducerName[] {
   return Object.keys(REQUIRED_PROOF_CASES) as ProofProducerName[];
@@ -80,4 +168,12 @@ function allPassed(producer: ProofProducerName) {
   return Object.fromEntries(
     REQUIRED_PROOF_CASES[producer].map((caseId) => [caseId, true]),
   );
+}
+
+function assertBlocker(
+  result: ReturnType<typeof aggregateProofResults>,
+  expected: string,
+) {
+  assert.equal(result.passed, false);
+  assert(result.blockers.some((item) => item.startsWith(expected)));
 }
