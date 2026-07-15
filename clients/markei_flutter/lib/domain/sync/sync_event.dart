@@ -12,8 +12,10 @@ enum SyncStatusCode {
   uploading,
   serverAccepted,
   waitingPeer,
+  downloadReceived,
   downloadedApplied,
   duplicateIgnored,
+  acknowledged,
   conflict,
   authRequired,
   deviceRevoked,
@@ -32,6 +34,7 @@ final class SyncEvent {
     required this.payloadVersion,
     required this.occurrenceTime,
     required this.purchase,
+    required this.productSnapshots,
   });
 
   final EventId id;
@@ -42,6 +45,7 @@ final class SyncEvent {
   final int payloadVersion;
   final DateTime occurrenceTime;
   final Purchase purchase;
+  final List<Map<String, Object?>> productSnapshots;
 
   Map<String, Object?> contentJson() => {
     'eventId': id.value,
@@ -51,7 +55,10 @@ final class SyncEvent {
     'eventType': eventType,
     'payloadVersion': payloadVersion,
     'occurrenceTime': occurrenceTime.toUtc().toIso8601String(),
-    'payload': {'purchase': purchase.toJson()},
+    'payload': {
+      'purchase': purchase.toJson(),
+      'productSnapshots': productSnapshots,
+    },
   };
 
   String get contentHash => canonicalUtf8Sha256(contentJson());

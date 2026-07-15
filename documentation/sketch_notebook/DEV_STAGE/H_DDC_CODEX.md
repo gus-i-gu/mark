@@ -1,45 +1,38 @@
-# H_DDC_CODEX — C10-S01 Didactic Evidence
+# H_DDC_CODEX — C10-S01B Didactic Evidence
 
 Sequence: FLX-ORD-01
 Role: Codex materialization evidence
-Source stages: `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
+Source stages: `J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
 Learner maturity: unchanged
 
 ## Vocabulary Materialized
 
-Implemented typed vocabulary in:
+Implemented status meanings include `saved-local`, `waiting-upload`, `uploading`, `server-accepted`, `download-received`, `downloaded-applied`, `duplicate-ignored`, `acknowledged`, `conflict`, `auth-required`, `device-revoked`, `cursor-expired`, `protocol-upgrade-required`, and `unknown-outcome`.
 
-- `clients/markei_flutter/lib/domain/sync/sync_event.dart`
-- `clients/markei_flutter/lib/application/sync/sync_ports.dart`
-- `services/markei_sync_api/src/domain/protocol.ts`
-- `contracts/shared_beta/v3/protocol_failure.schema.json`
+Outcome meanings remain `applied`, `duplicate-equivalent`, `not-applied`, and `unknown`. Server acceptance is treated only as server acceptance; peer application is proven separately by B download/apply and reopened fact comparison.
 
-Stable status vocabulary represented: `saved-local`, `waiting-upload`, `uploading`, `server-accepted`, `waiting-peer`, `downloaded-applied`, `duplicate-ignored`, `conflict`, `auth-required`, `device-revoked`, `cursor-expired`, `protocol-upgrade-required`, `unknown-outcome`.
+## Named Tests
 
-Failure outcome vocabulary represented: `applied`, `duplicate-equivalent`, `not-applied`, `unknown`.
+`local registration works when transport is absent`: local Purchase registration remains usable without API.
 
-## Tests Proving State Distinctions
+`unknown outcome retries same submission`: retry uses the same SubmissionId/request hash after an unknown upload.
 
-- `local registration works when transport is absent`: local save/outbox does not require API.
-- `unknown outcome retries same submission`: unknown upload preserves retry identity.
-- `duplicate event is applied once and can be acknowledged`: duplicate apply is not a second effect.
-- `acknowledgement waits until local apply committed`: acknowledgement follows local cursor evidence.
-- API tests prove fixture auth is direct-test injection only and normal verifier refuses runtime use.
+`duplicate event is applied once and can be acknowledged`: duplicate remote replay has no second Purchase effect and acknowledgement follows committed cursor.
 
-## Privacy And Logging Evidence
+`two isolated Drift files converge through local replay harness`: local fact application uses complete v3 payloads, not inbox-only replay.
 
-No telemetry, analytics dependency, payload logging, Neon secret, token, password value or connection string was added. The scan found only variable names and ignored secret paths. Fixture data uses synthetic Account/Device/Purchase labels.
+`CONVERGED=true for HTTP/PostgreSQL backed local synchronization`: real loopback HTTP, Fastify child processes and disposable PostgreSQL prove the vertical slice.
 
-## Diagnostic Copy
+TypeScript tests retain normal-runtime fixture refusal and direct-test-only fixture auth construction.
 
-No polished UI copy, dashboard, pairing page, navigation, settings redesign or Cycle 11 surface was added. Minimal diagnostics are limited to test names, fixture names, protocol codes and lab README text.
+## Diagnostic Evidence
 
-## Misleading Terms
+Minimal diagnostic output is limited to test names and the harness line `CONVERGED=true` when all assertions pass. No UI status page, dashboard, pairing screen, Device-management page, navigation change, native sharing, Analytics change, or Cycle 11 visual/accessibility work was added.
 
-The implementation avoids claiming that server acceptance means peer application, backup or export. Reports describe the API/Postgres slice as disposable local proof only.
+## Privacy And Logging
 
-## Skipped Semantics
+No Purchase/Product/Store/Person/Payment payload logging was added. The HTTP transport does not log authorization headers, tokens, credential-bearing URLs or payloads. Lab credentials are generated during tests into ignored paths or in-memory environment variables. Secret scan found no committed credential literals.
 
-Production authentication, live provider behavior, retention, rebootstrap, account deletion and learner maturity promotion were not implemented.
+## Unchanged Surfaces
 
-WAITING_FOR_MCG_01
+Home, Lists, Purchase, History, Catalogue and Settings were not redesigned or polished. Learner maturity was not changed. Synchronization is not described as backup, export, restore, provider recovery or indefinite history.

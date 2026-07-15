@@ -75,9 +75,11 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
       );
       final purchaseId = PurchaseId(_uuid.v4());
       final itemModels = <domain_purchase.PurchaseItem>[];
+      final productSnapshots = <Map<String, Object?>>[];
 
       for (final draft in command.items) {
         final product = await _resolveProduct(command.accountId, draft, now);
+        productSnapshots.add(product.toJson());
         final packageCount = product.mode == domain.ProductMode.bulk
             ? null
             : draft.packageCount;
@@ -157,6 +159,7 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
         payloadVersion: 3,
         occurrenceTime: command.occurrenceTime,
         purchase: purchase,
+        productSnapshots: productSnapshots,
       );
       final payload = canonicalJson(event.toJson());
       final contentHash = event.contentHash;

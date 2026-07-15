@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/application/register_purchase.dart';
@@ -13,6 +14,7 @@ import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_device_identity_repository.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
 import 'package:markei/infrastructure/local/sync/local_sync_repositories.dart';
+import 'package:markei/infrastructure/local/sync/remote_purchase_event_applier.dart';
 
 void main() {
   test(
@@ -48,6 +50,8 @@ void main() {
       expect(retry!.id, first.id);
 
       final event = await a.select(a.syncEvents).getSingle();
+      final eventPayload =
+          jsonDecode(event.payloadJson) as Map<String, Object?>;
       await b
           .into(b.localAccounts)
           .insertOnConflictUpdate(
@@ -59,24 +63,16 @@ void main() {
           );
       final applier = DriftRemoteEventApplier(b);
       final page = DownloadPage(
-        nextCursor: '1',
-        events: [
-          DownloadedEvent(
-            event: {
-              'accountId': event.accountId,
-              'contentHash': event.contentHash,
-              'eventId': event.id,
-            },
-            serverCursor: '1',
-          ),
-        ],
+        nextCursor: 'c10b:1',
+        events: [DownloadedEvent(event: eventPayload, serverCursor: 'c10b:1')],
       );
       await applier.applyPage(page);
       await applier.applyPage(page);
 
       expect(await a.select(a.purchases).get(), hasLength(1));
+      expect(await b.select(b.purchases).get(), hasLength(1));
       expect(await b.select(b.syncInbox).get(), hasLength(1));
-      expect(await applier.greatestContiguousAppliedCursor(), '1');
+      expect(await applier.greatestContiguousAppliedCursor(), 'c10b:1');
 
       await a.close();
       await b.close();
@@ -85,7 +81,7 @@ void main() {
       addTearDown(reopenedA.close);
       addTearDown(reopenedB.close);
       expect(await reopenedA.select(reopenedA.purchases).get(), hasLength(1));
-      expect(await reopenedB.select(reopenedB.syncInbox).get(), hasLength(1));
+      expect(await reopenedB.select(reopenedB.purchases).get(), hasLength(1));
     },
   );
 }

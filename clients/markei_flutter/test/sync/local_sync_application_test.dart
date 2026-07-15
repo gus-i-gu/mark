@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/application/register_purchase.dart';
 import 'package:markei/application/sync/sync_ports.dart';
@@ -12,6 +14,7 @@ import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_device_identity_repository.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
 import 'package:markei/infrastructure/local/sync/local_sync_repositories.dart';
+import 'package:markei/infrastructure/local/sync/remote_purchase_event_applier.dart';
 
 void main() {
   test('local registration works when transport is absent', () async {
@@ -56,31 +59,32 @@ void main() {
   });
 
   test('duplicate event is applied once and can be acknowledged', () async {
-    final db = LocalDatabase.memory();
-    addTearDown(db.close);
-    await db
-        .into(db.localAccounts)
-        .insert(
-          LocalAccountsCompanion.insert(
-            id: 'local-account',
-            defaultCurrencyCode: 'BRL',
-            createdAt: DateTime.utc(2026, 7, 14),
-          ),
-        );
-    final applier = DriftRemoteEventApplier(db);
+    final source = LocalDatabase.memory();
+    final target = LocalDatabase.memory();
+    addTearDown(source.close);
+    addTearDown(target.close);
+    final device = await LocalDeviceIdentityRepository(
+      source,
+    ).loadOrCreateDeviceId(const AccountId('local-account'));
+    await LocalPurchaseRepository(
+      source,
+    ).registerPurchase(_command(device, 'ARROZ-003'));
+    final event = await source.select(source.syncEvents).getSingle();
+    final eventPayload = jsonDecode(event.payloadJson) as Map<String, Object?>;
+    final applier = DriftRemoteEventApplier(target);
     final page = DownloadPage(
-      nextCursor: '1',
-      events: [
-        DownloadedEvent(event: _event('e1'), serverCursor: '1'),
-        DownloadedEvent(event: _event('e1'), serverCursor: '1'),
-      ],
+      nextCursor: 'c10b:1',
+      events: [DownloadedEvent(event: eventPayload, serverCursor: 'c10b:1')],
     );
 
     final result = await applier.applyPage(page);
+    final replay = await applier.applyPage(page);
 
     expect(result.code, SyncStatusCode.downloadedApplied);
-    expect(await db.select(db.syncInbox).get(), hasLength(1));
-    expect(await applier.greatestContiguousAppliedCursor(), '1');
+    expect(replay.code, SyncStatusCode.duplicateIgnored);
+    expect(await target.select(target.purchases).get(), hasLength(1));
+    expect(await target.select(target.syncInbox).get(), hasLength(1));
+    expect(await applier.greatestContiguousAppliedCursor(), 'c10b:1');
   });
 
   test('acknowledgement waits until local apply committed', () async {
@@ -95,12 +99,6 @@ void main() {
     expect(transport.acknowledged, '2');
   });
 }
-
-Map<String, Object?> _event(String eventId) => {
-  'accountId': 'local-account',
-  'contentHash': 'a' * 64,
-  'eventId': eventId,
-};
 
 RegisterPurchaseCommand _command(DeviceId deviceId, String productCode) {
   return RegisterPurchaseCommand(

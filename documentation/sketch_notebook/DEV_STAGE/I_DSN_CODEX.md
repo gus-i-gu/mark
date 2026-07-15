@@ -1,4 +1,4 @@
-# I_DSN_CODEX — C10-S01 Design Evidence
+# I_DSN_CODEX — C10-S01B Design Evidence
 
 Sequence: FLX-ORD-01
 Role: Codex materialization evidence
@@ -6,94 +6,40 @@ Source stages: `J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STA
 
 ## Dependency Direction
 
-Implemented direction:
+Flutter domain/application owns sync ports and typed results. Drift implements local outbox and remote apply. HTTP is isolated in `HttpSyncTransport`. The TypeScript API owns Fastify routes and `pg` transactions. PostgreSQL remains disposable loopback lab infrastructure. Flutter never connects directly to PostgreSQL, and normal app composition remains sync-disabled.
 
-```text
-Flutter domain/application sync ports
-← Drift local adapters
-← optional HTTP/API transport boundary
-TypeScript Fastify API
-→ pg transaction adapter
-→ disposable PostgreSQL 18 lab
-```
+## Protocol, Hash And Cursor
 
-Flutter does not connect to PostgreSQL. Domain/application sync code does not import Flutter widgets, Fastify, `pg`, Docker or Neon.
+Protocol event: `purchase.registered`, payload version `3`.
 
-## Protocol And Hashing
+Payload now contains closed immutable Store, Product snapshots, Purchase, Items, quantity and Money facts; non-null Person/Payment IDs are rejected by the local remote applier until snapshots exist. The v3 schema recursively closes nested objects with `additionalProperties: false`.
 
-Protocol version: `purchase.registered` payload v3.
+Hashing rule: canonical UTF-8 JSON with recursively sorted object keys, SHA-256 lowercase hex over event content excluding `contentHash`. Dart and TypeScript parity is proven by the shared fixture hash `9c658e0666f9d8acf4f5bb599b2b351e96737d2828cc56f3ada43eda61025453`.
 
-Canonical JSON rule: recursively sort object keys, encode UTF-8 JSON, hash SHA-256 lowercase hex over event content excluding `contentHash`. Dart and TypeScript parity is tested against `contracts/shared_beta/v3/fixtures/purchase_registered.valid.json`; final hash is `2c65e7beafe73f1df5b6d48cbeaeab945efb2847108c2bece82e4a7db41e1906`.
+Cursor rule: origin is `c10b:0`; emitted cursors are versioned opaque tokens `c10b:<integer>`. Clients store/echo tokens and local application decodes only to verify contiguous page order.
 
-## Local Schema
+## Local Application
 
-Local Drift schema: v5.
+`DriftRemoteEventApplier` validates Account, type/version, content hash and cursor continuity before mutation. `RemotePurchaseFactWriter` inserts or reuses equivalent Store/Product/Purchase/Item facts in one Drift transaction with inbox insertion and cursor advancement. Duplicate inbox identities with same hash are duplicate-equivalent; content conflicts stop without cursor advancement. No outbound SyncEvent/PendingEvent is created for remote apply.
 
-Migration ID: `v4-to-v5-sync-submissions-inbox`.
+`greatestContiguousAppliedCursor` now reads committed `sync_state.account_cursor`, not maximum inbox cursor.
 
-Added logical units:
+## Server And Migration
 
-- `installation_metadata`
-- `sync_submissions`
-- `sync_submission_events`
-- `sync_inbox`
+`002_coordination_hardening.sql` adds Account/Device composite FKs, indexes, migration ledger entry, revoked `PUBLIC` privileges, least-privilege runtime grants and RLS policies. `001_init.sql` was unchanged.
 
-Generated output: `clients/markei_flutter/lib/infrastructure/local/local_database.g.dart`.
+Upload, download and acknowledgement routes authenticate every call, retain explicit Account predicates, set transaction-local Account/Device context and run in bounded serializable retry for SQLSTATE `40001`/`40P01` only, at most three attempts.
 
-Device ownership now uses singleton installation metadata. Multiple usable UUID Devices without metadata stop with typed migration/bootstrap failure; earliest-device silent selection was removed.
+Upload enforces exact next DeviceSequence, SubmissionId/request-hash replay, EventId/content-hash duplicate equivalence and Account-scoped event lookup. Download returns all Account events ordered by server cursor, including the requesting Device. Acknowledgement rejects cursors beyond the Account high-water mark and persists monotonic Device cursor without deletion semantics.
 
-## Server Schema And Roles
+## Fixture Auth Containment
 
-Server migration: `services/markei_sync_api/migrations/001_init.sql`.
+Normal `main.ts` uses `RefusingAuthVerifier`. Fixture claims are only constructed by tests or `src/lab.ts`; the lab entrypoint requires explicit Account/Device environment claims and refuses non-loopback binding. No production authentication or Device enrollment was implemented.
 
-Tables:
+## System Topology
 
-- `accounts`
-- `devices`
-- `account_cursor_state`
-- `submissions`
-- `sync_events`
-- `device_acknowledgements`
+The decisive harness creates two isolated Drift files, starts disposable loopback PostgreSQL 18, applies migrations and seed data through migrator authority, starts separate loopback Fastify child processes with synthetic fixture claims for Device A and B, uploads through Flutter HTTP, simulates dropped response after server commit, retries same SubmissionId, downloads through Flutter HTTP, applies complete remote facts, acknowledges, reopens both Drift files and compares stable Purchase/Item facts.
 
-Role direction:
+## Deviations And Deferred Work
 
-- `markei_migrator` owns local disposable migration execution through the container.
-- `markei_runtime` receives DML grants only.
-
-Evidence:
-
-- runtime DDL probe failed with `permission denied for schema public`;
-- cross-Account `sync_events` insert failed under RLS.
-
-## Idempotency And Transactions
-
-Local:
-
-- bounded pending leasing;
-- durable Submission attempt state;
-- unknown outcome reuses same SubmissionId;
-- inbox duplicate same EventId/hash is equivalent;
-- cursor acknowledgement waits for committed inbox cursor.
-
-Server:
-
-- upload path checks SubmissionId/request hash, EventId/content hash, verified Account/Device, and exact DeviceSequence in a serializable transaction helper.
-- same SubmissionId/request hash returns stored response.
-- same identity with different hash returns typed terminal failure.
-
-## Auth Boundary
-
-`AuthVerifier` is an API port. `FixtureAuthVerifier` exists for direct test construction only. The normal runtime entrypoint uses `RefusingAuthVerifier` and requires a database URL; no production auth adapter or enrollment endpoint was implemented.
-
-## Architectural Deviations And Deferred Decisions
-
-Implemented proof is partial relative to the full D/E/F floor:
-
-- complete remote Purchase aggregate application from downloaded pages is not finished;
-- API integration tests do not yet exercise full upload/download/ack against Postgres;
-- serialization retry exhaustion and crash-matrix tests are not complete;
-- `tool/sync_lab.dart` cannot be run with plain `dart run` because this Flutter package imports `path_provider`/`dart:ui`; executable harness evidence lives in Flutter tests.
-
-This is not Neon, production authentication, deployment, retention, backup, UI/UX acceptance or release acceptance.
-
-WAITING_FOR_MCG_01
+The implemented proof covers the decisive vertical slice and focused fault locks. It does not expand every requested malformed/oversized/cross-Account/deadlock failure into an exhaustive standalone matrix. It also does not add Person/Payment reference snapshots beyond rejecting bare non-null IDs. Neon, deployment, production authentication and later MCG gates were not started.

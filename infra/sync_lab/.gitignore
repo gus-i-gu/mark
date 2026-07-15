@@ -1,0 +1,5 @@
+secrets/
+logs/
+volumes/
+*.sqlite
+*.db

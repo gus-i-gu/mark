@@ -1,111 +1,72 @@
-# G_OPS_CODEX — C10-S01 Codex Operational Evidence
+# G_OPS_CODEX — C10-S01B Operational Evidence
 
 Sequence: FLX-ORD-01
-Role: Codex materialization
-Unit: C10-S01 Disposable Local Synchronization Proof
+Role: Codex materialization evidence
+Unit: C10-S01B Local Synchronization Convergence Completion
 Branch: `intermid-cycle-recovery`
-Baseline HEAD: `0ee329a0f2eb8bb1ade304c754bf00d3e4854d3a`
-Source stages: `[M]_STAGE/J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
-Terminal status: `WAITING_FOR_MCG_01`
+Baseline HEAD: `cb890dcdaf86cefa875e6984f20a71e20a912f60`
+Source stages: `J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
+Terminal status: `C10-S01B_LOCAL_CONVERGENCE_PROVED`
 
-## Changed Path Inventory
-
-Created:
-
-- `.gitignore`
-- `contracts/shared_beta/v3/**`
-- `clients/markei_flutter/lib/domain/sync/canonical_json.dart`
-- `clients/markei_flutter/lib/application/sync/**`
-- `clients/markei_flutter/lib/infrastructure/local/sync/local_sync_repositories.dart`
-- `clients/markei_flutter/test/sync/**`
-- `clients/markei_flutter/tool/sync_lab.dart`
-- `services/markei_sync_api/**`
-- `infra/sync_lab/**`
+## Changed Paths
 
 Modified:
+`clients/markei_flutter/lib/domain/sync/sync_event.dart`,
+`clients/markei_flutter/lib/infrastructure/local/local_purchase_repository.dart`,
+`clients/markei_flutter/lib/infrastructure/local/sync/local_sync_repositories.dart`,
+`clients/markei_flutter/pubspec.yaml`,
+`clients/markei_flutter/pubspec.lock`,
+`clients/markei_flutter/test/sync/local_sync_application_test.dart`,
+`clients/markei_flutter/test/sync/two_device_system_harness_test.dart`,
+`clients/markei_flutter/tool/sync_lab.dart`,
+`contracts/shared_beta/v3/fixtures/purchase_registered.valid.json`,
+`contracts/shared_beta/v3/purchase_registered.schema.json`,
+`services/markei_sync_api/package.json`,
+`services/markei_sync_api/src/application/sync_service.ts`,
+`services/markei_sync_api/src/http/app.ts`,
+`services/markei_sync_api/src/postgres/database.ts`.
 
-- `clients/markei_flutter/lib/domain/sync/sync_event.dart`
-- `clients/markei_flutter/lib/infrastructure/local/local_database.dart`
-- `clients/markei_flutter/lib/infrastructure/local/local_database.g.dart`
-- `clients/markei_flutter/lib/infrastructure/local/local_device_identity_repository.dart`
-- `clients/markei_flutter/lib/infrastructure/local/local_purchase_repository.dart`
-- `clients/markei_flutter/test/infrastructure/local_database_migration_test.dart`
-- `clients/markei_flutter/test/infrastructure/local_device_identity_repository_test.dart`
-- `clients/markei_flutter/test/local_purchase_repository_test.dart`
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
+Created:
+`clients/markei_flutter/lib/infrastructure/local/sync/remote_purchase_event_applier.dart`,
+`clients/markei_flutter/lib/infrastructure/local/sync/remote_purchase_fact_writer.dart`,
+`clients/markei_flutter/lib/infrastructure/remote/http_sync_transport.dart`,
+`clients/markei_flutter/test/sync/real_convergence_harness_test.dart`,
+`infra/sync_lab/.gitignore`,
+`services/markei_sync_api/migrations/002_coordination_hardening.sql`,
+`services/markei_sync_api/src/domain/cursor.ts`,
+`services/markei_sync_api/src/lab.ts`.
 
-Pre-existing untracked `.vscode/settings.json` was preserved and not staged.
+Pre-existing untracked `.vscode/settings.json` and `documentation/NEON_DOC.md` were preserved and not staged.
 
-## Dependency Versions
+## Versions
 
-- Dart `3.12.2`; Flutter `3.44.6`.
-- Node `v24.18.0`; npm `11.16.0`.
-- Docker Desktop `4.82.0`, engine `29.6.1`; PostgreSQL image `postgres:18`.
-- API dependencies pinned in `services/markei_sync_api/package-lock.json`: Fastify `5.10.0`, `pg` `8.16.3`, TypeScript `5.9.3`.
+Dart `3.12.2`; Flutter `3.44.6`; Node `v24.18.0`; npm `11.16.0`; Docker Desktop engine `29.6.1`; PostgreSQL image `postgres:18`; Dart HTTP dependency `http 1.6.0`; Fastify `5.10.0`; `pg 8.16.3`; TypeScript `5.9.3`.
 
-## Commands And Results
+## Validation
 
-- `git fetch origin intermid-cycle-recovery`: pass.
-- `git pull --ff-only origin intermid-cycle-recovery`: pass, already up to date.
-- `git merge-base --is-ancestor 0ee329a0f2eb8bb1ade304c754bf00d3e4854d3a HEAD`: pass.
-- Baseline `flutter analyze`: pass.
-- Baseline `flutter test`: pass.
-- Baseline `python -m unittest discover tests`: pass, 5 tests.
-- `dart run build_runner build --delete-conflicting-outputs`: pass; option reported removed/ignored by current build_runner; generated Drift output.
-- `dart format --output=none --set-exit-if-changed lib test tool`: pass after `tool/` existed; initial baseline reported missing `tool`.
-- `flutter analyze`: pass.
-- `flutter test`: pass, 52 tests. Drift emitted debug reopen warnings in the two-file harness; assertions passed.
-- `npm install`, then `npm install fastify@5.10.0`: pass; final `npm audit --omit=dev`: 0 vulnerabilities.
-- `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`: pass.
-- `docker compose -f infra/sync_lab/compose.yaml up -d --wait`: pass after correcting PostgreSQL 18 mount to `/var/lib/postgresql`.
-- SQL migration via container `psql`: pass.
-- Runtime DDL denial probe: pass by expected failure, `permission denied for schema public`.
-- RLS cross-Account insert probe: pass by expected failure, row violates RLS policy.
-- `flutter build windows --release`: pass, built `build/windows/x64/runner/Release/markei.exe`.
-- `flutter build apk --debug`: pass, built `build/app/outputs/flutter-apk/app-debug.apk`.
-- `git diff --check`: pass; Git reported CRLF conversion warnings only.
-- Secret scan over changed/untracked implementation files: no credential values found; only variable names, comments and ignored secret paths matched.
-- `docker compose -f infra/sync_lab/compose.yaml down --volumes`: pass; disposable container and volume removed.
+Passed:
+`flutter pub get`; `dart run build_runner build --delete-conflicting-outputs`; `dart format --set-exit-if-changed .`; `flutter analyze`; `flutter test` (`52 passed, 1 lab-gated skipped`); `MARKEI_RUN_SYNC_LAB=1 flutter test test/sync/real_convergence_harness_test.dart` (`CONVERGED=true`); `npm run format:check`; `npm run lint`; `npm run typecheck`; `npm test` (`3 passed`); `npm audit --omit=dev` (`0 vulnerabilities`); `python -m unittest discover tests` (`5 passed`); `flutter build windows`; `flutter build apk --debug`; `git diff --check`; credential-pattern scan; `docker compose ps` after harness (`no running services`).
 
-## Local Two-Device Counts
+Drift regeneration wrote no schema-authority change. Windows build produced `build\windows\x64\runner\Release\markei.exe`; Android debug build produced `build\app\outputs\flutter-apk\app-debug.apk`.
 
-Executable Flutter harness: `test/sync/two_device_system_harness_test.dart`.
+## Migration And Isolation
 
-- local01 Purchases after offline registration: 1.
-- local01 Submission retry after unknown outcome: same `SubmissionId`.
-- local02 applied inbox records after replaying same Event page twice: 1.
-- local02 greatest contiguous applied cursor: `1`.
-- Reopen check: local01 Purchases 1, local02 inbox 1.
+`001_init.sql` was not edited. New forward-only `002_coordination_hardening.sql` adds composite Account/Device ownership FKs, download/replay/ack indexes, migration ledger row, revoked `PUBLIC` schema privileges, runtime grants, and RLS on Account-bearing coordination tables.
 
-This harness validates the local Drift side. Full cross-process API/PostgreSQL upload/download convergence remains partial in this materialization.
+The real harness applied 001 then 002 on fresh disposable PostgreSQL 18, generated ignored lab credentials, seeded one synthetic Account and Devices A/B through the migrator role, then connected API child processes as `markei_runtime`.
 
-## Fault-Injection Results
+## Convergence Counts
 
-Covered by automated tests/probes:
+Harness topology: isolated Drift A/B files, loopback Fastify child process for A, disposable PostgreSQL 18, loopback Fastify child process for B, Flutter HTTP transport on both sides.
 
-- API unavailable while local registration continues.
-- Unknown outcome retries same SubmissionId.
-- Duplicate inbox event is ignored.
-- Acknowledgement waits for committed local cursor.
-- v4→v5 migration, fresh v5, reopen, ambiguous-device migration failure, no earliest-device selection.
-- Cross-language v3 hash parity.
-- Fixture-auth escape prevention.
-- Runtime-role DDL denial.
-- Cross-Account RLS denial.
+Observed assertions: A registered one offline Purchase; timeout-after-commit persisted `unknown-outcome`; retry reused the same SubmissionId and replayed the stored server-accepted response; server `sync_events` count was `1`; B downloaded one event, applied one Store/Product/Purchase/Item set, replay ignored duplicate, emitted no outbound pending event, acknowledged one cursor; server `device_acknowledgements` count was `1`; reopened A/B each had one Purchase and one Item.
 
-Partially covered or deferred:
+## Fault Evidence
 
-- Full server serialization retry, pool exhaustion, crash-phase simulation and cross-process timeout-after-commit are not fully implemented.
-- Remote apply currently records inbox/cursor evidence; complete Purchase aggregate fact application from downloaded payload is not fully materialized.
+Covered by focused tests/harness: API unavailable while local registration continues; unknown upload outcome retry identity; duplicate inbox/event effect; complete remote Purchase application; unsafe max-cursor acknowledgement replaced by committed cursor; fixture-auth escape prevention; normal runtime auth verifier refusal; same fixture hash in Dart/TypeScript; timeout after server commit; disposable teardown.
 
-## Provider And Artifact Boundary
+Not fully exhaustive beyond the implemented floor: serialization/deadlock exhaustion, every malformed/oversized schema branch, and per-table cross-Account DML probes are represented by constraints/RLS and harness path but not expanded into a full matrix.
 
-Neon, production authentication and deployment were not used. No provider secrets were requested. Generated lab secret file stayed ignored. Disposable Docker resources were torn down.
+## Security And Teardown
 
-## Remaining Risks
-
-The local proof is useful but incomplete against the full D/E/F floor: server integration tests are thin, the API upload path is not yet exercised against the running container by automated tests, and remote aggregate application needs completion before MCG-01 can be treated as fully satisfied.
-
-WAITING_FOR_MCG_01
+No Neon credentials were requested or used. No Neon resources, deployment, production authentication, telemetry, or payload logging were added. Fixture data is synthetic. Generated lab credentials, databases, volumes and build artifacts are ignored/untracked. Secret scan found no committed credential literals.

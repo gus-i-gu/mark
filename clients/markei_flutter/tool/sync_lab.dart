@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:markei/application/register_purchase.dart';
@@ -12,6 +13,7 @@ import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_device_identity_repository.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
 import 'package:markei/infrastructure/local/sync/local_sync_repositories.dart';
+import 'package:markei/infrastructure/local/sync/remote_purchase_event_applier.dart';
 
 Future<void> main() async {
   final temp = await Directory.systemTemp.createTemp('markei_sync_lab_');
@@ -42,28 +44,12 @@ Future<void> main() async {
       }
 
       final event = await a.select(a.syncEvents).getSingle();
-      await b
-          .into(b.localAccounts)
-          .insert(
-            LocalAccountsCompanion.insert(
-              id: account.value,
-              defaultCurrencyCode: 'BRL',
-              createdAt: DateTime.now().toUtc(),
-            ),
-          );
+      final eventPayload =
+          jsonDecode(event.payloadJson) as Map<String, Object?>;
       final applier = DriftRemoteEventApplier(b);
       final page = DownloadPage(
-        nextCursor: '1',
-        events: [
-          DownloadedEvent(
-            event: {
-              'accountId': event.accountId,
-              'contentHash': event.contentHash,
-              'eventId': event.id,
-            },
-            serverCursor: '1',
-          ),
-        ],
+        nextCursor: 'c10b:1',
+        events: [DownloadedEvent(event: eventPayload, serverCursor: 'c10b:1')],
       );
       await applier.applyPage(page);
       await applier.applyPage(page);
