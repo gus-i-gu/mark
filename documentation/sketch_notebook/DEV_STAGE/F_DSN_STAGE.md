@@ -1,220 +1,274 @@
-# F_DSN_STAGE — C10-S01B Convergence Architecture Contract
+# F_DSN_STAGE — C10-S02 Design Materialization Authority
 
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED WITH D/E
-> Baseline: `1d5c0b6006831c62320d535ed3c99364d790a465`
-> Scope: complete disposable local protocol path and pre-Neon hardening
-> Live Neon, production auth and deployment: prohibited
+> Sequence: FLX-INV-02 → Main D/E/F
+> Unit: disposable retention, snapshot and rebootstrap mechanism
+> Baseline: `f6ecf800d736f0d77dd1754eded4f5544462ea83`
+> Authority: controlling architecture contract for Codex
 
-## 1. Required topology and dependencies
+## 1. Topology and dependency direction
 
-```text
-explicit lab SyncCoordinator
-  → UploadPendingEvents → HttpSyncTransport
-  → DownloadAndApplyEvents → HttpSyncTransport → RemotePurchaseEventApplier
-  → AcknowledgeAppliedCursor → HttpSyncTransport
-  → two app-private Drift v5 files
-
-HttpSyncTransport → loopback Fastify API child process
-Fastify routes → AuthVerifier → SyncApplicationService → PgSyncRepository
-PgSyncRepository → PostgreSQL-only Docker Compose lab
-```
-
-Domain/application code must not import Flutter widgets, Drift, HTTP, Fastify, `pg`, Docker or
-Neon. Transport owns HTTP/JSON/timeouts only. API application services own authorization and use
-cases. PostgreSQL repositories own SQL. Drift adapters own local atomicity. Default app composition
-contains no active transport/coordinator and remains local-only.
-
-Keep handwritten files near 250 lines by splitting contract codecs, routes, services, repositories,
-transactions, lab orchestration and remote application. Generated Drift output is exempt.
-
-## 2. Protocol-v3 closure
-
-Retain envelope identities and canonical hash rules:
+Preserve:
 
 ```text
-EventId: immutable domain event UUID
-SubmissionId: immutable logical upload-attempt group UUID
-DeviceSequence: exact monotonic Device order
-ServerCursor: opaque Account-stream position token
-contentHash/requestHash: lowercase SHA-256 over canonical UTF-8 JSON
+Flutter domain/application ports
+→ Drift + HTTP infrastructure
+→ authenticated Fastify application services
+→ PostgreSQL repositories/transactions
+→ lab-only SnapshotStore and cleanup worker
 ```
 
-Close JSON Schema recursively with bounded strings/arrays and `additionalProperties: false`.
-Complete payload shapes:
+Flutter never connects to PostgreSQL or receives storage credentials. Recovery logic must not enter
+pages/widgets. PostgreSQL and snapshot chunks remain disposable loopback lab resources.
 
-- Purchase: ID, Account, occurrence, currency/minor totals, Store, Items, optional references;
-- Store: stable ID, Account and immutable display identity required by local schema;
-- Product snapshot per referenced Product: stable ID, Account, immutable code/exact identity/name,
-  brand/mode/measurement/package fields required by local schema;
-- Item: stable ID, Purchase/Product IDs, package count, normalized quantity and line total;
-- Person/Payment: explicit null or complete stable immutable reference snapshot.
+## 2. Version boundaries
 
-Validate aggregate totals, IDs, currencies, quantity representations and references. Reject bare
-non-null foreign IDs, unknown versions/fields, empty submissions and oversized bodies/batches.
-Update deterministic fixtures and Dart/TypeScript hash parity in one change.
+- Event: `purchase.registered`, payload version 3, unchanged.
+- Cursor: existing opaque `c10b:<integer>` lab token, unchanged.
+- Recovery snapshot format: version 1.
+- Server migration: forward-only 003; never edit 001/002.
+- Drift schema: additive v6; preserve v5 data and synchronization invariants.
 
-## 3. Cursor and page contract
+Contracts live under the existing shared-beta contract boundary and are closed recursively. Dart
+and TypeScript share deterministic fixtures and canonical hashes.
 
-Define one documented versioned opaque token, for example base64url-encoded version plus cursor
-position with strict canonical decoding. A missing local cursor maps only to the canonical origin;
-responses then emit an explicit token. Clients store/echo tokens and never parse/arithmetic them.
+## 3. Injected policy
 
-`GET /v1/sync/events`:
+Define `RetentionPolicy` with explicit values supplied by composition:
 
-- authenticate Account/Device before query;
-- accept absent/origin/valid `after` and `limit` default 25, range 1..100;
-- return all Account events, including origin Device events, strictly ascending;
-- query `limit + 1` to determine continuation;
-- return page events plus `nextCursor`; empty page preserves `after`;
-- never disclose existence of another Account's cursor/event.
+- minimum event retention duration;
+- recent-contact/dormant threshold;
+- Device lease duration or expiry instant;
+- snapshot chunk maximum bytes;
+- cleanup batch maximum rows;
+- recovery session lifetime;
+- supported snapshot/event format versions.
 
-Local apply verifies token sequence through decoded page metadata supplied by the validated codec.
-Any gap/reorder invalidates the whole page. Duplicate-equivalent events may be skipped, but the
-committed cursor advances only once to the verified page end.
+No production default. Normal API startup must refuse retention worker composition without an
+explicit policy. Lab tests inject deterministic values and a `Clock`.
 
-## 4. API schemas and errors
+## 4. Device lifecycle
 
-Register closed Fastify JSON schemas for every request, query, result and failure. Route handlers
-perform only HTTP/auth translation and call application services. Map validation 400, missing auth
-401, wrong/revoked Device 403, identity/sequence/cursor conflict 409, unsupported protocol 422,
-bounded resource exhaustion 503 and internal unknown 500 without exposing SQL/stack/payloads.
+Keep `devices.status` as authorization state `active|revoked`. Migration 003 adds nullable/backfilled
+`last_seen_at` and `lease_expires_at` under a safe lab rule. Retention class is derived:
 
-The typed body remains authoritative over status alone and follows E. Health routes reveal only
-live/ready and never schema, role or connection details.
+```text
+revoked                       → revoked
+now >= lease_expires_at       → expired
+now-last_seen < threshold     → eligible-active
+otherwise                    → eligible-dormant
+```
 
-## 5. Authentication boundary
+Eligible-active and eligible-dormant acknowledgements constrain cleanup. Expired and revoked do
+not. Sync/recovery calls update last-seen only after verified Account/Device authorization; C10-S02
+does not renew production leases, enroll, replace or reactivate Devices.
 
-`AuthVerifier` returns verified AccountId/DeviceId claims. Payload identity must match claims but is
-never authority. C10-S01B adds only an explicit lab adapter/entrypoint:
+## 5. PostgreSQL migration 003
 
-- synthetic deterministic claims map to fixture aliases;
-- only direct lab/test construction may select it;
-- listener must be loopback;
-- normal `main.ts` continues to use a refusing verifier;
-- no environment flag in the normal entrypoint can enable fixture auth;
-- no production provider, enrollment/revocation endpoint or real credential format is selected.
+Use coherent names following existing schema conventions. Required logical structures:
 
-Test fixture provisioning uses migration/bootstrap-owned SQL, not runtime API permissions.
+### Account retention state
 
-## 6. PostgreSQL migration 002
+One row per Account:
 
-Do not edit `001_init.sql`. Add transactional `002_coordination_hardening.sql` and a migration
-ledger/checksum path. It must add or correct:
+- `earliest_incremental_cursor`, initially stream origin;
+- nullable current available SnapshotId;
+- policy/recovery format version;
+- updated timestamp.
 
-- composite FKs from submissions/events/acknowledgements to Account/Device;
-- Account FKs and indexes for `(account_id, server_cursor)`, Device sequence, Submission replay and
-  acknowledgement lookup;
-- positive/hash/type/version checks that belong in persistence;
-- revoked PUBLIC/default privileges;
-- least-privilege grants: runtime cannot DDL, manage roles or provision Accounts/Devices;
-- RLS on every Account-bearing runtime table with SELECT/INSERT/UPDATE policies as needed;
-- fail-closed behavior when transaction-local `markei.account_id`/Device context is absent.
+Never advance earliest availability before the corresponding event deletion commits.
 
-The runtime still uses explicit Account/Device predicates. RLS is defense in depth, not a substitute
-for application authorization. If FORCE RLS conflicts with migration ownership, separate table
-owner/migrator and runtime identities rather than weakening isolation. Lab bootstrap may create
-roles; later Neon role creation remains human MCG-01 work.
+### Snapshot manifest
 
-Migration tests apply 001→002 and fresh 001→002, inspect constraints/policies/grants and prove a
-failed 002 leaves no partial state. Corrections after application require 003, never editing 002.
+Account-scoped immutable identity with:
 
-## 7. Transaction runner and upload
+- SnapshotId and state;
+- covered-through cursor and captured high-water;
+- recovery format and compatible event/schema versions;
+- chunk count, total bytes, ordered-manifest hash;
+- fact counts and build/validate/publish timestamps;
+- superseded SnapshotId relation where useful.
 
-The runner acquires a fresh client per attempt, begins serializable, sets transaction-local verified
-Account/Device context, executes the service and commits once. Retry only SQLSTATE `40001` and
-`40P01`, at most three total attempts with deterministic injected delay/jitter and one deadline.
-Never retry validation, auth, constraint collision, pool acquisition timeout or unknown commit as a
-new logical operation.
+Only `available` may authorize recovery or cleanup. State transitions are monotonic.
 
-Upload preserves prior idempotency:
+### Snapshot chunks
 
-1. same SubmissionId/request hash → stored result;
-2. same SubmissionId/different hash → terminal conflict;
-3. validate complete batch before mutation;
-4. same EventId/hash → duplicate-equivalent;
-5. same EventId/different hash → terminal conflict;
-6. require exact next DeviceSequence;
-7. allocate Account cursor, append Events, advance sequence and store result atomically.
+Account+Snapshot+index identity, length, content hash and bounded binary/JSON bytes. The lab store
+implements a port; do not bind domain/application code to PostgreSQL bytes.
 
-All Event lookups remain Account-scoped even if Event UUIDs are globally unique.
+### Cleanup runs
 
-## 8. Download and acknowledgement services
+CleanupRunId, Account, policy version, SnapshotId, proposed/committed cursor range, state, attempts,
+counts and timestamps. Identity makes worker retry idempotent.
 
-Download uses verified claims, transaction-local context and cursor contract from section 3. It
-returns only stored immutable Events and bounded metadata.
+### Rebootstrap sessions
 
-Acknowledgement:
+RecoverySessionId, Account, Device, SnapshotId, request hash, state, expiry, stored start result,
+last observed chunk/completion metadata and timestamps. Same identity/hash replays; same identity
+with different hash is conflict.
 
-- authenticates matching active Device;
-- decodes the cursor for the verified Account;
-- rejects beyond the Account high-water mark;
-- upserts `greatest_contiguous_cursor = GREATEST(existing, supplied)`;
-- treats equal/lower replay as duplicate-equivalent;
-- does not imply all Devices acknowledged and triggers no deletion.
+All new Account tables use composite ownership FKs where possible, RLS and explicit predicates.
+Add indexes for available snapshot lookup, cleanup claims, session replay and chunk ordering.
 
-The server cannot independently prove local apply; the controlled system proof correlates B's
-atomic local commit with its following acknowledgement. Retention remains excluded.
+## 6. Roles and transaction boundaries
 
-## 9. Flutter HTTP transport
+Runtime API may:
 
-Add one narrowly pinned HTTP package and `infrastructure/remote` adapter implementing existing sync
-ports. Inject HTTP client, base URI, token source, timeouts and correlation source. Requirements:
+- read capabilities/available manifests and chunks;
+- create/query/update its Device-bound recovery sessions;
+- read incremental events and submit normal acknowledgements.
 
-- loopback URI only in lab composition; no provider/database URL in Flutter;
-- authorization only in headers; never persisted/logged;
-- request/connect/response deadlines and response byte cap;
-- content-type/status/schema validation before conversion;
-- typed mapping of refusal, timeout, malformed body and API failure;
-- no implicit retry inside adapter;
-- same Submission object reused after unknown upload outcome.
+Runtime may not build/publish snapshots, delete events, advance availability floor, alter policy,
+provision Devices or perform DDL.
 
-Extend ports only when needed to carry safe action/correlation/page metadata without leaking HTTP.
+Dedicated lab worker may build/validate/publish snapshots and execute coverage-gated cleanup for one
+Account. It may not enroll/revoke Devices, alter roles/schema or cross Account boundaries.
 
-## 10. Remote Purchase application
+Use transaction-local Account/Device context and explicit predicates. Keep bounded serialization/
+deadlock retry. Snapshot build uses one stable Account view; publication is a separate transaction
+after durable read-back verification. Cleanup locks one Account retention row, recomputes every
+predicate, deletes a bounded contiguous cursor prefix and advances state/ledger in one transaction.
 
-Implement a dedicated type-dispatched applier, not ordinary registration. Before mutation:
+## 7. Snapshot format 1
 
-1. validate page Account, ordering/contiguity, event hash/type/version and aggregate invariants;
-2. classify inbox Event as absent, equivalent or conflicting;
-3. validate stable Store/Product/reference identities and visible-code uniqueness;
-4. require existing facts to be field-for-field equivalent.
+Manifest canonical content includes:
 
-In one Drift transaction:
+- AccountId, SnapshotId, format version and covered-through cursor;
+- compatible event/schema versions;
+- ordered chunk descriptors `{index,length,hash}`;
+- total bytes/hash;
+- deterministic fact counts.
 
-1. insert/reuse complete Store/Product/reference facts;
-2. insert/reuse Purchase and Items idempotently;
-3. insert applied inbox rows;
-4. advance account cursor once to page end.
+Canonical fact stream order:
 
-No outbound SyncEvent/PendingEvent is created. Any conflict/gap/error rolls back the whole page.
-No durable quarantine table/schema v6 is added. After commit, requery existing Lists projections;
-do not synchronize or persist them as authoritative facts.
+```text
+Account → Stores → Products → People → PaymentMethods → Purchases → PurchaseItems
+```
 
-Greatest-contiguous acknowledgement derives from committed page/cursor state, never MAX(inbox).
+Within each kind sort by stable opaque ID. Serialize closed normalized records only. Include facts
+required by Drift constraints: Account default currency; complete reference facts; immutable
+Purchase/Item values. Exclude queues, Devices, secrets, cursor inbox, acknowledgement, recovery
+metadata and Lists projections.
 
-## 11. Verification architecture
+Server currently owns events rather than normalized fact tables. For this append-only slice the
+snapshot builder deterministically folds accepted `purchase.registered` v3 events, rejecting any
+identity/content collision or bare non-null Person/Payment reference. Do not invent merge rules.
 
-Required layers:
+Chunk after canonical fact serialization with an injected byte ceiling; hashes cover exact UTF-8
+bytes and the ordered manifest. Read back every chunk before `available` publication.
 
-- shared closed-schema and cross-language hash fixtures;
-- Dart codec/transport/application unit tests;
-- Drift remote apply, atomicity, duplicate/conflict/reopen tests;
-- Fastify route/schema/auth tests;
-- real PostgreSQL 001→002/constraint/grant/RLS/transaction tests;
-- upload/download/ack API integration tests;
-- one system harness with two Drift files, real loopback API child and disposable PostgreSQL;
-- timeout-after-commit, retry, paging, crash, isolation and exhaustion injections;
-- existing Flutter/Python regressions and Windows/Android builds.
+## 8. Snapshot and cleanup invariants
 
-Mocks/fakes cannot be the only evidence for SQL transactions, HTTP transport, cross-language
-contracts or convergence. The system harness owns all processes/resources and cleans them on fail.
+Snapshot cut:
 
-## 12. I report, exclusions and exit
+1. establish one consistent Account view;
+2. read high-water and contributing events/facts in that view;
+3. set `coveredThroughCursor` to that view's high-water;
+4. build/verify chunks;
+5. publish only if compatible and complete.
 
-Replace only `DEV_STAGE/I_DSN_CODEX.md`. Report final dependency direction, modules, contract/hash,
-migrations, policies/grants, route/service behavior, transaction retry, cursor, remote apply,
-fixture-auth containment, system topology, deviations and deferred decisions.
+Events committed after the view remain later incremental events.
 
-Do not contact Neon, deploy, select production auth/API host, implement retention/rebootstrap,
-background sync, edits/deletes, UI/UX or Analytics. Successful evidence prepares Main to activate
-MCG-01; it does not itself configure or validate Neon.
+Cleanup boundary is the greatest contiguous cursor satisfying all three independent floors:
+
+```text
+minimum-age floor
+eligible-Device acknowledgement floor
+available compatible snapshot covered-through floor
+```
+
+If any floor is absent, cleanup deletes nothing. Delete only a bounded contiguous prefix. An invalid,
+building, failed or incompatible snapshot contributes no floor. Preserve the previous available
+generation until replacement and a later cleanup checkpoint are verified.
+
+## 9. API contracts
+
+### Capabilities
+
+Returns protocol/recovery versions, current high-water, earliest incremental cursor, compatible
+SnapshotId alias when available, retention policy version and derived Device class. It returns no
+duration as a production promise in C10-S02.
+
+### Incremental download
+
+Validate the supplied cursor before querying events:
+
+- origin/current within retained range → normal page, including valid empty page;
+- older than earliest retained position → typed `cursor-expired`, no events;
+- include safe action `full-rebootstrap-required` only when a compatible snapshot is available.
+
+### Rebootstrap start/status
+
+Start is POST with RecoverySessionId/request hash and supported formats. Bind stored result to
+verified Account+Device+Snapshot. Query returns phase and immutable manifest. Unknown start outcome
+queries/replays the same identity.
+
+### Chunk
+
+Return exact session-bound index, length, hash and bytes with a response cap. Reject missing,
+out-of-range, expired, revoked and cross-Account access. Do not expose storage keys.
+
+### Complete
+
+Client reports verified SnapshotId/hash and committed catch-up cursor. Server checks session,
+snapshot and cursor bounds; it does not trust completion to advance acknowledgement beyond the
+normal verified acknowledgement transaction. Same request identity replays stored result.
+
+## 10. Drift v6 and recovery ports
+
+Add minimal durable tables for recovery session metadata and downloaded-chunk verification. They
+must not become authoritative Account facts. Migrate v5→v6 without selecting/deleting facts or
+changing outbox identities.
+
+Add application ports equivalent to:
+
+- `RecoveryTransport` for capabilities/session/manifest/chunks/completion;
+- `RecoveryProgressRepository` for durable session/chunk phase;
+- `SnapshotFactApplier` for fresh-target atomic fact/cursor apply;
+- `LocalRecoveryGuard` for pending/uploading/unknown outbox detection.
+
+HTTP and Drift remain adapters. Domain/application code receives typed results, not status-code or
+table details.
+
+## 11. Fresh-target rebootstrap algorithm
+
+1. Check local guard. Any unsafe outbox state returns `local-changes-block-rebootstrap`.
+2. Start/replay one Device-bound recovery session.
+3. Download missing chunks; persist only verified progress.
+4. Verify full ordered manifest, Account, versions, counts and total hash.
+5. In one fresh-target Drift transaction, apply canonical facts plus snapshot covered cursor.
+6. Download/apply every event after the cut through captured/current high-water.
+7. Acknowledge the committed contiguous cursor.
+8. Complete/query the recovery session.
+9. Close/reopen target and compare authoritative facts and derived Lists queries.
+
+Corruption, conflict or crash before transaction commit leaves target facts/cursor unchanged.
+C10-S02 does not swap a production database file, merge a populated database, invent Device
+replacement or discard the original database.
+
+## 12. Security and failure mapping
+
+- Cross-Account access → `wrong-account`, not applied.
+- Unknown/revoked Device → `device-revoked` or typed denial, not applied.
+- Retention-expired Device → distinct `device-expired`; may rebootstrap only if authorization and
+  session policy permit.
+- Old cursor → `cursor-expired`; never empty success.
+- Unsupported format → `protocol-upgrade-required` or `recovery-unavailable`.
+- Corrupt manifest/chunk → `conflict`, no apply.
+- Interrupted transport → `unknown` only where commit is unknowable; preserve session identity.
+- Unsafe local work → `local-changes-block-rebootstrap`, no mutation.
+
+Never log payloads, chunks, tokens, credential URLs or SQL details. Cap chunk, manifest, page and
+error sizes. Test forged identifiers, replay, truncation, downgrade, premature cleanup, malicious
+ack advancement and worker privilege escalation.
+
+## 13. Explicit exclusions
+
+No Neon mutation, object-storage SDK, production auth/enrollment, hosted worker, pg_cron, production
+duration, live cleanup, account deletion, edits/deletes/tombstones, encryption redesign, signed URL,
+production database switch, UI/UX work, Analytics or broad page refactor.
+
+## 14. I report requirements
+
+I must record final dependency direction, schema/migration IDs, recovery/event versions, policy
+injection, snapshot format/hash/chunk rules, transaction/cleanup invariants, RLS/role evidence,
+rebootstrap behavior, fixture containment, architectural deviations and every deferred decision.

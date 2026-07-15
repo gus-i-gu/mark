@@ -1,183 +1,210 @@
-# D_OPS_STAGE — C10-S01B Execution and Evidence Contract
+# D_OPS_STAGE — C10-S02 Operational Materialization Authority
 
-> Status: ACTIVE — CODEX IMPLEMENTATION AUTHORIZED WITH E/F
-> Unit: local HTTP/PostgreSQL/Drift convergence completion
-> Baseline: `1d5c0b6006831c62320d535ed3c99364d790a465`
-> Controlling synthesis: `[M]_STAGE/J_MAIN_STAGE.md`
-> External provider status: MCG-01 NOT STARTED
+> Sequence: FLX-INV-02 → Main D/E/F
+> Unit: disposable local retention, snapshot and rebootstrap proof
+> Baseline: `f6ecf800d736f0d77dd1754eded4f5544462ea83`
+> Authority: controlling Operational instructions for Codex
+> Provider boundary: MCG-01 active externally; no provider access authorized
 
-## 1. Authority and preflight
+## 1. Objective and stop rule
 
-Codex may modify source, tests, shared contracts, dependency locks, disposable lab infrastructure
-and G/H/I only as required by J/D/E/F. It may run local Docker/PostgreSQL and loopback processes.
+Implement and validate the J/F hybrid mechanism entirely inside disposable local infrastructure.
+The application must remain runnable with synchronization and cleanup disabled.
 
-Before editing:
+Do not contact Neon, deploy, choose production auth, create real identities, inspect provider notes
+or request secrets. Stop on contradiction, data-reset risk, unavailable required local tooling,
+fixture-auth escape, cross-Account access or cleanup without verified snapshot coverage.
 
-1. read root and notebook AGENTS, INDEX and the full canonical methodology route;
-2. read J and D/E/F together; A/B/C remain investigation evidence only;
-3. verify branch `intermid-cycle-recovery`, clean/understood status and baseline ancestry;
-4. preserve unrelated/untracked work; never stash, reset, clean, discard or force-push;
-5. inventory Flutter/Dart, Node/npm, Docker/Postgres client, Java/Android and Python;
-6. run available baseline analysis/tests and secret scan;
-7. inspect existing migration/test fixtures before mutation.
+## 2. CP0 — recovery and baseline
 
-Stop before editing if D/E/F conflict, local data preservation is unclear or fixture auth could
-enter normal runtime. Never substitute Neon for a missing local tool.
+1. Read root/notebook AGENTS, INDEX and full methodology route.
+2. Read J/D/E/F together; A/B/C are evidence, G/H/I historical observation.
+3. Confirm branch, clean overlap and required ancestor.
+4. Inventory Flutter/Dart, Node/npm, Docker/PostgreSQL, Java/Android and Python.
+5. Run existing focused sync tests before mutation.
+6. Inventory current containers, volumes, ports, ignored artifacts and untracked user files.
 
-## 2. Checkpoint order
+Gate: retain one runnable commit and do not alter unrelated/untracked work.
 
-### CP0 — Baseline and defect locks
+## 3. CP1 — contracts and deterministic fixtures
 
-- Add focused failing tests demonstrating current download/ack stubs, incomplete remote apply,
-  unsafe contiguous-cursor calculation and absent database-backed vertical slice.
-- Record exact dependency/tool versions and current test counts.
-- Keep local-only Purchase registration green.
+Create closed schemas and shared fixtures for recovery format 1:
 
-Gate: failures target the reconciled defects rather than unrelated behavior.
+- capabilities/retention metadata;
+- typed incremental cursor expiry;
+- snapshot manifest and chunk descriptor;
+- start/query/complete rebootstrap;
+- typed recovery failures and phase states;
+- deterministic Account snapshot with facts and covered cursor.
 
-### CP1 — Close executable contracts
+Use canonical recursively sorted UTF-8 JSON and SHA-256. Prove Dart/TypeScript fixture/hash parity.
+Test valid, missing, extra, oversized, wrong-format, bad-index and bad-hash cases.
 
-- Close nested Store/Product/Purchase/Item/quantity/money/reference schemas recursively.
-- Include complete immutable Product snapshots and complete optional Person/Payment snapshots when
-  referenced; explicit null remains valid.
-- Bound strings, arrays, body/page bytes and unknown fields.
-- Define request/result schemas for upload, download, acknowledgement and typed failures.
-- Freeze versioned opaque cursor origin/encoding and page semantics from J/F.
-- Update valid/invalid fixtures and recompute Dart/TypeScript hashes together.
-- Prove both languages accept/reject the same fixtures.
+Gate: event payload version remains 3; recovery format is independently versioned 1.
 
-Gate: contract parity and hash parity pass before database/application work.
+## 4. CP2 — forward-only server migration
 
-### CP2 — Migration 002 and server services
+Add `003_retention_snapshot_recovery.sql`; never edit 001/002. Add only structures justified by F:
 
-- Add `002_coordination_hardening.sql`; do not edit migration 001.
-- Add required composite FKs, indexes, checks, grants/revokes and Account RLS policies.
-- Separate lab role/bootstrap/seed responsibility from application runtime.
-- Implement transaction-local verified Account context plus explicit scoped predicates.
-- Implement bounded serializable/deadlock retry with deterministic injection.
-- Implement authenticated/bounded Postgres download and monotonic acknowledgement services.
-- Complete Fastify JSON-schema routes and typed exception/status mapping.
-- Add database-backed upload/download/ack route tests against migrated PostgreSQL.
+- Account earliest incremental cursor/current snapshot state;
+- Device last-seen/lease data;
+- immutable snapshot manifests and bounded chunks;
+- cleanup run ledger;
+- Device-bound rebootstrap sessions.
 
-Gate: two synthetic Accounts cannot read/write each other through API or runtime SQL; runtime DDL
-fails; upload→download→ack persists correctly.
+Create least-privilege worker authority distinct from runtime. Apply RLS and explicit Account
+predicates to every new Account table. Runtime cannot publish snapshots, invoke physical cleanup,
+perform DDL or manage roles. Worker cannot enroll/revoke Devices or read another Account.
 
-### CP3 — Complete local apply and HTTP transport
+Prove fresh 001→002→003, replay refusal/idempotent ledger behavior, failure rollback, runtime DDL
+denial and original 001/002 database reopen after a failed disposable 003 copy.
 
-- Implement a dedicated type-specific remote Purchase applier without outbound-event creation.
-- Validate Account, hash, version, ordered contiguous cursor and aggregate invariants before writes.
-- Reuse only semantically equivalent stable Store/Product/reference/Purchase facts.
-- Commit facts, Items, inbox and final page cursor atomically; roll back the entire page on error.
-- Replace maximum-cursor logic with proven contiguous-prefix semantics.
-- Requery Lists after commit; do not add authoritative List persistence.
-- Add a Dart HTTP adapter with injected client/base URI/token source and bounded timeouts/response.
-- Keep synchronization absent/disabled in default application composition.
+Gate: cleanup remains disabled and no event is deleted during migration.
 
-Gate: complete remote facts survive reopen; duplicate creates neither fact nor outbound echo;
-gap/conflict leaves facts/inbox/cursor unchanged.
+## 5. CP3 — policy and snapshot application services
 
-### CP4 — Explicit lab entrypoint and real vertical slice
+Implement a framework-independent injected `RetentionPolicy` and `Clock`. No production duration
+or implicit default. Test fixtures may use named durations only inside test composition.
 
-- Keep Compose PostgreSQL-only and loopback-bound.
-- Add deterministic migrator/bootstrap/seed/probe scripts with ignored generated credentials.
-- Add a loopback-only API lab entrypoint using fixture claims; normal runtime still refuses them.
-- Let the harness allocate the API port, start/stop the child process and clean temp Drift files.
-- Run the complete A→HTTP→Postgres→HTTP→B story in J.
-- Inject the first upload response loss after committed server state.
-- Assert same SubmissionId/hash retry, one server Event/cursor, one B Purchase aggregate, one inbox
-  effect, one durable B acknowledgement and equivalent reopened facts/Lists.
+Implement ports/services for:
 
-Gate: `CONVERGED=true` is earned only by all assertions through real boundaries.
+- Device retention classification;
+- consistent Account snapshot build;
+- chunk store/read-back verification;
+- snapshot publication/replacement;
+- cleanup planning and bounded execution;
+- rebootstrap session lifecycle.
 
-### CP5 — Failure, isolation and crash matrix
+Snapshot builder must use one consistent Account view and cut cursor. Events appended after the cut
+remain retained. Failed/corrupt/incomplete snapshots never become available or authorize cleanup.
+Keep the previous available generation until the replacement is verified.
 
-Cover at minimum:
+Gate: physical cleanup callable only from explicit lab/worker composition.
 
-- validation/version/body/batch/page limits;
-- wrong Account, unknown/revoked Device and missing DB context;
-- duplicate-equivalent versus identity/hash conflict;
-- sequence duplicate/gap/concurrency;
-- empty/multipage/gapped/reordered/duplicate download;
-- crash before/inside/after Drift transaction and after commit/before ack;
-- SQLSTATE 40001/40P01 retry and bounded exhaustion;
-- pool acquisition timeout and API unavailable;
-- SELECT/INSERT/UPDATE RLS denial for every Account-bearing runtime table;
-- migrations 001→002, fresh migration and failed migration cleanup.
+## 6. CP4 — API and authorization
 
-Gate: typed retry/non-retry/unknown meaning matches E; no assertion is weakened to continue.
+Implement J routes with Fastify closed schemas, bounded request/query/body/response sizes and typed
+failures. Update download so a cursor before the retained floor returns `cursor-expired`, never an
+empty page. A compatible snapshot yields `full-rebootstrap-required`; otherwise return
+`recovery-unavailable`.
 
-### CP6 — Regression, reports and stop
+Every sync and recovery call must:
 
-Run actual repository commands, including when supported:
+- derive Account/Device from `AuthVerifier`;
+- verify enrolled, non-revoked Device state in PostgreSQL;
+- set transaction-local RLS context;
+- retain explicit Account/Device predicates;
+- reject cross-Account SnapshotId/session/chunk access;
+- keep retry identities stable after unknown outcomes.
+
+Normal runtime retains `RefusingAuthVerifier`. Lab entrypoint remains loopback-only.
+
+Gate: no endpoint exposes physical cleanup, storage credentials, SQL errors or fact payload logs.
+
+## 7. CP5 — additive Drift v6 recovery boundary
+
+Add only durable recovery session/chunk progress and format compatibility needed by F. Preserve all
+v5 facts and synchronization state. Ambiguous or unsupported migration fails without reset.
+
+Implement fresh-target rebootstrap:
+
+1. start/query the same server session;
+2. download bounded chunks with resumable progress;
+3. validate Account, manifest, ordering, lengths, hashes and versions;
+4. apply complete facts and covered cursor atomically to a fresh target;
+5. catch up later events through existing remote applier;
+6. acknowledge only after committed catch-up;
+7. reopen and compare.
+
+Before recovery, inspect pending/uploading/unknown local work. Return
+`local-changes-block-rebootstrap`; never reset, merge, discard or auto-export it. Do not implement
+production database file swap.
+
+Gate: interruption/corruption leaves the prior database and target facts/cursor unchanged.
+
+## 8. CP6 — decisive system harness
+
+Extend the lab harness with deterministic time and at least Devices A/B/C:
+
+- create multiple events before/after the snapshot cut;
+- inject an append during/after snapshot construction;
+- verify manifest/chunk read-back and publication;
+- prove a lagging eligible Device blocks cleanup;
+- expire that fixture lease and acknowledge the safe boundary;
+- run explicit cleanup and assert only old covered events are removed;
+- prove old cursor returns expiry rather than empty success;
+- interrupt and resume C chunk transfer using the same session;
+- reject corrupt/reordered/truncated chunks;
+- apply/catch up/ack/reopen C and compare Account facts;
+- confirm A/B local Purchase history survives server cleanup;
+- prove pending/unknown local work blocks rebootstrap.
+
+Required terminal diagnostic:
 
 ```text
-dart format --output=none --set-exit-if-changed lib test tool
-dart run build_runner build --delete-conflicting-outputs
-flutter analyze
-flutter test
-npm ci
-npm run format:check
-npm run lint
-npm run typecheck
-npm test
-npm audit --omit=dev
-docker compose -f infra/sync_lab/compose.yaml up -d --wait
-PostgreSQL migration/constraint/grant/RLS probes
-real local convergence harness
-flutter build windows --release
-flutter build apk --debug
-python -m unittest discover tests
-git diff --check
-tracked/staged secret scan
-docker compose -f infra/sync_lab/compose.yaml down --volumes
+RECOVERY_CONVERGED=true
 ```
 
-Use exact working-directory/script variants in G. Always tear down inventoried processes,
-containers, volumes, temporary databases, ignored secrets and test files, even after failure.
+Gate: direct service calls alone do not satisfy the HTTP/PostgreSQL/Drift system proof.
 
-## 3. Evidence requirements
+## 9. Failure-injection floor
 
-### G operational report
+Cover at least:
 
-Replace only `DEV_STAGE/G_OPS_CODEX.md` and include:
+- valid empty page versus expired cursor;
+- wrong Account and forged SnapshotId/session;
+- unknown/revoked/expired Device;
+- incompatible/obsolete recovery format;
+- snapshot append race and failed build;
+- corrupt, missing, duplicate, reordered, truncated and oversized chunk;
+- interruption before/during/after download, apply, catch-up and completion;
+- same recovery identity replay versus different request hash;
+- eligible lagging Device and premature-cleanup attempt;
+- duplicate cleanup workers and bounded SQL retry/exhaustion;
+- cross-Account SELECT/INSERT/UPDATE denial on new tables;
+- runtime cleanup/DDL denial and worker privilege boundary;
+- v5→v6 fresh/reopen/failure/no-reset behavior;
+- API unavailable while local registration continues.
 
-- baseline/final SHA and complete changed-path inventory;
-- dependency/tool versions and lockfile changes;
-- checkpoint commands/results and test counts;
-- migration 001→002/fresh/failure evidence;
-- API/Postgres integration results;
-- exact A/B/server Event, Purchase, inbox, cursor and acknowledgement counts;
-- timeout-after-commit and identical retry evidence;
-- fault/isolation/role/crash results;
-- Windows/Android/Python boundaries;
-- secret scan and teardown inventory;
-- explicit Neon/auth/deployment non-use;
-- deviations, blockers and one terminal status from J.
+## 10. Validation matrix
 
-H and I must satisfy E/F. Do not overwrite A/B/C, J, D/E/F, permanent memory or Main-root files.
+Run all applicable repository checks:
 
-## 4. Stop and rollback gates
+- Dart format check, Drift regeneration, Flutter analyze and complete Flutter tests;
+- explicit lab-gated recovery/convergence harness;
+- TypeScript format, lint, typecheck, tests and `npm audit --omit=dev`;
+- migrations 001→002→003, privilege/RLS/constraint/transaction probes;
+- Windows release build and Android debug build when host-supported;
+- protected Python regressions;
+- `git diff --check`;
+- tracked/staged secret scan;
+- final container/volume/port/temporary-file teardown inventory.
 
-Stop on:
+Record exact command, environment, result, counts and exclusions. A build is not runtime acceptance.
 
-- cross-Account access or runtime DDL;
-- fixture auth outside explicit loopback lab composition;
-- secret, authorization header, connection URL or business payload in tracked/logged output;
-- cursor advance/ack without committed facts and inbox;
-- gap acknowledged as contiguous;
-- unknown retry creates a new SubmissionId or Event;
-- duplicate creates a second business effect or outbound echo;
-- migration rewrite/reset/data loss;
-- unbounded retry, pool wait, response, body, batch or page;
-- loss of local-only startup/registration;
-- need for live Neon or real authentication.
+## 11. File and security discipline
 
-Rollback boundary is explicit composition removal plus disposable lab teardown. Published migration
-001 remains immutable; server corrections are forward-only. Local Drift remains v5 and must never
-be reset. If the decisive CP4 gate fails, report partial rather than advancing MCG-01.
+- Split handwritten source by responsibility; keep ordinary files near 250 lines.
+- Generated Drift output may exceed the ordinary limit.
+- Add no telemetry, analytics, payload logging or polished UI.
+- Use synthetic fixtures only.
+- Ignore generated credentials, databases, chunks, logs and build outputs.
+- `.env.example` may contain variable names only.
+- Preserve protected Python/PySide6 source and database.
+- Do not edit permanent documentation, methodology, J/D/E/F, 00/05/06 or unrelated files.
 
-## 5. Publication
+## 12. Codex report
 
-Review the entire diff, confirm only authorized paths, no secrets/artifacts, and no unrelated
-cleanup. Commit implementation plus G/H/I as one bounded materialization commit unless a necessary
-safe checkpoint is explicitly reported. Push only `intermid-cycle-recovery`, never force-push.
+Replace only G/H/I after implementation. G must include:
+
+- baseline/final SHA and complete changed-path inventory derived from Git;
+- dependency and migration versions;
+- exact commands/results and platform boundary;
+- snapshot/event/Device/session/chunk counts and cursor ranges;
+- cleanup safety and recovery fault results;
+- v5→v6 and 001→002→003 evidence;
+- role/RLS/secret-scan/teardown results;
+- confirmation Neon/auth/deployment were unused;
+- deviations and one terminal state from J.
+
+Commit and push one bounded implementation plus G/H/I. Never force-push.
