@@ -1,393 +1,266 @@
-# F_DSN_STAGE — C10-S03A-R1 Corrective Design Authority
+# F_DSN_STAGE — C10-S03A-R2 Design Materialization Authority
 
-> Unit: transaction-safe local hosted-authentication correction
-> Baseline: `d411e4ee92d5977984913b9bba21cc9aa1c37bbf`
-> Joint authority: D/E/F
-> Provider authority: none
+> Baseline: `34bc032df26d4b6d727d3ba6f2e08bbb0b11e13f`
+> Joint authority: J + D/E/F
+> Scope: local hosted-authorization correction
 
-## 1. Corrected architecture
+## 1. Selected architecture
 
-Preserve the port/adaptor direction but correct authorization ownership:
-
-```text
-Flutter local-first application
-  ├─ local facts/outbox/recovery
-  └─ opt-in hosted-auth coordinator
-       ├─ ExternalAuthenticationSession
-       ├─ AccessTokenSource
-       ├─ DeviceEnrollmentTransport
-       ├─ HostedIdentityRepository
-       └─ HostedSyncGuard
-                ↓ bearer candidate + explicit selectors
-Fastify HTTP boundary
-  → bounded JWT/JWKS verifier
-  → ExternalPrincipal only
-  → protected-operation transaction coordinator
-       → resolve identity/membership
-       → resolve enrollment/Device
-       → authorize named operation
-       → invoke sync/recovery repository using same tx
-                ↓
-PostgreSQL runtime connection + explicit predicates + RLS
-```
-
-The previous design allowed an `AuthContext` created by one committed transaction to authorize a
-later transaction. That context is no longer authority.
-
-## 2. Version and migration boundaries
-
-- Event: `purchase.registered` payload v3, unchanged.
-- Cursor: opaque `c10b:*`, unchanged.
-- Recovery snapshot format: 1, unchanged.
-- Hosted identity/enrollment contract: v1 unless a closed additive field is required.
-- Drift schema: v7 unless durable lab orchestration requires an additive v8.
-- PostgreSQL migrations 001–004 are immutable.
-- If database shape must change, add migration 005 and prove forward-only migration/rollback.
-- JWT algorithm: `RS256` only for this unit.
-- No production retention defaults or cleanup activation.
-
-Prefer source-only correction without migration 005 or Drift v8. Add schema only when an invariant
-cannot be represented safely by the existing model, and record the reason in I.
-
-## 3. Identity ownership
-
-Keep these identities distinct:
+R2 is one bounded local unit with two internal proof slices:
 
 ```text
-ExternalPrincipal = verified issuer + subject
-ExternalIdentity  = opaque server identity mapped from principal
-AccountMembership = authorization relation and role
-AccountId         = Markei data boundary
-InstallationId    = stable local installation UUID
-DeviceId          = server synchronization actor
-DatabaseRole      = PostgreSQL migrator/runtime login
+R2A server authorization + migration 005 + route registry + JWT/JWKS
+R2B Flutter real HTTP enrollment + file-backed persistence
 ```
 
-Invariants:
+Both must pass before the unit may report local-security proof.
 
-- Provider claims never directly grant AccountId or DeviceId.
-- Account selection is validated against active membership in the current transaction.
-- InstallationId is not secret and is not authorization proof.
-- DeviceId is server-owned and bound through enrollment.
-- Markei Accounts are rows and do not have PostgreSQL login passwords.
-- Runtime/migrator credentials never enter Flutter, fixtures, reports or version control.
-- Email/profile claims do not become Person facts or authorization keys.
+## 2. Dependency direction
 
-## 4. Two-stage authentication/authorization boundary
-
-Stage A verifies cryptographic evidence without holding a database transaction:
+Preserve:
 
 ```text
-BearerParser.parse(request headers)
-JwtVerifier.verify(candidate)
-  -> ExternalPrincipal(issuer, subject)
+domain contracts
+  ← application ports/services
+  ← PostgreSQL, Fastify, HTTP and Drift adapters
+  ← hosted/lab composition roots
 ```
 
-Stage B authorizes and executes exactly one operation:
+Provider SDKs and provider credentials remain absent. `jose` remains the cryptographic adapter.
+Fastify types must not leak into domain contracts beyond existing application boundaries where a
+bounded refactor can remove them safely.
+
+## 3. Hosted authorization ports
+
+Replace capability detection with explicit composition types equivalent to:
 
 ```text
-ProtectedOperationExecutor.execute(principal, selectors, operation, callback)
-  -> database.inTransaction(tx =>
-       authorizationRepository.authorizeForOperation(tx, ...)
-       callback(tx, TransactionAuthorizedContext)
-     )
+FixtureAuthorization
+  verify(request) -> AuthContext
+
+HostedTransactionAuthorizer
+  authorize(request, operation, callback(client, AuthContext)) -> result
 ```
 
-`TransactionAuthorizedContext`:
+Hosted composition requires `HostedTransactionAuthorizer`; it cannot accept fixture authorization.
+Fixture/non-hosted composition may use its existing verifier through a separate registration path.
+Do not expose a hosted method that returns a trusted `AuthContext` after its transaction commits.
 
-- contains only opaque IDs/role/operation needed by the callback;
-- is created inside the active transaction;
-- is not serializable or cacheable;
-- cannot be reused after callback completion;
-- does not expose the raw token or provider claims;
-- cannot open or authorize a second transaction.
+## 4. Migration 005 authorization fence
 
-Application repositories used by the callback must accept the existing transaction/session. They
-must not commit independently or obtain an unrelated pool connection.
+Add a forward-only SQL migration. Exact names may follow repository conventions, but its logical
+contract is fixed.
 
-## 5. Concurrency and lock policy
+### Authorization function
 
-For protected mutation, transactionally inspect and control:
+A security-definer function accepts bounded issuer and subject, resolves the active external
+identity, and locks that identity plus all active membership rows in deterministic Account order.
+It returns only:
 
 ```text
-external identity
-selected Account membership
-Installation/Device enrollment
-Device authorization status
-target Account resource
+identity_id
+account_id
+role
 ```
 
-Use deterministic row-lock ordering or an equally explicit serializable strategy. Recommended
-ordering:
+Constraints:
+
+- owner is the migration role that owns the referenced objects;
+- fixed `search_path` and qualified table/function names;
+- no dynamic SQL or caller-selected function/schema;
+- explicit status predicates;
+- row locks survive until caller transaction end;
+- multiple/zero memberships are returned faithfully for application-level closed handling;
+- revoke execute from `PUBLIC`; grant execute to runtime;
+- runtime receives no identity/membership write privilege;
+- test the function definition, owner, ACL, row-lock ordering and rollback behavior.
+
+All controlled identity/membership state writers used by R2 must acquire this function’s fence
+before update. Production membership administration remains deferred, but future writers inherit
+the invariant.
+
+### Readiness function
+
+A second security-definer function returns one boolean for the exact required migration identity.
+It must not accept arbitrary SQL or expose ledger rows/checksums. Runtime receives execute only;
+direct ledger SELECT/INSERT/UPDATE/DELETE remains denied.
+
+### Security-definer safety
+
+Functions must use bounded scalar inputs, safe search path, qualified references, minimal return
+shape and no provider/environment secrets. Include tests against search-path/object-shadowing and
+unauthorized function invocation.
+
+## 5. Transaction invariants
+
+For every hosted protected operation:
+
+1. verify bearer token outside the database transaction;
+2. begin bounded-retry serializable transaction;
+3. invoke authorization fence;
+4. require exactly one active membership;
+5. set identity and Account context from database result;
+6. lock active actor enrollment and Device bound to identity;
+7. set Device/operation context;
+8. perform target policy and deterministic locks if management route;
+9. execute protected callback using the same `PoolClient`;
+10. commit once or roll back all state.
+
+Principal verification outside the transaction is acceptable because identity/membership/Device
+authorization is re-resolved and fenced inside it. Token expiry remains verified at request entry.
+
+## 6. Device-management invariants
+
+- Actor identity comes from verified principal plus database rows.
+- Actor Device comes from header plus identity-owned active enrollment/Device rows.
+- Target Device comes from path and never authenticates actor.
+- Owner may target any same-Account Device; member only the actor Device.
+- Lock actor and target by stable UUID ordering; identical target uses one lock.
+- Revoke updates enrollment and Device state and inserts its security event in one transaction.
+- A unique/idempotency condition or locked-state check ensures one revocation event per transition.
+- Status/revoke failures do not reveal foreign existence.
+
+Do not implement replacement/reactivation or UI.
+
+## 7. Route registry
+
+Create one typed descriptor model containing at least:
 
 ```text
-Account membership
-→ enrollment
-→ Device
-→ operation-specific rows
+method
+path
+operation
+authorizationClass
+handler registration
 ```
 
-Revocation/removal uses the same ordering. A race must serialize as:
+Use descriptor helpers to register actual routes. If Fastify typing makes a fully data-driven table
+unreasonably unsafe, a single wrapper may register each route and record the same descriptor; no
+route may bypass it.
+
+At build/test time compare Fastify’s actual non-health route inventory with descriptors. Reject
+duplicates and missing/extra classifications. Identity/Device routes and all sync/recovery routes
+must be included.
+
+## 8. HTTP contract
+
+The server response is a discriminated contract:
+
+- 2xx: closed `DeviceEnrollmentResult` success variants only;
+- 409: typed `conflict` failure;
+- other 4xx: closed non-retryable authorization/request failure;
+- 5xx/timeout/connection loss: retryable or unknown outcome with safe replay action.
+
+The route layer owns HTTP status mapping. Application services return typed success/failure data and
+must not rely on Flutter-specific behavior.
+
+## 9. Flutter ports and transport
+
+Change the port so a request credential is explicit, equivalent to:
 
 ```text
-operation first, then revocation/removal
-OR
-revocation/removal first, then operation denied
+enroll(command, accessToken)
+query(requestId, accessToken)
 ```
 
-Do not solve races with sleeps, process-local mutexes or cached authorization.
+or one immutable request context containing only the ephemeral credential and request values.
 
-Deadlock/serialization retry must be bounded and only repeat idempotent transaction attempts.
-Unknown outcomes retain existing request/session identities.
+The coordinator:
 
-## 6. Protected route inventory
+- signs in/checks state;
+- obtains one accepted token for that attempt;
+- passes that same token to transport;
+- never persists it;
+- stores only provider-neutral enrollment progress/result;
+- re-acquires a new token for a later retry/query attempt.
 
-Centralize route policy so each route declares:
+The HTTP adapter:
+
+- accepts an injected client/base URI and bounded policy;
+- sends the supplied bearer token once;
+- uses streamed reading with a byte ceiling and timeout;
+- rejects redirects, malformed/extra/missing fields and unexpected statuses;
+- maps closed failures to typed application exceptions/results;
+- has explicit owned/borrowed client lifecycle.
+
+Do not modify ordinary local registration or reassign existing outbox event identity.
+
+## 10. JWT/JWKS state machine
+
+Model deterministic state with injected Clock:
 
 ```text
-authentication requirement
-membership requirement
-Device requirement
-allowed membership role
-named operation
-transaction callback
+no-cache
+→ fresh
+→ expired-but-stale-allowed
+→ stale-expired
 ```
 
-Inventory at minimum:
+Rules:
 
-| Route family | Membership | Device | Transaction-scoped check |
-| --- | --- | --- | --- |
-| identity discovery | verified principal | no | membership resolution transaction |
-| Device enrollment | active membership | no existing Device required | yes |
-| enrollment status | active membership | request ownership | yes |
-| Device status | active membership | owned target | yes |
-| Device revocation | authorized actor membership | actor + target ownership | yes |
-| event upload | active membership | active bound Device | same event transaction |
-| event download | active membership | active bound Device | same read/cursor transaction |
-| acknowledgement | active membership | active bound Device | same acknowledgement transaction |
-| sync capabilities | active membership | active Device when Account scoped | same transaction |
-| rebootstrap routes | active membership | active bound Device | same recovery transaction |
+- production JWKS normalized origin equals normalized issuer origin and uses HTTPS;
+- a successful fetch records fresh expiry and absolute stale expiry;
+- refresh failure may retain cached keys only before absolute stale expiry;
+- after absolute stale expiry, key lookup rejects even if cache memory exists;
+- concurrent refresh is one promise;
+- failed refresh sets global cooldown;
+- unknown `kid` sets bounded per-key negative cooldown even if refresh succeeded unchanged;
+- genuine rotation clears relevant negative state and accepts the new key;
+- any duplicate `kid` rejects the document;
+- cache/cooldown defaults are explicit, bounded and overrideable only through validated config;
+- public errors/logs contain no token, claims, URI, key IDs or bodies.
 
-Public health is the only ordinary unauthenticated route and must expose generic status only.
+## 11. Readiness and role topology
 
-Add a test that compares registered protected routes with policy declarations.
-
-## 7. JWT/JWKS components
-
-Split responsibilities:
+Hosted topology remains:
 
 ```text
-BearerParser
-  singular bounded Authorization value
-
-JwtVerifier
-  JOSE verification, issuer, audience, algorithm, time and subject
-
-BoundedJwksSource
-  issuer-bound URI, byte ceiling, timeout, redirect policy
-  parse/shape validation, cache and refresh coalescing
-
-Clock
-  deterministic token/cache tests
+controlled migrator session → migrations/fixture provisioning → close
+runtime pool only → Fastify
 ```
 
-`BoundedJwksSource` requirements:
+Runtime readiness calls only the narrow function. Runtime never receives migrator URL or recovery
+worker authority.
 
-- accept only configured/issuer-derived HTTPS URI outside explicit loopback lab;
-- reject credentials, fragments and unexpected origins;
-- read no more than the configured response ceiling;
-- reject excess bytes even when transport metadata understates length;
-- use a bounded timeout and abort request/stream;
-- reject redirects unless an explicitly safe same-origin rule is proved; zero is preferred;
-- accept only a bounded JSON object/keys array and bounded key fields/count;
-- cache valid keys under deterministic maximum age;
-- coalesce concurrent refresh for the same issuer/key request;
-- apply bounded cooldown after failure;
-- permit cached-key outage behavior only under the frozen policy;
-- never return raw provider errors or bodies to clients/logs.
+Migration 003 remains immutable. Local lab may pre-create the worker role. Later Neon application
+requires a human owner to pre-create exact `NOLOGIN` non-elevated `markei_recovery_worker`; this is
+outside R2 and must not be automated or simulated as provider success.
 
-Continue using `jose`; do not implement cryptographic primitives.
+## 12. Evidence architecture
 
-## 8. PostgreSQL authority split
+Split proof producers by responsibility:
 
-### 8.1 Migrator
+- TypeScript unit tests: JWT, contracts, registry, authorization services;
+- PostgreSQL/HTTP harness: migrations, roles, RLS, barriers and API operations;
+- Flutter test: real HTTP transport, token coherence, Drift file reopen/outbox;
+- optional aggregator: invokes all gates and prints final result only if each returned success.
 
-May:
+No producer claims another producer’s work. Diagnostics carry no secrets or fact payloads.
 
-- apply forward migrations and ledger entries;
-- perform controlled synthetic lab provisioning;
-- grant/revoke repository-defined runtime privileges during migration.
+## 13. Version and compatibility boundary
 
-Must not be present in hosted runtime configuration.
+- Event payload remains v3.
+- Cursor remains `c10b:*`.
+- Recovery snapshot remains format 1.
+- Hosted identity/enrollment contract remains v1 unless the closed HTTP mapping requires an
+  additive versioned contract; prefer retaining v1 with corrected status semantics.
+- Drift remains v7 unless durable schema change is genuinely necessary. If v8 is unavoidable,
+  prove v7→v8 migrate/reopen/failure/no-reset; do not reset databases.
+- PostgreSQL adds migration 005 only.
 
-### 8.2 Runtime
+## 14. Rollback and stop boundary
 
-May:
+- Source rollback is the bounded R2 commit.
+- Migration 005 is forward history; application rollback must tolerate it remaining installed.
+- No destructive down migration.
+- Stop if security-definer ownership cannot be made least privilege, if a broad table grant is
+  required, if route inventory cannot be mechanically verified, or if decisive proof depends on a
+  provider.
+- Do not edit 001–004, permanent memory, methodology, J, A/B/C or unrelated code.
+- Do not begin provider SDK, deployment, MCG-03/04 or Cycle closure work.
 
-- resolve external identity and membership through bounded repositories;
-- create/replay Device enrollment through authorized routes;
-- perform authorized sync/recovery transactions;
-- update runtime-owned recovery/session/acknowledgement state.
+## 15. Design report requirements
 
-Must not:
-
-- perform DDL or role administration;
-- apply or mutate migration ledger entries;
-- provision arbitrary identities/memberships;
-- build/publish snapshots or execute worker cleanup;
-- bypass RLS or cross Account boundaries.
-
-The decisive HTTP process receives only the runtime URL. Test fixture setup receives only the
-migrator URL. Their credentials are generated by the disposable harness and are never printed.
-
-## 9. Data model reuse and constraints
-
-Reuse migration 004 structures where they already express:
-
-- provider-scoped external identity uniqueness;
-- Account membership status and role;
-- Account/identity/Installation enrollment idempotency;
-- request-hash conflict detection;
-- Account-owned Device binding;
-- append-only enrollment/revocation security events;
-- RLS and runtime grants.
-
-Do not edit migration 004 merely because provider migration has not yet occurred. Git history and
-forward-only discipline treat it as immutable.
-
-If migration 005 becomes necessary, it must be additive, Account scoped, RLS enabled, indexed,
-least privilege and safely rollback on failure. It must not store tokens, passwords, authorization
-codes, emails, profiles or provider management credentials.
-
-## 10. Enrollment and revocation
-
-Enrollment identity remains equivalent to:
-
-```text
-AccountId
-ExternalIdentityId
-InstallationId
-EnrollmentRequestId
-canonical request hash
-```
-
-Equivalent replay returns the same committed result. Same request identity with a different hash
-returns conflict. Concurrency creates at most one active binding for the frozen uniqueness rule.
-
-Enrollment creates a Device only after current membership is transactionally confirmed. It does
-not rewrite local event identities or silently attach old pending events to the server Device.
-
-Revocation:
-
-- verifies actor membership/role and target ownership in its transaction;
-- changes enrollment and Device authorization atomically;
-- appends the security event in the same transaction;
-- becomes visible to later operations through transaction-scoped recheck;
-- does not delete local facts or imply remote event deletion.
-
-Production enrollment approval, Device replacement, reactivation and user-facing management remain
-deferred.
-
-## 11. Two-Account isolation
-
-The lab contains Account A and Account B. Each table/query/route must prove:
-
-- explicit Account predicate;
-- RLS context derived from transaction authorization, not request claims;
-- composite ownership where schema supports it;
-- foreign identifiers produce generic denial without existence disclosure;
-- cursors, acknowledgements, snapshots and recovery sessions cannot cross Account boundaries.
-
-Two Accounts do not require two Auth0 tenants. Local tests use generated principals; later hosted
-proof may use ordinary development users inside one tenant.
-
-## 12. Flutter provider-neutral lab
-
-Keep provider SDKs behind application ports. Add only infrastructure/application pieces needed to
-exercise the state machine against loopback HTTP:
-
-```text
-LabAuthenticationSession
-LabAccessTokenSource
-HttpDeviceEnrollmentTransport
-HostedEnrollmentCoordinator
-DriftHostedIdentityRepository
-HostedSyncGuard
-```
-
-Requirements:
-
-- opt-in lab composition cannot replace ordinary local composition;
-- no Auth0 dependency or callback registration in R1;
-- public provider identifiers and real credentials are absent;
-- request identity/hash and progress survive database reopen;
-- response-loss replay is idempotent;
-- cancellation/outage preserves local facts and outbox;
-- successful enrollment does not reassign existing local events;
-- token bytes are memory-bounded and never persisted/logged by new code;
-- tests use synthetic tokens and loopback endpoints only.
-
-Actual `auth0_flutter`, Android/Windows callbacks, PKCE, logout and production token handling belong
-to the later MCG-02 provider unit after Main reconciliation.
-
-## 13. Threat model floor
-
-Prove defenses for:
-
-- stale authorization across transactions;
-- membership removal during operation;
-- Device/enrollment revocation during operation;
-- forged AccountId/DeviceId/InstallationId;
-- cross-Account resource and recovery identifiers;
-- duplicate/conflicting enrollment replay;
-- token substitution, wrong issuer/audience/algorithm and signature failure;
-- expired/not-yet-valid token;
-- unknown/rotated key;
-- malformed/oversized/slow JWKS;
-- JWKS refresh stampede and outage;
-- runtime authority escalation;
-- migration credential exposure to runtime;
-- token/claim/URL/payload leakage in errors or logs;
-- API outage while local registration continues;
-- account deletion/revocation race where current contracts apply.
-
-## 14. Rollback and reversibility
-
-- Source correction is reversible as one bounded commit.
-- Existing migration 004 remains forward history.
-- If migration 005 is added, rollback means application rollback with compatible schema retained;
-  do not write destructive down migrations.
-- Existing Drift v7 databases reopen without reset.
-- If v8 is unavoidable, prove v7→v8 migrate/reopen/failure/no-reset.
-- Provider-neutral Flutter adapters remain removable independently of local domain behavior.
-- No provider resource mutation means provider rollback is outside this unit.
-
-## 15. Deferred decisions
-
-Do not decide or implement:
-
-- production Account creation, invitations or membership administration;
-- Auth0 tenant/user lifecycle or social providers;
-- Auth0 Android/Windows callback integration;
-- Render deployment and secret injection;
-- Neon migration/application or backup/PITR acceptance;
-- production JWKS cache tuning from provider observations;
-- Account-selection and Device-management UI;
-- Device replacement/reactivation policy;
-- MCG-03/04;
-- Cycle 10 closure.
-
-## 16. Design terminal boundary
-
-R1 success establishes only that the local architecture enforces the frozen security invariants
-under the decisive disposable harness. It does not prove Auth0, Render, Neon, Android callback,
-Windows callback or hosted synchronization behavior.
-
-Required successful report:
-
-```text
-C10-S03A_R1_LOCAL_SECURITY_PROVED
-MCG-02_PROVIDER_PROOF_PENDING
-```
-
-Provider work remains stopped until Main reconciles the new G/H/I.
+I must report final dependency direction, migration/function names and ACLs, transaction/lock order,
+route descriptor model, actor/target policy, JWT state machine, Flutter credential flow, protocol and
+Drift versions, fixture containment, deviations and deferred provider decisions.
