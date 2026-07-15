@@ -1,204 +1,208 @@
-# J_MAIN_STAGE — Cycle 10 Local Convergence Completion Reconciliation
+# J_MAIN_STAGE — Cycle 10 Local Convergence Evidence Reconciliation
 
-> Sequence: FLX-INV-02 A/B/C investigation → Main reconciliation → D/E/F materialization
+> Sequence: FLX-ORD-01 Codex materialization → Main evidence reconciliation
 > Unit: C10-S01B — Local synchronization convergence completion
-> Status: RECONCILED; D/E/F CODEX AUTHORITY PREPARED; MCG-01 NOT STARTED
+> Status: LOCAL CONVERGENCE ACCEPTED; MCG-01 ELIGIBLE BUT NOT STARTED
 > Branch: `intermid-cycle-recovery`
-> Reconciled HEAD: `1d5c0b6006831c62320d535ed3c99364d790a465`
-> Materialized baseline: `1af8137e3f7db2d5ee3ecdf3796ae62808e0717c`
-> Inputs: current A/B/C, prior D/E/F, G/H/I and inspected implementation
+> Controlling implementation: `14c7894e21139390f83a8787be368d3633aa20dd`
+> Reconciled authority: J/D/E/F at `cb890dcdaf86cefa875e6984f20a71e20a912f60`
+> Inputs: G/H/I, implementation diff and focused source/test inspection
 > Authority: human-supervised Main synthesis
 
 ---
 
-<!-- ROUND_MARKER:C10-S01B-RECONCILIATION-2026-07-14 -->
+<!-- ROUND_MARKER:C10-S01B-EVIDENCE-RECONCILIATION-2026-07-14 -->
 
-## 1. Purpose and evidence state
+## 1. Main finding
 
-C10-S01 produced a substantial synchronization scaffold, not the complete proof required by its
-former exit criteria. This J preserves the validated foundation and activates one corrective unit
-that completes the disposable local vertical slice before any Neon mutation is accepted.
-
-PRC-01 classification:
-
-- implemented and locally validated: protocol v3/hash parity, Drift v5, Installation→Device,
-  durable Submission retry identity, inbox/cursor bookkeeping, upload transaction foundation,
-  migration/role probes, local-only fallback and platform builds;
-- partial: server route validation, Account isolation and database-backed upload evidence;
-- stubbed/missing: real download, durable acknowledgement, Flutter HTTP transport, complete remote
-  Purchase application, cross-process convergence and bounded serialization retry;
-- deferred: live Neon, production auth, API deployment, retention/rebootstrap and Cycle 11 UI/UX.
-
-G/H/I remain observational evidence. D/E/F below are the controlling authority for C10-S01B.
-
-## 2. Reconciled defects
-
-Repository inspection and A/B/C agree that:
-
-1. `GET /v1/sync/events` returns an empty placeholder and does not authenticate or query Postgres.
-2. `POST /v1/sync/acknowledgements` returns a constant result and does not persist an ack.
-3. No Flutter `SyncTransport` HTTP adapter exists.
-4. The current two-file harness directly replays a page and bypasses HTTP/PostgreSQL.
-5. Remote apply inserts inbox/cursor records but not Store/Product/Purchase/Item/reference facts.
-6. Greatest-cursor lookup does not prove a contiguous applied prefix.
-7. Server transaction execution has no bounded serialization/deadlock retry.
-8. Route schemas, body/page limits and database-backed endpoint tests are incomplete.
-9. Migration 001 lacks required composite FKs, complete RLS/grant coverage and scoped context.
-10. Normal runtime correctly refuses fixture auth, but no explicit loopback lab entrypoint exists.
-
-These defects prevent the words `facts applied`, `acknowledged`, `converged` and `synchronized` from
-being used as completed product claims.
-
-## 3. Main decisions
-
-### 3.1 Unit boundary
-
-C10-S01B completes only the local `purchase.registered` v3 path:
+Main accepts the C10-S01B decisive local convergence proof. The implementation replaces the prior
+download, acknowledgement, transport and remote-apply stubs with one executable path:
 
 ```text
-two isolated Drift databases
+isolated Drift A
 → Flutter HTTP transport
-→ loopback Fastify child process
+→ loopback Fastify A
 → disposable PostgreSQL 18
-→ loopback Fastify child process
+→ loopback Fastify B
 → Flutter HTTP transport
-→ complete remote Drift aggregate apply
+→ isolated Drift B
 ```
 
-Docker Compose runs PostgreSQL only. The system harness owns a host Node API child process so it can
-inject delays, terminate safely and prove timeout-after-commit recovery. The Flutter test process
-may own both isolated Drift files; API and PostgreSQL boundaries must remain real.
+The evidence is sufficient to close the corrective local slice. It is not evidence of live Neon,
+production authentication, deployed service operation, long-term retention, backup, restore or
+product-ready multi-device synchronization.
 
-### 3.2 Contract closure
-
-Keep event type `purchase.registered` and payload version 3. Close every aggregate sub-schema with
-bounded fields and `additionalProperties: false`. The event must contain complete immutable Store,
-Product, Purchase and Item snapshots. A referenced Person or Payment Method must carry its complete
-immutable reference snapshot; otherwise it is explicitly null. Bare foreign IDs are invalid.
-
-Update valid/invalid fixtures and recompute canonical Dart/TypeScript hashes together. Preserve the
-documented canonical UTF-8 JSON and SHA-256 rule.
-
-### 3.3 Cursor and page policy
-
-Use a versioned opaque cursor token owned by the API. Clients compare tokens only for equality and
-never perform arithmetic. Download returns every Account event, including the requesting Device's
-own events, ordered by server cursor with a bounded default 25 and maximum 100.
-
-An empty page preserves the supplied cursor. A non-empty page returns the final event cursor. Local
-apply requires a contiguous ordered page from the committed cursor; gap/reorder stops with no fact,
-inbox or cursor mutation. The Account stream begins from an explicit origin token.
-
-### 3.4 Remote aggregate application
-
-Implement a dedicated `purchase.registered` remote applier. Do not reuse a registration path that
-creates new IDs or an outbound SyncEvent. Equivalent stable Store/Product/reference/Purchase facts
-are reused; same identity with different immutable content is a terminal conflict and the whole
-page rolls back. Do not auto-merge Products or reassign visible codes.
-
-Facts, Items, inbox entries and the page-end cursor commit once in one Drift transaction. Lists are
-query-derived: after commit the harness requeries and compares them; acknowledgement means facts,
-inbox and cursor committed, not that every Device or projection consumer has observed the change.
-
-No durable quarantine table or Drift schema v6 is authorized. Typed failure plus rollback and
-test-owned diagnostics are sufficient for this unit.
-
-### 3.5 API and Postgres hardening
-
-Add forward-only `002_coordination_hardening.sql`; do not rewrite published migration 001. Migration
-002 adds composite FKs, indexes, checks, revoked default privileges and Account RLS/policies across
-runtime coordination tables. Runtime may read Account/Device enrollment state and update only the
-sequence/cursor/submission/event/ack fields required by sync; it may not provision Accounts/Devices,
-perform DDL or manage roles.
-
-Every sync transaction derives Account/Device from `AuthVerifier`, sets transaction-local database
-context on its checked-out connection, retains explicit Account predicates and fails closed when
-context is absent. The transaction runner retries SQLSTATE `40001` and `40P01` only, with at most
-three total attempts and one overall deadline. Unknown commit outcomes preserve SubmissionId.
-
-### 3.6 Authentication and transport
-
-Add an explicit loopback-only lab entrypoint that injects fixture claims from synthetic aliases.
-Fixture auth must require a test/lab-only composition, refuse non-loopback binding and remain
-unreachable from the normal entrypoint. No production provider, enrollment endpoint or real token
-format is selected.
-
-Add one narrowly pinned Dart HTTP dependency and an infrastructure adapter with injected base URI,
-token source/client, timeouts and response-size cap. It never logs headers, tokens, URLs containing
-credentials or payloads. Retrying remains an application decision; unknown upload retries use the
-same SubmissionId and identical request hash.
-
-## 4. Required executable proof
-
-The decisive story is:
-
-1. provision synthetic Account plus Device A/B through migration-owned lab seed;
-2. A registers one complete Purchase offline;
-3. A uploads through HTTP and Postgres commits once;
-4. the lab drops/delays the first response after commit;
-5. A persists unknown and retries the same SubmissionId/request hash;
-6. the server returns the stored equivalent response and owns one Event/cursor;
-7. B downloads the page through HTTP;
-8. B validates and atomically applies the complete aggregate/inbox/cursor;
-9. replay and reordered/gapped cases create no duplicate or cursor skip;
-10. B acknowledges its committed contiguous cursor through HTTP;
-11. both Drift files reopen;
-12. Purchase/Store/Product/Item/reference facts and derived Lists compare deterministically.
-
-Direct event replay remains useful unit evidence but cannot satisfy this system gate.
-
-## 5. Failure and security floor
-
-Codex must cover:
-
-- malformed/unknown/oversized requests and closed schema rejection;
-- wrong Account, unknown/revoked Device and fixture-auth escape prevention;
-- same Submission/Event hash replay versus identity/hash conflict;
-- DeviceSequence duplicate/gap and concurrent submission;
-- cursor origin, empty page, paging, gap, reorder and duplicate delivery;
-- crash before/inside/after local apply and after commit/before acknowledgement;
-- serialization/deadlock retry and exhaustion;
-- pool acquisition timeout and API unavailable while local save continues;
-- runtime DDL denial and SELECT/INSERT/UPDATE cross-Account denial on every runtime table;
-- migrations 001→002, fresh database, partial-failure behavior and deterministic teardown.
-
-Any secret/payload leak, cross-Account access, cursor-without-facts commit, acknowledgement over a
-gap, outbox echo, duplicate business effect, local reset or fixture-auth escape stops publication.
-
-## 6. Semantic and privacy contract
-
-Tests and typed results must distinguish:
-
-```text
-saved locally → waiting upload → uploading → server accepted
-download received → facts applied → acknowledged by this Device
-duplicate-equivalent | conflict | not-applied | unknown outcome
-```
-
-`server accepted` is not peer application. `acknowledged` is not all-Device convergence.
-Synchronization is not backup, export or provider recovery. Diagnostics expose codes, redacted
-aliases, counts, cursors, timings and hashes only. Learner/KANBAN maturity remains unchanged.
-
-## 7. Exclusions and manual boundary
-
-Codex must not contact or configure Neon, deploy the API, select production authentication, create
-real Accounts/Devices, implement retention/snapshots/rebootstrap, background sync, edits/deletes,
-UI status surfaces, pairing, Analytics or any Cycle 11 visual work.
-
-No human action is expected unless Docker/Node/Flutter tooling cannot run. Provider credentials are
-never requested. MCG-01 begins only after Main reconciles successful C10-S01B evidence.
-
-## 8. Reporting and terminal state
-
-After materialization Codex replaces G/H/I with exact changed paths, commands, counts, failures,
-deviations, secret scan and teardown evidence. Success requires the real vertical slice, not stubs.
-
-Successful terminal report:
+Terminal classification:
 
 ```text
 C10-S01B_LOCAL_CONVERGENCE_PROVED
 MCG-01_NOT_STARTED
 ```
 
-If any decisive gate remains partial, report `C10-S01B_PARTIAL` with the exact blocker and do not
-claim MCG-01 readiness.
+## 2. Evidence accepted
+
+### 2.1 Protocol and transport
+
+- `purchase.registered` payload version 3 now carries closed immutable Store, Product, Purchase,
+  Item, quantity and Money facts.
+- Nested contract objects reject undeclared fields through `additionalProperties: false`.
+- Canonical recursively sorted UTF-8 JSON and lowercase SHA-256 remain aligned in Dart and
+  TypeScript for the shared fixture.
+- `HttpSyncTransport` implements upload, download and acknowledgement through injected URI, token
+  source, HTTP client, timeouts and bounded responses without payload or credential logging.
+- Cursor tokens use the versioned opaque `c10b:<integer>` lab representation. Client application
+  stores and echoes the token and verifies page continuity.
+
+### 2.2 Local fact application
+
+- `DriftRemoteEventApplier` validates Account, type/version, content hash and cursor continuity.
+- `RemotePurchaseFactWriter` inserts or reuses equivalent Store/Product/Purchase/Item facts.
+- Facts, inbox identity and cursor commit in one Drift transaction.
+- Duplicate-equivalent replay has no second business effect.
+- Identity/content conflict stops without cursor advancement.
+- Remote apply creates no outbound `SyncEvent` or `PendingEvent` echo.
+- Greatest acknowledgement cursor now comes from committed `sync_state.account_cursor`, not the
+  maximum observed inbox cursor.
+
+### 2.3 API and PostgreSQL
+
+- Upload, download and acknowledgement authenticate through the injected verifier and execute
+  against PostgreSQL rather than fixed route responses.
+- Account/Device identity comes from verified context; queries retain explicit Account predicates.
+- Transactions set Account/Device database context and use serializable isolation.
+- SQLSTATE `40001` and `40P01` have a bounded maximum of three transaction attempts within the
+  implementation deadline.
+- Upload preserves Submission replay, Event duplicate equivalence, exact DeviceSequence and atomic
+  cursor allocation.
+- Download returns ordered Account events with bounded page size.
+- Acknowledgement rejects a cursor above the Account high-water mark and persists a monotonic
+  per-Device cursor.
+- Forward-only migration `002_coordination_hardening.sql` leaves 001 unchanged and adds composite
+  Account/Device FKs, indexes, migration ledger evidence, runtime grants and Account RLS policies.
+
+### 2.4 Decisive system story
+
+The lab-gated test proved:
+
+1. Device A registered one Purchase while local.
+2. The server committed the upload and the first response was dropped.
+3. A retained `unknown-outcome` and retried the same SubmissionId.
+4. PostgreSQL retained one server Event and returned the equivalent stored response.
+5. Device B downloaded one Event over HTTP.
+6. B applied one Store/Product/Purchase/Item aggregate atomically.
+7. Replay was duplicate-equivalent and produced no outbox echo.
+8. B acknowledged one committed cursor through HTTP.
+9. Reopened A and B each contained one Purchase and one Item.
+10. Disposable containers and volumes were torn down.
+
+## 3. Validation accepted
+
+G reports the following passed at implementation commit `14c7894`:
+
+- Drift generation, Dart formatting, Flutter analysis and the complete Flutter suite;
+- the explicit lab-gated HTTP/PostgreSQL convergence harness with `CONVERGED=true`;
+- TypeScript format, lint, typecheck, tests and production-dependency audit;
+- protected Python regressions;
+- Windows release and Android debug builds;
+- `git diff --check`, credential-pattern scan and disposable-resource teardown.
+
+These results validate the stated local host/build boundary. Builds do not establish Android runtime,
+manual Windows workflow, accessibility, production network or provider acceptance.
+
+## 4. Evidence corrections and residual gaps
+
+Main corrects one report inconsistency: G labels its changed-path inventory complete but omits the
+new file `clients/markei_flutter/test/sync/real_convergence_harness_support.dart`. The Git commit's
+26-path inventory controls over the prose inventory.
+
+The accepted proof is intentionally narrower than the complete D/F adversarial floor:
+
+- serialization/deadlock retry code exists, but retry exhaustion is not expanded into a decisive
+  database fault-injection matrix;
+- malformed, oversized and every closed-schema rejection branch are not exhaustively exercised;
+- RLS, constraints and Account predicates exist, but per-table cross-Account SELECT/INSERT/UPDATE
+  probes are not reported as a complete matrix;
+- the decisive harness covers one page and replay, not a full empty/paged/gapped/reordered cursor
+  matrix through the real HTTP/PostgreSQL path;
+- non-null Person and Payment Method references are rejected until complete immutable snapshots
+  exist; the proved fixture uses the supported null-reference boundary;
+- the normal application remains synchronization-disabled and has no production composition.
+
+These gaps do not reopen the bounded local convergence story. They remain mandatory hardening before
+production credentials, external beta acceptance or a claim of robust multi-device operation.
+
+## 5. Semantic and Didactic reconciliation
+
+Accepted meanings remain:
+
+```text
+saved-local → waiting-upload → uploading → server-accepted
+download-received → downloaded-applied → acknowledged by this Device
+duplicate-equivalent | conflict | not-applied | unknown-outcome
+```
+
+`server-accepted` does not mean another Device applied the event. `acknowledged` does not mean every
+Device converged. Synchronization is not backup, export, restore or permanent relay history.
+
+No sync dashboard, pairing page, Device-management page, navigation change or Cycle 11 visual work
+was added. Learner/KANBAN maturity remains unchanged because repository evidence cannot manufacture
+direct learner evidence.
+
+## 6. Architecture retained
+
+The accepted dependency direction is:
+
+```text
+Flutter domain/application ports
+→ Drift and HTTP infrastructure adapters
+→ API authentication/application boundary
+→ PostgreSQL runtime transactions
+```
+
+Flutter never receives PostgreSQL credentials and never connects directly to PostgreSQL. Fixture
+claims are limited to tests and the explicit loopback lab entrypoint; normal runtime still refuses
+authentication. PostgreSQL remains disposable local infrastructure in this evidence round.
+
+No decision is made here for the production identity provider, Device enrollment, hosted runtime,
+Neon physical layout, retention duration, snapshots, rebootstrap, account deletion or edits/deletes.
+
+## 7. MCG-01 disposition
+
+C10-S01B satisfies the local prerequisite for considering MCG-01. MCG-01 is not automatically
+executed or validated by this reconciliation. It may begin only as a separate, human-controlled
+provider configuration unit with a clean repository checkpoint.
+
+Human actions at MCG-01 remain:
+
+1. create or select an isolated Neon project and non-production development branch;
+2. confirm plan support, branch behavior, region, PostgreSQL version, costs and teardown ownership;
+3. create a disposable database plus separate migration and least-privilege runtime roles;
+4. place connection material only in approved local/deployment secret storage;
+5. run sanitized connectivity, migration-hash and privilege probes;
+6. return aliases, role names, version, timestamps and redacted pass/fail evidence only.
+
+Do not paste passwords, tokens, credential-bearing URLs or private keys into chat, Git, screenshots
+or notebook files. If the subscription exposes only a production branch, stop and investigate the
+plan/project configuration; do not repurpose production as the disposable development target.
+
+## 8. Next Main decision gate
+
+Before any second provider-backed implementation, Main must reconcile:
+
+- the actual MCG-01 redacted evidence and Neon branch constraints;
+- whether the residual adversarial matrix is completed locally before provider integration;
+- production authentication and Device enrollment alternatives;
+- hosted API runtime and server-only secret injection;
+- migration ownership and environment promotion rules;
+- retention, acknowledgement expiry, snapshot and rebootstrap policy;
+- the non-null Person/Payment snapshot contract;
+- two physical Device fixtures and teardown rules for later MCG-03/MCG-04.
+
+MCG-02, MCG-03 and MCG-04 remain inactive. UI/UX polishing, visual convergence, accessibility and
+Analytics remain Cycle 11 work.
+
+## 9. Publication boundary
+
+This reconciliation updates J only. G/H/I remain observational evidence and D/E/F remain the
+historical controlling contract for C10-S01B. Permanent Operational, Didactic, Design and Main-root
+owners are unchanged. No source, dependency, provider resource or secret is modified here.
