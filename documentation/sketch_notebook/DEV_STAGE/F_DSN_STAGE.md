@@ -1,369 +1,354 @@
-# F_DSN_STAGE — C10-S03A-R3 Design Materialization Authority
+# F_DSN_STAGE — C10-S03A-R3B Design Materialization Authority
 
 > Sequence: FLX-ORD-01
-> Controlling reconciliation: `421d79405e0435d150b61ca092a6923fc603e53e`
+> Controlling reconciliation: `2468c3912f1d0f3582e5eb241f104226b14c876f`
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Boundary: local project architecture and proof only
+> Boundary: bounded local architecture correction and proof
 
 ## 1. Selected architecture
 
-R3 is one bounded correction/proof unit:
+R3B completes the accepted R3 architecture through five narrow corrections and decisive proof:
 
 ```text
-closed HTTP authorization composition
-+ operation-specific Device target semantics
-+ actual Fastify route inventory
-+ semantic JWKS key-set revision
-+ closed Flutter transport result under an absolute deadline
-+ migration-006 exact readiness capability
-+ deterministic multi-producer local proof
+per-attempt owned Flutter transport resources
++ lossless enrollment result mapping/persistence
++ one-refresh normalized JWKS state machine
++ readiness-bound Fastify route comparison
++ Device-row status projection
++ deterministic multi-producer proof
 ```
 
-No external dependency/version change is selected. Existing Fastify, `jose`, `pg`, PostgreSQL,
-Dart `http`, Drift and Flutter primitives are sufficient unless compilation proves a specific
-missing cancellation primitive. In that case Codex stops for Main; it does not upgrade silently.
+No dependency/version change, migration, Drift schema, provider SDK or new product surface is
+selected. If direct compile evidence proves the pinned libraries cannot support the boundary, Codex
+stops for Main rather than expanding scope.
 
 ## 2. Dependency direction
 
 Retain:
 
 ```text
-domain contracts
+closed domain/application contracts
     ↑
-application ports/use cases
+coordinators and authorization services
     ↑
-Fastify / PostgreSQL / HTTP / Drift adapters
+HTTP / Fastify / PostgreSQL / Drift adapters
     ↑
 hosted / fixture / disabled / local-proof composition roots
 ```
 
-`jose` verifies JOSE/JWT/JWK cryptography. Markei owns issuer/audience policy, JWKS retrieval and
-cache/cooldown behavior. `package:http` performs request/stream mechanics. Markei owns deadlines,
-resource lifecycle and application outcome translation. PostgreSQL provides locks/RLS/functions;
-Markei owns predicates, ACLs and transaction ordering.
+Responsibilities:
 
-Do not extract broad new ports merely to remove existing `FastifyRequest`/`PoolClient` coupling;
-those couplings are not causes of the six defects. Small types/helpers may be added where they make
-invalid R3 states unrepresentable.
+- `jose`: signature/JWT/JWK cryptography;
+- Markei JWT adapter: issuer/audience policy, bounded retrieval, normalization and cooldown;
+- `package:http`: HTTP request/response mechanics;
+- Markei transport: deadline, client ownership, byte ceiling and outcome translation;
+- Drift: durable local facts/outbox/enrollment progress;
+- Fastify: route lifecycle and request dispatch;
+- Markei app builder: typed route policy and readiness equality;
+- PostgreSQL: transactions, locks, RLS and migration capability;
+- Markei authorization service: predicates, actor/target policy and state transitions.
 
-## 3. HTTP composition model
+Do not reproduce JOSE cryptography, parse Fastify route text or move raw HTTP/SQL details into
+application ports.
 
-Replace capability detection with an exhaustive discriminated union equivalent to:
+## 3. Flutter transport ownership model
 
-```text
-type AuthorizationComposition =
-  | { kind: "hosted"; identityService; transactionAuthorizer }
-  | { kind: "fixture"; verifier }
-  | { kind: "disabled" };
-```
-
-Constraints:
-
-- hosted identity/enrollment/Device routes use the hosted identity service;
-- hosted protected sync/recovery routes require the transaction authorizer;
-- fixture verification exists only in the fixture branch;
-- disabled composition refuses protected work;
-- no independent optional hosted authorizer remains;
-- branch selection is exhaustive and construction-time checked;
-- all composition roots select explicitly;
-- shared route behavior may remain centralized.
-
-The current hosted entrypoint's safe convention is retained through the stronger type; the unsafe
-fallback is removed, not merely guarded by a runtime warning.
-
-## 4. Transaction and Device-management model
-
-Protected operation path remains:
+Preferred hosted construction:
 
 ```text
-verify JWT outside DB transaction
-→ begin bounded-retry serializable transaction
-→ invoke migration-005 identity/membership fence
-→ require exactly one active membership
-→ set Account/identity context
-→ lock identity-bound active actor enrollment and Device
-→ set Device/operation context
-→ execute protected callback on same PoolClient
-→ commit once or roll back all
+HttpDeviceEnrollmentTransport
+  depends on HttpClientFactory
+  one enroll/query attempt
+    → create owned http.Client
+    → establish one monotonic deadline
+    → send/read using remaining time
+    → close client on completion or failure
 ```
 
-Device-management path becomes:
+The factory may be a narrow typedef/function; a new broad abstraction is unnecessary. Tests may
+inject an owned fake/factory.
 
-```text
-principal
-→ fenced membership
-→ active actor authorization
-→ stable actor/target locks
-→ locked same-Account target snapshot(active|revoked)
-→ status or conditional revoke transition
-```
+If a borrowed-client constructor is retained:
 
-Separate responsibilities:
+- mark it explicitly as borrowed;
+- never close that client;
+- do not use it as evidence for request cancellation;
+- preserve it only where existing tests/composition require it.
 
-- actor helper proves identity binding, active enrollment/Device and owner/member target scope;
-- target snapshot records current state without requiring target active;
-- status maps the snapshot;
-- revoke conditionally updates active→revoked and inserts one event;
-- already-revoked target maps to duplicate-equivalent for an active authorized actor.
+Deadline algorithm:
 
-Self-revoke is one accepted transition. After commit the actor is revoked and cannot authenticate a
-retry. Do not add a durable revoke request/result contract or active-actor exception in R3.
+1. capture monotonic start/end once;
+2. before send, headers and every body wait, calculate `end - now`;
+3. fail immediately when remaining is non-positive;
+4. race the complete operation against the same end condition;
+5. close owned client on expiry so late network work cannot continue as owned work;
+6. ignore any late completion through a settled-attempt guard;
+7. return one closed unavailable/unknown result; throw no raw HTTP exception across the port.
 
-Stable UUID lock order and one lock for identical IDs are required. Enrollment, Device state and
-security event share one transaction. A unique event constraint is unnecessary for the selected
-single-transition model; tests prove the locked conditional update.
+A renewable stream timeout is allowed only as an additional inactivity defense, never as the total
+deadline proof.
 
-## 5. Actual route registry
+## 4. Enrollment contract model
 
-One project-owned route registration gateway records:
-
-```text
-method
-path
-operation
-authorization class
-```
-
-Install a root Fastify `onRoute` hook before application/plugin routes. Capture normalized actual
-registrations independently from descriptor intent, then compare exact sets before readiness/use.
-
-Rules:
-
-- descriptor drives or wraps every application route;
-- actual non-health inventory equals the descriptor set;
-- `/health/live` and `/health/ready` are named exceptions or explicit descriptors;
-- Fastify automatic HEAD forms are normalized only through evidence for the pinned version;
-- duplicates, extras, missing routes, wrong operation/class and hosted-authorizer absence reject;
-- an injected direct `app.get`/plugin route must be detected;
-- never use `printRoutes()` text parsing.
-
-An optional `src/http/route_registry.ts` extraction is allowed if it keeps `app.ts` reviewable. Do
-not create a generalized framework.
-
-## 6. JWKS state machine
-
-Retain `Auth0JwtVerifier`/`BoundedJwksSource`, injected Clock/fetch and `jose`. Introduce a stable
-semantic key-set revision.
-
-Pipeline:
-
-```text
-bounded fetch
-→ JSON parse
-→ closed JWK validation
-→ reject any duplicate kid
-→ normalize accepted public JWK fields
-→ deterministic order-independent canonical bytes/hash
-→ changed | unchanged
-→ createLocalJWKSet(validated set)
-```
-
-Cache state includes:
-
-```text
-local key set
-semantic revision
-fresh-until
-absolute stale-until
-global next-refresh-after
-per-kid negative-until
-one shared refresh promise
-```
-
-State rules:
-
-- time changes never imply key-set change;
-- successful unchanged refresh preserves revision and sets negative cooldown for a still-absent
-  requested key;
-- failed refresh may retain known cached keys only before absolute stale expiry;
-- forced unknown-key refresh cannot bypass global failure cooldown;
-- concurrent refreshes share one promise;
-- genuine revision change invalidates only negative entries affected by the new set;
-- a changed set still lacking the requested key establishes negative cooldown;
-- stale expiry rejects even when memory retains the local set;
-- unknown key is never resolved from stale material.
-
-Use Node's existing cryptographic hash only for deterministic cache identity, never as token
-signature verification. Keep public failures generic.
-
-## 7. Flutter closed transport model
-
-Prefer a closed application port result over raw adapter exceptions, equivalent to:
+The transport result must preserve wire meaning:
 
 ```text
 sealed DeviceEnrollmentTransportResult
-  success(result)
+  success(status: deviceEnrolled | duplicateEquivalent)
   conflict
   unavailable
   unknownOutcome
 ```
 
-The exact Dart representation may use sealed classes or an equally exhaustive typed structure. It
-must be exhaustively handled by `HostedEnrollmentCoordinator`.
+Equivalent separate success subclasses are acceptable. A boolean or undifferentiated success is
+not.
 
-Ownership:
+Coordinator mapping remains exhaustive. Both enroll and replay/query paths call one persistence
+transition before returning a known outcome. Repository state must leave `enrolling` when a known
+conflict, unavailable or unknown result is observed.
 
-- coordinator: authentication session, one token, durable enrollment state transition;
-- transport port: closed result vocabulary, no HTTP types;
-- HTTP adapter: request construction, redirect refusal, absolute deadline, cancellation, response
-  ceiling, closed decode and raw exception translation;
-- Drift repository: progress/result persistence only; facts/outbox remain authoritative and intact.
+Use existing Drift v7 columns/states. If they cannot encode the closed mapping, stop: R3B does not
+authorize v8 or an implicit lossy mapping.
 
-One deadline is calculated at attempt start. Every connect/header/body wait consumes remaining time.
-Slow chunks cannot renew it. On expiry cancel request-owned resources.
+Identity invariants:
 
-Client lifecycle options:
+- one Recovery/EnrollmentRequestId survives retry, query and reopen;
+- token is never part of durable state;
+- facts, outbox and sync cursor are independent of hosted enrollment outcome;
+- transition persistence is idempotent for the same request/result;
+- unknown outcome never creates a new server request identity automatically.
 
-1. use a proven request-scoped abort/cancel primitive from pinned `http 1.6.0`; or
-2. inject an owned per-attempt client factory and close only that client.
+## 5. JWKS normalized state machine
 
-A borrowed shared client must not be closed by one attempt. Codex must compile/test the selected
-mechanism. Do not catch all objects or translate programmer errors to service-unavailable.
-
-No Drift schema change is selected. File-backed tests use existing v7 tables and real pending
-outbox/facts.
-
-## 8. Migration 006 exact capability
-
-Create forward migration:
+Retain the existing cache/cooldown object and coalesced fetch. Add explicit per-lookup context:
 
 ```text
-006_hosted_authorization_r3.sql
+lookup(kid)
+  → inspect usable cache
+  → maybe consume one refresh budget
+  → re-inspect requested kid
+  → return key OR install miss/failure cooldown and reject
 ```
 
-It registers `006_hosted_authorization_r3` with an explicit repository-style checksum and creates:
+An expired-cache refresh and an unknown-key refresh are alternative uses of the same budget, not two
+sequential fetches.
 
-```sql
-public.markei_hosted_runtime_ready()
-```
-
-Contract:
-
-- no arguments;
-- returns boolean only;
-- checks only the exact migration condition selected for this hosted R3 binary;
-- language SQL unless evidence requires PL/pgSQL;
-- `SECURITY DEFINER`, `STABLE`;
-- fixed `search_path = pg_catalog, public` and qualified table references;
-- no dynamic SQL or caller-selected identifiers;
-- owner is the migration identity used by the disposable harness;
-- execute revoked from `PUBLIC` and granted to `markei_runtime` only;
-- runtime execute on `markei_required_migration_present(text)` revoked;
-- runtime direct ledger access remains revoked.
-
-The migration ledger insert, function/ACL changes and revocation occur in one transaction. Do not
-edit/drop migration 005 objects. Application readiness calls only the qualified no-argument function.
-
-The exact readiness predicate must be internally constant and include the R3 migration identity;
-Codex must align it with the existing migration runner/ledger semantics. It may not expose an array,
-identifier or general history result.
-
-Application rollback is allowed while migration 006 remains forward history. An R2 binary may
-report not-ready after old-probe execute is revoked; rollback/deployment evidence must state this.
-
-## 9. Evidence architecture
-
-Use four producer families:
+Normalize fetched entries before revision/storage:
 
 ```text
-TypeScript/Fastify/JWT unit producer
-disposable PostgreSQL authorization/migration producer
-Flutter real-HTTP/file-backed producer
-bounded aggregate orchestrator
+NormalizedRsaSigningJwk {
+  kty: "RSA"
+  kid: bounded non-empty string
+  use: "sig"
+  alg: "RS256"
+  n: bounded base64url string
+  e: bounded base64url string
+}
 ```
 
-Each producer emits named machine-readable case IDs and a truthful terminal result. The orchestrator
-consumes producer exit/results and prints `R3_LOCAL_SECURITY_PROVED=true` only when every D/E case
-ran and passed.
+Reject duplicate `kid`, private components, unsupported key type/use/algorithm, missing fields,
+excess keys and oversized fields before cache replacement. Sort normalized keys by stable `kid`
+and hash canonical JSON of only the closed projection. Feed only accepted normalized public keys to
+the local `jose` resolver.
 
-Authorization races use explicit test-only phase hooks/barriers or controlled SQL sessions:
+State transitions:
 
-- no sleeps;
-- bounded waits;
-- same migration-005 fence for controlled membership/identity writers;
-- stable lock-order assertions;
-- before/after database state queries;
-- bounded serialization/deadlock retry and exhaustion.
+| Event | Cache/revision | Cooldown |
+| --- | --- | --- |
+| normalized set changed | replace, new revision | requested miss still gets per-kid cooldown |
+| normalized set unchanged | refresh freshness only | requested miss gets per-kid cooldown |
+| fetch failure with valid stale known key | retain within window | global failure cooldown |
+| fetch failure without usable key | do not authorize | global failure cooldown |
+| irrelevant metadata changes | same normalized revision | normal requested-key result |
 
-Flutter proof must cross the real boundaries:
+Use injected clock and fetcher; no real provider/JWKS endpoint.
+
+## 6. Fastify readiness inventory model
+
+Retain typed route descriptors and root-level `onRoute` capture. Register one exact assertion in the
+Fastify readiness lifecycle:
 
 ```text
-HostedEnrollmentCoordinator
-→ HttpDeviceEnrollmentTransport
-→ loopback Fastify
-→ disposable PostgreSQL
-and LocalDatabase.file close/reopen
+install root capture
+→ register application/plugins/routes
+→ Fastify materializes plugin graph
+→ onReady exact comparison
+→ ready/listen/inject allowed or rejected
 ```
 
-Fake transport or in-memory-only Drift remains useful unit evidence but cannot satisfy the decisive
-gate.
+The assertion owns normalized actual `{method,path}` pairs and compares them with descriptors that
+also carry operation/authorization class. It must not run only inside the synchronous tail of
+`buildApp`.
 
-## 10. Authorization and privacy boundaries
+Fastify normally rejects new route registration after readiness; therefore validating at readiness
+closes the pre-service registration window. Verify this against the pinned Fastify version.
 
-- Auth0 subject becomes `ExternalPrincipal`, never AccountId/DeviceId.
-- Active identity/membership/Device database rows remain required on every protected request.
-- Cross-Account and cross-Device access fails closed.
-- Runtime receives only the runtime pool; migrator/worker credentials never enter Fastify.
-- Fixture authentication remains test/loopback-only.
-- No token, claim, URI, key, password, connection string, fact/snapshot payload or generated
-  credential is logged.
-- Provider helper files remain unread and untouched.
-- No Auth0, Neon or Render request occurs.
+Tests must add:
 
-## 11. Versions and compatibility
+- one direct route after `buildApp` but before `ready()`;
+- one route through a registered encapsulated plugin;
+- one missing/duplicate/misclassified descriptor case;
+- the valid current application inventory.
 
-Unchanged:
+All invalid cases must reject readiness or first `inject` before route execution.
+
+## 7. Device status projection
+
+The transaction authorizer already locks a target snapshot containing distinct fields. Public
+status projection becomes:
 
 ```text
-event payload v3
-cursor c10b:*
-recovery snapshot format 1
-hosted enrollment contract v1
-Drift schema v7
-migrations 001–005
-package-lock/pubspec.lock dependency set
+TargetDeviceSnapshot.deviceStatus → active | revoked
 ```
 
-Added:
+`enrollmentState` remains internal to enrollment workflow and revoke transition coordination. Do
+not coerce it into public Device state. Preserve transaction/locking and existing authorization
+policy; this is a projection correction, not a new workflow.
+
+Use a deliberately divergent test fixture to prevent accidental equality from hiding regression.
+
+## 8. Authorization transaction invariants
+
+Retain the accepted path:
 
 ```text
-PostgreSQL migration 006
-local R3 diagnostic/case vocabulary
+verify JWT outside transaction
+→ serializable bounded-retry transaction
+→ identity/membership fence
+→ Account/identity context
+→ active actor enrollment + Device lock
+→ Device/operation context
+→ target policy/locks when applicable
+→ protected operation
+→ commit once or rollback all
 ```
 
-No provider SDK, callback protocol, platform secret, UI contract, Device replacement/reactivation,
-Account selection UI or Cycle 11 feature is introduced.
+Deterministic barrier hooks belong to lab/test infrastructure, not production API contracts. Place
+them at named transaction points so tests can change membership/identity/Device state before the
+relevant authorization lock. Do not use sleeps as race proof.
 
-## 12. Rollback and stopping boundary
+State snapshots for denied-no-advance proof should be produced by one reusable lab observer with
+Account-scoped counts/identities, avoiding payload logs.
 
-Rollback is application rollback/hosted disablement; migration 006 remains inert forward history.
-No destructive down migration.
+Revoke invariant:
 
-Stop before mutation or report partial if:
+```text
+active target → atomic Device/enrollment revoke + exactly one security event
+revoked target + active authorized actor → duplicate-equivalent, no event
+self-revoked actor on later request → denied before target handling
+```
 
-- D/E/F conflict;
-- self-revoke requires weakening the active actor rule;
-- hosted fallback remains representable;
-- actual inventory cannot reject an injected extra route;
-- JWKS fingerprint is based only on time/`kid` or forced refresh bypasses global cooldown;
-- one absolute deadline/cancellation cannot be proven with pinned APIs;
-- a broad runtime grant, provider access or dependency upgrade is required;
-- migrations 001–005, Drift schema or permanent memory would need editing;
-- race proof depends on sleeps;
-- any decisive producer is unavailable/skipped;
-- repository credential containment is unresolved for provider work.
+## 9. Migration 006 evidence architecture
 
-## 13. I report requirements
+Migration files are immutable for R3B. Add/extend disposable proof infrastructure only.
 
-I must report:
+Run separate scenarios from pristine databases for:
 
-- final dependency/composition direction;
-- exact changed source boundaries;
-- migration 006 identity, checksum, function definition, owner and ACLs;
-- actor/target state and scoped idempotence rules;
-- actual route capture/normalization rules;
-- JWKS semantic fingerprint and complete state transitions;
-- Flutter result type, deadline/cancellation and client ownership;
-- transaction/barrier/aggregate proof architecture;
-- versions retained;
-- deviations, partial gates and deferred provider/self-replay decisions.
+```text
+fresh 001→006
+upgrade 001→005→006
+duplicate runner
+failure-injected copy rollback
+runtime ACL
+owner/migrator ACL
+temp/public shadowing
+ledger absent/tampered
+```
+
+Never modify the canonical SQL to inject failure. Copy migrations to a disposable directory and
+alter only the disposable copy. Hash canonical migrations before/after.
+
+The runtime probe calls only `public.markei_hosted_runtime_ready()` and records a boolean. It must
+also prove denial of direct ledger and old parameterized function.
+
+## 10. Flutter file-backed system proof
+
+Add a lab-gated test/harness that composes:
+
+```text
+temporary file-backed Drift v7
+→ real HostedIdentityRepository/coordinator
+→ real HttpDeviceEnrollmentTransport
+→ loopback Fastify enrollment/status routes
+→ synthetic disposable PostgreSQL where required
+```
+
+This proof may use fixture authentication only in the explicit loopback composition. It must not
+contact provider services.
+
+Seed real facts and a pending outbox through application/repository APIs where possible. Capture
+stable IDs/counts before attempt, close/reopen the database, then compare facts/outbox/request state.
+Delete temporary files and tear down services in `finally` paths.
+
+The slow-response server must support deterministic header/body barriers so deadline tests are not
+wall-clock flaky.
+
+## 11. Producer and aggregate architecture
+
+Each decisive producer emits a closed machine-readable record containing version, required case
+names and booleans. At minimum:
+
+```text
+authorization-race
+migration-006-acl
+jwks-state-machine
+route-inventory
+flutter-http-file-backed
+static-regression
+```
+
+One aggregator validates producer version/schema, exact required case set and all booleans. Unknown,
+duplicate, missing, skipped, partial or false records make the aggregate false. It emits the complete
+success diagnostic only after all producers pass.
+
+Avoid a second hand-maintained truth list drifting from tests: keep required case names adjacent to
+their producer contract and have the aggregator consume the exported contracts.
+
+## 12. Versions and files
+
+Retain:
+
+```text
+PostgreSQL migrations: 001–006
+event payload: v3
+cursor: c10b:*
+recovery snapshot: format 1
+hosted enrollment contract: v1
+Drift schema: v7
+JWT algorithm: RS256
+```
+
+Expected source impact is limited to the existing R3 Flutter transport/coordinator/ports/tests,
+JWT verifier/tests, Fastify app/tests, Device authorization/tests and local harness/probes. New test
+helpers may be split by responsibility. No dependency or lockfile change is expected.
+
+## 13. Security and privacy boundaries
+
+- no tokens, claims, JWK bodies, credentials, connection strings or fact payloads in logs/reports;
+- no database/provider credentials in Flutter;
+- no Auth0, Neon, Render or public endpoint access;
+- no private helper/editor-file reads;
+- loopback binding and synthetic data only;
+- runtime remains least privilege;
+- fixture authentication remains test/lab-only;
+- temporary databases/files are always torn down.
+
+Credential rotation and repository-history containment are a separate human/provider sequence and
+do not count as R3B evidence.
+
+## 14. Rollback and stop boundary
+
+R3B rollback is the single bounded implementation commit. Migration state is unchanged, so no SQL
+rollback migration is created. Preserve accepted R3 behavior if a proof mechanism fails.
+
+Stop for Main if:
+
+- correct cancellation requires dependency/version change;
+- outcome persistence requires Drift v8;
+- migration 006 requires editing or migration 007;
+- Fastify lifecycle cannot provide a readiness-time closed inventory;
+- provider/private data becomes necessary;
+- a new product/account/device workflow is implied.
+
+Report architectural deviations in I. Do not silently relax a contract or convert incomplete proof
+into local-security success.
