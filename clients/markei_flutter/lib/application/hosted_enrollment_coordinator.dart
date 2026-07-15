@@ -54,7 +54,7 @@ final class HostedEnrollmentCoordinator {
     }
     await _mark(environmentAlias, command, 'enrolling');
     try {
-      final result = await _transport.enroll(command);
+      final result = await _transport.enroll(command, token.accessToken!);
       final state = HostedIdentityState(
         environmentAlias: environmentAlias,
         installationId: result.installationId,
@@ -86,8 +86,17 @@ final class HostedEnrollmentCoordinator {
     if (state.serverDeviceId != null) {
       return HostedEnrollmentOutcome.duplicateEquivalent(state);
     }
+    final token = await _tokenSource.accessToken();
+    if (token.accessToken == null) {
+      return HostedEnrollmentOutcome.notApplied(
+        token.errorCode ?? 'token-rejected',
+      );
+    }
     try {
-      final result = await _transport.query(state.enrollmentRequestId!);
+      final result = await _transport.query(
+        state.enrollmentRequestId!,
+        token.accessToken!,
+      );
       if (result == null) {
         return const HostedEnrollmentOutcome.unknown('unknown-outcome');
       }

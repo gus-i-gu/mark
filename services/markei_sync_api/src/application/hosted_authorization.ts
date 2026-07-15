@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyRequest } from "fastify";
 import type { PoolClient } from "pg";
-import type { AuthVerifier } from "./auth.js";
 import {
   canonicalHash,
   type AuthContext,
@@ -22,35 +21,11 @@ import {
   type PrincipalVerifier,
 } from "./hosted_contracts.js";
 
-export class HostedAuthVerifier implements AuthVerifier {
+export class HostedTransactionAuthorizer {
   constructor(
     private readonly database: Database,
     private readonly verifier: PrincipalVerifier,
   ) {}
-
-  async verify(request: FastifyRequest): Promise<AuthContext> {
-    const principal = await this.verifier.verify(request);
-    const deviceId = requestedDeviceId(request);
-    if (!deviceId) throw new HostedAuthError("device-enrollment-required", 403);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      const membership = await resolveOneMembership(client, principal);
-      await client.query("select set_config('markei.account_id', $1, true)", [
-        membership.accountId,
-      ]);
-      await client.query("select set_config('markei.device_id', $1, true)", [
-        deviceId,
-      ]);
-      const device = await client.query(
-        `select state from device_enrollments
-          where account_id=$1 and device_id=$2 and identity_id=$3`,
-        [membership.accountId, deviceId, membership.identityId],
-      );
-      if (!device.rowCount || device.rows[0].state !== "active") {
-        throw new HostedAuthError("device-revoked", 403);
-      }
-      return { accountId: membership.accountId, deviceId };
-    });
-  }
 
   async authorizeOperation<T>(
     request: FastifyRequest,
@@ -63,6 +38,7 @@ export class HostedAuthVerifier implements AuthVerifier {
     return inTransactionWithContext(this.database, {}, async (client) => {
       const membership = await resolveOneMembership(client, principal);
       await setAccount(client, membership.accountId);
+      await setIdentity(client, membership.identityId);
       await setDevice(client, deviceId);
       const device = await client.query(
         `select e.state as enrollment_state, d.status as device_status
@@ -244,12 +220,22 @@ export class HostedIdentityService {
     const principal = await this.verifier.verify(request);
     return inTransactionWithContext(this.database, {}, async (client) => {
       const membership = await resolveOneMembership(client, principal);
+      const actorDeviceId = requestedDeviceId(request);
+      if (!actorDeviceId)
+        throw new HostedAuthError("device-enrollment-required", 403);
       await setAccount(client, membership.accountId);
-      await setDevice(client, deviceId);
+      await setIdentity(client, membership.identityId);
+      await setDevice(client, actorDeviceId);
+      await setOperation(client, "device-management");
+      await authorizeActorAndTargetDevice(
+        client,
+        membership,
+        actorDeviceId,
+        deviceId,
+      );
       const row = await client.query(
         `select state, generation from device_enrollments
-          where account_id=$1 and device_id=$2
-          for update`,
+          where account_id=$1 and device_id=$2`,
         [membership.accountId, deviceId],
       );
       if (!row.rowCount) throw new HostedAuthError("forbidden", 404);
@@ -266,14 +252,19 @@ export class HostedIdentityService {
     const principal = await this.verifier.verify(request);
     return inTransactionWithContext(this.database, {}, async (client) => {
       const membership = await resolveOneMembership(client, principal);
+      const actorDeviceId = requestedDeviceId(request);
+      if (!actorDeviceId)
+        throw new HostedAuthError("device-enrollment-required", 403);
       await setAccount(client, membership.accountId);
-      await setDevice(client, deviceId);
-      if (
-        membership.role !== "owner" &&
-        requestedDeviceId(request) !== deviceId
-      ) {
-        throw new HostedAuthError("forbidden", 403);
-      }
+      await setIdentity(client, membership.identityId);
+      await setDevice(client, actorDeviceId);
+      await setOperation(client, "device-management");
+      await authorizeActorAndTargetDevice(
+        client,
+        membership,
+        actorDeviceId,
+        deviceId,
+      );
       const updated = await client.query(
         `update device_enrollments
             set state='revoked', updated_at=now()
@@ -307,16 +298,8 @@ export class HostedIdentityService {
 async function resolveOneMembership(
   client: PoolClient,
   principal: ExternalPrincipal,
-  lock = false,
 ): Promise<Membership> {
-  const identity = await resolveIdentity(client, principal);
-  if (!identity) throw new HostedAuthError("membership-required", 403);
-  await setIdentity(client, identity.identityId);
-  const memberships = await activeMemberships(
-    client,
-    identity.identityId,
-    lock,
-  );
+  const memberships = await fencedMemberships(client, principal);
   if (memberships.length === 0) {
     throw new HostedAuthError("membership-required", 403);
   }
@@ -330,13 +313,9 @@ async function resolveIdentity(
   client: PoolClient,
   principal: ExternalPrincipal,
 ) {
-  const row = await client.query(
-    `select identity_id from external_identities
-      where issuer=$1 and subject=$2 and status='active'`,
-    [principal.issuer, principal.subject],
-  );
-  if (!row.rowCount) return null;
-  return { identityId: String(row.rows[0].identity_id) };
+  const memberships = await fencedMemberships(client, principal);
+  if (!memberships.length) return null;
+  return { identityId: memberships[0].identityId };
 }
 
 async function activeMemberships(
@@ -357,6 +336,72 @@ async function activeMemberships(
     identityId: String(row.identity_id),
     role: row.role as "owner" | "member",
   }));
+}
+
+async function fencedMemberships(
+  client: PoolClient,
+  principal: ExternalPrincipal,
+): Promise<Membership[]> {
+  const rows = await client.query(
+    `select identity_id, account_id, role
+       from markei_authorize_identity_membership($1,$2)`,
+    [principal.issuer, principal.subject],
+  );
+  return rows.rows.map((row) => ({
+    accountId: String(row.account_id),
+    identityId: String(row.identity_id),
+    role: row.role as "owner" | "member",
+  }));
+}
+
+async function authorizeActorAndTargetDevice(
+  client: PoolClient,
+  membership: Membership,
+  actorDeviceId: string,
+  targetDeviceId: string,
+) {
+  if (membership.role !== "owner" && actorDeviceId !== targetDeviceId) {
+    throw new HostedAuthError("forbidden", 403);
+  }
+  const ordered = Array.from(new Set([actorDeviceId, targetDeviceId])).sort();
+  const rows = await client.query(
+    `select d.device_id, d.status as device_status
+       from devices d
+      where d.account_id=$1
+        and d.device_id = any($2::uuid[])
+      order by d.device_id
+      for update of d`,
+    [membership.accountId, ordered],
+  );
+  if (rows.rowCount !== ordered.length) {
+    throw new HostedAuthError("forbidden", 403);
+  }
+  const actorEnrollment = await client.query(
+    `select state
+       from device_enrollments
+      where account_id=$1
+        and device_id=$2
+        and identity_id=$3
+      for update`,
+    [membership.accountId, actorDeviceId, membership.identityId],
+  );
+  const actor = rows.rows.find(
+    (row) => String(row.device_id) === actorDeviceId,
+  );
+  const target = rows.rows.find(
+    (row) => String(row.device_id) === targetDeviceId,
+  );
+  if (
+    !actor ||
+    actor.device_status !== "active" ||
+    !actorEnrollment.rowCount ||
+    actorEnrollment.rows[0].state !== "active"
+  ) {
+    throw new HostedAuthError("device-revoked", 403);
+  }
+  if (!target || target.device_status !== "active") {
+    throw new HostedAuthError("forbidden", 403);
+  }
 }
 
 function requestedDeviceId(request: FastifyRequest): string | null {
@@ -403,6 +448,12 @@ async function setAccount(client: PoolClient, accountId: string) {
 async function setDevice(client: PoolClient, deviceId: string) {
   await client.query("select set_config('markei.device_id', $1, true)", [
     deviceId,
+  ]);
+}
+
+async function setOperation(client: PoolClient, operation: string) {
+  await client.query("select set_config('markei.operation', $1, true)", [
+    operation,
   ]);
 }
 

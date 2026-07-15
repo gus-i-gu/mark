@@ -6,7 +6,7 @@ import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { parseHostedConfig } from "../src/application/hosted_config.js";
 import { Auth0JwtVerifier } from "../src/application/jwt_verifier.js";
 import { HostedAuthError } from "../src/application/hosted_contracts.js";
-import { PROTECTED_ROUTE_POLICIES } from "../src/http/app.js";
+import { ROUTE_AUTHORIZATION_DESCRIPTORS } from "../src/http/app.js";
 
 test("hosted config requires closed production keys without values", () => {
   assert.throws(
@@ -223,15 +223,20 @@ test("Auth0JwtVerifier coalesces parallel refresh for one unknown key", async ()
 });
 
 test("protected route policy inventory covers hosted sync and recovery routes", () => {
-  const operations = PROTECTED_ROUTE_POLICIES.map(
+  const operations = ROUTE_AUTHORIZATION_DESCRIPTORS.map(
     (policy) => policy.operation,
   ).sort();
   assert.deepEqual(operations, [
     "acknowledgement",
     "capabilities",
     "complete-rebootstrap",
+    "device-revoke",
+    "device-status",
     "download-events",
     "download-rebootstrap-chunk",
+    "enroll-device",
+    "identity-resolution",
+    "query-enrollment",
     "query-rebootstrap",
     "start-rebootstrap",
     "upload-submission",

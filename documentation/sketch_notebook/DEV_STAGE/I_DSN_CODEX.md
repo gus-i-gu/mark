@@ -1,109 +1,118 @@
-# I_DSN_CODEX - C10-S03A-R1 Design Evidence
+# I_DSN_CODEX - C10-S03A-R2 Design Evidence
 
 Sequence: FLX-ORD-01 corrective Codex materialization
 Role: Codex design/architecture evidence
-Unit: C10-S03A-R1 local security correction
+Unit: C10-S03A-R2 local hosted-authorization correction
 Branch: `intermid-cycle-recovery`
 Authority: `F_DSN_STAGE.md` plus J/D/E
 Evidence boundary: local architecture only; provider proof deferred
 
+## Result
+
+```text
+C10-S03A_R2_PARTIAL
+MCG-02_PROVIDER_PROOF_PENDING
+```
+
+Exact blocker: the complete deterministic R2 race/failure matrix and real Flutter loopback HTTP/file-backed proof remain incomplete.
+
+## Migration and ACL design
+
+Migration 005 adds:
+
+- `markei_authorize_identity_membership(text,text)` security-definer function;
+- `markei_required_migration_present(text)` security-definer function;
+- runtime execute grants only for those functions;
+- runtime direct `migration_ledger` access revocation;
+- runtime identity/membership mutation revocation;
+- RLS adjustment for explicit Device-management operation context.
+
+Functions use fixed `search_path`, qualified table references, no dynamic SQL and bounded issuer/subject input. The authorization function locks the active external identity and active memberships in deterministic Account order.
+
 ## Transaction ownership
 
-Protected hosted sync/recovery routes now use:
+Hosted protected sync/recovery operations now follow:
 
 ```text
-JWT/JWKS verification
+verify JWT/JWKS
 -> ExternalPrincipal
--> HostedAuthVerifier.authorizeOperation(...)
--> serializable database transaction
--> identity/membership resolution
--> enrollment/Device recheck
--> protected operation callback using the same PoolClient
+-> begin serializable bounded-retry transaction
+-> authorization fence
+-> exactly one active membership
+-> set identity/account context
+-> lock active actor enrollment and Device
+-> set Device/operation context
+-> execute operation callback with same PoolClient
+-> commit once or roll back all state
 ```
 
-The route callback no longer receives a trusted authorization context from a previously committed hosted-auth transaction. Fixture auth remains supported only through the non-hosted fallback path used by existing direct tests.
+Hosted composition uses `HostedTransactionAuthorizer` explicitly. The hosted entrypoint passes `RefusingAuthVerifier` for non-hosted fallback so hosted protected operations cannot silently use an independently committed `AuthContext`.
 
-## JWT/JWKS boundary
+## Route registry
 
-`Auth0JwtVerifier` still delegates cryptography to `jose`, but now uses an explicit bounded JWKS source:
+Route registration is descriptor-driven. Each descriptor records method, path, operation and authorization class:
 
-- RS256 precheck;
-- required `kid`;
-- issuer and audience pinning;
-- token byte ceiling;
-- JWKS response byte ceiling;
-- request timeout;
-- cache maximum age;
-- refresh cooldown;
-- redirect refusal;
-- duplicate/conflicting key ID rejection;
-- coalesced parallel refresh.
+- `principal-only`
+- `active-membership`
+- `active-actor-device-management`
+- `transaction-scoped-operation`
 
-Provider URLs, tokens, claims and JWKS bodies are not logged by new code.
+Fastify registration uses these descriptors, and construction verifies described routes are present in Fastify. Current descriptor count is 13, covering identity, enrollment, Device management, sync and recovery routes.
 
-## Migration, Drift and protocol versions
+## Actor/target policy
 
-- PostgreSQL migrations 001-004 unchanged.
-- No migration 005 added.
-- Drift schema remains v7.
-- Event payload v3 preserved.
-- `c10b:*` cursor format preserved.
-- Recovery snapshot format 1 preserved.
-- Hosted identity/enrollment contract remains v1.
+Device status/revoke now separates actor and target:
 
-## Runtime and migrator boundary
+- actor source: validated `x-markei-device-id` plus active database binding;
+- target source: path parameter only;
+- owner: same-Account target allowed;
+- member: actor Device only;
+- locks: stable UUID order, one lock when identical;
+- revoked/missing/foreign targets: bounded non-enumerating failure;
+- revoke updates enrollment and Device state atomically and inserts a security event only on active-state transition.
 
-The hosted-local harness now separates:
+## JWT/JWKS state machine
 
-```text
-LAB_MIGRATOR_URL
-LAB_RUNTIME_URL
-```
+The verifier still delegates cryptography to `jose`. The bounded JWKS source now includes:
 
-The migrator applies migrations and synthetic provisioning, then is closed before the HTTP service starts. Fastify receives only the runtime pool. Runtime HTTP path passed local proof for enrollment, sync, acknowledgement, cross-Account denial and revocation denial.
+- RS256, issuer and audience pinning;
+- HTTPS same-origin JWKS requirement when issuer is HTTPS;
+- token and JWKS byte ceilings;
+- timeout and redirect refusal;
+- explicit fresh cache and stale-if-error ceilings;
+- global refresh cooldown;
+- per-key unknown-`kid` cooldown state;
+- concurrent refresh coalescing;
+- duplicate `kid` rejection, identical or conflicting;
+- generic public failure errors.
 
-The disposable migrator role required local `CREATEROLE` because migration 003 creates `markei_recovery_worker`. Runtime was not granted role administration or DDL.
+Unit tests cover existing JWT/JWKS failure floor cases, but the full R2 rotation/outage/stale-expiry pressure suite is not complete enough to claim full local proof.
 
-## Account, Device and route inventory
+## Flutter credential flow
 
-- Synthetic Account count: 2.
-- Synthetic external identity count: 2.
-- Installation count: 3.
-- Device count: 3.
-- Protected route policy count: 8.
-- Cross-Account denial cases exercised by harness: 1.
-- Revoked Device denial cases exercised by harness: 1.
-- Enrollment conflict cases exercised by harness/tests: 1.
+`DeviceEnrollmentTransport` now accepts the bearer credential as an explicit method parameter. `HostedEnrollmentCoordinator` obtains one token per enroll/replay attempt and passes that same value to transport. `HttpDeviceEnrollmentTransport` uses injected origin/client, disables redirects, bounds timeout and response bytes, rejects malformed/additional/missing success fields and maps 409/non-2xx failures without decoding them as success.
 
-## Flutter lab containment
+## Versions and boundaries
 
-Added provider-neutral lab composition pieces only:
-
-- `LabAuthenticationSession`
-- `LabAccessTokenSource`
-- `HttpDeviceEnrollmentTransport`
-- `HostedEnrollmentCoordinator`
-- `DriftHostedIdentityRepository`
-- `DriftHostedSyncGuard`
-
-No provider SDK, callback registration, provider identifier, native secret, production token storage, Account-selection UI or Device-management UI was added.
+- Event payload v3 unchanged.
+- Cursor `c10b:*` unchanged.
+- Recovery snapshot format 1 unchanged.
+- Hosted enrollment contract remains v1.
+- Drift remains v7.
+- PostgreSQL migrations 001-004 unchanged; only migration 005 added.
+- No provider SDK, callbacks, native secrets, provider IDs, Account UI or Device-management UI added.
+- Migration 003 provider worker-role bootstrap remains deferred to human/provider work.
 
 ## Deviations and deferrals
 
-R1 remains partial because the complete CP4 race matrix is not represented by named barrier/hook tests. Current design relies on serializable transactions plus enrollment/Device row locks; membership read/write race proof still needs explicit barrier-level validation before Main can accept full local-security proof.
+Deferred before full R2 success:
 
-Deferred:
+- barrier/hook race tests for membership removal/disable across upload, download, acknowledgement and recovery;
+- barrier/hook race tests for external identity disable;
+- barrier/hook race tests for actor Device revocation across protected routes;
+- owner/member target status/revoke race tests;
+- full denied-no-state-advance matrix;
+- real Flutter HTTP/file-backed hosted enrollment test against loopback Fastify;
+- complete JWT rotation, outage/recovery, stale expiry and unknown-key burst suite.
 
-- Auth0, Neon and Render proof;
-- production Account creation/invitations;
-- provider JWKS tuning;
-- Account-selection and Device-management UI;
-- MCG-03/04;
-- Cycle 10 closure.
-
-Terminal design result:
-
-```text
-C10-S03A_R1_PARTIAL
-MCG-02_PROVIDER_PROOF_PENDING
-```
+Provider proof, MCG-03, MCG-04 and Cycle 10 closure were not started.

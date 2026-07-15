@@ -6,9 +6,10 @@ import { canonicalHash } from "./domain/protocol.js";
 import { buildApp } from "./http/app.js";
 import { Auth0JwtVerifier } from "./application/jwt_verifier.js";
 import {
-  HostedAuthVerifier,
   HostedIdentityService,
+  HostedTransactionAuthorizer,
 } from "./application/hosted_authorization.js";
+import { RefusingAuthVerifier } from "./application/auth.js";
 import { systemClock } from "./application/hosted_contracts.js";
 
 const labMigratorUrl = process.env.LAB_MIGRATOR_URL;
@@ -59,7 +60,8 @@ try {
   });
   const hosted = new HostedIdentityService(database, verifier, systemClock);
   const app = buildApp({
-    auth: new HostedAuthVerifier(database, verifier),
+    auth: new RefusingAuthVerifier(),
+    hostedAuthorizer: new HostedTransactionAuthorizer(database, verifier),
     database,
     hosted,
   });
@@ -102,7 +104,7 @@ try {
     applicationId: "markei.hosted.local",
     applicationVersion: "1.0.0",
   });
-  if (conflict.status !== 200 || conflict.body.code !== "conflict") {
+  if (conflict.status !== 409 || conflict.body.code !== "conflict") {
     throw new Error("conflicting replay was not denied");
   }
   const enrollA2 = await post(`${origin}/v1/devices/enroll`, tokenA, {
@@ -179,11 +181,11 @@ try {
   );
   if (denied.status !== 403) throw new Error("revoked Device was not denied");
   await app.close();
-  process.stdout.write("LOCAL_TRANSACTION_AUTHORIZATION=true\n");
+  await proveLeastPrivilege(pool);
+  process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
+  process.stdout.write("ROUTE_AUTHORIZATION_INVENTORY=true\n");
   process.stdout.write("LEAST_PRIVILEGE_HTTP=true\n");
-  process.stdout.write("TWO_ACCOUNT_ISOLATION=true\n");
-  process.stdout.write("JWKS_FAILURE_FLOOR=true\n");
-  process.stdout.write("FLUTTER_HOSTED_LAB=true\n");
+  process.stdout.write("R2_LOCAL_SECURITY_PROVED=false\n");
 } finally {
   await pool.end().catch(() => undefined);
   await migratorPool.end().catch(() => undefined);
@@ -198,6 +200,7 @@ async function migrate(pool: pg.Pool) {
       "002_coordination_hardening",
       "003_retention_snapshot_recovery",
       "004_hosted_identity_enrollment",
+      "005_hosted_authorization_fence",
     ]) {
       const path = new URL(`../migrations/${id}.sql`, import.meta.url);
       await client.query(readFileSync(path, "utf8"));
@@ -234,6 +237,33 @@ async function seed(pool: pg.Pool) {
       [id === identityA ? accountA : accountB, id, "owner"],
     );
   }
+}
+
+async function proveLeastPrivilege(pool: pg.Pool) {
+  const user = await pool.query("select current_user");
+  if (user.rows[0].current_user !== "lab_runtime") {
+    throw new Error("runtime current_user was not isolated");
+  }
+  const ready = await pool.query(
+    "select markei_required_migration_present($1) as ready",
+    ["005_hosted_authorization_fence"],
+  );
+  if (ready.rows[0].ready !== true) {
+    throw new Error("runtime readiness function failed");
+  }
+  await expectDenied(pool, "select count(*) from migration_ledger");
+  await expectDenied(pool, "create table runtime_must_not_create(id int)");
+  await expectDenied(pool, "update external_identities set status='disabled'");
+  await expectDenied(pool, "update account_memberships set status='disabled'");
+}
+
+async function expectDenied(pool: pg.Pool, sql: string) {
+  try {
+    await pool.query(sql);
+  } catch {
+    return;
+  }
+  throw new Error("runtime privilege denial probe unexpectedly succeeded");
 }
 
 async function token(subject: string) {

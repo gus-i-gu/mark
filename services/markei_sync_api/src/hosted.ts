@@ -1,8 +1,9 @@
 import pg from "pg";
 import {
-  HostedAuthVerifier,
   HostedIdentityService,
+  HostedTransactionAuthorizer,
 } from "./application/hosted_authorization.js";
+import { RefusingAuthVerifier } from "./application/auth.js";
 import { parseHostedConfig } from "./application/hosted_config.js";
 import { systemClock } from "./application/hosted_contracts.js";
 import { Auth0JwtVerifier } from "./application/jwt_verifier.js";
@@ -25,7 +26,8 @@ const verifier = new Auth0JwtVerifier({
 });
 const hosted = new HostedIdentityService(database, verifier, systemClock);
 const app = buildApp({
-  auth: new HostedAuthVerifier(database, verifier),
+  auth: new RefusingAuthVerifier(),
+  hostedAuthorizer: new HostedTransactionAuthorizer(database, verifier),
   database,
   hosted,
 });

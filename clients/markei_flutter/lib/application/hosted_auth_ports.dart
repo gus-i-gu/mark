@@ -9,8 +9,14 @@ abstract interface class AccessTokenSource {
 }
 
 abstract interface class DeviceEnrollmentTransport {
-  Future<DeviceEnrollmentResult> enroll(DeviceEnrollmentCommand command);
-  Future<DeviceEnrollmentResult?> query(String enrollmentRequestId);
+  Future<DeviceEnrollmentResult> enroll(
+    DeviceEnrollmentCommand command,
+    String bearerCredential,
+  );
+  Future<DeviceEnrollmentResult?> query(
+    String enrollmentRequestId,
+    String bearerCredential,
+  );
 }
 
 abstract interface class HostedIdentityRepository {

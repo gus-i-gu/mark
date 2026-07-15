@@ -22,7 +22,9 @@ export type JwtVerifierOptions = {
   skewSeconds?: number;
   timeoutMs?: number;
   cacheMaxAgeMs?: number;
+  staleIfErrorMs?: number;
   cooldownMs?: number;
+  unknownKidCooldownMs?: number;
   maxTokenBytes?: number;
   maxJwksBytes?: number;
   fetchJwks?: typeof fetch;
@@ -35,9 +37,12 @@ export class Auth0JwtVerifier implements PrincipalVerifier {
   constructor(private readonly options: JwtVerifierOptions) {
     this.jwks = new BoundedJwksSource({
       uri: options.jwksUri,
+      issuer: options.issuer,
       timeoutMs: options.timeoutMs ?? 1500,
       cacheMaxAgeMs: options.cacheMaxAgeMs ?? 300000,
+      staleIfErrorMs: options.staleIfErrorMs ?? 600000,
       cooldownMs: options.cooldownMs ?? 1000,
+      unknownKidCooldownMs: options.unknownKidCooldownMs ?? 1000,
       maxBytes: options.maxJwksBytes ?? 65536,
       clock: options.clock,
       fetchJwks: options.fetchJwks ?? fetch,
@@ -85,9 +90,12 @@ export class Auth0JwtVerifier implements PrincipalVerifier {
 
 type BoundedJwksOptions = {
   uri: string;
+  issuer: string;
   timeoutMs: number;
   cacheMaxAgeMs: number;
+  staleIfErrorMs: number;
   cooldownMs: number;
+  unknownKidCooldownMs: number;
   maxBytes: number;
   clock: Clock;
   fetchJwks: typeof fetch;
@@ -95,42 +103,59 @@ type BoundedJwksOptions = {
 
 class BoundedJwksSource {
   private local: ReturnType<typeof createLocalJWKSet> | null = null;
-  private expiresAt = 0;
+  private freshUntil = 0;
+  private staleUntil = 0;
   private nextRefreshAfter = 0;
+  private negativeKidUntil = new Map<string, number>();
   private refreshPromise: Promise<void> | null = null;
   private readonly uri: URL;
 
   constructor(private readonly options: BoundedJwksOptions) {
-    this.uri = boundedUri(options.uri);
+    this.uri = boundedUri(options.uri, options.issuer);
   }
 
   async getKey(
     header: Parameters<ReturnType<typeof createLocalJWKSet>>[0],
     token: Parameters<ReturnType<typeof createLocalJWKSet>>[1],
   ) {
-    if (!this.local || this.options.clock.now().getTime() >= this.expiresAt) {
+    const now = this.options.clock.now().getTime();
+    const kid = typeof header?.kid === "string" ? header.kid : "";
+    if (!this.local || now >= this.freshUntil) {
       await this.refresh();
     }
     try {
       return await this.local!(header, token);
     } catch (error) {
       if (!(error instanceof errors.JWKSNoMatchingKey)) throw error;
-      await this.refresh();
+      if (kid && now < (this.negativeKidUntil.get(kid) ?? 0)) {
+        throw error;
+      }
+      const previousFreshUntil = this.freshUntil;
+      await this.refresh({ force: true });
+      if (kid && this.freshUntil === previousFreshUntil) {
+        this.negativeKidUntil.set(
+          kid,
+          this.options.clock.now().getTime() +
+            this.options.unknownKidCooldownMs,
+        );
+      } else if (kid) {
+        this.negativeKidUntil.delete(kid);
+      }
       return this.local!(header, token);
     }
   }
 
-  private async refresh() {
+  private async refresh(options: { force?: boolean } = {}) {
     const now = this.options.clock.now().getTime();
     if (this.refreshPromise) return this.refreshPromise;
-    if (now < this.nextRefreshAfter) {
-      if (this.local) return;
+    if (!options.force && now < this.nextRefreshAfter) {
+      if (this.local && now < this.staleUntil) return;
       throw new HostedAuthError("token-rejected");
     }
     this.refreshPromise = this.fetchAndCache()
       .catch((error) => {
         this.nextRefreshAfter = now + this.options.cooldownMs;
-        if (this.local) return;
+        if (this.local && now < this.staleUntil) return;
         throw error;
       })
       .finally(() => {
@@ -157,9 +182,11 @@ class BoundedJwksSource {
       const parsed = JSON.parse(text) as unknown;
       const jwks = validateJwks(parsed);
       this.local = createLocalJWKSet(jwks);
-      this.expiresAt =
-        this.options.clock.now().getTime() + this.options.cacheMaxAgeMs;
+      const now = this.options.clock.now().getTime();
+      this.freshUntil = now + this.options.cacheMaxAgeMs;
+      this.staleUntil = now + this.options.staleIfErrorMs;
       this.nextRefreshAfter = 0;
+      this.negativeKidUntil.clear();
     } catch (error) {
       if (error instanceof HostedAuthError) throw error;
       throw new HostedAuthError("token-rejected");
@@ -169,12 +196,19 @@ class BoundedJwksSource {
   }
 }
 
-function boundedUri(value: string): URL {
+function boundedUri(value: string, issuerValue: string): URL {
   const uri = new URL(value);
+  const issuer = new URL(issuerValue);
   if (!["https:", "http:"].includes(uri.protocol)) {
     throw new HostedAuthError("token-rejected");
   }
   if (uri.username || uri.password || uri.hash) {
+    throw new HostedAuthError("token-rejected");
+  }
+  if (
+    issuer.protocol === "https:" &&
+    (uri.protocol !== "https:" || uri.origin !== issuer.origin)
+  ) {
     throw new HostedAuthError("token-rejected");
   }
   return uri;
@@ -224,7 +258,7 @@ function validateJwks(value: unknown): { keys: JWK[] } {
     }
     const fingerprint = JSON.stringify(key);
     const previous = seen.get(key.kid);
-    if (previous && previous !== fingerprint) {
+    if (previous !== undefined) {
       throw new HostedAuthError("token-rejected");
     }
     seen.set(key.kid, fingerprint);
