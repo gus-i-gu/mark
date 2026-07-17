@@ -9,6 +9,7 @@ import {
 import {
   inTransactionWithContext,
   type Database,
+  type TransactionContext,
 } from "../postgres/database.js";
 import {
   noopAuthorizationBarrier,
@@ -40,29 +41,32 @@ export class HostedTransactionAuthorizer {
     const principal = await this.verifier.verify(request);
     const deviceId = requestedDeviceId(request);
     if (!deviceId) throw new HostedAuthError("device-enrollment-required", 403);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      await this.barrier.reach("before-identity-membership-fence", {
-        operation,
-        actorDeviceId: deviceId,
-      });
-      const membership = await resolveOneMembership(client, principal);
-      await this.barrier.reach("after-membership-lock", {
-        operation,
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId: deviceId,
-      });
-      await setAccount(client, membership.accountId);
-      await setIdentity(client, membership.identityId);
-      await setDevice(client, deviceId);
-      await this.barrier.reach("before-actor-device-lock", {
-        operation,
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId: deviceId,
-      });
-      const device = await client.query(
-        `select e.state as enrollment_state, d.status as device_status
+    const transactionContext = barrierContext(request, operation, {
+      actorDeviceId: deviceId,
+    });
+    return inTransactionWithContext(
+      this.database,
+      transactionContext,
+      async (client) => {
+        await this.barrier.reach(
+          "before-identity-membership-fence",
+          transactionContext,
+        );
+        const membership = await resolveOneMembership(client, principal);
+        Object.assign(transactionContext, {
+          accountId: membership.accountId,
+          identityId: membership.identityId,
+        });
+        await this.barrier.reach("after-membership-lock", transactionContext);
+        await setAccount(client, membership.accountId);
+        await setIdentity(client, membership.identityId);
+        await setDevice(client, deviceId);
+        await this.barrier.reach(
+          "before-actor-device-lock",
+          transactionContext,
+        );
+        const device = await client.query(
+          `select e.state as enrollment_state, d.status as device_status
            from device_enrollments e
            join devices d
              on d.account_id=e.account_id and d.device_id=e.device_id
@@ -70,27 +74,26 @@ export class HostedTransactionAuthorizer {
             and e.device_id=$2
             and e.identity_id=$3
           for update of e, d`,
-        [membership.accountId, deviceId, membership.identityId],
-      );
-      if (
-        !device.rowCount ||
-        device.rows[0].enrollment_state !== "active" ||
-        device.rows[0].device_status !== "active"
-      ) {
-        throw new HostedAuthError("device-revoked", 403);
-      }
-      const auth = { accountId: membership.accountId, deviceId };
-      await client.query("select set_config('markei.operation', $1, true)", [
-        operation,
-      ]);
-      await this.barrier.reach("before-protected-mutation", {
-        operation,
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId: deviceId,
-      });
-      return action(client, auth);
-    });
+          [membership.accountId, deviceId, membership.identityId],
+        );
+        if (
+          !device.rowCount ||
+          device.rows[0].enrollment_state !== "active" ||
+          device.rows[0].device_status !== "active"
+        ) {
+          throw new HostedAuthError("device-revoked", 403);
+        }
+        const auth = { accountId: membership.accountId, deviceId };
+        await client.query("select set_config('markei.operation', $1, true)", [
+          operation,
+        ]);
+        await this.barrier.reach(
+          "before-protected-mutation",
+          transactionContext,
+        );
+        return action(client, auth);
+      },
+    );
   }
 }
 
@@ -104,26 +107,33 @@ export class HostedIdentityService {
 
   async identity(request: FastifyRequest): Promise<IdentityResult> {
     const principal = await this.verifier.verify(request);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      const identity = await resolveIdentity(client, principal);
-      if (!identity)
-        return { contractVersion: 1, state: "membership-required" };
-      await setIdentity(client, identity.identityId);
-      const memberships = await activeMemberships(client, identity.identityId);
-      if (memberships.length === 0) {
-        return { contractVersion: 1, state: "membership-required" };
-      }
-      if (memberships.length > 1) {
-        return { contractVersion: 1, state: "account-selection-required" };
-      }
-      return {
-        contractVersion: 1,
-        state: "membership-confirmed",
-        accountId: memberships[0].accountId,
-        identityId: identity.identityId,
-        role: memberships[0].role,
-      };
-    });
+    return inTransactionWithContext(
+      this.database,
+      { operation: "identity-resolution" },
+      async (client) => {
+        const identity = await resolveIdentity(client, principal);
+        if (!identity)
+          return { contractVersion: 1, state: "membership-required" };
+        await setIdentity(client, identity.identityId);
+        const memberships = await activeMemberships(
+          client,
+          identity.identityId,
+        );
+        if (memberships.length === 0) {
+          return { contractVersion: 1, state: "membership-required" };
+        }
+        if (memberships.length > 1) {
+          return { contractVersion: 1, state: "account-selection-required" };
+        }
+        return {
+          contractVersion: 1,
+          state: "membership-confirmed",
+          accountId: memberships[0].accountId,
+          identityId: identity.identityId,
+          role: memberships[0].role,
+        };
+      },
+    );
   }
 
   async enroll(
@@ -132,110 +142,126 @@ export class HostedIdentityService {
   ): Promise<DeviceEnrollmentResult | ProtocolFailure> {
     validateEnrollment(body);
     const principal = await this.verifier.verify(request);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      await this.barrier.reach("before-identity-membership-fence", {
-        operation: "enroll-device",
-      });
-      const membership = await resolveOneMembership(client, principal);
-      await this.barrier.reach("after-membership-lock", {
-        operation: "enroll-device",
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-      });
-      await setAccount(client, membership.accountId);
-      const hash = canonicalHash(body);
-      const existing = await client.query(
-        `select request_hash, stored_result, state
+    const transactionContext = barrierContext(request, "enroll-device");
+    return inTransactionWithContext(
+      this.database,
+      transactionContext,
+      async (client) => {
+        await this.barrier.reach(
+          "before-identity-membership-fence",
+          transactionContext,
+        );
+        const membership = await resolveOneMembership(client, principal);
+        Object.assign(transactionContext, {
+          accountId: membership.accountId,
+          identityId: membership.identityId,
+        });
+        await this.barrier.reach("after-membership-lock", transactionContext);
+        await setAccount(client, membership.accountId);
+        const hash = canonicalHash(body);
+        const existing = await client.query(
+          `select request_hash, stored_result, state
            from device_enrollment_requests
           where account_id=$1 and identity_id=$2 and enrollment_request_id=$3`,
-        [membership.accountId, membership.identityId, body.enrollmentRequestId],
-      );
-      if (existing.rowCount) {
-        if (existing.rows[0].request_hash !== hash) {
-          return failure("conflict", "enroll-device", request.id);
-        }
-        if (existing.rows[0].stored_result) {
-          return existing.rows[0].stored_result as DeviceEnrollmentResult;
-        }
-      }
-      const active = await client.query(
-        `select device_id, generation from device_enrollments
-          where account_id=$1 and installation_id=$2 and state='active'
-          for update`,
-        [membership.accountId, body.installationId],
-      );
-      let deviceId: string;
-      let generation = 1;
-      if (active.rowCount) {
-        deviceId = String(active.rows[0].device_id);
-        generation = Number(active.rows[0].generation);
-      } else {
-        deviceId = randomUUID();
-        await setDevice(client, deviceId);
-        await client.query(
-          `insert into devices(account_id, device_id, status, next_expected_sequence)
-           values($1,$2,'active',1)`,
-          [membership.accountId, deviceId],
-        );
-        await client.query(
-          `insert into device_enrollments(
-             account_id, installation_id, device_id, identity_id, state
-           ) values($1,$2,$3,$4,'active')`,
           [
             membership.accountId,
-            body.installationId,
-            deviceId,
             membership.identityId,
+            body.enrollmentRequestId,
           ],
         );
-        await client.query(
-          `insert into device_security_events(
+        if (existing.rowCount) {
+          if (existing.rows[0].request_hash !== hash) {
+            return failure("conflict", "enroll-device", request.id);
+          }
+          if (existing.rows[0].stored_result) {
+            return existing.rows[0].stored_result as DeviceEnrollmentResult;
+          }
+        }
+        const active = await client.query(
+          `select device_id, generation from device_enrollments
+          where account_id=$1 and installation_id=$2 and state='active'
+          for update`,
+          [membership.accountId, body.installationId],
+        );
+        let deviceId: string;
+        let generation = 1;
+        if (active.rowCount) {
+          deviceId = String(active.rows[0].device_id);
+          generation = Number(active.rows[0].generation);
+        } else {
+          deviceId = randomUUID();
+          await setDevice(client, deviceId);
+          Object.assign(transactionContext, { actorDeviceId: deviceId });
+          await this.barrier.reach(
+            "before-protected-mutation",
+            transactionContext,
+          );
+          await client.query(
+            `insert into devices(account_id, device_id, status, next_expected_sequence)
+           values($1,$2,'active',1)`,
+            [membership.accountId, deviceId],
+          );
+          await client.query(
+            `insert into device_enrollments(
+             account_id, installation_id, device_id, identity_id, state
+           ) values($1,$2,$3,$4,'active')`,
+            [
+              membership.accountId,
+              body.installationId,
+              deviceId,
+              membership.identityId,
+            ],
+          );
+          await client.query(
+            `insert into device_security_events(
              event_id, account_id, actor_identity_id, target_device_id,
              event_type, correlation_id
            ) values($1,$2,$3,$4,'device-enrolled',$5)`,
-          [
-            randomUUID(),
-            membership.accountId,
-            membership.identityId,
-            deviceId,
-            request.id,
-          ],
-        );
-      }
-      const result: DeviceEnrollmentResult = {
-        contractVersion: 1,
-        status: active.rowCount ? "duplicate-equivalent" : "device-enrolled",
-        accountId: membership.accountId,
-        installationId: body.installationId,
-        deviceId,
-        generation,
-      };
-      await this.barrier.reach("before-protected-mutation", {
-        operation: "enroll-device",
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId: deviceId,
-      });
-      await client.query(
-        `insert into device_enrollment_requests(
+            [
+              randomUUID(),
+              membership.accountId,
+              membership.identityId,
+              deviceId,
+              request.id,
+            ],
+          );
+        }
+        const result: DeviceEnrollmentResult = {
+          contractVersion: 1,
+          status: active.rowCount ? "duplicate-equivalent" : "device-enrolled",
+          accountId: membership.accountId,
+          installationId: body.installationId,
+          deviceId,
+          generation,
+        };
+        if (active.rowCount) {
+          Object.assign(transactionContext, { actorDeviceId: deviceId });
+          await this.barrier.reach(
+            "before-protected-mutation",
+            transactionContext,
+          );
+        }
+        await client.query(
+          `insert into device_enrollment_requests(
            account_id, identity_id, enrollment_request_id, installation_id,
            request_hash, state, device_id, stored_result, expires_at
          ) values($1,$2,$3,$4,$5,'completed',$6,$7,$8)
          on conflict(account_id, identity_id, enrollment_request_id) do update
            set stored_result=excluded.stored_result, updated_at=now()`,
-        [
-          membership.accountId,
-          membership.identityId,
-          body.enrollmentRequestId,
-          body.installationId,
-          hash,
-          deviceId,
-          result,
-          new Date(this.clock.now().getTime() + 900000),
-        ],
-      );
-      return result;
-    });
+          [
+            membership.accountId,
+            membership.identityId,
+            body.enrollmentRequestId,
+            body.installationId,
+            hash,
+            deviceId,
+            result,
+            new Date(this.clock.now().getTime() + 900000),
+          ],
+        );
+        return result;
+      },
+    );
   }
 
   async enrollmentStatus(
@@ -243,123 +269,149 @@ export class HostedIdentityService {
     requestId: string,
   ): Promise<DeviceEnrollmentResult | ProtocolFailure> {
     const principal = await this.verifier.verify(request);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      await this.barrier.reach("before-identity-membership-fence", {
-        operation: "query-enrollment",
-      });
-      const membership = await resolveOneMembership(client, principal);
-      await setAccount(client, membership.accountId);
-      const row = await client.query(
-        `select stored_result from device_enrollment_requests
+    const transactionContext = barrierContext(request, "query-enrollment");
+    return inTransactionWithContext(
+      this.database,
+      transactionContext,
+      async (client) => {
+        await this.barrier.reach(
+          "before-identity-membership-fence",
+          transactionContext,
+        );
+        const membership = await resolveOneMembership(client, principal);
+        Object.assign(transactionContext, {
+          accountId: membership.accountId,
+          identityId: membership.identityId,
+        });
+        await setAccount(client, membership.accountId);
+        const row = await client.query(
+          `select stored_result from device_enrollment_requests
           where account_id=$1 and identity_id=$2 and enrollment_request_id=$3`,
-        [membership.accountId, membership.identityId, requestId],
-      );
-      if (!row.rowCount || !row.rows[0].stored_result) {
-        return failure("service-unavailable", "query-enrollment", request.id);
-      }
-      return row.rows[0].stored_result as DeviceEnrollmentResult;
-    });
+          [membership.accountId, membership.identityId, requestId],
+        );
+        if (!row.rowCount || !row.rows[0].stored_result) {
+          return failure("service-unavailable", "query-enrollment", request.id);
+        }
+        return row.rows[0].stored_result as DeviceEnrollmentResult;
+      },
+    );
   }
 
   async deviceStatus(request: FastifyRequest, deviceId: string) {
     const principal = await this.verifier.verify(request);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      await this.barrier.reach("before-identity-membership-fence", {
-        operation: "device-status",
-        targetDeviceId: deviceId,
-      });
-      const membership = await resolveOneMembership(client, principal);
-      const actorDeviceId = requestedDeviceId(request);
-      if (!actorDeviceId)
-        throw new HostedAuthError("device-enrollment-required", 403);
-      await setAccount(client, membership.accountId);
-      await setIdentity(client, membership.identityId);
-      await setDevice(client, actorDeviceId);
-      await setOperation(client, "device-management");
-      await this.barrier.reach("before-target-transition", {
-        operation: "device-status",
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId,
-        targetDeviceId: deviceId,
-      });
-      const target = await authorizeActorAndTargetDevice(
-        client,
-        membership,
-        actorDeviceId,
-        deviceId,
-      );
-      return {
-        contractVersion: 1,
-        deviceId,
-        status: target.deviceStatus,
-        generation: target.generation,
-      };
+    const transactionContext = barrierContext(request, "device-status", {
+      targetDeviceId: deviceId,
     });
+    return inTransactionWithContext(
+      this.database,
+      transactionContext,
+      async (client) => {
+        await this.barrier.reach(
+          "before-identity-membership-fence",
+          transactionContext,
+        );
+        const membership = await resolveOneMembership(client, principal);
+        const actorDeviceId = requestedDeviceId(request);
+        if (!actorDeviceId)
+          throw new HostedAuthError("device-enrollment-required", 403);
+        Object.assign(transactionContext, {
+          accountId: membership.accountId,
+          identityId: membership.identityId,
+          actorDeviceId,
+          targetDeviceId: deviceId,
+        });
+        await setAccount(client, membership.accountId);
+        await setIdentity(client, membership.identityId);
+        await setDevice(client, actorDeviceId);
+        await setOperation(client, "device-management");
+        const target = await authorizeActorAndTargetDevice(
+          client,
+          membership,
+          actorDeviceId,
+          deviceId,
+        );
+        return {
+          contractVersion: 1,
+          deviceId,
+          status: target.deviceStatus,
+          generation: target.generation,
+        };
+      },
+    );
   }
 
   async revoke(request: FastifyRequest, deviceId: string) {
     const principal = await this.verifier.verify(request);
-    return inTransactionWithContext(this.database, {}, async (client) => {
-      await this.barrier.reach("before-identity-membership-fence", {
-        operation: "device-revoke",
-        targetDeviceId: deviceId,
-      });
-      const membership = await resolveOneMembership(client, principal);
-      const actorDeviceId = requestedDeviceId(request);
-      if (!actorDeviceId)
-        throw new HostedAuthError("device-enrollment-required", 403);
-      await setAccount(client, membership.accountId);
-      await setIdentity(client, membership.identityId);
-      await setDevice(client, actorDeviceId);
-      await setOperation(client, "device-management");
-      await this.barrier.reach("before-target-transition", {
-        operation: "device-revoke",
-        accountId: membership.accountId,
-        identityId: membership.identityId,
-        actorDeviceId,
-        targetDeviceId: deviceId,
-      });
-      const target = await authorizeActorAndTargetDevice(
-        client,
-        membership,
-        actorDeviceId,
-        deviceId,
-      );
-      if (target.deviceStatus === "revoked") {
-        return {
-          contractVersion: 1,
-          status: "duplicate-equivalent",
+    const transactionContext = barrierContext(request, "device-revoke", {
+      targetDeviceId: deviceId,
+    });
+    return inTransactionWithContext(
+      this.database,
+      transactionContext,
+      async (client) => {
+        await this.barrier.reach(
+          "before-identity-membership-fence",
+          transactionContext,
+        );
+        const membership = await resolveOneMembership(client, principal);
+        const actorDeviceId = requestedDeviceId(request);
+        if (!actorDeviceId)
+          throw new HostedAuthError("device-enrollment-required", 403);
+        Object.assign(transactionContext, {
+          accountId: membership.accountId,
+          identityId: membership.identityId,
+          actorDeviceId,
+          targetDeviceId: deviceId,
+        });
+        await setAccount(client, membership.accountId);
+        await setIdentity(client, membership.identityId);
+        await setDevice(client, actorDeviceId);
+        await setOperation(client, "device-management");
+        const target = await authorizeActorAndTargetDevice(
+          client,
+          membership,
+          actorDeviceId,
           deviceId,
-        };
-      }
-      const updated = await client.query(
-        `update device_enrollments
+        );
+        if (target.deviceStatus === "revoked") {
+          return {
+            contractVersion: 1,
+            status: "duplicate-equivalent",
+            deviceId,
+          };
+        }
+        await this.barrier.reach(
+          "before-target-transition",
+          transactionContext,
+        );
+        const updated = await client.query(
+          `update device_enrollments
             set state='revoked', updated_at=now()
           where account_id=$1 and device_id=$2 and state='active'`,
-        [membership.accountId, deviceId],
-      );
-      await client.query(
-        "update devices set status='revoked' where account_id=$1 and device_id=$2",
-        [membership.accountId, deviceId],
-      );
-      if (updated.rowCount) {
+          [membership.accountId, deviceId],
+        );
         await client.query(
-          `insert into device_security_events(
+          "update devices set status='revoked' where account_id=$1 and device_id=$2",
+          [membership.accountId, deviceId],
+        );
+        if (updated.rowCount) {
+          await client.query(
+            `insert into device_security_events(
              event_id, account_id, actor_identity_id, target_device_id,
              event_type, correlation_id
            ) values($1,$2,$3,$4,'device-revoked',$5)`,
-          [
-            randomUUID(),
-            membership.accountId,
-            membership.identityId,
-            deviceId,
-            request.id,
-          ],
-        );
-      }
-      return { contractVersion: 1, status: "revoked", deviceId };
-    });
+            [
+              randomUUID(),
+              membership.accountId,
+              membership.identityId,
+              deviceId,
+              request.id,
+            ],
+          );
+        }
+        return { contractVersion: 1, status: "revoked", deviceId };
+      },
+    );
   }
 }
 
@@ -495,6 +547,33 @@ async function authorizeActorAndTargetDevice(
 function requestedDeviceId(request: FastifyRequest): string | null {
   const value = request.headers["x-markei-device-id"];
   return typeof value === "string" && uuid(value) ? value : null;
+}
+
+function barrierContext(
+  request: FastifyRequest,
+  operation: string,
+  values: Omit<
+    TransactionContext,
+    "operation" | "scenario" | "participant"
+  > = {},
+): TransactionContext {
+  return {
+    operation,
+    ...proofParticipant(request),
+    ...values,
+  };
+}
+
+function proofParticipant(request: FastifyRequest) {
+  const scenario = safeHeader(request.headers["x-markei-proof-scenario"]);
+  const participant = safeHeader(request.headers["x-markei-proof-participant"]);
+  return scenario && participant ? { scenario, participant } : {};
+}
+
+function safeHeader(value: unknown): string | undefined {
+  return typeof value === "string" && /^[a-z0-9][a-z0-9-]{0,95}$/.test(value)
+    ? value
+    : undefined;
 }
 
 function validateEnrollment(body: EnrollmentRequest) {

@@ -12,6 +12,8 @@ export type AuthorizationBarrierPhase =
 
 export type AuthorizationBarrierContext = {
   operation: string;
+  scenario?: string;
+  participant?: string;
   accountId?: string;
   identityId?: string;
   actorDeviceId?: string;

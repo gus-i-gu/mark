@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 import pg from "pg";
 
-const containerName = "markei-c10-mcg02-r04-auth-pg";
-const port = 55439;
+const containerName = "markei-c10-mcg02-r04c01-auth-pg";
+const port = 55441;
 const adminUrl = `postgres://postgres@127.0.0.1:${port}/postgres`;
-const dbName = "markei_r04_auth";
+const dbName = "markei_r04c01_auth";
 
 try {
   await startContainer();
@@ -35,6 +35,9 @@ function blockerFor(error: unknown) {
   if (message.includes("postgres unavailable")) return "postgres-unavailable";
   if (message.includes("missing authorization producer")) {
     return "missing-producer-output";
+  }
+  if (message.includes("harness failed before producer")) {
+    return "harness-failed-before-producer";
   }
   return "authorization-harness-failed";
 }
@@ -86,10 +89,14 @@ async function provision() {
 }
 
 function runHarness() {
-  return runText("npm", ["run", "test:hosted-local"], {
-    LAB_MIGRATOR_URL: `postgres://lab_migrator@127.0.0.1:${port}/${dbName}`,
-    LAB_RUNTIME_URL: `postgres://lab_runtime@127.0.0.1:${port}/${dbName}`,
-  });
+  return runText(
+    process.platform === "win32" ? "npm.cmd" : "npm",
+    ["run", "test:hosted-local"],
+    {
+      LAB_MIGRATOR_URL: `postgres://lab_migrator@127.0.0.1:${port}/${dbName}`,
+      LAB_RUNTIME_URL: `postgres://lab_runtime@127.0.0.1:${port}/${dbName}`,
+    },
+  );
 }
 
 function run(
@@ -129,11 +136,13 @@ function runText(
       cwd: process.cwd(),
       env: { ...process.env, ...env },
       shell: process.platform === "win32",
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
     });
     const chunks: Buffer[] = [];
+    const errorChunks: Buffer[] = [];
     child.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
+    child.stderr.on("data", (chunk: Buffer) => errorChunks.push(chunk));
     const timeout = setTimeout(() => {
       child.kill();
       reject(new Error("timeout"));
@@ -142,9 +151,20 @@ function runText(
       clearTimeout(timeout);
       reject(error);
     });
-    child.on("exit", () => {
+    child.on("exit", (code) => {
       clearTimeout(timeout);
-      resolve(Buffer.concat(chunks).toString("utf8"));
+      const output = Buffer.concat(chunks).toString("utf8");
+      if (code && code !== 0 && !output.includes("PROOF_PRODUCER ")) {
+        reject(
+          new Error(
+            `harness failed before producer: ${
+              Buffer.concat(errorChunks).toString("utf8").split(/\r?\n/u)[0]
+            }`,
+          ),
+        );
+        return;
+      }
+      resolve(output);
     });
   });
 }

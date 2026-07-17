@@ -3,7 +3,16 @@ import type { AuthContext } from "../domain/protocol.js";
 
 export type Database = {
   pool: pg.Pool;
-  beforeCommit?: () => Promise<void>;
+  beforeCommit?: (context: TransactionContext) => Promise<void>;
+};
+
+export type TransactionContext = Partial<AuthContext> & {
+  identityId?: string;
+  operation: string;
+  scenario?: string;
+  participant?: string;
+  actorDeviceId?: string;
+  targetDeviceId?: string;
 };
 
 export async function inTransaction<T>(
@@ -11,12 +20,16 @@ export async function inTransaction<T>(
   auth: AuthContext,
   action: (client: pg.PoolClient) => Promise<T>,
 ): Promise<T> {
-  return inTransactionWithContext(database, auth, action);
+  return inTransactionWithContext(
+    database,
+    { ...auth, operation: "transaction" },
+    action,
+  );
 }
 
 export async function inTransactionWithContext<T>(
   database: Database,
-  context: Partial<AuthContext> & { identityId?: string },
+  context: TransactionContext,
   action: (client: pg.PoolClient) => Promise<T>,
 ): Promise<T> {
   const deadline = Date.now() + 5000;
@@ -34,7 +47,7 @@ export async function inTransactionWithContext<T>(
         context.identityId ?? "",
       ]);
       const result = await action(client);
-      await database.beforeCommit?.();
+      await database.beforeCommit?.(context);
       await client.query("commit");
       return result;
     } catch (error) {

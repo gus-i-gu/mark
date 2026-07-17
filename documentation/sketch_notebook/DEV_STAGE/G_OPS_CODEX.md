@@ -1,93 +1,95 @@
-# G_OPS_CODEX - C10-MCG02-R04B Partial Operational Evidence
+# G_OPS_CODEX — R04C01 Operational Evidence
 
-Authority marker: C10-MCG02-R04B_20260717T133814Z
-Controlling J SHA: 0765255c07e3381f74cd9b4e90bc2f9ddd3b13dc
-Controlling D/E/F commit SHA: 22467716ae9ba0fb93ee775781c7177db88320fc
-Baseline remote SHA: 22467716ae9ba0fb93ee775781c7177db88320fc
-Actual implementation start UTC/local: 2026-07-17T14:07:03.8882432Z / 2026-07-17T11:07:03.9099962-03:00
-Actual implementation end UTC/local: 2026-07-17T14:18:14.3066132Z / 2026-07-17T11:18:15.8255067-03:00
-Implementation tree SHA: not created; worktree remains uncommitted
-Final commit status: not committed or pushed
-Evidence environment: Windows PowerShell; Docker Desktop desktop-linux; PostgreSQL 18.4 disposable preflight; Node server workspace
-Result classification: C10-MCG02-R04B_PARTIAL
+Authority marker: C10-MCG02-R04C01_20260717T143908Z
+Controlling J SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
+Controlling D/E/F SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
+Baseline remote SHA: 2f7272a8cacaa790ccfaad6c0c7523eede336460
+Actual implementation start UTC/local: 2026-07-17T14:49:00.7290473Z / 2026-07-17T11:49:00.7780130-03:00
+Actual implementation end UTC/local: 2026-07-17T15:05:21.3977466Z / 2026-07-17T12:05:22.8704211-03:00
+Implementation tree SHA: pending at report authoring
+Final commit status: pending before commit
+Evidence environment: Windows host, Docker Desktop desktop-linux, Server OS/Arch linux/amd64, postgres:18-alpine PostgreSQL 18.4, Node/npm project services/markei_sync_api
+Result classification: R04C01 vertical slice proved; authorization-race producer remains false by design
 
-## Preflight Evidence
+## Preflight
 
-- `docker version`: passed. Client present, Server present, context `desktop-linux`, Server OS/Arch `linux/amd64`.
-- `docker ps -a --filter name=markei-c10-mcg02-r04b-preflight --format "{{.Names}}"`: passed, empty before preflight.
-- `docker run --name markei-c10-mcg02-r04b-preflight-140703 -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:55448:5432 -d postgres:18-alpine`: passed.
-- `docker exec markei-c10-mcg02-r04b-preflight-140703 pg_isready -U postgres`: passed, accepting connections.
-- `docker exec markei-c10-mcg02-r04b-preflight-140703 psql -U postgres -tAc "select version();"`: passed, PostgreSQL 18.4.
-- `docker rm -f markei-c10-mcg02-r04b-preflight-140703`: passed.
-- exact filtered inventory after removal: passed, empty trimmed stdout.
+- `docker version`: Client 29.6.1, Server Docker Desktop 4.82.0, OS/Arch linux/amd64.
+- Started loopback-only disposable `postgres:18-alpine` container `markei-c10-mcg02-r04c01-preflight-1449` on `127.0.0.1:55449`.
+- `pg_isready -U postgres`: accepting connections.
+- `select version();`: PostgreSQL 18.4 on x86_64-pc-linux-musl.
+- Removed preflight container.
+- Filtered inventory `docker ps -a --filter name=markei-c10-mcg02-r04c01-preflight-1449 --format "{{.Names}}"`: exit zero, empty stdout.
 
 ## Changed Paths
 
-Production/test/report paths currently changed and not committed:
+Production/application seams:
 
-- `services/markei_sync_api/src/application/authorization_barrier.ts` - new inert-by-default barrier port.
-- `services/markei_sync_api/src/application/hosted_authorization.ts` - optional barrier reach points in hosted authorization paths.
-- `services/markei_sync_api/src/postgres/database.ts` - optional before-commit transaction hook.
-- `services/markei_sync_api/test/hosted_auth.test.ts` - normal hosted composition/barrier containment test.
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md` - this report.
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md` - semantic report.
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md` - design report.
+- `services/markei_sync_api/src/application/authorization_barrier.ts`
+- `services/markei_sync_api/src/application/hosted_authorization.ts`
+- `services/markei_sync_api/src/postgres/database.ts`
 
-No private provider files were read. No A/B/C, J/D/E/F, methodology, permanent memory, migrations, dependencies, lockfiles, UI, provider configuration or deployment files were intentionally modified.
+Proof/test infrastructure:
 
-## Validation Run
+- `services/markei_sync_api/src/hosted_local_harness.ts`
+- `services/markei_sync_api/src/proof/account_state_observer.ts`
+- `services/markei_sync_api/src/proof/authorization_barrier_controller.ts`
+- `services/markei_sync_api/src/proof/authorization_producer.ts`
+- `services/markei_sync_api/src/proof/authorization_slice_scenarios.ts`
+- `services/markei_sync_api/test/authorization_r04c01.test.ts`
 
-- `git fetch origin`: passed.
-- `git pull --ff-only`: passed, already up to date.
-- branch: `intermid-cycle-recovery`.
-- `origin/intermid-cycle-recovery`: `22467716ae9ba0fb93ee775781c7177db88320fc`.
-- required ancestry: `0765255c07e3381f74cd9b4e90bc2f9ddd3b13dc=true`, `42e4a8375ed8c51765b0a440b2130a31a098c36c=true`.
-- initial worktree: clean.
-- pre-mutation current authorization producer: executed with Docker/PostgreSQL; still partial with 24 `not-yet-r04` blockers.
+Reports:
+
+- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
+- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
+
+No migrations, lockfiles, dependencies, Flutter/UI files, A/B/C, J/D/E/F, methodology, or permanent memory files were edited.
+
+## Scenario Evidence
+
+Executed representative scenario:
+
+- Case: `membership-disabled-before-fence`
+- Route: real loopback Fastify `POST /v1/sync/submissions`
+- Fixture: synthetic RS256 JWT, active external identity, active owner membership, active enrolled Device, valid `purchase.registered` payload v3.
+- Barrier: participant `upload` reached `before-identity-membership-fence` inside an open transaction before membership resolution.
+- Control transition: migrator/control connection updated Account membership to `disabled` and committed.
+- Release: upload resumed and rechecked current membership state.
+- HTTP result: status `403`, code `membership-required`, operation `hosted-authorization`, outcome `not-applied`.
+- Before/after comparison: observer allowed only membership status change; submissions, sync events, cursor state, acknowledgements, recovery sessions/chunks, Devices, enrollment requests, and security events did not advance.
+
+Producer record:
+
+- `membership-disabled-before-fence`: true.
+- Remaining 27 authorization cases: false with `pending-r04c`.
+- `denied-no-state-advance`: false with `pending-r04c`.
+- `AUTHORIZATION_RACE_PRODUCER=false` expected for R04C01.
+
+## Validation
+
+- Focused preflight: passed as above.
+- `node --test --import tsx test/authorization_r04c01.test.ts`: 8 passed.
+- `npm exec tsx -- src/proof/authorization_producer.ts`: expected exit 1; emitted closed authorization producer with `membership-disabled-before-fence` true and producer `passed:false`.
+- `npm run format:check`: passed.
+- `npm run lint`: passed after observer lint correction.
 - `npm run typecheck`: passed.
-- `npm test`: passed, 37 tests.
-- `docker ps -a --filter name=markei-c10-mcg02-r04 --format "{{.Names}}"`: passed, empty.
-- `git diff --check`: passed.
+- `npm test`: 45 passed.
+- `npm run build`: passed.
+- `npm audit --omit=dev`: 0 vulnerabilities.
+- `git diff --check`: passed; only Git line-ending warnings were printed.
 
-Not run after partial stop: full server format/lint/build/audit, all proof producers, R04B orchestrator, Flutter full validation, Python regressions, migration hash comparison, staged/tracked secret scan, commit, push.
+Exclusions: full Flutter/platform validation and all-producer R04 aggregation were not required because R04C01 did not change Flutter/shared mobile contracts and intentionally leaves the full authorization matrix pending.
 
-## Authorization Case Results
+## Resource And Privacy Evidence
 
-The producer currently executes the existing broad harness and remains incomplete. Exact false cases:
+- Debug PostgreSQL container `markei-c10-mcg02-r04c01-debug-pg` was removed.
+- Final R04C01 Docker inventory prefix check was empty before report authoring.
+- No Auth0, Neon, Render, or public provider was contacted.
+- Private/provider helper files were not read: `.vscode/`, `documentation/NEON_DOC.md`, `documentation/NEON_SESSION.ps1`.
+- Synthetic keys, identities, Accounts, memberships, Devices, and loopback URLs only.
 
-1. `membership-disabled-before-fence`: false, `not-yet-r04`
-2. `membership-removed-before-fence`: false, `not-yet-r04`
-3. `external-identity-disabled-before-mutation`: false, `not-yet-r04`
-4. `actor-device-revoked-before-upload`: false, `not-yet-r04`
-5. `actor-device-revoked-before-download`: false, `not-yet-r04`
-6. `actor-device-revoked-before-acknowledgement`: false, `not-yet-r04`
-7. `actor-device-revoked-before-capabilities`: false, `not-yet-r04`
-8. `actor-device-revoked-before-rebootstrap-start`: false, `not-yet-r04`
-9. `actor-device-revoked-before-rebootstrap-status`: false, `not-yet-r04`
-10. `actor-device-revoked-before-rebootstrap-chunk`: false, `not-yet-r04`
-11. `actor-device-revoked-before-rebootstrap-complete`: false, `not-yet-r04`
-12. `actor-device-revoked-before-device-status`: false, `not-yet-r04`
-13. `actor-device-revoked-before-device-revoke`: false, `not-yet-r04`
-14. `owner-target-status`: false, `not-yet-r04`
-15. `owner-target-revoke`: true, inherited broad harness observation only, not final R04B scenario evidence
-16. `member-self-status`: false, `not-yet-r04`
-17. `member-self-revoke`: false, `not-yet-r04`
-18. `foreign-target-denial`: true, inherited broad harness observation only, not final R04B scenario evidence
-19. `cross-account-target-denial`: true, inherited broad harness observation only, not final R04B scenario evidence
-20. `concurrent-target-revoke-one-transition-one-event`: false, `not-yet-r04`
-21. `independent-repeat-revoke-duplicate-equivalent`: false, `not-yet-r04`
-22. `self-revoked-actor-denied-later`: false, `not-yet-r04`
-23. `equivalent-concurrent-enrollment`: false, `not-yet-r04`
-24. `conflicting-enrollment-request-hash`: true, inherited broad harness observation only, not final R04B scenario evidence
-25. `response-loss-query-replay`: false, `not-yet-r04`
-26. `process-restart-replay`: false, `not-yet-r04`
-27. `serialization-retry-exhaustion-fails-closed`: false, `not-yet-r04`
-28. `denied-no-state-advance`: false, `not-yet-r04`
+## Remaining Blockers
 
-No final before/after protected-state comparisons, response-class table, transition/event/replay/restart/retry counts, or migration hash table were produced.
+The remaining authorization matrix cases are intentionally pending for later R04C units:
 
-## Terminal Evidence
-
-C10-MCG02-R04B_PARTIAL
-AUTHORIZATION_RACE_PRODUCER=false
-R3_LOCAL_SECURITY_PROVED=false
+- Identity/member remainder, actor-Device route matrix, target Device authorization, enrollment concurrency, response-loss/restart/retry, and global denied-no-state-advance.

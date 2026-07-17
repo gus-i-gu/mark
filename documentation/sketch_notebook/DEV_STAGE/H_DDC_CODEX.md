@@ -1,44 +1,39 @@
-# H_DDC_CODEX - C10-MCG02-R04B Partial Semantic Evidence
+# H_DDC_CODEX — R04C01 Semantic Evidence
 
-Authority marker: C10-MCG02-R04B_20260717T133814Z
-Controlling J SHA: 0765255c07e3381f74cd9b4e90bc2f9ddd3b13dc
-Controlling D/E/F commit SHA: 22467716ae9ba0fb93ee775781c7177db88320fc
-Baseline remote SHA: 22467716ae9ba0fb93ee775781c7177db88320fc
-Actual implementation start UTC/local: 2026-07-17T14:07:03.8882432Z / 2026-07-17T11:07:03.9099962-03:00
-Actual implementation end UTC/local: 2026-07-17T14:18:14.3066132Z / 2026-07-17T11:18:15.8255067-03:00
-Implementation tree SHA: not created; worktree remains uncommitted
-Final commit status: not committed or pushed
-Evidence environment: Windows PowerShell; Docker Desktop desktop-linux; PostgreSQL 18.4 disposable preflight; Node server workspace
-Result classification: C10-MCG02-R04B_PARTIAL
+Authority marker: C10-MCG02-R04C01_20260717T143908Z
+Controlling J SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
+Controlling D/E/F SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
+Baseline remote SHA: 2f7272a8cacaa790ccfaad6c0c7523eede336460
+Actual implementation start UTC/local: 2026-07-17T14:49:00.7290473Z / 2026-07-17T11:49:00.7780130-03:00
+Actual implementation end UTC/local: 2026-07-17T15:05:21.3977466Z / 2026-07-17T12:05:22.8704211-03:00
+Implementation tree SHA: pending at report authoring
+Final commit status: pending before commit
+Evidence environment: local loopback proof, Docker PostgreSQL 18.4, synthetic RS256/JWKS, no provider access
+Result classification: reusable proof slice passed; authorization matrix remains pending
 
 ## Meanings Materialized
 
-- Environment availability was distinguished from authorization proof: Docker/PostgreSQL preflight passed, but case execution remains incomplete.
-- Barrier versus fence separation was started: the barrier is a lab/application synchronization port; the fence remains transaction-time database authority.
-- Normal hosted composition remains inert by default; the production entrypoint does not import the barrier.
-- Existing R04 corrections remain preserved: teardown empty inventory, JWKS metadata cooldown behavior, Flutter `not-yet-r05`, authorization wrapper fail-closed behavior.
+- Barrier versus fence: the barrier is a lab-only coordination point; the authorization fence remains the production transaction-time database recheck.
+- Valid denial: the representative upload started from a valid token, identity, membership, Device, body, and route, then failed only after the control transaction disabled membership.
+- Expected membership transition: before/after comparison explicitly allowed `account_memberships.status` to change from `active` to `disabled`.
+- No protected state advance: submissions, sync events, cursor state, acknowledgements, recovery sessions/chunks, Devices, enrollment requests, and security events remained equivalent.
+- Vertical-slice distinction: R04C01 proves reusable infrastructure plus one case, not the full authorization race matrix.
+- Producer distinction: `authorization-race` remains false because 27 cases and global `denied-no-state-advance` remain pending.
 
 ## Named Semantic Tests
 
-- `normal hosted composition uses the inert authorization barrier`: passed.
-- `hosted production entrypoint has no fixture-auth import`: extended to check no `AuthorizationBarrier` import; passed.
-- Full server test suite: 37 passing tests.
+- `R04C01 controller reaches and releases the intended participant`
+- `R04C01 controller rejects unknown phase and participant keys`
+- `R04C01 controller times out and close rejects waiters`
+- `normal hosted composition remains no-op for authorization barriers`
+- `R04C01 enrollment protected-mutation signal precedes first durable write`
+- `R04C01 before-commit hook receives operation and participant context`
+- `R04C01 observer comparison is canonical and excludes payload data`
+- `R04C01 producer marks only the measured case true and remains false`
 
-## Meanings Not Yet Materialized
+## Privacy And Unsupported Claims
 
-R04B has not yet validated:
-
-- valid denial for identity/membership/Device changes at a deterministic barrier;
-- Account-scoped no-state-advance for every protected state family;
-- one-transition and one-security-event concurrent revoke;
-- duplicate-equivalent repeated revoke;
-- equivalent and conflicting enrollment concurrency as final scenario evidence;
-- unknown-outcome response loss;
-- restart replay through a new composition;
-- bounded serialization retry exhaustion.
-
-The four broad-harness true cases are still not final R04B semantic proof because D/E/F require them to be re-executed through the same case-addressable scenario system.
-
-Unsupported readiness wording remains absent: no Auth0, Neon, Render, production readiness, MCG-02 completion, local security completion, Cycle 10 closure, or Flutter R05 completion is claimed.
-
-Privacy/logging evidence: no JWTs, claims, JWK bodies, passwords, connection strings, provider IDs or fact payloads were added to reports. Learner maturity and permanent memory were unchanged.
+- Observer output excludes JWTs, claims, credentials, connection strings, passwords, and fact payloads.
+- No bearer token logging proof was claimed here; Flutter remains deferred to R05.
+- Unsupported readiness wording is intentionally absent: no Auth0 acceptance, Neon acceptance, Render deployment, production readiness, MCG-02 completion, R3 local security proof, or Cycle 10 closure is claimed.
+- Learner maturity and permanent memory were unchanged.
