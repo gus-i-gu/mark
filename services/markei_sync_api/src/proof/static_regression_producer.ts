@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { makeProducerResult, type ProofCaseResult } from "./producer.js";
 import { emitProducer } from "./scenario_result.js";
+import { evaluateResourceTeardown } from "./static_regression_support.js";
 
 type CommandCase = {
   caseId: string;
@@ -164,7 +165,7 @@ async function runSecretScan(): Promise<ProofCaseResult> {
 }
 
 async function runResourceTeardown(): Promise<ProofCaseResult> {
-  const code = await run(
+  const result = await runTextWithCode(
     "docker",
     [
       "ps",
@@ -176,7 +177,7 @@ async function runResourceTeardown(): Promise<ProofCaseResult> {
     ],
     repositoryRoot,
   );
-  return code === 0
+  return evaluateResourceTeardown(result.code, result.stdout)
     ? { passed: true }
     : { passed: false, blocker: "teardown-check-failed" };
 }
@@ -227,6 +228,46 @@ function runText(command: string, args: readonly string[], cwd: string) {
     child.on("exit", (code) => {
       clearTimeout(timeout);
       resolveText(code === 0 ? Buffer.concat(chunks).toString("utf8") : null);
+    });
+  });
+}
+
+function runTextWithCode(
+  command: string,
+  args: readonly string[],
+  cwd: string,
+) {
+  return new Promise<{ code: number; stdout: string }>((resolveText) => {
+    const child = spawn(command, [...args], {
+      cwd,
+      shell: process.platform === "win32",
+      stdio: ["ignore", "pipe", "ignore"],
+      windowsHide: true,
+    });
+    const chunks: Buffer[] = [];
+    child.stdout.on("data", (chunk: Buffer) => {
+      chunks.push(chunk);
+    });
+    const timeout = setTimeout(() => {
+      child.kill();
+      resolveText({
+        code: 124,
+        stdout: Buffer.concat(chunks).toString("utf8"),
+      });
+    }, 30000);
+    child.on("error", () => {
+      clearTimeout(timeout);
+      resolveText({
+        code: 127,
+        stdout: Buffer.concat(chunks).toString("utf8"),
+      });
+    });
+    child.on("exit", (code) => {
+      clearTimeout(timeout);
+      resolveText({
+        code: code ?? 1,
+        stdout: Buffer.concat(chunks).toString("utf8"),
+      });
     });
   });
 }

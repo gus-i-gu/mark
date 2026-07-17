@@ -17,7 +17,7 @@ const focusedPassed =
 const observed = focusedPassed
   ? true
   : { passed: false, blocker: "test-failed" };
-const deferred: ProofCaseResult = { passed: false, blocker: "not-yet-r3d3" };
+const deferred: ProofCaseResult = { passed: false, blocker: "not-yet-r05" };
 
 const producer = makeProducerResult(
   "flutter-http-file-backed",
@@ -28,7 +28,7 @@ const producer = makeProducerResult(
     "unavailable-persists-facts-outbox": observed,
     "close-reopen-preserves-state": observed,
     "normal-response-before-deadline": observed,
-    "token-not-persisted-or-logged": observed,
+    "token-not-persisted-or-logged": deferred,
     "malformed-oversized-redirect-fail-closed": deferred,
     "response-loss-unknown-outcome": deferred,
     "query-replay-same-request-id": deferred,
@@ -39,7 +39,7 @@ const producer = makeProducerResult(
     "late-response-no-durable-mutation": deferred,
     "local-registration-while-api-unavailable": deferred,
   },
-  "not-yet-r3d3",
+  "not-yet-r05",
 );
 
 emitProducer("flutter-http-file-backed", producer);

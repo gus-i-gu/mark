@@ -105,21 +105,32 @@ async function irrelevantMetadataPreservesRevision() {
   const fixture = await jwtFixture();
   try {
     let now = fixture.now;
+    let fetchCount = 0;
     const verifier = newVerifier(fixture, {
       clock: { now: () => now },
       cacheMaxAgeMs: 1,
+      unknownKidCooldownMs: 60000,
+      fetchJwks: async (input, init) => {
+        fetchCount++;
+        return fetch(input, init);
+      },
     });
     await verifier.verify(request(await fixture.token()));
+    fetchCount = 0;
+    now = new Date(fixture.now.getTime() + 2);
+    await rejects(
+      verifier.verify(request(await fixture.token({ kid: "metadata-miss" }))),
+    );
+    assert.equal(fetchCount, 1);
     await fixture.setJwksBody({
       keys: [
         { ...(await fixture.publicJwk("kid-1")), provider_metadata: "ignored" },
       ],
     });
-    now = new Date(fixture.now.getTime() + 2);
-    assert.equal(
-      (await verifier.verify(request(await fixture.token()))).subject,
-      "auth0|subject",
+    await rejects(
+      verifier.verify(request(await fixture.token({ kid: "metadata-miss" }))),
     );
+    assert.equal(fetchCount, 1);
   } finally {
     await fixture.close();
   }

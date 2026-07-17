@@ -1,77 +1,42 @@
-# H_DDC_CODEX - C10-S03A-R3D1 Semantic Evidence
+# H_DDC_CODEX - C10-MCG02-R04 Partial Semantic Evidence
 
-Sequence: FLX-ORD-01 corrective Codex materialization
-Role: Codex semantic/test evidence
-Unit: C10-S03A-R3D1 evidence contract and migration lifecycle completion
-Branch: `intermid-cycle-recovery`
-Authority: `E_DDC_STAGE.md` plus J/D/F
-Evidence boundary: local proof only; provider proof and learner-memory promotion excluded
+Authority marker: C10-MCG02-R04_20260717T130804Z
+Controlling J SHA: fd73da6fddf3cc308655c41e0640b045d710d983
+Controlling D/E/F commit SHA: cb177621db82cde6be6d658c58daef590e5b9548
+Baseline remote SHA: cb177621db82cde6be6d658c58daef590e5b9548
+Actual implementation start UTC/local: 2026-07-17T13:19:36.6430880Z / 2026-07-17T10:19:38.0330606-03:00
+Actual implementation end UTC/local: 2026-07-17T13:28:17.2098489Z / 2026-07-17T10:28:21.5013124-03:00
+Final commit SHA: pending before commit
+Evidence environment: Windows PowerShell, Node server workspace, Docker Desktop Linux engine unavailable
+Result classification: C10-MCG02-R04_PARTIAL
 
-## Result
+## Meanings Materialized
 
-```text
-PROOF_PIPELINE_INTEGRITY=true
-C10-S03A_R3D1_PROVED
-R3_LOCAL_SECURITY_PROVED=false
-R3D2_AUTHORIZATION_PENDING
-R3D3_FLUTTER_PENDING
-MCG-02_PROVIDER_PROOF_PENDING
-```
+- `resource-teardown` now means command exit code zero plus empty trimmed disposable-resource inventory.
+- `irrelevant-metadata-preserves-revision` now means externally observable unknown-kid cooldown preservation across metadata-only JWK refresh, with no extra fetch before cooldown expiry.
+- `token-not-persisted-or-logged` is not proved in R04 and remains `false` with blocker `not-yet-r05`.
+- `authorization-race` cannot pass unless the authorization producer record itself passes.
+- R04 orchestration now distinguishes authorization producer completion from global R3 local security completion.
 
-## Closed Evidence Vocabulary
+## Semantic Tests
 
-- `case-name-present != case-measured`: unmeasured cases remain false.
-- `producer-record-created != producer-valid`: records are parsed and structurally checked.
-- `producer-valid != producer-passed`: authorization and Flutter records are valid but false.
-- `synthetic-complete-fixture != real-producer-success`: synthetic all-pass records exist only in aggregator unit tests.
-- `body-stall-timeout != repeated-slow-progress-deadline`: Flutter body-delay evidence is not promoted to the slow-trickle case.
-- `unavailable-result != owned-resource-closure-observed`: no client-closure overclaim is made.
-- `security-definer-checked != function-owner-checked`: migration producer now queries owner separately.
-- `readiness-call-allowed != all-other-runtime-execute-denied`: runtime readiness and unintended function privileges are separate cases.
-- `migration-present != lifecycle-proved`: lifecycle is proved through fresh, upgrade, duplicate and failure-copy scenarios.
-- `R3D1-proved != R3-local-security-proved`: global proof remains false.
+- `static teardown rejects successful non-empty disposable inventory`: passed.
+- `Auth0JwtVerifier preserves unknown kid cooldown across irrelevant JWK metadata`: passed.
+- Flutter producer structural mapping: observed false with only `not-yet-r05` blockers.
 
-## Named Producer-Integrity Tests
+## Deferred Meanings
 
-- Aggregator accepts a complete producer set.
-- Aggregator rejects missing and duplicate producers.
-- Aggregator rejects malformed records and unknown fields.
-- Aggregator rejects incomplete, duplicate and unknown case sets.
-- Aggregator rejects unknown case result fields and stale blockers.
-- Aggregator rejects inconsistent `passed` and `blockers`.
-- Aggregator treats skipped, partial and unavailable as false evidence.
+The 28-case authorization matrix was not semantically proved. No denied-no-state-advance, one-transition, one-event, duplicate-equivalent, unknown-outcome, restart replay, or retry-exhaustion meaning was validated because the PostgreSQL lab did not start.
 
-## Migration Meanings Materialized
+The following claims remain intentionally absent:
 
-- Fresh means pristine database receives 001-006.
-- Upgrade means 001-005 is usable before 006 is applied.
-- Duplicate means applying 006 again preserves one correct ledger row.
-- Failure rollback means copied failing 006 leaves no 006 ledger/function state.
-- Owner means `proowner` resolves to the migrator role.
-- Runtime capability means readiness execute is allowed while old probe, direct ledger, DDL, role admin and unintended function execute are denied.
-- Shadow resistance means hostile temp/public names do not change the qualified readiness result.
-- Absent/tampered ledger states cannot return ready.
+- complete Flutter proof;
+- complete R3 local security;
+- Auth0 acceptance;
+- Neon acceptance;
+- Render deployment;
+- MCG-02 completion;
+- production readiness;
+- Cycle 10 closure.
 
-## Privacy And Local-First Evidence
-
-Producer records contain safe booleans and blocker identifiers only. They do not contain tokens, claims, JWK bodies, passwords, provider configuration, connection strings, source payloads or private paths.
-
-Flutter remains a partial local file-backed evidence subset. Ordinary local registration, local facts, pending outbox behavior, Drift v7 and UI were not changed.
-
-## Unsupported Wording Absent
-
-No report claims:
-
-```text
-HOSTED_AUTH_READY=true
-Auth0 verified
-Neon accepted
-Render deployed
-MCG-02 complete
-production ready
-Cycle 10 closed
-```
-
-## Didactic Boundary
-
-No KANBAN, glossary, Concept Map, Lecture Register, permanent didactic memory, methodology, A/B/C, J or D/E/F file was modified. Learner maturity and Cycle 11 UI state remain unchanged.
+Learner maturity and permanent didactic memory were unchanged.

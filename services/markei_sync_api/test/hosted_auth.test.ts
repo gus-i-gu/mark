@@ -280,23 +280,40 @@ test("Auth0JwtVerifier cools down a miss after changed JWKS still lacks requeste
   await fixture.close();
 });
 
-test("Auth0JwtVerifier ignores irrelevant JWK metadata and rejects private material", async () => {
+test("Auth0JwtVerifier preserves unknown kid cooldown across irrelevant JWK metadata", async () => {
   const fixture = await jwtFixture();
   let now = fixture.now;
+  let fetchCount = 0;
   const verifier = newVerifier(fixture, {
     clock: { now: () => now },
     cacheMaxAgeMs: 1,
+    unknownKidCooldownMs: 60000,
+    fetchJwks: async (input, init) => {
+      fetchCount++;
+      return fetch(input, init);
+    },
   });
   await verifier.verify(request(await fixture.token()));
+  fetchCount = 0;
+  now = new Date(fixture.now.getTime() + 2);
+  await assert.rejects(
+    verifier.verify(request(await fixture.token({ kid: "metadata-miss" }))),
+    HostedAuthError,
+  );
+  assert.equal(fetchCount, 1);
   await fixture.setJwksBody({
     keys: [{ ...fixture.publicJwk, provider_metadata: "ignored" }],
   });
-  now = new Date(fixture.now.getTime() + 2);
-  assert.equal(
-    (await verifier.verify(request(await fixture.token()))).subject,
-    "auth0|subject",
+  await assert.rejects(
+    verifier.verify(request(await fixture.token({ kid: "metadata-miss" }))),
+    HostedAuthError,
   );
+  assert.equal(fetchCount, 1);
+  await fixture.close();
+});
 
+test("Auth0JwtVerifier rejects private JWK material", async () => {
+  const fixture = await jwtFixture();
   const rejecting = newVerifier(fixture);
   await fixture.setJwksBody({ keys: [{ ...fixture.publicJwk, d: "private" }] });
   await assert.rejects(

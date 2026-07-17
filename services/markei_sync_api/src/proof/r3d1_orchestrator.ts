@@ -36,12 +36,15 @@ for (const [producer, script] of producerScripts) {
 
 const aggregate = aggregateProofResults(records);
 const allBlockers = [...blockers, ...aggregate.blockers].sort();
+const flutterBlockers = allBlockers.filter(
+  (blocker) =>
+    blocker.startsWith("token-not-persisted-or-logged:") ||
+    blocker.endsWith(":not-yet-r05"),
+);
 const deferredOnly =
   allBlockers.length > 0 &&
-  allBlockers.every(
-    (blocker) =>
-      blocker.endsWith(":not-yet-r3d2") || blocker.endsWith(":not-yet-r3d3"),
-  );
+  flutterBlockers.length === allBlockers.length &&
+  allBlockers.every((blocker) => blocker.endsWith(":not-yet-r05"));
 const requiredPassed = new Map(
   records.map((record) => [record.producer, record.passed]),
 );
@@ -51,7 +54,7 @@ const pipelineIntegrity =
   requiredPassed.get("jwks-state-machine") === true &&
   requiredPassed.get("route-inventory") === true &&
   requiredPassed.get("static-regression") === true &&
-  requiredPassed.get("authorization-race") === false &&
+  requiredPassed.get("authorization-race") === true &&
   requiredPassed.get("flutter-http-file-backed") === false &&
   aggregate.passed === false &&
   deferredOnly;
@@ -71,15 +74,20 @@ process.stdout.write(
 process.stdout.write(
   `STATIC_REGRESSION_PRODUCER=${requiredPassed.get("static-regression") === true}\n`,
 );
+process.stdout.write(
+  `AUTHORIZATION_RACE_PRODUCER=${requiredPassed.get("authorization-race") === true}\n`,
+);
+process.stdout.write(
+  `FLUTTER_HTTP_FILE_BACKED_PRODUCER=${requiredPassed.get("flutter-http-file-backed") === true}\n`,
+);
 process.stdout.write(`PROOF_PIPELINE_INTEGRITY=${pipelineIntegrity}\n`);
 process.stdout.write("R3_LOCAL_SECURITY_PROVED=false\n");
 if (pipelineIntegrity) {
-  process.stdout.write("C10-S03A_R3D1_PROVED\n");
-  process.stdout.write("R3D2_AUTHORIZATION_PENDING\n");
-  process.stdout.write("R3D3_FLUTTER_PENDING\n");
+  process.stdout.write("C10-MCG02-R04_AUTHORIZATION_PROVED\n");
+  process.stdout.write("R05_FLUTTER_PENDING\n");
   process.stdout.write("MCG-02_PROVIDER_PROOF_PENDING\n");
 } else {
-  process.stdout.write("C10-S03A_R3D1_PARTIAL\n");
+  process.stdout.write("C10-MCG02-R04_PARTIAL\n");
   process.exitCode = 1;
 }
 

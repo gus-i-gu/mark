@@ -6,6 +6,7 @@ import {
   REQUIRED_PROOF_CASES,
   type ProofProducerName,
 } from "../src/proof/producer.js";
+import { evaluateResourceTeardown } from "../src/proof/static_regression_support.js";
 
 test("proof aggregator accepts a complete producer set", () => {
   const records = allProducerNames().map((producer) =>
@@ -152,6 +153,12 @@ test("proof aggregator treats skipped partial and unavailable as false evidence"
     assert.equal(result.passed, false);
     assert(result.blockers.includes(`server-tests:${blocker}`));
   }
+});
+
+test("static teardown rejects successful non-empty disposable inventory", () => {
+  assert.equal(evaluateResourceTeardown(0, ""), true);
+  assert.equal(evaluateResourceTeardown(0, "markei-c10-s03a-r04-pg\n"), false);
+  assert.equal(evaluateResourceTeardown(1, ""), false);
 });
 
 function completeRecords() {

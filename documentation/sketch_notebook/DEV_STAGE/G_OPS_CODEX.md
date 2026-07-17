@@ -1,105 +1,110 @@
-# G_OPS_CODEX - C10-S03A-R3D1 Operational Evidence
+# G_OPS_CODEX - C10-MCG02-R04 Partial Operational Evidence
 
-Sequence: FLX-ORD-01 corrective Codex materialization
-Role: Codex materialization evidence
-Unit: C10-S03A-R3D1 evidence contract and migration lifecycle completion
-Branch: `intermid-cycle-recovery`
-Baseline SHA: `b254b722014dd85871c03926789e6064d3635c88`
-Accepted implementation baseline: `00b3c090d25bd2f266ec65d358090a876efcd5d9`
-Final SHA: pending materialization commit
-Authority: `J_MAIN_STAGE.md`, `D_OPS_STAGE.md`, `E_DDC_STAGE.md`, `F_DSN_STAGE.md`
-Evidence boundary: local-only repository, loopback HTTP, disposable PostgreSQL 18 containers, synthetic identities only
+Authority marker: C10-MCG02-R04_20260717T130804Z
+Controlling J SHA: fd73da6fddf3cc308655c41e0640b045d710d983
+Controlling D/E/F commit SHA: cb177621db82cde6be6d658c58daef590e5b9548
+Baseline remote SHA: cb177621db82cde6be6d658c58daef590e5b9548
+Actual implementation start UTC/local: 2026-07-17T13:19:36.6430880Z / 2026-07-17T10:19:38.0330606-03:00
+Actual implementation end UTC/local: 2026-07-17T13:28:17.2098489Z / 2026-07-17T10:28:21.5013124-03:00
+Final commit SHA: pending before commit
+Evidence environment: Windows PowerShell, Node server workspace, Docker Desktop Linux engine unavailable
+Result classification: C10-MCG02-R04_PARTIAL
 
-## Result
+## Source Stage Files
 
-```text
-PROOF_PIPELINE_INTEGRITY=true
-MIGRATION_006_LIFECYCLE_ACL=true
-JWKS_STATE_MACHINE_PRODUCER=true
-ROUTE_INVENTORY_PRODUCER=true
-STATIC_REGRESSION_PRODUCER=true
-R3_LOCAL_SECURITY_PROVED=false
-C10-S03A_R3D1_PROVED
-R3D2_AUTHORIZATION_PENDING
-R3D3_FLUTTER_PENDING
-MCG-02_PROVIDER_PROOF_PENDING
-```
-
-R3 local security remains false by design. The aggregate blockers are only the intentionally deferred R3D2 authorization and R3D3 Flutter cases.
+- documentation/sketch_notebook/[M]_STAGE/J_MAIN_STAGE.md
+- documentation/sketch_notebook/DEV_STAGE/D_OPS_STAGE.md
+- documentation/sketch_notebook/DEV_STAGE/E_DDC_STAGE.md
+- documentation/sketch_notebook/DEV_STAGE/F_DSN_STAGE.md
 
 ## Changed Paths
 
-- `services/markei_sync_api/src/hosted_local_harness.ts`
-- `services/markei_sync_api/src/proof/aggregate.ts`
-- `services/markei_sync_api/src/proof/authorization_producer.ts`
-- `services/markei_sync_api/src/proof/flutter_producer.ts`
-- `services/markei_sync_api/src/proof/jwks_producer.ts`
-- `services/markei_sync_api/src/proof/migration_006_probe.ts`
-- `services/markei_sync_api/src/proof/producer.ts`
-- `services/markei_sync_api/src/proof/r3d1_orchestrator.ts`
-- `services/markei_sync_api/src/proof/route_inventory_producer.ts`
-- `services/markei_sync_api/src/proof/scenario_result.ts`
-- `services/markei_sync_api/src/proof/static_regression_producer.ts`
-- `services/markei_sync_api/test/proof_aggregate.test.ts`
-- `documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md`
-- `documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md`
-- `documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md`
+Production/test/proof paths changed but not committed:
 
-No dependency or lockfile version changed. Migrations 001-006, Drift schema v7, J/D/E/F, A/B/C, methodology and permanent memory were not edited.
+- services/markei_sync_api/src/hosted_local_harness.ts
+- services/markei_sync_api/src/proof/authorization_producer.ts
+- services/markei_sync_api/src/proof/flutter_producer.ts
+- services/markei_sync_api/src/proof/jwks_producer.ts
+- services/markei_sync_api/src/proof/r3d1_orchestrator.ts
+- services/markei_sync_api/src/proof/static_regression_producer.ts
+- services/markei_sync_api/src/proof/static_regression_support.ts
+- services/markei_sync_api/test/hosted_auth.test.ts
+- services/markei_sync_api/test/proof_aggregate.test.ts
+- documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
+- documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
+- documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
 
-## Producer Results
+No A/B/C, J/D/E/F, methodology, permanent memory, migrations, dependencies, lockfiles, UI, provider, or private Neon helper files were intentionally read or modified.
 
-`authorization-race`: structurally valid partial producer. Passed observed cases:
+## Completed Corrections
 
-- `owner-target-revoke`
-- `foreign-target-denial`
-- `cross-account-target-denial`
-- `conflicting-enrollment-request-hash`
+- Static teardown predicate now requires exit code 0 and empty trimmed stdout.
+- Added focused regression: exit zero with non-empty disposable inventory fails teardown.
+- JWKS irrelevant metadata case now installs an unknown-kid cooldown, applies metadata-only JWK change, retries the same unknown kid, and asserts fetch count does not advance.
+- Flutter `token-not-persisted-or-logged` is false with blocker `not-yet-r05`.
+- Authorization producer wrapper now reports true only when the emitted authorization producer record has `passed: true`.
+- R04 orchestrator acceptance now expects authorization true, Flutter false with only `not-yet-r05`, and global aggregate false.
 
-All remaining authorization cases are false with `not-yet-r3d2`.
+## Validation Run
 
-`migration-006-lifecycle-acl`: passed all 25 cases, including fresh 001-006, upgrade 001-005 then 006, duplicate 006 ledger behavior, copied failure rollback, canonical migration hash preservation, exact ledger identity/checksum, function owner, security definer, stable volatility, fixed search path, qualified ledger reference, no dynamic SQL, public/runtime ACL probes, runtime DDL/role denial, hostile shadowing resistance, absent ledger not ready and tampered ledger not ready.
+- `git fetch origin`: pass.
+- `git pull --ff-only`: pass, already up to date.
+- branch: `intermid-cycle-recovery`.
+- remote HEAD: `cb177621db82cde6be6d658c58daef590e5b9548`.
+- `fd73da6fddf3cc308655c41e0640b045d710d983` ancestor: true.
+- `7ed037db586d4e257eaa88783bec2c146a409230` ancestor: true.
+- initial worktree: clean.
+- `npm run typecheck`: pass.
+- `npm test`: pass, 36 tests.
+- `npm run format:check`: initially failed on two touched files; after Prettier, pass.
+- `npm run lint`: pass.
+- `npm exec tsx -- src/proof/jwks_producer.ts`: pass, `JWKS_STATE_MACHINE_PRODUCER=true`.
+- `npm exec tsx -- src/proof/flutter_producer.ts`: expected nonzero, structurally valid false producer with only `not-yet-r05` blockers.
+- `npm exec tsx -- src/proof/authorization_producer.ts`: fail, `AUTHORIZATION_RACE_BLOCKER=postgres-unavailable`.
+- `docker version`: fail, Docker Desktop Linux engine unavailable.
+- final disposable-resource inventory: not proven; Docker API unavailable.
 
-`jwks-state-machine`: passed all 10 cases using generated local RSA keys, injected clock and injected local fetch behavior.
+## Authorization Results
 
-`route-inventory`: passed all 6 Fastify readiness scenarios: valid inventory, late direct route rejection, encapsulated plugin route rejection, missing descriptor rejection, duplicate route rejection and wrong operation/classification rejection.
+All 28 R04 authorization cases remain unproved because disposable PostgreSQL 18 could not start:
 
-`flutter-http-file-backed`: structurally valid partial producer. Current observed file-backed HTTP cases pass; unmeasured full hosted-gate cases remain false with `not-yet-r3d3`.
+1. membership-disabled-before-fence: false, blocker `postgres-unavailable`
+2. membership-removed-before-fence: false, blocker `postgres-unavailable`
+3. external-identity-disabled-before-mutation: false, blocker `postgres-unavailable`
+4. actor-device-revoked-before-upload: false, blocker `postgres-unavailable`
+5. actor-device-revoked-before-download: false, blocker `postgres-unavailable`
+6. actor-device-revoked-before-acknowledgement: false, blocker `postgres-unavailable`
+7. actor-device-revoked-before-capabilities: false, blocker `postgres-unavailable`
+8. actor-device-revoked-before-rebootstrap-start: false, blocker `postgres-unavailable`
+9. actor-device-revoked-before-rebootstrap-status: false, blocker `postgres-unavailable`
+10. actor-device-revoked-before-rebootstrap-chunk: false, blocker `postgres-unavailable`
+11. actor-device-revoked-before-rebootstrap-complete: false, blocker `postgres-unavailable`
+12. actor-device-revoked-before-device-status: false, blocker `postgres-unavailable`
+13. actor-device-revoked-before-device-revoke: false, blocker `postgres-unavailable`
+14. owner-target-status: false, blocker `postgres-unavailable`
+15. owner-target-revoke: false, blocker `postgres-unavailable`
+16. member-self-status: false, blocker `postgres-unavailable`
+17. member-self-revoke: false, blocker `postgres-unavailable`
+18. foreign-target-denial: false, blocker `postgres-unavailable`
+19. cross-account-target-denial: false, blocker `postgres-unavailable`
+20. concurrent-target-revoke-one-transition-one-event: false, blocker `postgres-unavailable`
+21. independent-repeat-revoke-duplicate-equivalent: false, blocker `postgres-unavailable`
+22. self-revoked-actor-denied-later: false, blocker `postgres-unavailable`
+23. equivalent-concurrent-enrollment: false, blocker `postgres-unavailable`
+24. conflicting-enrollment-request-hash: false, blocker `postgres-unavailable`
+25. response-loss-query-replay: false, blocker `postgres-unavailable`
+26. process-restart-replay: false, blocker `postgres-unavailable`
+27. serialization-retry-exhaustion-fails-closed: false, blocker `postgres-unavailable`
+28. denied-no-state-advance: false, blocker `postgres-unavailable`
 
-`static-regression`: passed all 15 command cases, including server checks, Flutter checks/builds, Python regressions, diff check, changed-path secret scan and disposable-resource teardown.
+No before/after authorization state evidence, race counts, replay counts, restart counts, retry counts, or event counts were produced for R04 because the disposable database gate did not open.
 
-## Aggregate Blockers
+## Skipped Validation
 
-Only deferred blockers remain:
+Full server build, audit, migration producer, route producer, static producer, R04 orchestrator, Flutter analyze/tests/builds, Python regressions, migration hash comparison, git diff check, staged/tracked secret scan, commit and push were not run after the Docker blocker. No commit was created.
 
-- R3D2: membership/external-identity/actor-device authorization barrier cases, owner/member status gaps, concurrent/replay/restart/serialization/no-state-advance gaps.
-- R3D3: full Flutter hosted gate cases for redirect/oversize/response-loss/query replay, stalled headers, slow trickle, owned-client closure, borrowed-client preservation, late response fencing and local registration during API outage.
+## Terminal Evidence
 
-## Validation Results
-
-- `git fetch origin`: passed.
-- `git pull --ff-only`: already up to date.
-- Required controlling commit ancestor check for `b254b722014dd85871c03926789e6064d3635c88`: passed.
-- `git status --short --branch` before editing: clean on `intermid-cycle-recovery`.
-- `npm run typecheck`: passed.
-- `npm test`: passed 34 tests.
-- `npm exec tsx -- src/proof/jwks_producer.ts`: passed; producer true.
-- `npm exec tsx -- src/proof/route_inventory_producer.ts`: passed; producer true.
-- `npm exec tsx -- src/proof/migration_006_probe.ts`: passed; producer true.
-- `npm exec tsx -- src/proof/authorization_producer.ts`: completed expected partial; producer false only for R3D2 blockers.
-- `npm exec tsx -- src/proof/flutter_producer.ts`: completed expected partial; producer false only for R3D3 blockers.
-- `npm exec tsx -- src/proof/static_regression_producer.ts`: passed all static cases; producer true.
-- `npm exec tsx -- src/proof/r3d1_orchestrator.ts`: passed with `PROOF_PIPELINE_INTEGRITY=true`.
-- `npm run format:check`: passed.
-- `npm run lint`: passed.
-- `npm run build`: passed.
-- `npm audit --omit=dev`: passed, 0 vulnerabilities.
-- `git diff --check`: passed with Git line-ending warnings only.
-
-The static producer also executed: `dart format --set-exit-if-changed lib test`, `flutter analyze`, `flutter test`, `flutter build apk --debug`, `flutter build windows --release`, `python -m unittest discover -s tests`, changed-path secret scan and R3D1 disposable-resource teardown.
-
-## Boundary And Teardown
-
-Disposable PostgreSQL 18 containers were used for migration and authorization producers and removed in `finally`. Final container check for `markei-c10-s03a-r3d1*` returned no resources.
-
-No Auth0, Neon, Render or public hosted service was contacted. No provider credential, private helper file, `.vscode/settings.json`, `documentation/NEON_DOC.md` or `documentation/NEON_SESSION.ps1` was read or modified. Provider proof, R3D2, R3D3, MCG-03, MCG-04, permanent-memory promotion and Cycle 10 closure were not started.
+C10-MCG02-R04_PARTIAL
+AUTHORIZATION_RACE_PRODUCER=false
+R3_LOCAL_SECURITY_PROVED=false

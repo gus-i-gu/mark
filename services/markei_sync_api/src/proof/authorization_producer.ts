@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 import pg from "pg";
 
-const containerName = "markei-c10-s03a-r3d1-auth-pg";
+const containerName = "markei-c10-mcg02-r04-auth-pg";
 const port = 55439;
 const adminUrl = `postgres://postgres@127.0.0.1:${port}/postgres`;
-const dbName = "markei_r3d1_auth";
+const dbName = "markei_r04_auth";
 
 try {
   await startContainer();
@@ -14,14 +14,29 @@ try {
     .split(/\r?\n/u)
     .find((item) => item.startsWith("PROOF_PRODUCER authorization-race "));
   if (!line) throw new Error("missing authorization producer");
+  const record = JSON.parse(
+    line.slice("PROOF_PRODUCER authorization-race ".length),
+  ) as { passed?: unknown };
   process.stdout.write(`${line}\n`);
-  process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
-  process.exitCode = 1;
-} catch {
-  process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
+  process.stdout.write(
+    `AUTHORIZATION_RACE_PRODUCER=${record.passed === true ? "true" : "false"}\n`,
+  );
+  if (record.passed !== true) process.exitCode = 1;
+} catch (error) {
+  process.stdout.write(`AUTHORIZATION_RACE_BLOCKER=${blockerFor(error)}\n`);
+  process.stdout.write("AUTHORIZATION_RACE_PRODUCER=false\n");
   process.exitCode = 1;
 } finally {
   await run("docker", ["rm", "-f", containerName], [0, 1]).catch(() => 1);
+}
+
+function blockerFor(error: unknown) {
+  const message = error instanceof Error ? error.message : "unknown";
+  if (message.includes("postgres unavailable")) return "postgres-unavailable";
+  if (message.includes("missing authorization producer")) {
+    return "missing-producer-output";
+  }
+  return "authorization-harness-failed";
 }
 
 async function startContainer() {

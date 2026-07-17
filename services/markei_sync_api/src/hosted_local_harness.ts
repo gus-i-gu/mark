@@ -195,7 +195,7 @@ try {
       "cross-account-target-denial": true,
       "conflicting-enrollment-request-hash": true,
     },
-    "not-yet-r3d2",
+    "not-yet-r04",
   );
   process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
   process.stdout.write("ROUTE_AUTHORIZATION_INVENTORY=true\n");
