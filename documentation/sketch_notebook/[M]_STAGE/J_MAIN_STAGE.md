@@ -427,3 +427,72 @@ After the Flutter producer passes, the global aggregator must accept all six pro
 
 D/E/F carrying marker `C10-MCG02-R05_20260717T162323Z` are the only active Codex authority.
 Providers, deployment, pruning/promotion, MCG-03/04 and Cycle 10 closure remain unauthorized.
+
+---
+
+## 26. Append-only reconciliation — R05 result
+
+> Reconciliation marker: C10-MCG02-PROVIDER-GATE_20260717T170634Z
+> Reconciled at UTC: 2026-07-17T17:06:34Z
+> Reconciled at America/Sao_Paulo: 2026-07-17T14:06:34-03:00
+> Reconciled implementation: 2785b29ccabbd390c1560ab687bea76f8014c0ae
+> Implementation tree: 2315aed9488efdc2ffdcf50cd377b2fa94ce6af3
+> Controlling R05 authority: a24000be31582b6b704ee825919ebff3e84bbd2f
+> Current status: **R05 VALIDATED; MCG-02 PROVIDER PROOF NEXT**
+
+R05 completed the local Flutter and global proof boundary:
+
+- all 16 `flutter-http-file-backed` cases passed from closed case records;
+- real Flutter HTTP transport and file-backed Drift preserved facts and pending outbox state;
+- response-loss replay, process-safe query replay, absolute deadline and client ownership passed;
+- bearer-token material was absent from the inspected Drift bytes and retained diagnostic state;
+- the Flutter producer and all five earlier producers passed the strict global aggregator;
+- the final orchestrator reported proof-pipeline integrity and local R3 security true;
+- Flutter analysis/tests, Android debug, Windows release and server validation passed in Codex's
+  recorded environment; Docker/PostgreSQL resources were torn down.
+
+Main inspected the final Git tree, reports and strict producer/orchestrator implementation. The
+commit changes only proof infrastructure, one Flutter proof test and G/H/I; it does not mutate
+production provider configuration, migrations, dependencies, UI or permanent memory. `git diff
+--check` passed. Main's attempted independent npm reinstall was inconclusive because the execution
+environment could not create its npm cache and returned corrupted-download warnings; this is an
+environment limitation, not contrary behavioral evidence.
+
+Accepted local terminal:
+
+~~~text
+FLUTTER_HTTP_FILE_BACKED_CASES_TRUE=16
+FLUTTER_HTTP_FILE_BACKED_PRODUCER=true
+AUTHORIZATION_RACE_PRODUCER=true
+PROOF_PIPELINE_INTEGRITY=true
+R3_LOCAL_SECURITY_PROVED=true
+C10-MCG02-R05_FLUTTER_PROVED
+~~~
+
+## 27. Phase decision
+
+The next phase is not MCG-03. Permanent memory still defines MCG-03 and MCG-04 as undefined and
+inactive. R05 proves local readiness only; it does not prove Auth0, Neon, Render or deployment.
+
+The remaining ordered work is:
+
+~~~text
+R05 local Flutter/global proof                                      VALIDATED
+MCG-02 human Auth0 + Neon + Render provider proof                   NEXT
+Cycle 10 proof-module pruning and permanent domain promotion        PENDING
+Main Cycle 10 closure                                               PENDING
+MCG-03 / MCG-04 definition                                          INACTIVE
+~~~
+
+MCG-02 provider proof must use sanitized evidence and the existing manual instructions. It must
+validate the configured issuer/audience/JWKS boundary, direct migrator versus pooled runtime Neon
+roles, forward migrations, Render HTTPS composition, explicit Account membership and Device
+enrollment, denial cases and one synthetic hosted synchronization path. Secrets, provider IDs,
+tokens, hostnames and connection strings must remain outside Git and reports.
+
+## 28. Forward authority
+
+R05 D/E/F are spent implementation authority. No replacement D/E/F or Codex implementation seed is
+issued at this gate because provider-console actions and sanitized human evidence are required
+first. Main must reconcile that evidence before authorizing pruning, permanent promotion, Cycle 10
+closure or defining MCG-03/04.
