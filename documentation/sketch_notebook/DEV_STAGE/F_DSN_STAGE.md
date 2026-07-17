@@ -1,126 +1,106 @@
-# F_DSN_STAGE — R05 Flutter HTTP/File-Backed Design Authority
+# F_DSN_STAGE — MCG-02 Provider-Proof Design Authority
 
-> Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-R05_20260717T162323Z
-> Required ancestry: bddccba29e208ad423d9adfc95b99ed969ade71e
-> Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
+> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
+> Status: **PROVIDER FOUNDATION CONFIGURATION AND EVIDENCE ONLY**
 
-## 1. Selected topology
+## Selected topology
 
 ~~~text
-file-backed Drift + pending local outbox
-→ HostedEnrollmentCoordinator
-→ ephemeral AccessTokenSource
-→ real HttpDeviceEnrollmentTransport
-→ loopback hosted Fastify + PostgreSQL
-→ typed outcome persisted in Drift
-→ close/reopen comparison
-→ 16-case Flutter producer
-→ final six-producer local aggregate
+Android / Windows Native clients
+        -> Auth0 Authorization Code + PKCE (not yet composed in Flutter)
+        -> Render HTTPS hosted Fastify composition
+        -> pooled Neon markei_runtime
+
+controlled migration session
+        -> direct Neon markei_migrator
 ~~~
 
-Application ports remain independent of HTTP, Drift and provider SDKs.
+The selected target has Auth0 validate login and issue an access token. The API validates signature, issuer,
+audience, expiry and algorithm through JWKS. PostgreSQL remains authoritative for Account
+membership, Device enrollment/revocation and synchronization state.
 
-## 2. Transport ownership
+Current gap: Flutter exposes bearer-token transport ports but has no Auth0 SDK dependency, login
+composition or production credential supplier. Provider setup cannot substitute for that code.
 
-`HttpDeviceEnrollmentTransport` owns one absolute attempt deadline across send, headers and complete
-bounded body consumption. It rejects redirects, malformed JSON, oversized bodies and unexpected
-contract fields. Expected network/timeout/cancellation failures become closed transport outcomes;
-programming errors remain visible.
+## Configuration contract
 
-Owned request/client resources are cancelled or closed on every terminal path. A borrowed client is
-never closed by the transport and remains usable after timeout. Late completions cannot reach the
-coordinator as successful results after the deadline.
+The hosted runtime consumes only:
 
-Use the pinned `http` API. Do not change dependencies unless Main separately reconciles a proven API
-gap.
+- `NODE_ENV`;
+- Render-provided `PORT`;
+- pooled `MARKEI_SYNC_DATABASE_URL` for `markei_runtime`;
+- `MARKEI_AUTH_ISSUER` with trailing slash;
+- exact `MARKEI_AUTH_AUDIENCE`;
+- optional derived or explicit HTTPS `MARKEI_AUTH_JWKS_URI`;
+- exact HTTPS `MARKEI_PUBLIC_ORIGIN`;
+- bounded `MARKEI_LOG_LEVEL`.
 
-## 3. Unknown-outcome state machine
+The runtime rejects a migrator URL. Migrator credentials never enter Render or Flutter. Native
+applications have public client IDs but no embedded client secret.
 
-~~~text
-persist request identity
-→ send enrollment
-→ server commits
-→ response delivery lost
-→ persist unknown-outcome, no Device truth
-→ obtain fresh ephemeral token
-→ query same enrollment request ID
-→ persist committed Device/account/generation
-~~~
+## Database boundary
 
-Do not generate a new request ID after an unknown outcome. Query/replay is idempotent and durable;
-the same PostgreSQL truth must survive server composition restart where exercised by R04.
+Apply immutable migrations 001–006 in order over a direct connection. Existing migration hashes
+must be checked before execution; never edit an applied file. Runtime receives only grants defined
+by the migrations and must remain unable to read/write `migration_ledger`, create schema objects,
+administer roles, enroll identities by direct table mutation or bypass Account predicates.
 
-## 4. Drift invariants
+The provider proof may seed synthetic identity/membership rows only through a controlled migrator
+session. Ordinary synchronization uses the runtime role and application routes.
 
-Hosted identity state is protocol state, not authoritative Purchase facts. Across every R05 case:
+## Authentication and authorization
 
-- existing Purchases and facts remain unchanged;
-- pending outbox events remain present unless normal sync explicitly commits them;
-- conflict/unavailable/malformed/timeout do not install a server Device ID;
-- unknown outcome retains installation and enrollment request identity;
-- successful replay installs one equivalent server identity;
-- close/reopen returns the same committed local state;
-- no reset or replacement of the Drift file occurs.
+Token verification is necessary but insufficient:
 
-## 5. Real and deterministic fixtures
+1. verify RS256 signature through issuer-bound JWKS;
+2. verify exact issuer, audience and expiry;
+3. resolve `(issuer, subject)` to an active external identity;
+4. resolve explicit active Account membership;
+5. resolve/enroll the request's Device idempotently;
+6. authorize the Device and Account again inside protected transactions.
 
-The decisive happy/unknown/replay path uses loopback Fastify, disposable PostgreSQL 18, synthetic
-RS256/JWKS and the real Flutter HTTP adapter. Dart loopback servers/clients may deterministically
-exercise header stall, trickle, redirect, oversize, cancellation and ownership edges.
+No Auth0 claim becomes AccountId or DeviceId. No credential or token becomes durable Drift state.
 
-Fixture authentication remains local-only and structurally absent from hosted production roots.
+## Transaction and retry rules
 
-## 6. Token design
+- Enrollment identity and request hash define replay identity.
+- Same identity/hash returns the same result; same identity/different hash conflicts.
+- Authorization changes committed before the transaction fence must deny protected mutation.
+- Response loss must be resolved by query/replay, never blind identity regeneration.
+- Retry exhaustion fails closed and preserves pre-attempt protected state.
+- Acknowledgement occurs only after committed local application.
 
-The token source returns an ephemeral credential for a single request. Neither coordinator state,
-Drift tables, transport results nor logs retain it. Tests may compare a credential in transient
-memory but must never print it. Token proof scans durable file content/rows and captured redacted
-diagnostics.
+## Provider foundation boundary
 
-No production Auth0 SDK, callback handler, client secret or login UI is selected.
+Use one disposable development branch/database. This unit may deploy the existing hosted
+composition and verify its health/configuration boundary, but it must not fabricate native login by
+manually copying tokens. It may not add provider-specific shortcuts, production credentials,
+automatic user provisioning, social login, Device replacement, billing, telemetry or production
+retention policy.
 
-## 7. Case producer
+## Security checks
 
-Define one closed Dart/proof result per existing producer case. The TypeScript producer consumes a
-machine-readable record, validates exact case set/order and calls `makeProducerResult`.
+- TLS for Auth0, Render and Neon;
+- no secrets in Git, build output, logs, screenshots or reports;
+- no token/fact-payload logging;
+- exact callback/logout allowlists;
+- wrong issuer/audience/algorithm/key fail closed;
+- cross-Account and revoked/unknown Device requests fail closed;
+- runtime DDL and migration-ledger access denied;
+- production Neon branch not used;
+- Render contains runtime credentials only.
 
-Do not infer multiple case truths from one test process exit. Safe blocker categories are required
-for every false case.
+## Evidence and rollback
 
-## 8. Final aggregation
+Provider configuration is reversible: disable Render auto-deploy/service, revoke test Devices,
+delete synthetic rows, rotate credentials, and remove disposable Auth0/Neon resources after Main
+acceptance. Preserve only sanitized evidence and resource inventory before teardown.
 
-Preserve the R04 orchestrator as an authorization-era diagnostic. Add or adapt a final local
-orchestrator that requires all six producer records true and `aggregateProofResults(...).passed`
-true before emitting `R3_LOCAL_SECURITY_PROVED=true`.
+The missing native auth composition is already identified. Stop after foundation evidence and
+return it to Main. Do not patch source under this authority. Main must issue new D/E/F for the
+bounded client-auth round and later decisive provider proof.
 
-No special deferred blocker remains after R05. Missing/malformed/duplicate producer output fails
-closed.
+## Deferred decisions
 
-## 9. Local-first availability
-
-Hosted enrollment/sync unavailability cannot block `RegisterPurchase`. The local transaction commits
-facts and its pending event first; remote work remains retryable. R05 does not add UI or automatic
-background policy.
-
-## 10. Resource ownership
-
-One lab owner closes Flutter test processes, Fastify/JWKS, PostgreSQL pools/container, HTTP clients,
-temporary Drift files and captured logs in `finally`. Teardown requires successful cleanup and empty
-exact filtered inventory.
-
-## 11. Retained versions
-
-Retain migrations 001–006, Drift v7, enrollment contract v1, event v3, cursor `c10b:*`, recovery
-format 1, JWT RS256, producer schema v1 and current dependencies/lockfiles.
-
-No schema or protocol increment is selected.
-
-## 12. Rollback and report
-
-R05 is one bounded rollback unit. Production changes require retained failing cases. I reports final
-dependency direction, timeout/cancellation design, client ownership, unknown-outcome transitions,
-Drift invariants, token boundary, fixture containment, producer/aggregate architecture, versions,
-resources and deviations.
-
-Do not claim provider proof, deployment, MCG-02 completion or Cycle 10 closure.
+Production hosting tier, custom domain, production tenant, social providers, account recovery,
+Device replacement, provider monitoring, backup/PITR policy and MCG-03/04 definitions remain open.

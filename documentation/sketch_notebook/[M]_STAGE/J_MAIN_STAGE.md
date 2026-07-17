@@ -496,3 +496,26 @@ R05 D/E/F are spent implementation authority. No replacement D/E/F or Codex impl
 issued at this gate because provider-console actions and sanitized human evidence are required
 first. Main must reconcile that evidence before authorizing pruning, permanent promotion, Cycle 10
 closure or defining MCG-03/04.
+
+---
+
+## 29. Provider-proof staging activation
+
+> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
+> Activated at UTC: 2026-07-17T17:14:43Z
+> Activated at America/Sao_Paulo: 2026-07-17T14:14:43-03:00
+> Parent reconciliation: 2158c03f22b5181f1cccaf74d3aafa0450bf39ec
+
+At the human operator's request, D/E/F now carry a bounded MCG-02 provider-proof contract. This does
+not reopen Codex source implementation. It authorizes human configuration and sanitized evidence
+capture across the disposable Auth0, Neon and Render development resources, with Codex limited to
+read-only preparation, redacted diagnosis and later evidence reconciliation.
+
+Repository inspection found bearer-token transport ports but no Flutter Auth0 SDK/login composition
+or production credential supplier. The active unit is therefore narrowed to provider containment,
+Auth0 contract, Neon migrations/privileges and Render HTTPS foundation readiness. Main will
+reconcile that evidence before staging native client authentication and the decisive hosted proof.
+Manual token copying cannot stand in for native login evidence.
+
+D/E/F carrying marker `C10-MCG02-PROVIDER-PROOF_20260717T171443Z` are current authority. MCG-03/04,
+production launch, pruning/promotion and Cycle 10 closure remain inactive.

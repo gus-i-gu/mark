@@ -1,54 +1,92 @@
-# E_DDC_STAGE — R05 Semantic Materialization Authority
+# E_DDC_STAGE — MCG-02 Provider-Proof Semantic Authority
 
-> Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-R05_20260717T162323Z
-> Required ancestry: bddccba29e208ad423d9adfc95b99ed969ade71e
-> Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
+> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
+> Status: **ACTIVE MANUAL EVIDENCE CONTRACT**
 
-## 1. Evidence boundary
+## Claims
 
 ~~~text
-local Flutter HTTP/file-backed proof
-+ all local producers true
-≠ Auth0/Neon/Render provider proof
-≠ production readiness
-≠ Cycle 10 closure
+R05 local proof complete
+!= hosted provider proof
+!= production readiness
+!= Cycle 10 closure
 ~~~
 
-## 2. Closed outcome meanings
+Provider foundation may be claimed after Auth0 contract, Render HTTPS and disposable Neon
+configuration pass. Full provider proof may be claimed only after real Auth0-issued native tokens,
+Render HTTPS, the disposable Neon
+development database, explicit Account membership and enrolled Devices participate in the same
+executed path.
 
-- applied: hosted enrollment is committed and installed locally;
-- duplicate-equivalent: the same durable truth already exists, distinct from a new application;
-- conflict: known not applied under the submitted identity/hash; local facts/outbox survive;
-- unavailable: service could not provide a usable result; local work survives;
-- unknown-outcome: the request may have committed, so Flutter preserves its request identity and
-  queries/replays instead of inventing success or resubmitting a new identity;
-- fail closed: malformed, oversized, redirected or late responses cannot install Device truth;
-- absolute deadline: one bound covers send, headers and complete body, not each gap separately;
-- ephemeral token: used for one request but absent from durable storage, logs and retained outcomes.
+## Vocabulary
 
-## 3. Evidence requirements
+- **External identity** — Auth0 issuer plus subject; not an Account or Device identifier.
+- **Membership** — explicit authorization connecting an external identity to one Account.
+- **Device enrollment** — idempotent authorization of one installation under one membership.
+- **Provider acceptance** — executed evidence from Auth0, Neon and Render together.
+- **Local readiness** — R05's deterministic local proof; retained independently.
+- **Production readiness** — not established by this development proof.
 
-Every producer case is individually executed. One focused test exit cannot stand for several cases.
-File-backed evidence must preserve Purchases, facts and pending outbox through failures, timeout,
-unknown outcome, close/reopen and API unavailability.
-
-## 4. Completion wording
-
-Allowed:
+## Truthful states
 
 ~~~text
-R05 local Flutter HTTP/file-backed proof passed all 16 cases.
-Human/provider MCG-02 proof and Cycle 10 promotion remain pending.
+provider-preflight
+auth0-contract-valid
+neon-migrations-valid
+render-runtime-live
+provider-foundation-ready
+native-auth-integration-pending
+identity-mapped
+device-enrolled
+hosted-sync-converged
+provider-proof-complete
+provider-proof-partial
 ~~~
 
-Do not claim provider acceptance, deployment, platform runtime acceptance, production readiness,
-MCG-02 completion or Cycle 10 closure.
+No foundation state may be described as authenticated end-to-end, synchronized, converged or
+complete. A deployed healthy endpoint proves process readiness only.
 
-## 5. Privacy and didactic boundary
+## Required semantic denials
 
-Reports may contain case IDs, safe counts, durations and booleans. They must not contain bearer
-tokens, claims, passwords, connection strings, provider URLs or fact payloads.
+Evidence must distinguish:
 
-Do not change permanent didactic memory, learner maturity, KANBAN, glossary, Concept Map or Lecture
-Register. H reports only executed meanings.
+- missing versus malformed bearer token;
+- expired token;
+- wrong issuer;
+- wrong audience;
+- unknown external identity;
+- inactive membership;
+- unknown Device;
+- revoked Device;
+- cross-Account mismatch;
+- idempotent replay versus conflicting enrollment request.
+
+Every denial must be paired with protected-state-no-advance evidence. Do not infer global denial
+truth from HTTP status alone.
+
+## Privacy and evidence language
+
+Use synthetic users and opaque aliases. Reports may state claim names, status classes, counts,
+algorithms, migration identifiers and pass/fail outcomes. Reports must omit tokens, credentials,
+connection strings, provider domains/IDs, user email addresses, Auth0 subjects and fact payloads.
+
+Allowed final wording:
+
+> The disposable development environment completed the MCG-02 hosted provider proof with Auth0,
+> Render HTTPS and Neon while preserving explicit Account and Device authorization boundaries.
+
+Disallowed wording includes production-ready, backup-complete, permanently secure, universally
+authenticated, provider-independent or Cycle 10 closed.
+
+## Failure behavior
+
+Unknown outcomes remain unknown until queried or safely replayed. Provider unavailability must not
+erase local facts or outbox work. A failed provider checkpoint stops forward promotion but does not
+invalidate R05 local proof.
+
+## Completion boundary
+
+This unit ends at `MCG-02_PROVIDER_FOUNDATION_READY`. It does not satisfy MCG-02 completion. Main
+must next authorize native client authentication and then the decisive Account/Device/sync proof.
+MCG-03/04 remain undefined and inactive. Learner maturity, lecture history and Cycle 11 UX claims
+remain unchanged.

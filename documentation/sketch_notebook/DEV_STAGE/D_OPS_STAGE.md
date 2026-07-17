@@ -1,163 +1,138 @@
-# D_OPS_STAGE — R05 Flutter HTTP/File-Backed Proof Authority
+# D_OPS_STAGE — MCG-02 Hosted Provider Proof Authority
 
 > Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-R05_20260717T162323Z
-> Required ancestry: bddccba29e208ad423d9adfc95b99ed969ade71e
-> Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
+> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
+> Staged at UTC: 2026-07-17T17:14:43Z
+> Parent reconciliation: 2158c03f22b5181f1cccaf74d3aafa0450bf39ec
+> Status: **HUMAN PROVIDER FOUNDATION ACTIVE; CODEX READ-ONLY ASSISTANCE**
 
-## 1. Objective
+## Objective
 
-Complete all 16 `flutter-http-file-backed` cases with case-addressable evidence, then run a final
-local aggregate in which all six producers pass.
+Establish and validate the disposable Auth0, Neon and Render foundation needed by the hosted
+composition. This unit stops before native login: the repository has bearer-token transport ports
+but no Auth0 Flutter SDK/login composition or production credential supplier. Its evidence prepares
+a narrow Codex client-auth round; it does not complete MCG-02, MCG-03 or production launch.
 
-R05 proves the local Flutter HTTP/file-backed boundary. It does not contact or accept Auth0, Neon,
-Render or production deployment.
+## Authority split
 
-## 2. Safety and preflight
+Human may:
 
-Confirm branch, fast-forward-only state, required ancestry and clean/non-overlapping worktree.
-Preserve unrelated/private files without reading them.
+- configure Auth0 applications/API callbacks and retrieve non-secret identifiers;
+- apply reviewed migrations to the disposable Neon development database as `markei_migrator`;
+- configure and deploy one Render development Web Service;
+- create synthetic test users, Account membership and Device enrollment state;
+- run Android/Windows login and hosted synchronization probes;
+- return sanitized results.
 
-Before mutation verify:
+Codex may:
 
-- Flutter/Dart toolchain and package resolution;
-- Docker/PostgreSQL 18 loopback start, readiness, query, removal and empty inventory;
-- supported host build targets without installing/reconfiguring host software.
+- inspect tracked repository configuration and public provider documentation;
+- calculate migration hashes and prepare commands with placeholders;
+- diagnose redacted build/runtime failures;
+- verify sanitized evidence and later replace G/H/I if Main separately authorizes reporting.
 
-Stop before mutation when the decisive Flutter or Docker/PostgreSQL environment is unavailable.
+Codex must not receive, print, store or use passwords, tokens, connection strings, provider IDs or
+secret-bearing URLs. It must not operate provider consoles, deploy, mutate Neon, or read
+`documentation/NEON_*`, `.env`, `.vscode` or other private local files.
 
-## 3. Decisive topology
+## Checkpoints
 
-Use real `HttpDeviceEnrollmentTransport`, `HostedEnrollmentCoordinator`, file-backed `LocalDatabase`,
-pending local Purchase/outbox state and a loopback hosted Fastify/PostgreSQL fixture with synthetic
-RS256 identity. Deterministic Dart HTTP fixtures may supplement edge cases, but cannot replace the
-real hosted path for enrollment, unknown outcome and replay.
+### P0 — Preflight and containment
 
-No provider credentials, public endpoint or fixture authentication may escape this local proof.
+- Confirm branch `intermid-cycle-recovery` includes `2158c03`.
+- Confirm the Neon child branch will remain alive throughout the proof.
+- Confirm the database is `markei_sync_dev`; production branch is not selected.
+- Confirm Auth0 tenant/API and Android/Windows Native Applications are development-scoped.
+- Confirm Render service targets the same Git branch and is not yet production traffic.
+- Inventory secrets only by variable name, never value.
+- Rotate any credential ever committed or exposed before continuing.
 
-## 4. Closed producer evidence
+### P1 — Auth0 contract
 
-Replace the current broad focused-test mapping with one executed result per exact case ID. Dart/test
-or lab code must emit closed machine-readable results that the TypeScript producer validates and
-maps directly. Do not mark several cases true from one command exit.
+- Custom API audience exactly matches `MARKEI_AUTH_AUDIENCE`.
+- Access tokens use RS256.
+- Issuer is the tenant HTTPS URL with its trailing slash.
+- JWKS is the issuer's `/.well-known/jwks.json` endpoint.
+- Android and Windows applications remain Native Applications using Authorization Code + PKCE.
+- Configure only the exact callback/logout URLs derived from the implemented clients.
+- Do not create or embed a native client secret.
+- Obtain one development access token and inspect only header/claims; never record the token.
 
-Each result includes case ID, pass/fail, safe blocker and only the counts/state needed by that case.
+Required sanitized evidence: tenant region alias, application types, algorithm, audience alias,
+issuer-shape pass, JWKS HTTP status, and redacted claim checks for `iss`, `aud`, `sub`, `exp`.
 
-## 5. Persistence and outcome cases
+### P2 — Neon migrations and privileges
 
-Execute:
+- Use the direct endpoint and `markei_migrator` for migrations.
+- Review SHA-256 for migrations 001–006 before execution.
+- Apply 001 through 006 in order with `ON_ERROR_STOP=1`.
+- Verify all ledger identifiers and 006 checksum.
+- Use the pooled endpoint and `markei_runtime` for the hosted API.
+- Prove runtime can call `markei_hosted_runtime_ready()` and cannot read the migration ledger,
+  create schema objects or administer roles.
+- Prove cross-Account access fails closed under the application transaction context.
 
-- device-enrolled-applied;
-- duplicate-equivalent-distinct;
-- conflict-persists-facts-outbox;
-- unavailable-persists-facts-outbox;
-- close-reopen-preserves-state;
-- local-registration-while-api-unavailable.
+Stop on a changed previously applied migration, partial ledger, privilege escalation or wrong branch.
 
-For every case, preserve existing Purchases and pending outbox events. Conflict and unavailable must
-not install a server Device identity. Close/reopen uses the same Drift file and proves hosted state,
-facts and outbox truth survive.
+### P3 — Render configuration and deployment
 
-Local Purchase registration must remain successful while the hosted API is unavailable.
-
-## 6. Response and deadline cases
-
-Execute:
-
-- malformed-oversized-redirect-fail-closed;
-- normal-response-before-deadline;
-- stalled-headers-timeout;
-- slow-trickle-total-deadline;
-- owned-client-closed-on-timeout;
-- borrowed-client-preserved;
-- late-response-no-durable-mutation.
-
-One absolute deadline covers connection/send, headers and the complete bounded body. A slow trickle
-must not renew the deadline. Redirects are not followed. Malformed or oversized responses fail
-closed. Expected transport failures become application-owned outcomes; programming errors remain
-visible.
-
-An internally owned client/request must be cancelled or closed after timeout. A borrowed client must
-remain usable. A late result after the deadline cannot mutate Drift identity, facts or outbox state.
-
-## 7. Unknown-outcome recovery
-
-Execute:
-
-- response-loss-unknown-outcome;
-- query-replay-same-request-id.
-
-Suppress delivery only after the hosted enrollment transaction commits. Flutter must persist
-`unknown-outcome` with the original enrollment request ID and no invented Device truth. Query/replay
-uses the same request ID and an ephemeral fresh token, recovers the committed result and converges
-without duplicate Device/enrollment/security-event state.
-
-## 8. Token boundary
-
-Execute `token-not-persisted-or-logged`.
-
-Bearer credentials may exist only in transient request construction. Prove the exact token is absent
-from the Drift file/database values, application logs/diagnostics, failure text and retained result
-objects. Do not print the token to prove equality; use safe in-memory comparison/redaction evidence.
-
-No Auth0 SDK or production login UI is authorized in R05.
-
-## 9. Producer and final aggregate
-
-`flutter-http-file-backed` must contain all 16 true results and no blockers.
-
-Add or update a final local orchestrator without weakening the accepted R04 gate. It must consume
-closed records for migration, JWKS, route inventory, authorization, Flutter and static regression.
-All six producers and the aggregate must be true before `R3_LOCAL_SECURITY_PROVED=true`.
-
-Missing, malformed, duplicate or stale output fails closed.
-
-## 10. Production correction rule
-
-Proof first. Change Flutter application/transport code only after a named case fails; retain that
-test, keep the correction narrow and version-preserving, and report it in I. No UI redesign.
-
-## 11. Validation
-
-Run and record:
-
-- focused case-addressable Flutter proof;
-- complete Flutter format, analysis and tests;
-- Android debug and Windows release builds when host-supported;
-- all six producers and final aggregate;
-- complete server format/lint/typecheck/tests/build and audit;
-- protected Python regressions;
-- Drift close/reopen and no-reset evidence;
-- migrations 001–006 hashes;
-- `git diff --check`, tracked/staged secret scan and exact teardown inventory.
-
-Build success is not runtime/platform acceptance. Record unsupported host checks as exclusions.
-
-## 12. Scope
-
-Allowed: Flutter hosted ports/coordinator/HTTP transport, focused file-backed proof, local lab fixture,
-Flutter producer/final aggregator, narrow tests and G/H/I.
-
-Forbidden: providers/credentials; migrations/dependency/lockfile changes unless an existing pinned API
-is demonstrably insufficient and Main stops/reconciles first; production deployment; UI; permanent
-memory/methodology; A/B/C/J/D/E/F; scenario pruning; MCG-03/04.
-
-## 13. Reports and terminal
-
-Replace only G/H/I. Report all 16 cases, Drift/fact/outbox invariants, deadline/client behavior,
-token scan, producer/aggregate results, builds/exclusions, paths, deviations and teardown.
-
-Success terminal:
+Service settings:
 
 ~~~text
-FLUTTER_HTTP_FILE_BACKED_CASES_TRUE=16
-FLUTTER_HTTP_FILE_BACKED_PRODUCER=true
-AUTHORIZATION_RACE_PRODUCER=true
-PROOF_PIPELINE_INTEGRITY=true
-R3_LOCAL_SECURITY_PROVED=true
-C10-MCG02-R05_FLUTTER_PROVED
-MCG-02_PROVIDER_PROOF_PENDING
-CYCLE_10_PRUNING_AND_PROMOTION_PENDING
+Language: Node
+Branch: intermid-cycle-recovery
+Root directory: services/markei_sync_api
+Build command: npm ci && npm run build
+Start command: npm start
+Health check path: /health/ready
+Auto-deploy: Off during proof
 ~~~
 
-Otherwise report `C10-MCG02-R05_PARTIAL` with exact false cases. Do not access providers.
+Required variables:
+
+~~~text
+NODE_ENV=production
+MARKEI_SYNC_DATABASE_URL=<pooled markei_runtime URL; secret>
+MARKEI_AUTH_ISSUER=<Auth0 HTTPS issuer with trailing slash>
+MARKEI_AUTH_AUDIENCE=<exact custom API audience>
+MARKEI_PUBLIC_ORIGIN=<Render HTTPS service origin>
+MARKEI_LOG_LEVEL=info
+~~~
+
+Do not add `MARKEI_SYNC_MIGRATOR_DATABASE_URL`; the application rejects it. Render supplies `PORT`.
+Require a successful build, `MARKEI_HOSTED_SYNC_READY`, HTTPS health 200 and no secret/fact payload
+in logs. Render must bind the service through the implementation's `0.0.0.0:$PORT` behavior.
+
+### P4 — Hosted foundation probe
+
+- Verify `/health/live` and `/health/ready` over Render HTTPS.
+- Verify an unauthenticated protected route is denied.
+- Verify the runtime readiness function succeeds through the pooled role.
+- Inspect logs for secret, token and fact-payload absence.
+- Confirm the Flutter repository has no Auth0 SDK/login composition and record this as the next
+  implementation boundary, not as a failed provider configuration.
+
+Do not create ordinary users, memberships or Devices until Main stages the client-auth integration
+and decisive hosted proof. A manually copied dashboard token is not Android/Windows login evidence.
+
+## Evidence return
+
+Return a sanitized block with timestamp, Git SHA, provider aliases, migration IDs/hashes, HTTP
+status classes, row counts, named pass/fail cases, deployment SHA, log-scan result and remaining
+resources. Never return hostnames, tenant domain, client IDs, subjects, Account/Device UUIDs,
+passwords, tokens, URLs containing credentials or screenshots containing them.
+
+Foundation success terminal:
+
+~~~text
+MCG-02_AUTH0_TOKEN_CONTRACT=true
+MCG-02_NEON_MIGRATIONS_AND_PRIVILEGES=true
+MCG-02_RENDER_HTTPS_RUNTIME=true
+MCG-02_NATIVE_CLIENT_AUTH_INTEGRATION=false
+MCG-02_PROVIDER_FOUNDATION_READY
+MCG-02_PROVIDER_PROOF_PENDING
+~~~
+
+Otherwise report `MCG-02_PROVIDER_FOUNDATION_PARTIAL` and the exact checkpoint/blocker. Main must
+reconcile either result before client implementation. Do not proceed to pruning, promotion, Cycle
+10 closure, MCG-03 or MCG-04.
