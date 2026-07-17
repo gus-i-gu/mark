@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 import pg from "pg";
 
-const containerName = "markei-c10-mcg02-r04c01-auth-pg";
-const port = 55441;
+const containerName = "markei-c10-mcg02-r04c02-auth-pg";
+const port = 55442;
 const adminUrl = `postgres://postgres@127.0.0.1:${port}/postgres`;
-const dbName = "markei_r04c01_auth";
+const dbName = "markei_r04c02_auth";
 
 try {
   await startContainer();

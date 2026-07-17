@@ -1,45 +1,38 @@
-# I_DSN_CODEX — R04C01 Design Evidence
+# I_DSN_CODEX — R04C02 Design Evidence
 
-Authority marker: C10-MCG02-R04C01_20260717T143908Z
-Controlling J SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
-Controlling D/E/F SHA: 2d85523952a3606ec80a3769817cb4ad8e647cb9
-Baseline remote SHA: 2f7272a8cacaa790ccfaad6c0c7523eede336460
-Actual implementation start UTC/local: 2026-07-17T14:49:00.7290473Z / 2026-07-17T11:49:00.7780130-03:00
-Actual implementation end UTC/local: 2026-07-17T15:05:21.3977466Z / 2026-07-17T12:05:22.8704211-03:00
-Implementation tree SHA: pending at report authoring
+Authority marker: C10-MCG02-R04C02_20260717T151546Z
+Controlling staging SHA: f1fe19135ba47c652cd2575d7256a74f871f78bb
+Controlling D/E/F authority SHA: f1fe19135ba47c652cd2575d7256a74f871f78bb
+Baseline implementation SHA: 40e0a7097fef7f8a7abfe172cc867b670dfec196
+Actual implementation start UTC/local: 2026-07-17T15:28:19.9012372Z / 2026-07-17T12:28:19.9500907-03:00
+Actual implementation end UTC/local: 2026-07-17T15:42:54.4630188Z / 2026-07-17T12:42:54.4929972-03:00
+Implementation tree SHA: pending before commit
 Final commit status: pending before commit
 Evidence environment: services/markei_sync_api, loopback Fastify/JWKS, disposable Docker PostgreSQL 18.4
-Result classification: R04C01 infrastructure slice materialized
+Result classification: R04C02 core authorization matrix implemented
 
-## Dependency Direction
+## Architecture
 
-- Production exports only the `AuthorizationBarrier` interface and inert no-op default.
-- Lab controller lives under `src/proof/` and is injected only by proof composition.
-- Normal hosted composition remains no-op and exposes no HTTP control route.
+- R04C02 reuses R04C01 `AuthorizationBarrierController`, no-op production barrier composition, and canonical Account observer.
+- Scenario functions now cover cases 2-24 and return structured `ScenarioResult` records consumed directly by `makeProducerResult`.
+- The hosted local harness executes case 1 plus cases 2-24, prints case evidence lines, and emits producer schema v1 with exact 28-case inventory.
+- The authorization producer owns R04C02 container prefix `markei-c10-mcg02-r04c02-auth-pg`.
 
-## Corrected Phase Placement
+## Production Deviation
 
-- `before-identity-membership-fence`: reached after transaction begin and before `markei_authorize_identity_membership`.
-- `after-membership-lock`: reached after the migration-005 function, which locks active external identity and active membership rows with `FOR UPDATE`.
-- `before-actor-device-lock`: reached immediately before actor Device/enrollment `FOR UPDATE`.
-- `before-target-transition`: moved to after actor/target authorization and locks, immediately before revoke transition update.
-- `before-protected-mutation`: reached before the first durable write; enrollment now reaches before Device, enrollment, security-event, and request-result writes.
-- `before-commit`: provided through a context-aware database hook carrying operation/scenario/participant context.
+Retained failing scenario: `actor-device-revoked-before-device-status` timed out waiting for `before-actor-device-lock`, proving Device management routes lacked that lab phase before their actor/target lock helper.
 
-## Controller And Observer
+Narrow correction: `HostedIdentityService.deviceStatus` and `HostedIdentityService.revoke` now call `barrier.reach("before-actor-device-lock", transactionContext)` immediately before `authorizeActorAndTargetDevice`. Authorization rules, locks, schema versions, route contracts, and producer schema were unchanged.
 
-- Controller contract: `reach`, `waitUntilReached`, `release`, `close`.
-- Controller containment: scenario/participant keys, known phase validation, bounded timeout, unknown key rejection, close cleanup, closed reuse denial.
-- Observer architecture: separate committed-view pool connection, canonical sorted safe rows, membership-excluded protected-state comparison.
-- Observer scope: submissions, sync events, cursor state, acknowledgements, recovery sessions/chunks, Devices, enrollment requests, security events, and membership status.
+## Scenario Mechanics
 
-## Scenario And Resource Lifecycle
+- CP-A actor cases register and pre-release prerequisite identity/membership phases, then pause at actor Device lock.
+- Recovery route cases build valid snapshot/session/chunk fixtures before revocation.
+- CP-B target cases use real route calls for status/revoke and inspect transition/event counts.
+- CP-C enrollment cases use contract v1 request identity/hash behavior and assert Device/result counts.
 
-- Scenario runner path seeds synthetic authority, starts loopback Fastify and JWKS, captures before state, starts upload participant, waits at barrier, commits membership disable through control connection, releases upload, captures HTTP response and after state, compares protected families, and closes app/controller/pools/JWKS/container owners in `finally`.
-- Authorization producer owns the R04C01 PostgreSQL container prefix `markei-c10-mcg02-r04c01-auth-pg` and removes it in `finally`.
+## Retained Versions
 
-## Retained Versions And Deviations
+Retained unchanged: migrations 001-006, event payload v3, cursor `c10b:*`, recovery snapshot format 1, hosted enrollment contract v1, Drift schema v7, JWT RS256, producer schema version 1, dependencies, and lockfiles.
 
-- Retained: migrations 001-006, event payload v3, cursor `c10b:*`, recovery snapshot format 1, hosted enrollment contract v1, Drift schema v7, JWT RS256, producer schema version 1, dependencies and lockfiles.
-- Narrow production deviations: barrier context gained scenario/participant fields; transaction before-commit hook now receives context; enrollment barrier placement moved before first durable write; device revoke target-transition barrier moved after authorization/locks.
-- Deferred: remaining 27 authorization cases, global denied-no-state-advance, R05 Flutter proof, provider proof, deployment, and Cycle 10 closure.
+Deferred: R04C04 response-loss/restart/retry/global aggregate, R05 Flutter proof, provider proof, deployment, and Cycle 10 closure.

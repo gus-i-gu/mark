@@ -1,8 +1,11 @@
 import { readFileSync } from "node:fs";
 import pg from "pg";
 import {
+  authorizationCaseMapFromResults,
   createSyntheticJwks,
+  coreCheckpointSummary,
   membershipSliceIds,
+  runR04C02CoreAuthorizationScenarios,
   runMembershipDisabledBeforeFenceScenario,
 } from "./proof/authorization_slice_scenarios.js";
 import { makeProducerResult } from "./proof/producer.js";
@@ -22,29 +25,44 @@ const jwks = await createSyntheticJwks();
 try {
   await migrate(migratorPool);
   await seed(migratorPool, jwks.issuer);
-  const scenario = await runMembershipDisabledBeforeFenceScenario({
+  const r04c01 = await runMembershipDisabledBeforeFenceScenario({
     migratorPool,
     runtimePool,
     issuer: jwks.issuer,
     audience: jwks.audience,
     token: jwks.token,
   });
+  const scenarios = [
+    r04c01,
+    ...(await runR04C02CoreAuthorizationScenarios({
+      migratorPool,
+      runtimePool,
+      issuer: jwks.issuer,
+      audience: jwks.audience,
+      token: jwks.token,
+    })),
+  ];
+  const summary = coreCheckpointSummary(scenarios);
   const authorizationProducer = makeProducerResult(
     "authorization-race",
-    {
-      "membership-disabled-before-fence": scenario.passed
-        ? true
-        : { passed: false, blocker: scenario.blocker },
-    },
-    "pending-r04c",
+    authorizationCaseMapFromResults(scenarios),
+    "pending-r04c04",
   );
   process.stdout.write(
-    `R04C01_CASE membership-disabled-before-fence=${scenario.passed ? "true" : "false"} status=${scenario.responseStatus ?? "none"} code=${scenario.responseCode ?? "none"}\n`,
+    `R04C01_CASE membership-disabled-before-fence=${r04c01.passed ? "true" : "false"} status=${r04c01.responseStatus ?? "none"} code=${r04c01.responseCode ?? "none"}\n`,
   );
-  process.stdout.write("R04C01_BARRIER_CONTROLLER=true\n");
-  process.stdout.write("R04C01_ACCOUNT_OBSERVER=true\n");
+  for (const scenario of scenarios) {
+    process.stdout.write(
+      `R04C02_CASE ${scenario.caseId}=${scenario.passed ? "true" : "false"} status=${scenario.responseStatus ?? "none"} code=${scenario.responseCode ?? "none"}\n`,
+    );
+  }
+  process.stdout.write(`R04C02_CP_A=${summary.cpA ? "true" : "false"}\n`);
+  process.stdout.write(`R04C02_CP_B=${summary.cpB ? "true" : "false"}\n`);
+  process.stdout.write(`R04C02_CP_C=${summary.cpC ? "true" : "false"}\n`);
+  process.stdout.write(`AUTHORIZATION_CASES_TRUE=${summary.trueCount}\n`);
+  process.stdout.write(`AUTHORIZATION_CASES_PENDING=${summary.pendingCount}\n`);
   process.stdout.write(
-    `R04C01_MEMBERSHIP_DENIAL_SLICE=${scenario.passed ? "true" : "false"}\n`,
+    `R04C01_MEMBERSHIP_DENIAL_SLICE=${r04c01.passed ? "true" : "false"}\n`,
   );
   process.stdout.write("AUTHORIZATION_RACE_MATRIX=partial\n");
   process.stdout.write("AUTHORIZATION_RACE_PRODUCER=false\n");
@@ -52,7 +70,7 @@ try {
   process.stdout.write(
     `PROOF_PRODUCER authorization-race ${JSON.stringify(authorizationProducer)}\n`,
   );
-  if (!scenario.passed) process.exitCode = 1;
+  if (!summary.cpA || !summary.cpB || !summary.cpC) process.exitCode = 1;
 } finally {
   await runtimePool.end().catch(() => undefined);
   await migratorPool.end().catch(() => undefined);

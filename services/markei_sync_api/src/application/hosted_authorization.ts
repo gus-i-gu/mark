@@ -324,6 +324,10 @@ export class HostedIdentityService {
         await setIdentity(client, membership.identityId);
         await setDevice(client, actorDeviceId);
         await setOperation(client, "device-management");
+        await this.barrier.reach(
+          "before-actor-device-lock",
+          transactionContext,
+        );
         const target = await authorizeActorAndTargetDevice(
           client,
           membership,
@@ -367,6 +371,10 @@ export class HostedIdentityService {
         await setIdentity(client, membership.identityId);
         await setDevice(client, actorDeviceId);
         await setOperation(client, "device-management");
+        await this.barrier.reach(
+          "before-actor-device-lock",
+          transactionContext,
+        );
         const target = await authorizeActorAndTargetDevice(
           client,
           membership,

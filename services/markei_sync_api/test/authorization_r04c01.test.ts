@@ -10,6 +10,11 @@ import {
 } from "../src/proof/account_state_observer.js";
 import { AuthorizationBarrierController } from "../src/proof/authorization_barrier_controller.js";
 import { makeProducerResult } from "../src/proof/producer.js";
+import {
+  coreCaseIds,
+  coreCheckpointSummary,
+  type ScenarioResult,
+} from "../src/proof/authorization_slice_scenarios.js";
 
 test("R04C01 controller reaches and releases the intended participant", async () => {
   const controller = new AuthorizationBarrierController(
@@ -196,6 +201,19 @@ test("R04C01 producer marks only the measured case true and remains false", () =
   );
   assert.equal(producer.resultsByCase["denied-no-state-advance"].passed, false);
   assert.equal(producer.passed, false);
+});
+
+test("R04C02 checkpoint summary requires all core cases and leaves four pending", () => {
+  const results: ScenarioResult[] = coreCaseIds.map((caseId) => ({
+    caseId,
+    passed: true,
+  }));
+  const summary = coreCheckpointSummary(results);
+  assert.equal(summary.cpA, true);
+  assert.equal(summary.cpB, true);
+  assert.equal(summary.cpC, true);
+  assert.equal(summary.trueCount, 24);
+  assert.equal(summary.pendingCount, 4);
 });
 
 function snapshot(
