@@ -1,236 +1,184 @@
-# E_DDC_STAGE — C10-MCG02-R04 Semantic Materialization Authority
+# E_DDC_STAGE — C10-MCG02-R04B Semantic Materialization Authority
 
 > Sequence: FLX-ORD-01
-> Controlling reconciliation: fd73da6fddf3cc308655c41e0640b045d710d983
+> Authority marker: C10-MCG02-R04B_20260717T133814Z
+> Staged at UTC: 2026-07-17T13:38:14Z
+> Staged at America/Sao_Paulo: 2026-07-17T10:38:14-03:00
+> Controlling reconciliation: 0765255c07e3381f74cd9b4e90bc2f9ddd3b13dc
 > Authority: **ACTIVE — CODEX IMPLEMENTATION AUTHORIZED**
-> Unit: truthful authorization and race vocabulary
 
 ## 1. Governing distinction
 
-Use this semantic chain exactly:
+Use exactly:
 
 ~~~text
-case declared
-≠ case executed
+environment available
+≠ scenario implemented
+≠ scenario executed
 ≠ case passed
 ≠ producer passed
 ≠ R04 passed
-≠ local security proved
+≠ local security passed
 ≠ provider accepted
-≠ production ready
 ~~~
 
-R04 may prove the authorization producer. It must not claim the full local-security, provider or
-Cycle 10 gate.
+Docker unavailability is an environmental blocker. It neither proves nor disproves authorization.
 
-## 2. Corrected evidence meanings
+## 2. Retained accepted meanings
 
-The following meanings are mandatory:
+- resource-teardown means successful query plus zero matching resources;
+- irrelevant-metadata-preserves-revision means preserved observable unknown-kid cooldown/fetch
+  behavior;
+- token-not-persisted-or-logged remains false until R05;
+- authorization producer true requires every declared case true;
+- R04 success remains distinct from global local-security success.
 
-- resource-teardown means the inventory command succeeded and found zero matching resources;
-- irrelevant-metadata-preserves-revision means externally observed state-machine behavior proves
-  metadata-only change did not reset the semantic negative-key revision/cooldown;
-- token-not-persisted-or-logged remains unproved until R05 explicitly checks persistence and logs;
-- a producer command exit does not replace case-addressable scenario evidence;
-- one focused test command cannot silently prove unrelated cases;
-- one successful token verification does not expose internal revision identity.
+## 3. Barrier meaning
 
-## 3. Authorization vocabulary
+A deterministic barrier is a lab-only synchronization point that proves ordering through explicit
+reach and release signals.
 
-- external identity: verified issuer/subject identity mapped to Markei state;
-- membership: explicit Account relationship and role;
-- actor Device: Device making the protected request;
-- target Device: Device inspected or revoked;
-- fence: transactional recheck and lock before protected mutation;
-- barrier: test-only deterministic pause used to order concurrent actions;
-- protected mutation: facts, events, cursor, acknowledgement, recovery, Device, enrollment or
-  security-event state change;
-- denied-no-state-advance: exact protected state is unchanged after denial;
-- one transition: active to revoked happens at most once;
-- duplicate-equivalent: repeated same meaning returns an equivalent existing result;
-- conflicting request: same idempotency identity with different canonical request hash;
-- unknown outcome: server result may have committed while the client did not receive it;
-- restart replay: replay through a new app/composition over persisted server state;
-- retry exhaustion: bounded serialization/deadlock retries are consumed and the request fails closed.
+It is not:
 
-## 4. Identity and membership semantics
+- an arbitrary sleep;
+- a production debug route;
+- a database flag exposed to clients;
+- evidence by itself.
 
-Protected work requires all of:
+Barrier evidence must identify the reached phase and the control transition committed before
+release.
 
-~~~text
-external identity active
-membership exists and active
-membership Account matches request
-actor Device exists, belongs to the Account and is active
-operation permitted for the membership role
-~~~
+## 4. Fence meaning
 
-These are transaction-time invariants. Pre-transaction authentication or previously loaded claims
-do not substitute for the fence.
+The transaction-time authorization fence requires current:
 
-When identity or membership changes before the fence:
+- active external identity;
+- active matching Account membership;
+- active actor Device belonging to the Account and identity;
+- role permission for the operation;
+- target permission where applicable.
 
-- protected work is denied;
-- no protected state advances;
-- the result must be attributable to authorization rather than malformed input.
+Previously verified JWT claims are authenticated input, not current database authority.
 
-## 5. Actor Device semantics
+## 5. Valid denial
 
-When the actor Device is revoked before a protected operation reaches its fence:
+A denial case passes only when:
 
-- upload is denied;
-- download is denied;
-- acknowledgement is denied;
-- capabilities is denied;
-- rebootstrap start/status/chunk/complete are denied;
-- Device status and revoke operations are denied.
+1. the request is otherwise valid;
+2. required recovery/session state exists;
+3. the authority change occurs at the declared barrier;
+4. the expected closed authorization result occurs;
+5. protected state is unchanged.
 
-Each case must call the real applicable route with otherwise-valid state. Missing recovery fixtures
-or invalid bodies cannot stand in for Device denial.
+Malformed input, missing fixtures, recovery-unavailable or generic infrastructure failure is not an
+authorization denial.
 
-## 6. Target Device semantics
+## 6. Protected state
 
-For an active membership:
+Denied-no-state-advance covers:
 
-- an owner may inspect and revoke an Account Device;
-- an ordinary member may inspect and revoke only their own Device;
-- another member's Device is foreign to the actor and denied;
-- a Device belonging to another Account is denied without disclosure;
-- self-revocation immediately prevents later protected actions.
+- authoritative facts/events;
+- cursors/high-water and acknowledgements;
+- recovery sessions/chunks;
+- Device state;
+- enrollment request/result state;
+- security events.
 
-Use the existing closed API errors. Do not add detailed error text that reveals whether a foreign
-target exists.
+State equality must be canonical and Account-scoped.
 
-## 7. Concurrency and idempotency semantics
+## 7. Target semantics
 
-Concurrent target revocation must mean:
+- owner may inspect and revoke an Account Device;
+- ordinary member may inspect and revoke only their own Device;
+- foreign target is denied without existence disclosure;
+- cross-Account target is denied without existence disclosure;
+- self-revocation prevents subsequent protected action.
 
-~~~text
-two authorized attempts
-→ one active-to-revoked transition
-→ one security event
-→ equivalent final Device truth
-~~~
+One successful active-to-revoked transition produces one security event.
 
-Independent later replay of the same semantic revocation is duplicate-equivalent, not a second
-transition.
+Equivalent later replay returns duplicate-equivalent truth without another transition/event.
 
-Equivalent concurrent enrollment means both requests carry the same canonical installation and
-request meaning. It does not mean two unrelated Device identities are merged.
+## 8. Enrollment semantics
 
-Conflicting enrollment means the same request identity carries a different canonical hash. It must
-fail closed and preserve the first accepted truth.
+Equivalent concurrent enrollment means same:
 
-## 8. Unknown outcome semantics
+- identity;
+- Account;
+- installation identity;
+- request identity;
+- canonical request hash.
 
-Response-loss evidence requires:
+It converges on one durable meaning.
 
-1. server transaction commits;
-2. response delivery is intentionally suppressed;
-3. client classifies the result as unknown, not failed-before-submit;
-4. query or same-identity replay returns the committed result;
-5. no duplicate Device, enrollment or security event appears.
+Same request identity with a different hash is a conflict. It preserves the first accepted truth and
+creates no second Device/result.
 
-Restart replay requires a new app/composition. Reusing the same in-memory service instance is not a
-restart.
+## 9. Unknown outcome semantics
 
-## 9. Retry exhaustion semantics
+Response-loss means the server committed but delivery was suppressed. The client cannot classify it
+as a normal rejection.
 
-Serialization/deadlock exhaustion must use controlled conflict injection and the real bounded retry
-policy.
+Same-identity query/replay must recover the committed result without duplicate state.
 
-Passing means:
+Restart replay requires a new application composition over persisted database state. Reusing the
+same service instance does not prove restart recovery.
 
-- every allowed retry is observed;
-- no unbounded loop occurs;
-- final result is a safe failure;
+## 10. Retry exhaustion semantics
+
+Serialization/deadlock exhaustion requires the real bounded retry path. Passing means:
+
+- every configured attempt is observed;
+- the ceiling is respected;
+- final result fails closed;
 - no protected state advances.
 
-A mock that simply throws before transaction entry does not prove retry exhaustion.
+An exception before transaction entry does not prove retry exhaustion.
 
-## 10. Case-level evidence rule
+## 11. Case evidence shape
 
-Every case result must be tied to:
+Each case must retain:
 
-- scenario name;
-- setup state;
-- deterministic interleaving or direct action;
+- case ID;
+- valid setup;
+- barrier/direct action;
 - observed response/result;
-- exact state comparison;
-- safe blocker on failure.
+- exact before/after comparison;
+- safe blocker if false.
 
-The producer may summarize those booleans, but G must retain enough named evidence to audit their
-meaning.
+A broad harness or test-file exit cannot silently promote several meanings.
 
-## 11. Required semantic tests
+## 12. Completion language
 
-Name or preserve focused tests covering:
-
-- teardown rejects non-empty successful inventory;
-- metadata-only refresh preserves unknown-kid cooldown/fetch count;
-- Flutter token logging case stays deferred;
-- each identity/membership fence denial;
-- each actor Device route denial;
-- owner and member target rules;
-- foreign and cross-Account nondisclosure;
-- concurrent revoke one-transition/one-event;
-- equivalent and conflicting enrollment concurrency;
-- response-loss query/replay;
-- process-restart replay;
-- retry exhaustion;
-- denial no-state-advance across every protected state family;
-- barrier hooks absent from normal hosted composition.
-
-## 12. Allowed completion wording
-
-On complete R04:
+Allowed on R04B success:
 
 ~~~text
 Authorization barrier matrix proved locally.
-Authorization producer passed all 28 declared cases.
+All 28 authorization producer cases passed.
 Flutter and provider proof remain pending.
-R3 local security is not yet proved.
+Global local security remains false.
 ~~~
 
-Do not write:
+Forbidden:
 
 ~~~text
-HOSTED_AUTH_READY=true
+MCG-02 complete
 Auth0 verified
 Neon accepted
 Render deployed
-MCG-02 complete
 production ready
 Cycle 10 closed
 ~~~
 
-## 13. Privacy and diagnostics
+## 13. Privacy
 
-Proof output may include:
+Reports may contain safe case IDs, booleans, blocker categories and synthetic aliases.
 
-- safe case IDs;
-- boolean outcomes;
-- safe blocker categories;
-- aggregate counts;
-- synthetic opaque aliases.
-
-It must not include:
-
-- JWTs, claims or JWK bodies;
-- passwords, URLs or provider identifiers;
-- Account facts or payloads;
-- connection strings;
-- private paths.
-
-No new telemetry is authorized.
+Do not expose tokens, claims, JWK bodies, passwords, URLs, provider IDs, connection strings or fact
+payloads. Add no telemetry.
 
 ## 14. Didactic boundary
 
-Do not change:
+Do not change learner maturity, permanent didactic memory, KANBAN, glossary, Concept Map, Lecture
+Register or Cycle 11 UI semantics.
 
-- permanent didactic memory;
-- KANBAN, glossary, Concept Map or Lecture Register;
-- learner maturity;
-- Cycle 11 UI semantics.
-
-H reports only meanings materialized and meanings deliberately deferred.
+H reports meanings actually executed and meanings still deferred.
