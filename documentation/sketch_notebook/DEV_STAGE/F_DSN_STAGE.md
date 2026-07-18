@@ -1,61 +1,48 @@
-# F_DSN_STAGE — MCG-02 Executable Closure Design
+# F_DSN_STAGE — MCG-02 Decisive Provider Design Boundary
 
-> Authority marker: C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z
-> Status: **ACTIVE DESIGN AUTHORITY**
+> Authority marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
+> Status: **ACTIVE EXECUTION BOUNDARY; DESIGN FROZEN**
 
-## Corrected dependency direction
+## Executed topology
 
 ~~~text
-development-only closure surface
-  -> native authentication application ports
-  -> Device enrollment application service
-  -> hosted synchronization application port
-       -> existing HTTP sync transport
-       -> Drift event applier/cursor/outbox/ack repositories
-
-Auth0 adapter -> auth0_flutter SDK
-HTTP adapters -> Render HTTPS -> pooled Neon runtime
+Android + Windows Flutter clients
+  -> Auth0 Native Authorization Code + PKCE
+  -> ephemeral exact-audience access token
+  -> Render HTTPS Fastify API
+  -> pooled Neon markei_runtime
+  -> explicit identity/membership/Device authorization
+  -> Account-scoped immutable event synchronization
 ~~~
 
-The surface coordinates existing application services; it does not call SDK, HTTP or Drift details
-directly. Auth0 SDK types remain infrastructure-only. Synchronization remains distinct from Device
-enrollment and provider authentication.
+Controlled synthetic mapping uses the direct migrator boundary; migrator credentials never enter
+Render or Flutter. Auth0 subject remains an external identity and never becomes AccountId/DeviceId.
 
-## Real sync boundary
+## Frozen invariants
 
-Replace the enrollment-replay implementation of `hostedSyncProbe`. The corrected port must invoke
-the same production-capable synchronization path proved by R05: preserve pending uploads, resolve
-unknown outcomes safely, download after the committed cursor, apply atomically and acknowledge only
-after commit. Reuse existing services; do not create a parallel sync algorithm.
+- tokens are process-memory-only and absent from Drift/logs/surfaces;
+- every protected request verifies JWT, identity, membership, Account and Device;
+- two installations receive distinct durable Device identities;
+- enrollment replay is idempotent;
+- upload/download/apply/ack preserve R05 transaction and retry rules;
+- acknowledgement occurs only after committed local application;
+- provider failure cannot erase local facts or pending work;
+- runtime remains pooled/least-privilege and migrator remains direct;
+- no automatic provisioning or production credential path is introduced.
 
-## Identity boundary
+## Evidence boundary
 
-Use durable local installation/Device identity and durable enrollment request progress. Random
-identity generation at each invocation is forbidden. External identity, Account membership and
-server Device authorization remain PostgreSQL-controlled; no automatic provisioning is added.
+The proof must use native clients and the real development providers. Loopback fakes cannot replace
+this gate. Sanitized row counts, status classes, convergence comparisons and log scans are retained;
+private provider configuration is not.
 
-## Surface boundary
+## No-change boundary
 
-The closure surface exists only when a compile-time development flag is true and typed provider
-configuration is valid. It defaults absent. It may expose actions and semantic results but no
-credentials, raw identifiers or payloads. Product navigation and ordinary local registration remain
-unchanged when disabled.
+No source, migration, dependency, provider architecture, permanent memory or product UX change is
+authorized. Any discovered code defect stops the proof and returns to Main for a new bounded stage.
 
-## Change boundary
+## After acceptance
 
-Allowed: closure runner/port, composition, minimal flagged surface, stable local identity reuse,
-focused tests and G/H/I. Platform files may change only if required to keep the accepted Auth0
-callback composition buildable.
-
-Forbidden: migrations, server authorization redesign, Drift schema/reset, provider operation,
-credential files, automatic membership, production UX, telemetry, permanent documentation and
-MCG-03/04.
-
-## Validation and rollback
-
-Validation must distinguish enrollment success from executed synchronization, include the real
-loopback HTTP/file-backed path, and prove no local loss or credential persistence. Android and
-Windows builds are separate evidence; source presence does not substitute for a binary build.
-
-Rollback removes only the flagged surface and corrected closure adapter while retaining the accepted
-Auth0 adapter, local R05 proof, provider foundation, local facts and outbox.
+Main may authorize proof-module pruning and A/B/C permanent-memory promotion, then reconcile Cycle
+10 closure. MCG-03 must be defined from the resulting permanent state; its current scope remains
+unselected.

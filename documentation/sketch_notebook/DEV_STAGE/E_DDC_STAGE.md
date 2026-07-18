@@ -1,46 +1,42 @@
-# E_DDC_STAGE — MCG-02 Executable Closure Semantics
+# E_DDC_STAGE — MCG-02 Decisive Provider Semantics
 
-> Authority marker: C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z
-> Status: **ACTIVE SEMANTIC AUTHORITY**
+> Authority marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
+> Status: **ACTIVE HUMAN EVIDENCE CONTRACT**
 
-## Truth boundary
+## Claim boundary
 
-Device enrollment is authorization readiness, not synchronization. `hosted-sync-available` must not
-be returned from enrollment replay. A sync-success state requires executed event transfer, committed
-local application and acknowledgement under the existing contract.
+Local tests and builds establish readiness. Provider acceptance requires real native browser login,
+callback return, explicit membership, distinct Device enrollment and hosted fact convergence through
+Auth0, Render and Neon.
 
-## Required states
+## Required observable sequence
 
 ~~~text
-closure-disabled
-configuration-missing
 signed-out
-authenticated
-authentication-required
-device-enrollment-required
-device-enrolled
-sync-running
-sync-no-new-events
-sync-completed
-sync-interrupted
-sync-unavailable
-device-revoked
-signed-out-cleared
+-> authenticated
+-> device-enrolled
+-> sync-completed | sync-no-new-events
+-> signed-out-cleared
 ~~~
 
-`sync-completed` means the bounded action committed and acknowledged its accepted range. It does not
-mean permanent history, backup, production readiness or universal convergence. Cancellation and
-provider unavailability preserve local facts and pending work.
+Each platform must execute this sequence. Enrollment is not synchronization. Endpoint health is not
+authentication. One Device is not cross-device convergence.
 
-## Human-operable evidence
+## Denial language
 
-The development surface must allow a human to initiate the sequence without copying a token and
-must expose only semantic states. Provider aliases, tokens, claims, subjects, emails, Account/Device
-identifiers, connection data and facts remain absent.
+Unknown identity, missing membership, unknown/revoked Device and cross-Account mismatch are denied
+without protected-state advance. Provider unavailability preserves local registration, facts and
+pending outbox. No denial may be inferred from status text alone when database counts can verify no
+advance.
 
-## Completion boundary
+## Privacy
 
-Codex may claim `NATIVE_PROVIDER_PROOF_READY` after the real local sync path and supported builds
-pass. Full MCG-02 still requires human Android and Windows login, two Device enrollments, hosted
-convergence and denial evidence through Auth0, Render and Neon. MCG-03 remains inactive until Main
-reconciles that evidence.
+Evidence uses synthetic aliases, status classes and counts. It omits tokens, claims, subjects,
+emails, provider domains/client IDs, URLs, hostnames, Account/Device UUIDs, credentials and fact
+payloads.
+
+## Completion
+
+Only Main may promote sanitized executed evidence to `MCG-02_DECISIVE_PROVIDER_PROOF_COMPLETE`.
+That result closes MCG-02 development acceptance, not production readiness. MCG-03 remains inactive
+until Cycle 10 promotion/closure sequencing is reconciled.

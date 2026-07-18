@@ -1,92 +1,105 @@
-# D_OPS_STAGE — MCG-02 Executable Closure Correction
+# D_OPS_STAGE — MCG-02 Decisive Provider Acceptance
 
 > Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z
-> Required ancestor: 214df17
-> Status: **ACTIVE BOUNDED CODEX AUTHORITY**
+> Authority marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
+> Required ancestor: df904fb
+> Status: **ACTIVE HUMAN EVIDENCE CONTRACT; NO CODEX SOURCE MUTATION**
 
 ## Objective
 
-Make the accepted Auth0 composition human-executable and truthful: expose a development-only native
-closure surface, replace the false enrollment-only sync probe with the existing real hosted
-synchronization path, and prove a Windows binary when the host supports it.
+Execute the flagged Markei closure surface on Android and Windows through the configured disposable
+Auth0, Render and Neon environment. Prove two native Devices authenticate, enroll and converge one
+synthetic Account without copying tokens or losing local work.
 
-## Preflight
+## Safety boundary
 
-Read methodology, J and D/E/F; confirm clean tracked state, branch
-`intermid-cycle-recovery` and ancestry `214df17`. Preserve all unrelated and private local files.
-Do not read or use provider values, credentials, tokens, `.env*`, `.vscode` or `NEON_*`.
+- Use only the development Auth0 tenant, Render service and Neon child branch/database.
+- Keep every provider value, token, subject, UUID, hostname, URL and credential outside Git/chat.
+- Do not use the production Neon branch or ordinary personal purchase data.
+- Do not change source, migrations, provider architecture or production traffic.
+- Codex may diagnose sanitized output only; it must not receive private values or operate consoles.
 
-## CP1 — Truthful closure port
+## Gate 1 — Platform readiness
 
-- Introduce a narrow application port for the real hosted synchronization action/result.
-- Wire it to existing HTTP upload/download, local applier, cursor and acknowledgement services.
-- `hostedSyncProbe` must execute that port; Device-enrollment replay is not synchronization.
-- Return semantic results such as `sync-completed`, `sync-no-new-events`, `sync-interrupted`,
-  `authentication-required`, `device-enrollment-required` and `sync-unavailable`.
-- Never infer synchronization availability merely from a stored server Device ID.
-- Preserve absolute deadlines, query-after-unknown, local facts/outbox and acknowledgement-after-
-  commit invariants already proved by R05.
+- Pull `df904fb` with fast-forward-only behavior and confirm a clean tracked tree.
+- Enable Windows Developer Mode/symlink support, then build the Windows release binary.
+- Build/install Android debug on an emulator or controlled device.
+- Supply non-secret Auth0 domain/client/audience/origin values only through private compile-time
+  launch configuration; enable `MARKEI_NATIVE_CLOSURE_SURFACE=true`.
+- Ensure Android Gradle callback domain and Dart Auth0 domain are identical.
+- Confirm the Closure destination is absent without the flag and present with valid configuration.
 
-## CP2 — Development-only native surface
+## Gate 2 — Controlled identity and membership
 
-- Add the smallest neutral surface needed to invoke status, sign-in, enrollment/query, real hosted
-  sync and logout on Android and Windows.
-- Gate it behind an explicit compile-time development flag that defaults false.
-- When false or provider configuration is absent, existing product navigation and local behavior
-  remain unchanged.
-- Display semantic state names only. Never display/copy tokens, claims, subjects, provider IDs,
-  Account/Device IDs, connection data or fact payloads.
-- Do not redesign product UI or begin Cycle 11 work.
+- Create/use one synthetic Auth0 development user.
+- Complete native login on the first client without copying the access token.
+- Obtain the issuer/subject privately and map it to one synthetic Account through the controlled
+  migrator procedure already authorized by migrations 004–006.
+- Never derive AccountId or DeviceId from Auth0 claims.
+- Record only aliases and row counts in evidence.
 
-## CP3 — Stable Device execution
+## Gate 3 — Two native Devices
 
-- Use the existing durable local installation/Device identity; do not generate a new installation
-  identity per button press.
-- Enrollment request identity must be durable/replayable until resolved.
-- Same request/hash replays; a changed hash conflicts; unknown outcomes remain queryable.
-- Do not auto-provision external identities, membership or Devices outside existing routes.
+For Android, then Windows:
 
-## CP4 — Proof
+1. Sign in through the system browser and return through the configured callback.
+2. Confirm semantic state `authenticated`.
+3. Enroll/query the installation through the application route.
+4. Confirm `device-enrolled` and a distinct Device row for each installation.
+5. Retry the same enrollment and confirm idempotent equivalent outcome.
+6. Confirm no token, subject or UUID appears in the app surface or logs.
 
-Add deterministic tests proving:
+## Gate 4 — Hosted convergence
 
-- surface absent/inert by default and available only with the development flag plus valid config;
-- sign-in → enrollment → real sync → logout state sequence;
-- enrollment-only success cannot produce a sync-success state;
-- real upload/download/apply/ack is invoked and local facts converge in the loopback harness;
-- interruption/401/unknown/revoked Device preserves facts and outbox;
-- no token or private identifier enters diagnostics or durable storage;
-- stable installation/request identity survives retry and restart;
-- Android callback behavior remains valid;
-- Windows callback routing and composition remain valid.
+- Register one synthetic purchase locally on Device A and run Sync.
+- Require `sync-completed` or truthful `sync-no-new-events` after a subsequent run.
+- Run Sync on Device B and confirm the same authoritative purchase facts appear after commit.
+- Register a second synthetic purchase on B, sync B then A, and compare facts again.
+- Close/reopen both clients and confirm facts, cursor and resolved outbox state persist.
+- Verify acknowledgements advance only after local application commits.
 
-Fakes may prove local state behavior but cannot stand in for the existing real HTTP/file-backed sync
-harness or for provider acceptance.
+## Gate 5 — Selected denials and continuity
 
-## CP5 — Validation and reports
+Prove sanitized outcomes for:
 
-Run dependency-lock, format, analysis, focused and full Flutter tests, Android debug build, and
-Windows release build when host-supported. If Windows remains excluded, report the exact host gate;
-do not claim Windows binary readiness. Run affected server checks if shared contracts change, plus
-`git diff --check` and tracked/staged secret scan.
+- no bearer token -> 401/authentication-required;
+- unknown external identity -> denied with no protected advance;
+- unknown Device before enrollment -> device-enrollment-required;
+- revoked Device -> device-revoked and no protected advance;
+- cross-Account Device/membership mismatch -> denied;
+- Render unavailable -> local purchase registration and pending outbox remain available;
+- logout -> signed-out-cleared and hosted actions require authentication again.
 
-Replace G/H/I with actual baseline/final SHA, exact paths, commands, counts, exclusions, semantic
-states, dependency direction and privacy evidence. Remove stale `final commit pending` wording.
+Wrong issuer/audience/expiry cryptographic cases may retain the already accepted closed server tests;
+do not manufacture or paste tokens merely to repeat them manually.
 
-Do not change migrations 001–006, server authorization semantics, Drift schema, provider resources,
-permanent memory or methodology. Commit and push one bounded unit without force.
+## Gate 6 — Evidence and cleanup
+
+Return a sanitized evidence block containing:
+
+- date, Git SHA and platform/build pass/fail;
+- native login/callback/logout pass/fail per platform;
+- identity/membership/Device row counts only;
+- named sync and denial outcomes;
+- fact/outbox/cursor/ack counts or opaque ranges;
+- Render health/status classes and log secret scan;
+- local continuity and reopen result;
+- remaining synthetic resources and cleanup owner.
+
+Do not return screenshots or output containing provider identifiers or private values. Remove
+synthetic facts/mappings/Devices after Main accepts the proof, or record their bounded retention.
 
 Success terminal:
 
 ~~~text
-MCG-02_NATIVE_CLOSURE_SURFACE=true
-MCG-02_REAL_HOSTED_SYNC_PATH=true
-MCG-02_STABLE_DEVICE_EXECUTION=true
-MCG-02_TOKEN_EPHEMERAL=true
-MCG-02_NATIVE_PROVIDER_PROOF_READY
-MCG-02_DECISIVE_PROVIDER_PROOF_PENDING
+MCG-02_ANDROID_NATIVE_PROVIDER=true
+MCG-02_WINDOWS_NATIVE_PROVIDER=true
+MCG-02_TWO_DEVICE_ENROLLMENT=true
+MCG-02_HOSTED_CONVERGENCE=true
+MCG-02_PROVIDER_DENIALS=true
+MCG-02_LOCAL_CONTINUITY=true
+MCG-02_DECISIVE_PROVIDER_PROOF_COMPLETE
 ~~~
 
-Otherwise report `MCG-02_NATIVE_CLOSURE_CORRECTION_PARTIAL` with the exact blocker. Do not proceed
-to provider mutation, permanent promotion, Cycle 10 closure, MCG-03 or MCG-04.
+Otherwise report `MCG-02_DECISIVE_PROVIDER_PROOF_PARTIAL` with the exact gate and sanitized error.
+Main must reconcile the result before promotion, Cycle 10 closure or MCG-03.

@@ -665,3 +665,72 @@ MCG-03 / MCG-04 definition                                          INACTIVE
 D/E/F carrying marker `C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z` are the only active Codex
 authority. The unit must correct the observable closure path without changing the accepted Auth0,
 server, database or synchronization contracts. Real provider operation remains human-controlled.
+
+---
+
+## 39. Append-only reconciliation — executable closure result
+
+> Reconciliation marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
+> Reconciled at UTC: 2026-07-18T15:28:29Z
+> Reconciled at America/Sao_Paulo: 2026-07-18T12:28:29-03:00
+> Reconciled implementation: df904fb
+> Controlling authority: e59d919ecb776597b13615137cd23413dae42c36
+> Current status: **LOCAL NATIVE CLOSURE VALIDATED; HUMAN PROVIDER ACCEPTANCE NEXT**
+
+Main accepts the R1 correction:
+
+- the development closure page defaults absent and requires an explicit compile-time flag plus
+  valid native configuration;
+- Device enrollment and synchronization now have distinct truthful states;
+- `hostedSyncProbe()` invokes the existing upload/download/apply/ack services;
+- loopback HTTP and file-backed Drift executed upload, download, atomic application,
+  acknowledgement and reopen persistence;
+- stable installation and enrollment request identity survive retry and Drift reopen;
+- format, analysis, dependency lock, 79 Flutter tests with two existing skips, Android debug build,
+  diff check and secret scan passed;
+- migrations, server authorization, Drift schema, dependencies and provider resources were
+  unchanged.
+
+The reconciliation host has no Flutter toolchain, so Main did not independently rerun Flutter.
+Windows release remains host-excluded because Developer Mode/symlink support was unavailable.
+
+Accepted local terminal:
+
+~~~text
+MCG-02_NATIVE_CLOSURE_SURFACE=true
+MCG-02_REAL_HOSTED_SYNC_PATH=true
+MCG-02_STABLE_DEVICE_EXECUTION=true
+MCG-02_TOKEN_EPHEMERAL=true
+MCG-02_NATIVE_PROVIDER_PROOF_READY
+~~~
+
+## 40. MCG-03 decision
+
+MCG-03 is not yet available. R1 proves an executable local closure path, not a real Auth0/Render/
+Neon client run. MCG-02 still requires Android and Windows native login, two distinct enrolled
+Devices, one synthetic Account convergence, selected fail-closed denials, local continuity during
+provider unavailability and sanitized evidence. Manual token copying is not accepted.
+
+No further source refactor is selected before this evidence. The next unit is human-operated
+provider acceptance under D/E/F. Codex may provide read-only redacted diagnosis but must not receive
+or operate credentials, tokens or provider resources.
+
+## 41. Phase projection
+
+~~~text
+MCG-02 provider foundation                                          VALIDATED
+MCG-02 native authentication and executable local closure           VALIDATED
+MCG-02 decisive Android/Windows hosted provider acceptance          ACTIVE
+Cycle 10 proof pruning and permanent promotion                      PENDING
+Main Cycle 10 closure                                                PENDING
+MCG-03 definition/investigation                                     INACTIVE
+~~~
+
+After decisive provider evidence passes, Main should close MCG-02, run bounded proof-file pruning,
+request A/B/C permanent-memory promotion, reconcile Cycle 10, and only then define MCG-03 from
+current permanent memory rather than assuming its scope.
+
+## 42. Forward authority
+
+D/E/F carrying marker `C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z` are the active human evidence
+contract. They authorize no Codex source mutation and no production deployment.
