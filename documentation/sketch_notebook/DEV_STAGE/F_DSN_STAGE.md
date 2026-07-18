@@ -1,48 +1,40 @@
-# F_DSN_STAGE — MCG-02 Decisive Provider Design Boundary
+# F_DSN_STAGE — Hosted Identity Binding Design
 
-> Authority marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
-> Status: **ACTIVE EXECUTION BOUNDARY; DESIGN FROZEN**
+> Authority marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
+> Status: **ACTIVE DESIGN AUTHORITY**
 
-## Executed topology
+## Selected model
 
 ~~~text
-Android + Windows Flutter clients
-  -> Auth0 Native Authorization Code + PKCE
-  -> ephemeral exact-audience access token
-  -> Render HTTPS Fastify API
-  -> pooled Neon markei_runtime
-  -> explicit identity/membership/Device authorization
-  -> Account-scoped immutable event synchronization
+pre-enrollment composition -> local-only Account/Device
+enrollment result           -> durable hosted binding
+restart                     -> validate binding
+bound composition           -> hosted Account/server Device
+hosted sync repositories    -> explicitly scoped to both
 ~~~
 
-Controlled synthetic mapping uses the direct migrator boundary; migrator credentials never enter
-Render or Flutter. Auth0 subject remains an external identity and never becomes AccountId/DeviceId.
+Existing facts and immutable events retain their original identity and hash. Binding affects only
+new facts created by the bound composition. This is a fresh hosted lane inside the existing Drift
+database, not an Account migration, merge or event translation.
 
-## Frozen invariants
+## Repository scoping
 
-- tokens are process-memory-only and absent from Drift/logs/surfaces;
-- every protected request verifies JWT, identity, membership, Account and Device;
-- two installations receive distinct durable Device identities;
-- enrollment replay is idempotent;
-- upload/download/apply/ack preserve R05 transaction and retry rules;
-- acknowledgement occurs only after committed local application;
-- provider failure cannot erase local facts or pending work;
-- runtime remains pooled/least-privilege and migrator remains direct;
-- no automatic provisioning or production credential path is introduced.
+Hosted outbox leasing/replay accepts required AccountId and DeviceId and cannot select other rows.
+Remote application accepts required AccountId, rejects pages for another Account, reads/writes that
+Account's cursor only and acknowledges only its committed cursor. Unscoped constructors may remain
+only where existing isolated lab tests require them; production hosted composition must be scoped.
 
-## Evidence boundary
+## Composition transition
 
-The proof must use native clients and the real development providers. Loopback fakes cannot replace
-this gate. Sanitized row counts, status classes, convergence comparisons and log scans are retained;
-private provider configuration is not.
+Enrollment cannot safely replace final composition fields during the running process. It stores the
+binding and returns `hosted-restart-required`. On the next start, composition selects the hosted IDs
+only when account, device, installation, generation and active state are complete and valid.
 
-## No-change boundary
+## Prohibited alternatives
 
-No source, migration, dependency, provider architecture, permanent memory or product UX change is
-authorized. Any discovered code defect stops the proof and returns to Main for a new bounded stage.
+Do not rewrite local events, recompute them under server IDs, relax server equality checks, derive
+server IDs from Auth0 claims, upload mixed-Account batches, reset Drift or silently discard pending
+local work. No provider or database schema mutation is authorized.
 
-## After acceptance
-
-Main may authorize proof-module pruning and A/B/C permanent-memory promotion, then reconcile Cycle
-10 closure. MCG-03 must be defined from the resulting permanent state; its current scope remains
-unselected.
+Rollback removes the binding selection/scoped adapters while retaining the stored enrollment state,
+local facts/outbox and accepted native authentication implementation.
