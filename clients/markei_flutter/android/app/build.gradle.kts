@@ -22,6 +22,9 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["auth0Domain"] =
+            providers.gradleProperty("MARKEI_AUTH0_DOMAIN").orElse("auth0.example.invalid").get()
+        manifestPlaceholders["auth0Scheme"] = "https"
     }
 
     buildTypes {

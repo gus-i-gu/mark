@@ -1,27 +1,40 @@
-# H_DDC_CODEX — R05 Didactic Evidence
+# H_DDC_CODEX — MCG-02 Native Closure Didactic Evidence
 
-- Authority marker: C10-MCG02-R05_20260717T162323Z
-- Controlling staging SHA: a24000be31582b6b704ee825919ebff3e84bbd2f
-- Baseline SHA: a24000be31582b6b704ee825919ebff3e84bbd2f
-- Actual implementation window: 2026-07-17T16:23:23Z to 2026-07-17T16:56:50Z
-- Implementation tree before report replacement: a04661cc5aca35050c69286605a71bbcfb635ba5
+- Authority marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
+- Baseline SHA: 6fffad609bb83523d467a849e2d91f3c668af721
+- Implementation tree before reports: d1f48239d213af5449736612544fc23afe99d7fb
 - Final commit status: pending before commit.
-- Evidence environment: local Flutter file-backed proof, loopback hosted API, disposable PostgreSQL 18, synthetic RS256 tokens.
-- Result classification: local Flutter proof complete; provider proof pending.
+- Evidence environment: local Flutter/Android/Windows composition tests; no provider operation.
+- Result classification: native client composition readiness, not provider acceptance.
 
-## Meanings Materialized
+## States And Meanings
 
-- Closed outcome means every Flutter producer case emitted one exact case-addressed record, not inherited command-exit truth.
-- Unknown outcome means Flutter preserved installation and enrollment request identity without inventing Device truth after a committed hosted transaction.
-- Query replay means the same request ID and a fresh ephemeral token recovered the committed equivalent result.
-- Absolute deadline means one timeout covers send, response headers and complete bounded body; slow trickle does not renew the deadline.
-- Local-first availability means RegisterPurchase remains file-backed and succeeds while hosted enrollment is unavailable.
-- Token boundary means bearer credentials exist only while constructing the HTTP request and are absent from Drift file bytes, retained state and retained outcomes.
+Materialized states:
 
-## Completion Wording
+- `configuration-missing`
+- `configuration-invalid`
+- `signed-out`
+- `signing-in`
+- `sign-in-cancelled`
+- `authenticated`
+- `token-expired`
+- `authentication-rejected`
+- `provider-unavailable`
+- `device-enrolled`
+- `hosted-sync-available`
+- `hosted-sync-unavailable`
+- `signed-out-cleared`
 
-Allowed claim: R05 local Flutter HTTP/file-backed proof passed all 16 cases and final local aggregate passed all six producers.
+Semantic tests distinguish cancellation from provider failure, token rejection from signed-out state, expiry from durable authentication, and local closure readiness from real Auth0 acceptance.
 
-Intentionally absent: Auth0 acceptance, Neon acceptance, Render acceptance, deployment, production readiness, MCG-02 completion, Cycle 10 closure, pruning completion or permanent promotion.
+## Privacy Evidence
 
-No bearer token, claims, passwords, connection strings, provider URLs or fact payloads are included in this report. Learner maturity and permanent didactic memory were unchanged.
+Bearer credentials remain process-memory values inside `NativeAuth0Authentication`. The adapter rejects an ID token used as the API bearer credential, clears credentials on logout/expiry/rejection, and exposes only `AccessTokenResult` to hosted transports. The focused test proves the synthetic token is absent from Drift file bytes and retained diagnostics.
+
+The closure runner exposes only semantic state names. It does not display tokens, claims, subjects, emails, Account IDs, Device IDs, provider IDs, connection details or fact payloads.
+
+## Boundaries
+
+Allowed claim: local native Auth0 composition is ready for human Android/Windows provider proof.
+
+Intentionally absent: real Android Auth0 login acceptance, real Windows Auth0 login acceptance, Neon/Render hosted convergence, MCG-02 completion, production readiness, Cycle 10 closure, Cycle 11 UX or learner maturity changes.

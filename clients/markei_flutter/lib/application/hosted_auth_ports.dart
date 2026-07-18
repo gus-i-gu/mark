@@ -40,6 +40,28 @@ final class SignedIn extends ExternalAuthenticationState {
   const SignedIn();
 }
 
+final class SigningIn extends ExternalAuthenticationState {
+  const SigningIn();
+}
+
+final class SignInCancelled extends ExternalAuthenticationState {
+  const SignInCancelled();
+}
+
+final class AuthenticationRejected extends ExternalAuthenticationState {
+  const AuthenticationRejected(this.code);
+
+  final String code;
+}
+
+final class TokenExpired extends ExternalAuthenticationState {
+  const TokenExpired();
+}
+
+final class ProviderUnavailable extends ExternalAuthenticationState {
+  const ProviderUnavailable();
+}
+
 final class AccessTokenResult {
   const AccessTokenResult.accepted(this.accessToken) : errorCode = null;
   const AccessTokenResult.rejected(this.errorCode) : accessToken = null;
