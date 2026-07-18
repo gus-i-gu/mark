@@ -1,42 +1,21 @@
-# E_DDC_STAGE — MCG-02 Decisive Provider Semantics
+# E_DDC_STAGE — Hosted Identity Binding Semantics
 
-> Authority marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
-> Status: **ACTIVE HUMAN EVIDENCE CONTRACT**
+> Authority marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
+> Status: **ACTIVE SEMANTIC AUTHORITY**
 
-## Claim boundary
+## Distinctions
 
-Local tests and builds establish readiness. Provider acceptance requires real native browser login,
-callback return, explicit membership, distinct Device enrollment and hosted fact convergence through
-Auth0, Render and Neon.
+- **Local-only identity** — existing offline Account/Device aliases; its facts remain local.
+- **Hosted binding** — server AccountId and enrolled DeviceId stored after successful enrollment.
+- **Bound restart** — a new composition that validates and selects the hosted binding.
+- **Migration** — rewriting existing local facts/events; explicitly not implemented.
 
-## Required observable sequence
+Enrollment completion must say `hosted-restart-required`, not synchronized or hosted-ready. After
+restart, `hosted-binding-active` means new facts use hosted identifiers; it does not claim provider
+convergence.
 
-~~~text
-signed-out
--> authenticated
--> device-enrolled
--> sync-completed | sync-no-new-events
--> signed-out-cleared
-~~~
+Local-only pending work must remain `local-only-pending`, not failed, uploaded or discarded. A
+cross-Account event or cursor mismatch is rejected without local mutation.
 
-Each platform must execute this sequence. Enrollment is not synchronization. Endpoint health is not
-authentication. One Device is not cross-device convergence.
-
-## Denial language
-
-Unknown identity, missing membership, unknown/revoked Device and cross-Account mismatch are denied
-without protected-state advance. Provider unavailability preserves local registration, facts and
-pending outbox. No denial may be inferred from status text alone when database counts can verify no
-advance.
-
-## Privacy
-
-Evidence uses synthetic aliases, status classes and counts. It omits tokens, claims, subjects,
-emails, provider domains/client IDs, URLs, hostnames, Account/Device UUIDs, credentials and fact
-payloads.
-
-## Completion
-
-Only Main may promote sanitized executed evidence to `MCG-02_DECISIVE_PROVIDER_PROOF_COMPLETE`.
-That result closes MCG-02 development acceptance, not production readiness. MCG-03 remains inactive
-until Cycle 10 promotion/closure sequencing is reconciled.
+Successful Codex wording is limited to hosted identity/scoping readiness. Real Auth0 login and
+Render/Neon convergence remain human evidence, and MCG-03 remains inactive.
