@@ -1,106 +1,107 @@
-# F_DSN_STAGE — MCG-02 Provider-Proof Design Authority
+# F_DSN_STAGE — MCG-02 Native Authentication Design Authority
 
-> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
-> Status: **PROVIDER FOUNDATION CONFIGURATION AND EVIDENCE ONLY**
+> Authority marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
+> Status: **ACTIVE DESIGN AUTHORITY**
 
-## Selected topology
+## Selected dependency direction
 
 ~~~text
-Android / Windows Native clients
-        -> Auth0 Authorization Code + PKCE (not yet composed in Flutter)
-        -> Render HTTPS hosted Fastify composition
-        -> pooled Neon markei_runtime
+Flutter presentation/development closure surface
+        -> hosted enrollment/sync application services
+        -> ExternalAuthenticationSession / AccessTokenSource ports
+        -> Auth0 Flutter infrastructure adapter
+        -> official Android/Windows platform integration
 
-controlled migration session
-        -> direct Neon markei_migrator
+application services
+        -> HTTP identity/enrollment/sync adapters
+        -> Render HTTPS
+        -> pooled Neon markei_runtime
 ~~~
 
-The selected target has Auth0 validate login and issue an access token. The API validates signature, issuer,
-audience, expiry and algorithm through JWKS. PostgreSQL remains authoritative for Account
-membership, Device enrollment/revocation and synchronization state.
+Auth0 SDK types must not enter domain models or Drift. The hosted API remains responsible for JWT
+verification and PostgreSQL authorization. PostgreSQL remains authoritative for identity mapping,
+Account membership and Device lifecycle.
 
-Current gap: Flutter exposes bearer-token transport ports but has no Auth0 SDK dependency, login
-composition or production credential supplier. Provider setup cannot substitute for that code.
+## Configuration boundary
 
-## Configuration contract
+Create one immutable typed configuration from non-secret compile-time values. It must hold only the
+Auth0 domain, platform client ID, exact Markei API audience and Render HTTPS origin. Validate before
+constructing SDK or HTTP adapters. Missing/malformed configuration selects a fail-closed local-only
+composition.
 
-The hosted runtime consumes only:
+No real defaults, `.env`, JSON credential asset, client secret, database URL or token may be added.
+Android and Windows may use distinct public client IDs. Provider aliases belong in private launch
+commands or IDE settings outside Git.
 
-- `NODE_ENV`;
-- Render-provided `PORT`;
-- pooled `MARKEI_SYNC_DATABASE_URL` for `markei_runtime`;
-- `MARKEI_AUTH_ISSUER` with trailing slash;
-- exact `MARKEI_AUTH_AUDIENCE`;
-- optional derived or explicit HTTPS `MARKEI_AUTH_JWKS_URI`;
-- exact HTTPS `MARKEI_PUBLIC_ORIGIN`;
-- bounded `MARKEI_LOG_LEVEL`.
+## Authentication adapter boundary
 
-The runtime rejects a migrator URL. Migrator credentials never enter Render or Flutter. Native
-applications have public client IDs but no embedded client secret.
+- The adapter owns SDK interaction and converts SDK results/errors to application states.
+- Authorization Code + PKCE and the system browser are mandatory.
+- Only an unexpired access token for the configured audience may satisfy `AccessTokenSource`.
+- ID tokens never authorize API requests.
+- Token values never cross into diagnostics, repositories or exception messages.
+- Token lifetime is process-memory bounded; logout/expiry/rejection clears it.
+- If the SDK requires durable credential storage, stop rather than weakening this invariant.
+- Lab adapters remain test/loopback-only and unreachable from production composition.
 
-## Database boundary
+## Platform boundaries
 
-Apply immutable migrations 001–006 in order over a direct connection. Existing migration hashes
-must be checked before execution; never edit an applied file. Runtime receives only grants defined
-by the migrations and must remain unable to read/write `migration_ledger`, create schema objects,
-administer roles, enroll identities by direct table mutation or bypass Account predicates.
+Android keeps package/application identity `com.gusigu.markei` subject to repository verification and
+derives callbacks from the official SDK contract. Windows registers only the exact custom protocol
+required by the pinned SDK. Both platforms must route callbacks to the same adapter semantics and
+must support cancellation and logout without stale session state.
 
-The provider proof may seed synthetic identity/membership rows only through a controlled migrator
-session. Ordinary synchronization uses the runtime role and application routes.
+Platform changes may include only required Gradle/manifest/runner/protocol registration. Do not add
+unrelated native plugins, permissions, analytics or background services.
 
-## Authentication and authorization
+## Application and continuity boundary
 
-Token verification is necessary but insufficient:
+Authentication enables hosted actions; it does not gate local purchase registration. Missing token,
+provider outage or denied membership leaves local facts and outbox intact. Existing enrollment
+idempotency, query-after-unknown, absolute deadlines and synchronization acknowledgement rules
+remain unchanged.
 
-1. verify RS256 signature through issuer-bound JWKS;
-2. verify exact issuer, audience and expiry;
-3. resolve `(issuer, subject)` to an active external identity;
-4. resolve explicit active Account membership;
-5. resolve/enroll the request's Device idempotently;
-6. authorize the Device and Account again inside protected transactions.
+The development closure surface is an adapter-driving diagnostic, not product UX. It may expose
+semantic states and actions but no credentials/identifiers/payloads. It must be excluded or inert
+when native configuration is absent.
 
-No Auth0 claim becomes AccountId or DeviceId. No credential or token becomes durable Drift state.
+## Provider-proof handoff
 
-## Transaction and retry rules
+Codex prepares but does not execute the final provider proof. Human execution later supplies private
+non-secret launch configuration, authenticates one synthetic user on Android and Windows, performs
+controlled identity/membership setup, enrolls two distinct Devices and synchronizes one synthetic
+Account through Render/Neon.
 
-- Enrollment identity and request hash define replay identity.
-- Same identity/hash returns the same result; same identity/different hash conflicts.
-- Authorization changes committed before the transaction fence must deny protected mutation.
-- Response loss must be resolved by query/replay, never blind identity regeneration.
-- Retry exhaustion fails closed and preserves pre-attempt protected state.
-- Acknowledgement occurs only after committed local application.
+Required hosted acceptance includes valid login/sync plus missing, malformed, expired, wrong-issuer,
+wrong-audience, unknown identity, inactive membership, unknown/revoked Device and cross-Account
+denials with no protected advance. Manual token copying does not count.
 
-## Provider foundation boundary
+## Change and rollback boundary
 
-Use one disposable development branch/database. This unit may deploy the existing hosted
-composition and verify its health/configuration boundary, but it must not fabricate native login by
-manually copying tokens. It may not add provider-specific shortcuts, production credentials,
-automatic user provisioning, social login, Device replacement, billing, telemetry or production
-retention policy.
+Allowed changes:
 
-## Security checks
+- Flutter dependency and lock files;
+- Auth0 configuration/adapters and application composition;
+- required Android/Windows callback integration;
+- minimal development closure surface;
+- focused tests and G/H/I reports.
 
-- TLS for Auth0, Render and Neon;
-- no secrets in Git, build output, logs, screenshots or reports;
-- no token/fact-payload logging;
-- exact callback/logout allowlists;
-- wrong issuer/audience/algorithm/key fail closed;
-- cross-Account and revoked/unknown Device requests fail closed;
-- runtime DDL and migration-ledger access denied;
-- production Neon branch not used;
-- Render contains runtime credentials only.
+Forbidden changes:
 
-## Evidence and rollback
+- PostgreSQL migrations 001–006 or server authorization semantics;
+- provider resources, secrets or deployment;
+- Drift schema/reset, automatic provisioning or Device replacement;
+- product navigation/visual redesign, telemetry or permanent notebook memory.
 
-Provider configuration is reversible: disable Render auto-deploy/service, revoke test Devices,
-delete synthetic rows, rotate credentials, and remove disposable Auth0/Neon resources after Main
-acceptance. Preserve only sanitized evidence and resource inventory before teardown.
+Rollback is removal of the adapter/composition/platform registration and dependency changes. It must
+leave local registration, Drift facts/outbox, R05 proof and provider foundation intact.
 
-The missing native auth composition is already identified. Stop after foundation evidence and
-return it to Main. Do not patch source under this authority. Main must issue new D/E/F for the
-bounded client-auth round and later decisive provider proof.
+## Validation and residual risks
 
-## Deferred decisions
+Prove config validation, audience selection, callback routing, state mapping, token ephemerality,
+local continuity and supported platform builds. Record the pinned SDK/prerelease status and any
+Windows limitation. Real browser/provider behavior, account mapping and two-Device convergence
+remain residual until human acceptance.
 
-Production hosting tier, custom domain, production tenant, social providers, account recovery,
-Device replacement, provider monitoring, backup/PITR policy and MCG-03/04 definitions remain open.
+Production tenant/domain, hosting tier, social providers, account recovery, Device replacement,
+monitoring, backup policy, pruning/promotion and MCG-03/04 remain deferred.

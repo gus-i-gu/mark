@@ -1,138 +1,140 @@
-# D_OPS_STAGE — MCG-02 Hosted Provider Proof Authority
+# D_OPS_STAGE — MCG-02 Native Authentication and Closure Harness
 
 > Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
-> Staged at UTC: 2026-07-17T17:14:43Z
-> Parent reconciliation: 2158c03f22b5181f1cccaf74d3aafa0450bf39ec
-> Status: **HUMAN PROVIDER FOUNDATION ACTIVE; CODEX READ-ONLY ASSISTANCE**
+> Authority marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
+> Parent/provider commit: ade6e2c1f19ae3ebf318457d7ef76ac8dbe3bcae
+> Status: **ACTIVE CODEX MATERIALIZATION AUTHORITY**
 
 ## Objective
 
-Establish and validate the disposable Auth0, Neon and Render foundation needed by the hosted
-composition. This unit stops before native login: the repository has bearer-token transport ports
-but no Auth0 Flutter SDK/login composition or production credential supplier. Its evidence prepares
-a narrow Codex client-auth round; it does not complete MCG-02, MCG-03 or production launch.
+Compose real Auth0 Authorization Code + PKCE authentication into the Flutter Android and Windows
+clients, retain bearer tokens only in memory, and create a bounded development closure harness for
+the later human two-client hosted proof.
 
-## Authority split
+This unit proves local composition readiness. It does not operate Auth0, Neon or Render; seed
+membership; copy tokens; or claim provider acceptance.
 
-Human may:
+## Preflight and stop rules
 
-- configure Auth0 applications/API callbacks and retrieve non-secret identifiers;
-- apply reviewed migrations to the disposable Neon development database as `markei_migrator`;
-- configure and deploy one Render development Web Service;
-- create synthetic test users, Account membership and Device enrollment state;
-- run Android/Windows login and hosted synchronization probes;
-- return sanitized results.
+1. Read root `AGENTS.md`, `INDEX.md`, notebook `AGENTS.md`, then the canonical methodology route.
+2. Confirm branch `intermid-cycle-recovery`, clean tracked state and ancestry `ade6e2c`.
+3. Read J and D/E/F together; inspect existing hosted-auth ports, coordinator, transports,
+   composition roots, Android/Windows runners and tests before editing.
+4. Preserve untracked `.vscode/`, `documentation/NEON_*`, `.env*` and every unrelated user file.
+5. Never read private provider files or request credentials/tokens/connection strings.
+6. Stop on provider mutation, migration changes, required client secret, incompatible platform SDK,
+   contradictory D/E/F, or a dependency that cannot support both target platforms safely.
 
-Codex may:
+## CP1 — Dependency and typed configuration
 
-- inspect tracked repository configuration and public provider documentation;
-- calculate migration hashes and prepare commands with placeholders;
-- diagnose redacted build/runtime failures;
-- verify sanitized evidence and later replace G/H/I if Main separately authorizes reporting.
+- Verify the current official Auth0 Flutter SDK guidance and Flutter/Dart/platform compatibility.
+- Select and pin one exact compatible SDK version; update only required dependency/lock files.
+- If Windows support requires a prerelease, record that explicitly and prove its compatibility; do
+  not silently replace the selected SDK or add a second authentication library.
+- Add a closed typed configuration loaded from non-secret compile-time inputs equivalent to:
+  `AUTH0_DOMAIN`, platform client ID, API audience and hosted HTTPS origin.
+- Validate HTTPS origin, Auth0 domain shape, nonempty client ID and audience. Fail closed with a
+  neutral configuration state when any value is missing or malformed.
+- Commit no real tenant domain, client ID, audience, endpoint, password, token or `.env` file.
 
-Codex must not receive, print, store or use passwords, tokens, connection strings, provider IDs or
-secret-bearing URLs. It must not operate provider consoles, deploy, mutate Neon, or read
-`documentation/NEON_*`, `.env`, `.vscode` or other private local files.
+## CP2 — Auth0 infrastructure adapter
 
-## Checkpoints
+Implement an Auth0 adapter behind `ExternalAuthenticationSession` and `AccessTokenSource`:
 
-### P0 — Preflight and containment
+- login uses Authorization Code + PKCE through the platform browser;
+- request an access token for the exact configured Markei API audience;
+- do not substitute the ID token for API authorization;
+- map login, cancellation, logout, expiry, rejected credentials and provider unavailability to
+  closed typed states without exposing SDK exceptions or token material;
+- expose an access token only on demand and only while credentials are valid;
+- clear credentials from application memory after logout, rejection or expiry;
+- never write access/refresh/ID tokens to Drift, files, preferences, diagnostics or logs;
+- keep `LabAuthenticationSession` and `LabAccessTokenSource` confined to tests/loopback labs.
 
-- Confirm branch `intermid-cycle-recovery` includes `2158c03`.
-- Confirm the Neon child branch will remain alive throughout the proof.
-- Confirm the database is `markei_sync_dev`; production branch is not selected.
-- Confirm Auth0 tenant/API and Android/Windows Native Applications are development-scoped.
-- Confirm Render service targets the same Git branch and is not yet production traffic.
-- Inventory secrets only by variable name, never value.
-- Rotate any credential ever committed or exposed before continuing.
+If the SDK persists credentials by default, disable that facility or stop and report the conflict.
 
-### P1 — Auth0 contract
+## CP3 — Platform composition
 
-- Custom API audience exactly matches `MARKEI_AUTH_AUDIENCE`.
-- Access tokens use RS256.
-- Issuer is the tenant HTTPS URL with its trailing slash.
-- JWKS is the issuer's `/.well-known/jwks.json` endpoint.
-- Android and Windows applications remain Native Applications using Authorization Code + PKCE.
-- Configure only the exact callback/logout URLs derived from the implemented clients.
-- Do not create or embed a native client secret.
-- Obtain one development access token and inspect only header/claims; never record the token.
+### Android
 
-Required sanitized evidence: tenant region alias, application types, algorithm, audience alias,
-issuer-shape pass, JWKS HTTP status, and redacted claim checks for `iss`, `aud`, `sub`, `exp`.
+- Preserve verified application ID `com.gusigu.markei` unless repository evidence contradicts it.
+- Add only the manifest/Gradle callback configuration required by the official SDK.
+- Keep callback/logout values derived from injected Auth0 domain and application ID.
+- Do not embed a client secret or real tenant value.
 
-### P2 — Neon migrations and privileges
+### Windows
 
-- Use the direct endpoint and `markei_migrator` for migrations.
-- Review SHA-256 for migrations 001–006 before execution.
-- Apply 001 through 006 in order with `ON_ERROR_STOP=1`.
-- Verify all ledger identifiers and 006 checksum.
-- Use the pooled endpoint and `markei_runtime` for the hosted API.
-- Prove runtime can call `markei_hosted_runtime_ready()` and cannot read the migration ledger,
-  create schema objects or administer roles.
-- Prove cross-Account access fails closed under the application transaction context.
+- Register the exact callback/protocol handler required by the selected official SDK.
+- Keep callback handling within the Windows runner and Auth0 adapter boundary.
+- Prove repeated launch, login cancellation and logout do not leave stale credentials.
+- Stop if the SDK cannot support the repository's Windows target without unsupported native code.
 
-Stop on a changed previously applied migration, partial ledger, privilege escalation or wrong branch.
+## CP4 — Application composition and closure surface
 
-### P3 — Render configuration and deployment
+- Compose the Auth0 adapter with the existing hosted enrollment coordinator, HTTP identity/enrollment
+  transports, sync guard and synchronization application services.
+- Preserve local purchase registration and outbox behavior when unauthenticated or offline.
+- Hosted actions require a valid access token; missing/expired token fails closed without local loss.
+- Add the smallest neutral development-only surface or runner needed to trigger:
+  sign in, current identity, Device enrollment/query, hosted sync and logout.
+- Show only semantic state/status aliases. Never render or copy tokens, claims, subject, AccountId,
+  DeviceId, connection details or fact payloads.
+- Do not redesign pages/navigation or introduce Cycle 11 UX.
+- Do not auto-create external identities or Account memberships. Their controlled provider-proof
+  setup remains a human action after the subject is known privately.
 
-Service settings:
+## CP5 — Deterministic proof
+
+Add closed tests for at least:
+
+- valid/missing/malformed native configuration;
+- access token requested for exact audience;
+- ID token rejected as API credential;
+- login success, cancellation, provider error, expiry and logout;
+- token absent from Drift bytes, files, preferences, retained state and diagnostics;
+- Android callback derivation and Windows protocol routing;
+- unknown identity, inactive membership, unknown/revoked Device and cross-Account denial mapping;
+- same enrollment identity/hash replay and different-hash conflict;
+- API outage preserves local facts and pending outbox work;
+- no production composition references lab authentication;
+- cold restart does not recover a prior token.
+
+Fakes may prove application behavior, never real provider acceptance. Name the distinction in tests
+and reports.
+
+## CP6 — Validation
+
+Run all applicable checks:
+
+- dependency resolution and lockfile consistency;
+- Dart format check, Flutter analysis and complete Flutter tests;
+- Android debug build and Windows release build when host-supported;
+- server format/lint/typecheck/tests/build if shared contracts changed;
+- protected Python regressions if touched transitively;
+- `git diff --check` and tracked/staged secret scan.
+
+Record exact commands, versions, counts, exclusions and environment limitations. A build does not
+equal runtime/provider acceptance.
+
+## Reports and commit
+
+Replace only G/H/I after implementation. G records paths, dependencies, commands/results, platform
+builds and secret scan. H records states, wording and privacy evidence. I records dependency
+direction, configuration, callback and token-lifecycle boundaries.
+
+Commit source and G/H/I as one bounded unit and push only `intermid-cycle-recovery`; never force.
+
+Complete local terminal:
 
 ~~~text
-Language: Node
-Branch: intermid-cycle-recovery
-Root directory: services/markei_sync_api
-Build command: npm ci && npm run build
-Start command: npm start
-Health check path: /health/ready
-Auto-deploy: Off during proof
+MCG-02_NATIVE_AUTH_COMPOSITION=true
+MCG-02_ANDROID_AUTH_COMPOSITION=true
+MCG-02_WINDOWS_AUTH_COMPOSITION=true
+MCG-02_TOKEN_EPHEMERAL=true
+MCG-02_LOCAL_REGISTRATION_INDEPENDENT=true
+MCG-02_NATIVE_CLIENT_AUTH_INTEGRATION_READY
+MCG-02_DECISIVE_PROVIDER_PROOF_PENDING
 ~~~
 
-Required variables:
-
-~~~text
-NODE_ENV=production
-MARKEI_SYNC_DATABASE_URL=<pooled markei_runtime URL; secret>
-MARKEI_AUTH_ISSUER=<Auth0 HTTPS issuer with trailing slash>
-MARKEI_AUTH_AUDIENCE=<exact custom API audience>
-MARKEI_PUBLIC_ORIGIN=<Render HTTPS service origin>
-MARKEI_LOG_LEVEL=info
-~~~
-
-Do not add `MARKEI_SYNC_MIGRATOR_DATABASE_URL`; the application rejects it. Render supplies `PORT`.
-Require a successful build, `MARKEI_HOSTED_SYNC_READY`, HTTPS health 200 and no secret/fact payload
-in logs. Render must bind the service through the implementation's `0.0.0.0:$PORT` behavior.
-
-### P4 — Hosted foundation probe
-
-- Verify `/health/live` and `/health/ready` over Render HTTPS.
-- Verify an unauthenticated protected route is denied.
-- Verify the runtime readiness function succeeds through the pooled role.
-- Inspect logs for secret, token and fact-payload absence.
-- Confirm the Flutter repository has no Auth0 SDK/login composition and record this as the next
-  implementation boundary, not as a failed provider configuration.
-
-Do not create ordinary users, memberships or Devices until Main stages the client-auth integration
-and decisive hosted proof. A manually copied dashboard token is not Android/Windows login evidence.
-
-## Evidence return
-
-Return a sanitized block with timestamp, Git SHA, provider aliases, migration IDs/hashes, HTTP
-status classes, row counts, named pass/fail cases, deployment SHA, log-scan result and remaining
-resources. Never return hostnames, tenant domain, client IDs, subjects, Account/Device UUIDs,
-passwords, tokens, URLs containing credentials or screenshots containing them.
-
-Foundation success terminal:
-
-~~~text
-MCG-02_AUTH0_TOKEN_CONTRACT=true
-MCG-02_NEON_MIGRATIONS_AND_PRIVILEGES=true
-MCG-02_RENDER_HTTPS_RUNTIME=true
-MCG-02_NATIVE_CLIENT_AUTH_INTEGRATION=false
-MCG-02_PROVIDER_FOUNDATION_READY
-MCG-02_PROVIDER_PROOF_PENDING
-~~~
-
-Otherwise report `MCG-02_PROVIDER_FOUNDATION_PARTIAL` and the exact checkpoint/blocker. Main must
-reconcile either result before client implementation. Do not proceed to pruning, promotion, Cycle
-10 closure, MCG-03 or MCG-04.
+Otherwise report `MCG-02_NATIVE_AUTH_COMPOSITION_PARTIAL` with the exact blocker. Do not proceed to
+human provider acceptance, pruning, permanent promotion, Cycle 10 closure, MCG-03 or MCG-04.

@@ -1,92 +1,84 @@
-# E_DDC_STAGE — MCG-02 Provider-Proof Semantic Authority
+# E_DDC_STAGE — MCG-02 Native Authentication Semantics
 
-> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
-> Status: **ACTIVE MANUAL EVIDENCE CONTRACT**
+> Authority marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
+> Status: **ACTIVE SEMANTIC AUTHORITY**
 
-## Claims
+## Claim boundary
 
 ~~~text
-R05 local proof complete
-!= hosted provider proof
-!= production readiness
-!= Cycle 10 closure
+provider-foundation-ready
++ native-auth-composition-ready
+!= native provider acceptance
+!= hosted convergence
+!= MCG-02 complete
 ~~~
 
-Provider foundation may be claimed after Auth0 contract, Render HTTPS and disposable Neon
-configuration pass. Full provider proof may be claimed only after real Auth0-issued native tokens,
-Render HTTPS, the disposable Neon
-development database, explicit Account membership and enrolled Devices participate in the same
-executed path.
+Codex may claim composition readiness only from implemented adapters, closed tests and supported
+platform builds. Android/Windows authentication is accepted only after a human executes real Auth0
+login through each client. Full MCG-02 requires that authentication to continue through membership,
+Device enrollment and hosted synchronization.
 
 ## Vocabulary
 
-- **External identity** — Auth0 issuer plus subject; not an Account or Device identifier.
-- **Membership** — explicit authorization connecting an external identity to one Account.
-- **Device enrollment** — idempotent authorization of one installation under one membership.
-- **Provider acceptance** — executed evidence from Auth0, Neon and Render together.
-- **Local readiness** — R05's deterministic local proof; retained independently.
-- **Production readiness** — not established by this development proof.
+- **Native sign-in** — system-browser Authorization Code + PKCE flow initiated by Markei.
+- **Access token** — ephemeral bearer credential for the exact Markei API audience.
+- **ID token** — client identity information; never an API bearer-token substitute.
+- **External identity** — issuer plus subject resolved by PostgreSQL; not AccountId or DeviceId.
+- **Composition readiness** — real SDK/adapters/configuration are wired and locally validated.
+- **Provider acceptance** — real Android/Windows, Auth0, Render and Neon executed evidence.
+- **Local continuity** — registration/outbox remain available without hosted authentication.
 
-## Truthful states
+## Required states
 
 ~~~text
-provider-preflight
-auth0-contract-valid
-neon-migrations-valid
-render-runtime-live
-provider-foundation-ready
-native-auth-integration-pending
-identity-mapped
+configuration-missing
+configuration-invalid
+signed-out
+signing-in
+sign-in-cancelled
+authenticated
+token-expired
+authentication-rejected
+provider-unavailable
+identity-unknown
+membership-inactive
+device-unknown
+device-revoked
 device-enrolled
-hosted-sync-converged
-provider-proof-complete
-provider-proof-partial
+hosted-sync-available
+hosted-sync-unavailable
+signed-out-cleared
 ~~~
 
-No foundation state may be described as authenticated end-to-end, synchronized, converged or
-complete. A deployed healthy endpoint proves process readiness only.
+No state before real provider acceptance may say connected, synchronized, restored, converged,
+secure or complete. Cancellation is neutral, not an authentication error. Provider unavailability
+does not imply local-data failure.
 
-## Required semantic denials
+## Privacy and diagnostic language
 
-Evidence must distinguish:
+Diagnostics may show state names, HTTP status classes and opaque correlation aliases. They must not
+show tokens, raw claims, issuer/tenant domains, client IDs, subjects, email addresses, Account or
+Device UUIDs, connection strings or fact payloads. Tokens must not be durable or recoverable after a
+cold restart.
 
-- missing versus malformed bearer token;
-- expired token;
-- wrong issuer;
-- wrong audience;
-- unknown external identity;
-- inactive membership;
-- unknown Device;
-- revoked Device;
-- cross-Account mismatch;
-- idempotent replay versus conflicting enrollment request.
+## Denial semantics
 
-Every denial must be paired with protected-state-no-advance evidence. Do not infer global denial
-truth from HTTP status alone.
+Missing/expired token, wrong issuer/audience, unknown identity, inactive membership, unknown or
+revoked Device and cross-Account mismatch all fail closed without protected-state advance. Unknown
+enrollment outcomes remain queryable/replayable; same identity/hash replays, different hash
+conflicts.
 
-## Privacy and evidence language
+## Human closure language
 
-Use synthetic users and opaque aliases. Reports may state claim names, status classes, counts,
-algorithms, migration identifiers and pass/fail outcomes. Reports must omit tokens, credentials,
-connection strings, provider domains/IDs, user email addresses, Auth0 subjects and fact payloads.
+After Codex readiness, human evidence must distinguish:
 
-Allowed final wording:
+1. Android native login and logout;
+2. Windows native login and logout;
+3. two distinct Device enrollments under one synthetic Account;
+4. hosted synchronization convergence;
+5. denial matrix and protected-state-no-advance;
+6. offline/local registration continuity.
 
-> The disposable development environment completed the MCG-02 hosted provider proof with Auth0,
-> Render HTTPS and Neon while preserving explicit Account and Device authorization boundaries.
-
-Disallowed wording includes production-ready, backup-complete, permanently secure, universally
-authenticated, provider-independent or Cycle 10 closed.
-
-## Failure behavior
-
-Unknown outcomes remain unknown until queried or safely replayed. Provider unavailability must not
-erase local facts or outbox work. A failed provider checkpoint stops forward promotion but does not
-invalidate R05 local proof.
-
-## Completion boundary
-
-This unit ends at `MCG-02_PROVIDER_FOUNDATION_READY`. It does not satisfy MCG-02 completion. Main
-must next authorize native client authentication and then the decisive Account/Device/sync proof.
-MCG-03/04 remain undefined and inactive. Learner maturity, lecture history and Cycle 11 UX claims
-remain unchanged.
+Only Main may reconcile that evidence into `MCG-02_PROVIDER_PROOF_COMPLETE`. Production readiness,
+Cycle 10 closure and MCG-03/04 remain separate decisions. Learner maturity and Cycle 11 UX history
+must not change in this unit.

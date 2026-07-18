@@ -519,3 +519,88 @@ Manual token copying cannot stand in for native login evidence.
 
 D/E/F carrying marker `C10-MCG02-PROVIDER-PROOF_20260717T171443Z` are current authority. MCG-03/04,
 production launch, pruning/promotion and Cycle 10 closure remain inactive.
+
+---
+
+## 30. Append-only reconciliation — provider foundation result
+
+> Reconciliation marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
+> Reconciled at UTC: 2026-07-18T14:03:35Z
+> Reconciled at America/Sao_Paulo: 2026-07-18T11:03:35-03:00
+> Provider authority commit: ade6e2c1f19ae3ebf318457d7ef76ac8dbe3bcae
+> Current status: **PROVIDER FOUNDATION VALIDATED; NATIVE CLOSURE SELECTED**
+
+Main accepts the sanitized human evidence for the disposable provider foundation:
+
+- all exposed owner, migrator and runtime credentials were rotated and old access contained;
+- Neon migrations 002–006 have the expected ledger identifiers and checksum tags;
+- direct `markei_migrator` and pooled `markei_runtime` remain separate;
+- runtime readiness returned true while DDL, ledger access, role administration, controlled-table
+  mutation and Account visibility without context failed closed;
+- Render built and deployed exact commit `ade6e2c`, emitted `MARKEI_HOSTED_SYNC_READY`, returned 200
+  from live/ready and 401 from an unauthenticated protected route;
+- Render logs disclosed no connection string, password, bearer token or fact payload;
+- Auth0 discovery and JWKS returned 200, issuer/JWKS URI matched, RS256 was advertised and two keys
+  were present;
+- the Android and Windows applications remain Native applications with Authorization Code enabled,
+  Client Credentials disabled and no native client secret.
+
+Accepted foundation terminal:
+
+~~~text
+MCG-02_PROVIDER_CONTAINMENT=true
+MCG-02_AUTH0_TOKEN_CONTRACT=true
+MCG-02_NEON_MIGRATIONS_AND_PRIVILEGES=true
+MCG-02_RENDER_HTTPS_RUNTIME=true
+MCG-02_PROVIDER_FOUNDATION_READY
+~~~
+
+This evidence closes provider configuration only. No Android or Windows client has yet obtained an
+Auth0 access token through the Markei Flutter composition, and no two-Device hosted convergence has
+been executed. `MCG-02_NATIVE_CLIENT_AUTH_INTEGRATION` and full MCG-02 remain false.
+
+## 31. Repository reconciliation
+
+The repository already has application ports and tested HTTP adapters for authentication state,
+ephemeral bearer-token supply, identity lookup and Device enrollment. It does not have an Auth0
+Flutter dependency, production Auth0 adapter, typed native configuration or Android/Windows login
+composition. Existing lab authentication must remain confined to tests and loopback proof code.
+
+The next unit therefore changes only the native authentication edge and its proof harness. It does
+not reopen PostgreSQL migrations 001–006, server authorization, provider resources, retention,
+snapshots or synchronization semantics.
+
+## 32. Current phase scheme
+
+~~~text
+R05 local Flutter/global proof                                      VALIDATED
+MCG-02 provider containment/Auth0/Neon/Render foundation            VALIDATED
+MCG-02 native Auth0 composition and closure harness                 ACTIVE
+MCG-02 human two-client hosted acceptance                           PENDING
+Cycle 10 pruning and permanent promotion                            PENDING
+Main Cycle 10 closure                                               PENDING
+MCG-03 / MCG-04 definition                                          INACTIVE
+~~~
+
+## 33. Native closure acceptance boundary
+
+Codex must implement one fail-closed Auth0 composition for Android and Windows behind the existing
+application ports. Non-secret provider configuration must be injected, validated and absent from
+committed defaults. Access tokens must be requested for the exact Markei API audience, remain
+ephemeral, never enter Drift/logs, and be cleared on logout, rejection and expiry.
+
+The unit must provide deterministic tests and a bounded development-only closure surface or runner
+that allows the human operator to perform native login, identity resolution, Device enrollment and
+hosted synchronization without copying tokens. It must not seed membership, operate provider
+consoles or claim real provider acceptance from fakes.
+
+After Codex reports local composition readiness, the human proof must execute Android and Windows
+native login, explicit identity/membership mapping, two distinct Device enrollments, one synthetic
+Account convergence and the required denial matrix through Render HTTPS and Neon. Main must
+reconcile that sanitized evidence before MCG-02 or Cycle 10 can close.
+
+## 34. Forward authority
+
+D/E/F carrying marker `C10-MCG02-NATIVE-CLOSURE_20260718T140335Z` are the only active Codex
+authority. Provider mutation, database migration, automatic user provisioning, permanent promotion,
+Cycle 10 closure and MCG-03/04 remain unauthorized.
