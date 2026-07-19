@@ -1,51 +1,62 @@
-# I_DSN_CODEX - Windows Callback and Credential Design Evidence
+# I_DSN_CODEX - Windows Runtime Packaging Design Evidence
 
-- Authority marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
-- Baseline SHA after fast-forward: fc4af17c766f39715fe909b9fbda587e1bb7b881
-- Final commit SHA: reported by Codex terminal response after commit publication.
+- Authority marker: C10-MCG02-WINDOWS-RUNTIME-PACKAGING_20260719T155742Z
+- Baseline SHA after fast-forward: a892c2628df7425124be0e64db66697b7b572b4d
+- Final commit SHA: resolved by Git after this report is committed and pushed; Codex terminal response reports it.
 - Dependency decision: `auth0_flutter` remains pinned at 2.4.0; no dependency update was needed.
 
-## Callback and Credential Flow
+## CMake Direction
 
-The corrected boundary is:
+The final deployment direction is:
 
-`Auth0 browser -> auth0flutter protocol activation -> secondary runner -> current-user named pipe -> primary runner -> PLUGIN_STARTUP_URL under SDK lock -> Auth0 SDK polling transaction -> code exchange -> defensive credential checks -> ExternalAuthenticationSession`.
+`pinned auth0_flutter/cpprestsdk imported targets -> runner executable link closure -> CMake TARGET_RUNTIME_DLLS -> post-build copy_if_different -> configuration-specific runner directory`.
 
-The runner still owns OS activation and bounded forwarding. The Auth0 SDK still owns OAuth state,
-PKCE, code exchange and token construction. The Markei adapter owns closed diagnostic mapping and
-defensive credential acceptance.
+The post-build command is attached in `windows/runner/CMakeLists.txt`, the same CMake directory
+that creates `${BINARY_NAME}`. This placement satisfies CMake's `add_custom_command(TARGET ...)`
+directory rule while still allowing generated plugin linkage to contribute to the executable's
+runtime dependency closure at generation/build time.
 
-## Runner / Plugin Boundary
+## Configuration Selection
 
-The pinned Auth0 Flutter 2.4.0 reference runner includes `plugin_startup_url_lock.h` and writes
-`PLUGIN_STARTUP_URL` under `auth0_flutter::WriteLockGuard`. Markei now does the same for first
-startup callbacks and forwarded secondary-instance callbacks.
+The implementation does not select Debug or Release paths manually. CMake evaluates
+`$<TARGET_RUNTIME_DLLS:${BINARY_NAME}>` for the active configuration and copies those resolved DLLs
+to `$<TARGET_FILE_DIR:${BINARY_NAME}>`.
 
-Retained security invariants:
+Observed outputs confirm configuration separation:
 
-- exact `auth0flutter://callback` prefix;
-- single-instance mutex;
-- named pipe forwarding;
-- current-user SID pipe security;
-- bounded string framing and null termination;
-- no callback data logs;
-- wrong-prefix inputs ignored before SDK handoff.
+- Debug received debug-suffixed vcpkg libraries, including `cpprest_2_10d.dll` and Boost `gd` DLLs.
+- Release received release libraries, including `cpprest_2_10.dll`, OpenSSL, zlib and brotli DLLs.
+- Release debug-suffix scan returned empty.
 
-## Safe Diagnostic Mapping
+## Runtime Closure Rules
 
-Provider and SDK failures are normalized to a closed set before reaching application state.
-Credential validation is defensive only: access and ID tokens must be present, distinct and beyond
-the safety margin. No JWT body parsing is used as a substitute for hosted issuer, audience,
-signature or authorization verification.
+- The executable directory owns the deployable runtime closure.
+- Runtime dependencies come from CMake target/imported-target metadata rather than PATH or manual copy.
+- CMake versions older than 3.21 fail during configuration with a Markei-specific message because target runtime metadata is unavailable.
+- No username, drive letter, vcpkg root, generated build directory, configuration directory or single DLL name is encoded in tracked source.
+- DLLs, vcpkg packages, native caches and generated build outputs remain untracked.
 
-## Deviations and Deferred Work
+## Runner and Plugin Boundary
 
-The test proof for Windows protocol activation is source-level and build-level; a real provider
-runtime retest remains required. Duplicate/stale/cross-transaction callback rejection is delegated
-to the SDK transaction state and covered locally by the runner's single write path and closed state
-mapping, not by a live OS protocol test.
+The source correction does not change Windows callback forwarding, single-instance behavior,
+SDK lock handoff, diagnostic mapping, credential validation or token lifecycle behavior accepted at
+`1922ffc`. The runner remains responsible for process activation and the Auth0 SDK remains
+responsible for OAuth transaction state, PKCE and code exchange.
 
-Deferred work remains unchanged: hosted Account/Device binding and scoped synchronization resume
-only after provider retest reaches `authenticated`; production installer protocol registration,
-intermediary HTTPS callback flow, dependency upgrades, persistent secure sessions, MCG-03 and Cycle
-10 closure are outside this correction.
+## Rollback Boundary
+
+Rollback removes only:
+
+- the post-build runtime deployment block in `clients/markei_flutter/windows/runner/CMakeLists.txt`;
+- the packaging contract test in `clients/markei_flutter/test/infrastructure/windows_runtime_packaging_contract_test.dart`;
+- these G/H/I reports.
+
+Rollback must not remove the accepted Windows callback/credential correction, native Auth0
+composition, closure surface, provider diagnostics or local synchronization proof work.
+
+## Deferred Work
+
+Clean real Auth0 provider retest remains human-operated and must occur after this package-ready
+commit is published. Device enrollment, hosted synchronization, provider mutation, installer
+registration work, dependency upgrades, MCG-02 closure, MCG-03 and Cycle 10 closure remain outside
+this correction.
