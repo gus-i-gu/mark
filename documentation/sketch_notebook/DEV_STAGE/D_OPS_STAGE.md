@@ -1,78 +1,67 @@
-# D_OPS_STAGE — Hosted Account/Device Binding Correction
+# D_OPS_STAGE — Windows Native Authentication Callback Correction
 
-> Authority marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
-> Required ancestor: 0b219602fe6eb4dc7976cea3a7d2d00fce930500
+> Authority marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
+> Required ancestor: 65ae6a7dac349db0512d604c940d01a6f500d1a4
 > Status: **ACTIVE BOUNDED CODEX AUTHORITY**
 
 ## Objective
 
-Bind post-enrollment Flutter composition to the stored hosted AccountId and server DeviceId, and
-scope every hosted synchronization repository to that binding. Preserve all existing local-only
-facts/outbox entries without rewriting, discarding or uploading them.
+Correct and prove the Windows boundary from a successful Auth0 user login through callback
+consumption, authorization-code exchange and usable in-memory credentials. Preserve the accepted
+provider, server, database and hosted-identity designs; stop before Device enrollment or sync.
 
-## Required behavior
+## Controlling human evidence
 
-1. Before enrollment, retain the existing local-only Account/Device composition.
-2. Enrollment stores hosted AccountId, server DeviceId and installation state as today.
-3. The enrolling process returns `hosted-restart-required` before any hosted sync.
-4. On restart, validate the stored binding and select its AccountId/server DeviceId for new purchase
-   registration and hosted sync.
-5. Reject malformed/incomplete/revoked bindings and fall back to safe local-only behavior.
-6. Scope hosted outbox leasing and unknown-submission replay by hosted AccountId and DeviceId.
-7. Scope download cursor, inbox validation, fact application and acknowledgement to the hosted
-   AccountId; reject any downloaded cross-Account event.
-8. Leave pending local-only events untouched and visible to their original local Account.
+- Windows release build: passed.
+- Native closure surface: launched under explicit non-secret compile-time configuration.
+- Auth0 Native application, PKCE, callback/logout allowlists and user-delegated API access: passed.
+- Current-user `auth0flutter` protocol dispatch: exercised.
+- Auth0 signup, email verification and login: successful in sanitized tenant logs.
+- Markei post-login state: `authentication-rejected`.
+- Enrollment and hosted synchronization: not run.
 
-## Invariants
+## Required implementation
 
-- Never mutate IDs or hashes inside an existing immutable event.
-- Never relabel existing local facts as hosted facts.
-- Never upload a local-only event through a hosted binding.
-- Never select the first arbitrary cursor from a multi-Account Drift database.
-- New hosted events embed exactly the stored hosted AccountId/server DeviceId.
-- Device sequence begins and advances under the hosted local Device row consistently with server
-  enrollment state.
-- Logout does not delete local facts or silently erase the hosted binding.
-- Revocation blocks hosted sync without corrupting local state.
+1. Compare `windows/runner/main.cpp` with the callback contract of repository-pinned
+   `auth0_flutter` 2.4.0. Prove the waiting SDK transaction consumes the callback; foregrounding the
+   window alone is insufficient.
+2. Preserve exact callback-prefix validation, current-user pipe isolation, bounded framing and
+   single-instance forwarding. Reject malformed, oversized, wrong-scheme, duplicate, stale and
+   no-active-transaction callbacks.
+3. Replace generic rejection collapse with a closed, bounded diagnostic map covering callback not
+   received/state rejected, code exchange rejected, missing access/ID token, expired credentials,
+   token confusion, provider outage and unknown rejection.
+4. Never expose tokens, authorization codes, PKCE verifier/challenge, OAuth state/nonce, email,
+   subject, Account/Device IDs or complete callback URLs in UI, logs, exceptions or reports.
+5. Accept `authenticated` only for non-empty, distinct, unexpired access and ID tokens returned by
+   the SDK. Client checks remain defensive; server JWT verification remains authoritative.
+6. Preserve cancellation, consent rejection, logout and cold-start token absence as distinct states.
 
 ## Tests
 
-Add decisive tests for:
+Add focused deterministic tests for safe error mapping, credential acceptance/rejection, callback
+prefix and bounds, duplicate/stale/cross-transaction rejection, single-instance forwarding where
+host-testable, and closure UI wording. Prove enrollment and Sync are not invoked by this unit.
 
-- pre-enrollment local registration remains local-only;
-- enrollment requires restart before hosted sync;
-- restart selects stored hosted AccountId/server DeviceId;
-- a new post-binding event exactly matches the hosted IDs;
-- older local-only pending events are not leased or changed;
-- hosted pending events upload successfully through the real loopback server authorization shape;
-- scoped cursor/ack uses only the hosted Account;
-- cross-Account download is rejected without mutation;
-- incomplete, malformed and revoked binding fail closed;
-- two isolated databases bind the same hosted Account with distinct server Device IDs and converge;
-- close/reopen preserves each binding and authoritative facts.
+Run Dart formatting, Flutter analysis, focused and full Flutter tests, Windows release build when
+host-supported, Android debug only if shared native-auth code changes, `git diff --check`, changed-
+path inventory and tracked/staged secret scans. A compile pass is not runtime callback acceptance.
 
-Use file-backed Drift and real existing HTTP/upload/download/apply/ack services. Do not weaken the
-server, rewrite hashes or make fixtures bypass identity validation.
+## Boundaries
 
-## Boundaries and validation
+No provider operation, dependency upgrade, migration, PostgreSQL/Drift schema change, server
+authorization change, hosted identity binding implementation, enrollment, synchronization,
+installer, product UI redesign, permanent documentation, methodology, MCG-03 or MCG-04 work is
+authorized. If the pinned SDK cannot satisfy its documented contract, stop and report versioned
+evidence before changing dependencies.
 
-No migration, server authorization, Auth0/Neon/Render resource, Drift schema/reset, automatic
-membership, product UX, permanent memory or MCG-03 change is authorized. Prefer additive scoped
-constructors/ports over global behavior changes; retain existing local lab tests.
-
-Run formatting, analysis, focused/full Flutter tests, Android debug and Windows release when
-host-supported, affected server tests, `git diff --check` and secret scan. Replace G/H/I with actual
-paths, commands, counts, identity-scope evidence and exclusions. Commit/push one bounded unit.
+Replace only G/H/I reports after implementation. Commit and push one bounded unit.
 
 Success terminal:
 
 ~~~text
-MCG-02_HOSTED_IDENTITY_BINDING=true
-MCG-02_HOSTED_OUTBOX_SCOPED=true
-MCG-02_HOSTED_CURSOR_APPLIER_SCOPED=true
-MCG-02_LOCAL_ONLY_EVENTS_PRESERVED=true
-MCG-02_TWO_DEVICE_BINDING_CONVERGED=true
-MCG-02_DECISIVE_PROVIDER_PROOF_READY
+MCG-02_WINDOWS_AUTH_CALLBACK_CORRECTED
+MCG-02_PROVIDER_RETEST_REQUIRED
 ~~~
 
-Otherwise report `MCG-02_HOSTED_IDENTITY_BINDING_PARTIAL`. Do not execute provider proof or MCG-03.
+Otherwise report `MCG-02_WINDOWS_AUTH_CALLBACK_PARTIAL` with the exact blocker.

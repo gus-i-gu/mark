@@ -778,3 +778,68 @@ Cycle 10 closure / MCG-03                                            INACTIVE
 
 D/E/F carrying marker `C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z` supersede the human
 provider contract until Codex returns corrected G/H/I evidence.
+
+---
+
+## 46. Append-only reconciliation — Windows provider callback evidence
+
+> Reconciliation marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
+> Reconciled at UTC: 2026-07-19T01:18:36Z
+> Reconciled at America/Sao_Paulo: 2026-07-18T22:18:36-03:00
+> Inspected implementation: df904fb plus staged hosted-binding authority at 65ae6a7
+> Current status: **AUTH0 LOGIN VALIDATED; NATIVE CREDENTIAL ACCEPTANCE CORRECTION ACTIVE**
+
+Human provider evidence established more than the earlier host exclusion:
+
+- Windows Developer Mode and the release-build toolchain are available;
+- the configured release executable built successfully with Auth0 Flutter 2.4.0;
+- cpprestsdk, OpenSSL, Boost and Zlib were resolved through a pinned local vcpkg registry;
+- the development closure surface became available only with explicit compile-time configuration;
+- the `auth0flutter` callback allowlist and current-user protocol registration were exercised;
+- the Auth0 Windows application is Native, uses Authorization Code plus PKCE, has no Client
+  Credentials grant and has user-delegated access to the Markei API;
+- signup, email verification and user login are recorded as successful in sanitized Auth0 logs.
+
+The client nevertheless returns `authentication-rejected` after the successful provider login.
+Device enrollment and hosted synchronization were therefore not executed. This contradicts native
+credential acceptance, not provider identity verification or the Windows release build.
+
+## 47. Selected narrow correction
+
+Codex must first make the post-login boundary diagnosable and correct:
+
+~~~text
+successful Auth0 login
+-> consent/authorization result
+-> auth0flutter callback activation
+-> secondary-instance forwarding
+-> waiting SDK transaction
+-> authorization-code exchange
+-> credential validation
+-> authenticated
+~~~
+
+The correction must preserve bounded, non-secret failure categories; align the Windows runner with
+the pinned SDK's callback contract; prove that the waiting transaction consumes the callback; and
+reject malformed, duplicate, stale or cross-transaction callbacks without exposing tokens, codes,
+PKCE material, state, nonce, identity or complete URLs.
+
+The hosted Account/Device binding selected in sections 43–45 remains accepted as the next source
+unit, but it is temporarily blocked: enrollment cannot begin until native credentials reach the
+truthful `authenticated` state. No provider mutation, enrollment or synchronization is authorized
+inside this correction.
+
+## 48. Revised phase projection and authority
+
+~~~text
+MCG-02 provider foundation and Auth0 user login                     VALIDATED
+MCG-02 Windows release build and protocol dispatch                  VALIDATED
+MCG-02 native callback consumption / credential acceptance          ACTIVE
+MCG-02 hosted Account/Device binding and scoped sync                 BLOCKED NEXT
+MCG-02 decisive two-Device provider convergence                      PENDING
+Cycle 10 closure / MCG-03                                            INACTIVE
+~~~
+
+D/E/F carrying marker `C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z` are the only active Codex
+authority. They supersede the hosted-binding D/E/F for execution order without rejecting that
+design. Success reopens the hosted-binding unit; it does not close MCG-02.

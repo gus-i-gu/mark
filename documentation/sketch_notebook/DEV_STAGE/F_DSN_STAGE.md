@@ -1,40 +1,42 @@
-# F_DSN_STAGE — Hosted Identity Binding Design
+# F_DSN_STAGE — Windows Callback and Credential Design
 
-> Authority marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
+> Authority marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
 > Status: **ACTIVE DESIGN AUTHORITY**
 
-## Selected model
+## Selected boundary
 
 ~~~text
-pre-enrollment composition -> local-only Account/Device
-enrollment result           -> durable hosted binding
-restart                     -> validate binding
-bound composition           -> hosted Account/server Device
-hosted sync repositories    -> explicitly scoped to both
+Auth0 browser transaction
+-> auth0flutter protocol activation
+-> secondary runner process
+-> current-user named pipe
+-> primary runner process
+-> pinned Auth0 SDK waiting transaction
+-> code exchange
+-> defensive credential checks
+-> ExternalAuthenticationSession
 ~~~
 
-Existing facts and immutable events retain their original identity and hash. Binding affects only
-new facts created by the bound composition. This is a fresh hosted lane inside the existing Drift
-database, not an Account migration, merge or event translation.
+The native runner owns OS activation and bounded forwarding. The pinned SDK owns OAuth transaction
+state and code exchange. `NativeAuth0Authentication` adapts SDK outcomes into closed application
+states. `NativeAuthClosureRunner` and the development page expose only neutral semantic evidence.
 
-## Repository scoping
+## Invariants
 
-Hosted outbox leasing/replay accepts required AccountId and DeviceId and cannot select other rows.
-Remote application accepts required AccountId, rejects pages for another Account, reads/writes that
-Account's cursor only and acknowledges only its committed cursor. Unscoped constructors may remain
-only where existing isolated lab tests require them; production hosted composition must be scoped.
+- One callback belongs to one active transaction and is consumed at most once.
+- Wrong prefix/scheme, stale, duplicate, oversized or unsolicited callback input fails closed.
+- Pipe access remains restricted to the current user; callback data is never logged.
+- Tokens remain process-memory bounded and disappear on rejection, expiry, logout and restart.
+- Access and ID tokens are non-empty and distinct before `authenticated`.
+- Client inspection does not replace hosted issuer/audience/signature/authorization verification.
+- Provider login success remains distinct from client authentication success.
 
-## Composition transition
+## Deferred design
 
-Enrollment cannot safely replace final composition fields during the running process. It stores the
-binding and returns `hosted-restart-required`. On the next start, composition selects the hosted IDs
-only when account, device, installation, generation and active state are complete and valid.
+The hosted Account/Device binding and scoped synchronization model previously staged remains the
+next unit after successful provider retest. Production installer protocol registration, an
+intermediary HTTPS callback, dependency upgrades, secure persistent sessions and general Account
+migration remain outside this correction.
 
-## Prohibited alternatives
-
-Do not rewrite local events, recompute them under server IDs, relax server equality checks, derive
-server IDs from Auth0 claims, upload mixed-Account batches, reset Drift or silently discard pending
-local work. No provider or database schema mutation is authorized.
-
-Rollback removes the binding selection/scoped adapters while retaining the stored enrollment state,
-local facts/outbox and accepted native authentication implementation.
+Rollback restores the accepted native adapter while retaining provider configuration and all local
+facts; it must not weaken callback validation or expose raw errors.

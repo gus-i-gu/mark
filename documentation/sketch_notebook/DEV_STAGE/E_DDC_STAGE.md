@@ -1,21 +1,27 @@
-# E_DDC_STAGE — Hosted Identity Binding Semantics
+# E_DDC_STAGE — Windows Authentication State Semantics
 
-> Authority marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
+> Authority marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
 > Status: **ACTIVE SEMANTIC AUTHORITY**
 
-## Distinctions
+Auth0 `successful login` means the provider verified the user. It does not prove callback delivery,
+code exchange, usable client credentials, Device enrollment or synchronization. Markei may say
+`authenticated` only after the waiting transaction returns non-empty, distinct and unexpired
+access and ID tokens.
 
-- **Local-only identity** — existing offline Account/Device aliases; its facts remain local.
-- **Hosted binding** — server AccountId and enrolled DeviceId stored after successful enrollment.
-- **Bound restart** — a new composition that validates and selects the hosted binding.
-- **Migration** — rewriting existing local facts/events; explicitly not implemented.
+Materialize neutral closed states equivalent to:
 
-Enrollment completion must say `hosted-restart-required`, not synchronized or hosted-ready. After
-restart, `hosted-binding-active` means new facts use hosted identifiers; it does not claim provider
-convergence.
+- `callback-not-received`
+- `callback-state-rejected`
+- `authorization-code-exchange-rejected`
+- `access-token-missing`
+- `id-token-missing`
+- `token-expired`
+- `token-confusion-rejected`
+- `provider-unavailable`
+- `authentication-rejected-unknown`
+- `authenticated`
 
-Local-only pending work must remain `local-only-pending`, not failed, uploaded or discarded. A
-cross-Account event or cursor mismatch is rejected without local mutation.
-
-Successful Codex wording is limited to hosted identity/scoping readiness. Real Auth0 login and
-Render/Neon convergence remain human evidence, and MCG-03 remains inactive.
+Cancellation and user consent rejection remain intentional outcomes, not outages. Diagnostics must
+not surface raw provider text or identity/security material. Successful correction wording is
+limited to local callback/credential readiness and `provider-retest-required`; Device enrollment,
+hosted convergence, MCG-02 closure and MCG-03 remain unclaimed.
