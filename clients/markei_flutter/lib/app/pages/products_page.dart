@@ -4,6 +4,7 @@ import '../../application/catalogue_queries.dart';
 import '../../domain/catalogue/product.dart';
 import '../../domain/shared/ids.dart';
 import '../../domain/shared/quantity.dart';
+import '../../domain/store/store.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({
@@ -30,7 +31,9 @@ class _ProductsPageState extends State<ProductsPage> {
   final _brandController = TextEditingController();
   final _packageAmountController = TextEditingController(text: '1');
   final _packageUnitController = TextEditingController(text: 'kg');
+  final _storeNameController = TextEditingController();
   List<Product> _products = const [];
+  List<Store> _stores = const [];
   List<ProductSimilarityWarning> _warnings = const [];
   bool _loading = true;
   bool _bulk = false;
@@ -61,6 +64,7 @@ class _ProductsPageState extends State<ProductsPage> {
     _brandController.dispose();
     _packageAmountController.dispose();
     _packageUnitController.dispose();
+    _storeNameController.dispose();
     super.dispose();
   }
 
@@ -70,11 +74,13 @@ class _ProductsPageState extends State<ProductsPage> {
       final products = await widget.catalogueQueries.listProducts(
         widget.accountId,
       );
+      final stores = await widget.catalogueQueries.listStores(widget.accountId);
       if (!mounted) {
         return;
       }
       setState(() {
         _products = products;
+        _stores = stores;
         _loading = false;
         if (clearMessage) {
           _message = null;
@@ -153,6 +159,33 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  Future<void> _createStore() async {
+    try {
+      await widget.catalogueQueries.createStore(
+        widget.accountId,
+        _storeNameController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _message = 'Store created locally.';
+        _messageIsError = false;
+        _storeNameController.clear();
+      });
+      await _loadProducts(clearMessage: false);
+      widget.onChanged();
+    } on Object {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _message = 'Store could not be created. Enter a Store name.';
+        _messageIsError = true;
+      });
+    }
+  }
+
   ProductDraft _draft() {
     return ProductDraft(
       userCode: _codeController.text,
@@ -200,6 +233,35 @@ class _ProductsPageState extends State<ProductsPage> {
       padding: const EdgeInsets.all(16),
       children: [
         const Text('Catalogue', style: TextStyle(fontSize: 22)),
+        const SizedBox(height: 8),
+        const Text('Stores', style: TextStyle(fontSize: 18)),
+        if (_stores.isEmpty)
+          const Text('No Stores yet.', key: Key('stores.empty'))
+        else
+          for (final store in _stores)
+            ListTile(
+              key: Key('stores.store.${store.id.value}'),
+              title: Text(store.displayName),
+            ),
+        TextField(
+          key: const Key('stores.create.name'),
+          controller: _storeNameController,
+          decoration: const InputDecoration(labelText: 'Store name'),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton(
+              key: const Key('stores.create'),
+              onPressed: _createStore,
+              child: const Text('Create Store'),
+            ),
+          ],
+        ),
+        const Divider(height: 32),
+        const Text('Products', style: TextStyle(fontSize: 18)),
         const SizedBox(height: 8),
         TextField(
           key: const Key('products.search'),

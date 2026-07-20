@@ -16,6 +16,8 @@ abstract interface class CatalogueQueryRepository {
 
   Future<List<Store>> listStores(AccountId accountId);
 
+  Future<Store> createStore(AccountId accountId, String displayName);
+
   Future<Product> createProduct(AccountId accountId, ProductDraft draft);
 
   Future<List<ProductSimilarityWarning>> similarityWarnings(

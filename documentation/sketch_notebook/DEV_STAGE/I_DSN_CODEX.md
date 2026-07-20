@@ -1,87 +1,56 @@
-# I_DSN_CODEX - Hosted Binding Design Evidence
+# I_DSN_CODEX - Hosted Purchase Correction Design Evidence
 
-- Authority marker: C10-MCG02-HOSTED-BINDING-R2_20260720T131954Z
-- Baseline after fast-forward: 9e7af2e306a5159eb51eba9169f5fe0c5f60b5e7
+- Authority marker: C10-MCG02-HOSTED-PURCHASE-CORRECTION_20260720T193745Z
+- Baseline HEAD before correction: be0462a7de79de706420dbbeb9686f01579baed6
 - Final commit SHA: resolved after commit; Codex terminal response reports it.
 
 ## Dependency Direction
 
-The implementation keeps production composition at the app boundary:
+The correction preserves the selected boundary:
 
-`hosted state repository -> validated HostedIdentityBinding -> MarkeiComposition identity -> scoped outbox/applier adapters -> sync use cases`.
+`Catalogue UI -> CatalogueQueryRepository Store port -> LocalQueryRepository -> existing stores table`
 
-Domain entities, event payload v3, server authorization and database schema remain unchanged. The
-new scope object lives in application ports and is consumed by infrastructure adapters without
-creating a dependency from domain code back to hosted authentication.
+`Purchase UI -> ExistingStoreReference -> LocalPurchaseRepository transaction -> Purchase + Items + purchase.registered v3 + PendingEvent`
 
-## Binding Validation
+Widgets still depend on application ports. Drift operations remain in infrastructure. No domain object, event payload contract, server API, server authorization path or schema version was changed.
 
-`DriftHostedIdentityRepository.loadActiveBinding()` validates:
+## Repository and Transaction Correction
 
-- exact expected environment alias;
-- active completed enrollment state: `device-enrolled` or `duplicate-equivalent`;
-- syntactically valid hosted AccountId;
-- syntactically valid server DeviceId;
-- stable installation identity string;
-- positive generation.
+`CatalogueQueryRepository` now exposes `createStore(AccountId, displayName)`. `LocalQueryRepository` implements it through a transaction that:
 
-Revoked, expired, incomplete, malformed or wrong-environment states return no active binding. The
-sync guard maps revoked/expired explicitly and otherwise fails closed as `binding-invalid` or
-`enrollment-required`.
+- trims and validates the Store name;
+- ensures the Account with insert-ignore semantics;
+- reuses an exact same-Account duplicate deterministically;
+- inserts a new Store only for the active Account.
 
-## Restart Composition
+`LocalPurchaseRepository` now ensures local Account and SyncState rows with insert-ignore semantics instead of upsert rewrite. This preserves existing hosted Account rows and existing cursor state during purchase registration. Device identity remains insert-ignore. Registration remains one transaction.
 
-`MarkeiComposition.appPrivate()` remains local-only when no active binding exists. When an active
-binding exists after restart, it:
+## Store Account Scope
 
-- ensures the hosted Account row exists with insert-ignore behavior;
-- ensures the hosted server Device row exists with insert-ignore behavior;
-- ensures the hosted sync cursor row exists with insert-ignore behavior;
-- selects exactly the stored hosted AccountId and server DeviceId for new purchase registration;
-- constructs scoped hosted outbox and applier adapters.
+Store listing was already Account-scoped and remains so. Store creation scopes duplicate lookup and insertion by the active Account. Cross-Account Store visibility is denied by repository tests and no UI path exposes foreign Stores.
 
-The installation metadata path remains owned by `LocalDeviceIdentityRepository`; hosted activation
-does not rewrite the existing local installation metadata row.
+## Hosted Registration Invariant
 
-Successful enrollment persists the binding but returns `hosted-restart-required`. The native closure
-runner reports that state directly. When the current process was composed without an active binding,
-its hosted sync guard is a blocked guard and cannot use the newly stored binding until restart.
+After restart, the hosted composition still supplies the hosted AccountId and server DeviceId. Hosted-bound Purchase A registration now succeeds using an existing same-Account Store and Product. The resulting `purchase.registered` event embeds:
 
-## Outbox Scope
+- AccountId `11111111-1111-4111-8111-111111111111`;
+- DeviceId `22222222-2222-4222-8222-222222222222`;
+- payload version `3`.
 
-`DriftSyncOutboxRepository.scoped()` filters pending-event leasing by AccountId and DeviceId through
-the `sync_events` row joined to `pending_events`. Unknown submission replay filters
-`sync_submissions` by the same AccountId and DeviceId and reorders member events by submission
-position. `persistUploadResult()` is a no-op when a scoped caller tries to complete a submission
-outside its Account/Device binding.
+No local-only event is relabeled or translated.
 
-The original unscoped constructor remains for isolated local lab compatibility.
+## Event and Outbox Invariants
 
-## Applier, Cursor and Acknowledgement Scope
+Success creates exactly one immutable SyncEvent and one PendingEvent. The event content hash revalidates from canonical JSON. Rollback leaves no partial Store, Purchase, PurchaseItem, SyncEvent, PendingEvent or Device sequence mutation from the failed transaction. Close/reopen preserves Store, Purchase, event, pending outbox row, active binding and next Device sequence.
 
-`DriftRemoteEventApplier.scoped()` validates every downloaded event against the bound AccountId
-inside the existing transaction before applying facts. Cross-Account pages return conflict before
-fact, inbox or cursor mutation. Cursor lookup and update are scoped to the bound Account; therefore
-acknowledgement uses that Account's cursor and does not select an arbitrary first cursor from a
-multi-Account database.
+## UI Boundary
 
-The original unscoped applier remains for existing local lab compatibility.
-
-## Transaction Boundaries
-
-Hosted outbox leasing and result persistence remain transactional. Remote page validation, fact
-application, inbox insertion and cursor update remain one transaction. Cross-scope rejection exits
-before mutation.
+Catalogue gained a minimal Stores section. Purchase removed inline Store creation and reloads Catalogue data when the app refresh signal changes, preserving staged in-memory Items while navigating through the existing `IndexedStack`. Navigation architecture, visual language, Analytics, PIN pages, Settings and unrelated pages were not redesigned.
 
 ## Compatibility Choices
 
-Existing tests that use `HostedSyncDecision.allowed(String deviceId)` remain source-compatible.
-Binding-aware hosted code uses `HostedSyncDecision.allowedBinding(HostedIdentityBinding)`.
-Existing isolated local synchronization tests keep unscoped adapters; production/native hosted
-composition uses scoped adapters only after validated restart activation.
+`NewStoreReference` remains in the application command type and repository implementation for existing isolated tests and compatibility. Production Purchase UI now uses only `ExistingStoreReference`. Inline NewStore handling became duplicate-aware but is no longer the intended user path.
 
 ## Deviations and Residual Risks
 
-No schema migration was authorized or needed. The local decisive proof uses synthetic UUID fixtures
-and a disposable Docker/PostgreSQL lab; it is provider-ready but not provider-validated. Fresh human
-Auth0 retest, controlled provider enrollment and two-provider-Device convergence remain pending.
+No schema migration was needed. The exact provider-side Purchase A retry remains a human/provider gate after this local correction is published. This unit does not prove provider convergence, Device B enrollment, revocation denial, API outage recovery, logout token ephemerality, permanent promotion, MCG-02 closure, MCG-03 or MCG-04.

@@ -70,6 +70,7 @@ class _MarkeiAppState extends State<MarkeiApp> {
               registration: widget.composition.purchaseRegistration,
               catalogueQueries: widget.composition.catalogueQueries,
               references: widget.composition.references,
+              refreshSignal: _refreshSignal,
               onRegistered: () => setState(() => _refreshSignal++),
             ),
             ProductsPage(

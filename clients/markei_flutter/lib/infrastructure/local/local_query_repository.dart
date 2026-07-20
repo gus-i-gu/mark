@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../application/catalogue_queries.dart';
+import '../../application/app_failure.dart';
 import '../../application/history_export.dart';
 import '../../application/local_references.dart';
 import '../../application/product_lists.dart';
@@ -111,6 +112,54 @@ class LocalQueryRepository
   }
 
   @override
+  Future<domain_store.Store> createStore(
+    AccountId accountId,
+    String displayName,
+  ) async {
+    final now = DateTime.now().toUtc();
+    final trimmed = displayName.trim();
+    if (trimmed.isEmpty) {
+      throw const AppFailure(
+        code: 'empty-store-name',
+        operation: 'Store creation',
+        field: 'Store',
+        recovery: 'Enter a Store name.',
+        retryable: true,
+        outcome: FailureOutcome.notApplied,
+      );
+    }
+    return _db.transaction(() async {
+      await _ensureAccount(accountId, now);
+      final duplicate =
+          await (_db.select(_db.stores)..where(
+                (table) =>
+                    table.accountId.equals(accountId.value) &
+                    table.displayName.equals(trimmed),
+              ))
+              .getSingleOrNull();
+      if (duplicate != null) {
+        return _storeFromRow(duplicate);
+      }
+      final store = domain_store.Store(
+        id: StoreId(_uuid.v4()),
+        accountId: accountId,
+        displayName: trimmed,
+      );
+      await _db
+          .into(_db.stores)
+          .insert(
+            StoresCompanion.insert(
+              id: store.id.value,
+              accountId: accountId.value,
+              displayName: store.displayName,
+              createdAt: now,
+            ),
+          );
+      return store;
+    });
+  }
+
+  @override
   Future<domain.Product> createProduct(
     AccountId accountId,
     domain.ProductDraft draft,
@@ -123,12 +172,13 @@ class LocalQueryRepository
     );
     await _db
         .into(_db.localAccounts)
-        .insertOnConflictUpdate(
+        .insert(
           LocalAccountsCompanion.insert(
             id: accountId.value,
             defaultCurrencyCode: 'BRL',
             createdAt: now,
           ),
+          mode: InsertMode.insertOrIgnore,
         );
     final exact =
         await (_db.select(_db.products)..where(
@@ -793,13 +843,22 @@ class LocalQueryRepository
   Future<void> _ensureAccount(AccountId accountId, DateTime now) async {
     await _db
         .into(_db.localAccounts)
-        .insertOnConflictUpdate(
+        .insert(
           LocalAccountsCompanion.insert(
             id: accountId.value,
             defaultCurrencyCode: 'BRL',
             createdAt: now,
           ),
+          mode: InsertMode.insertOrIgnore,
         );
+  }
+
+  domain_store.Store _storeFromRow(Store row) {
+    return domain_store.Store(
+      id: StoreId(row.id),
+      accountId: AccountId(row.accountId),
+      displayName: row.displayName,
+    );
   }
 
   Future<void> _ensureAccountPreferences(

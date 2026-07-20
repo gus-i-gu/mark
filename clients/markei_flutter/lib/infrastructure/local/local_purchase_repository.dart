@@ -32,21 +32,23 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
       final now = DateTime.now().toUtc();
       await _db
           .into(_db.localAccounts)
-          .insertOnConflictUpdate(
+          .insert(
             LocalAccountsCompanion.insert(
               id: command.accountId.value,
               defaultCurrencyCode: command.currencyCode,
               createdAt: now,
             ),
+            mode: InsertMode.insertOrIgnore,
           );
       await _db
           .into(_db.syncState)
-          .insertOnConflictUpdate(
+          .insert(
             SyncStateCompanion.insert(
               accountId: command.accountId.value,
               accountCursor: const Value(null),
               updatedAt: now,
             ),
+            mode: InsertMode.insertOrIgnore,
           );
       await _db
           .into(_db.devices)
@@ -237,6 +239,20 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
             recovery: 'Enter a Store name.',
             retryable: true,
             outcome: FailureOutcome.notApplied,
+          );
+        }
+        final existing =
+            await (_db.select(_db.stores)..where(
+                  (table) =>
+                      table.accountId.equals(command.accountId.value) &
+                      table.displayName.equals(name),
+                ))
+                .getSingleOrNull();
+        if (existing != null) {
+          return domain_store.Store(
+            id: StoreId(existing.id),
+            accountId: command.accountId,
+            displayName: existing.displayName,
           );
         }
         final store = domain_store.Store(

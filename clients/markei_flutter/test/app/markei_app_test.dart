@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:markei/application/app_failure.dart';
 import 'package:markei/application/history_export.dart';
 import 'package:markei/application/purchase_history.dart';
+import 'package:markei/application/register_purchase.dart';
 import 'package:markei/app/markei_app.dart';
 import 'package:markei/app/markei_composition.dart';
 import 'package:markei/app/pages/history_page.dart';
@@ -24,6 +26,10 @@ void main() {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
     final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
     final composition = MarkeiComposition(
       database: db,
       purchaseRegistration: LocalPurchaseRepository(db),
@@ -86,6 +92,10 @@ void main() {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
     final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
     final product = await queries.createProduct(
       const AccountId('11111111-1111-4111-8111-111111111111'),
       const ProductDraft(
@@ -178,6 +188,10 @@ void main() {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
     final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
     final composition = MarkeiComposition(
       database: db,
       purchaseRegistration: LocalPurchaseRepository(db),
@@ -221,6 +235,10 @@ void main() {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
     final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
     final composition = MarkeiComposition(
       database: db,
       purchaseRegistration: LocalPurchaseRepository(db),
@@ -318,6 +336,18 @@ void main() {
     await tester.tap(find.text('Catalogue'));
     await _pumpReady(tester);
 
+    expect(find.byKey(const Key('stores.empty')), findsOneWidget);
+    await _enterVisibleText(
+      tester,
+      find.byKey(const Key('stores.create.name')),
+      '  Mercado Central  ',
+    );
+    await _tapVisible(tester, find.byKey(const Key('stores.create')));
+    await _pumpReady(tester);
+
+    final stores = await queries.listStores(composition.accountId);
+    expect(stores.single.displayName, 'Mercado Central');
+    expect(find.text('Mercado Central'), findsOneWidget);
     expect(find.byKey(const Key('products.empty')), findsOneWidget);
 
     await _enterVisibleText(
@@ -363,6 +393,10 @@ void main() {
     final db = LocalDatabase.memory();
     addTearDown(db.close);
     final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
     final composition = MarkeiComposition(
       database: db,
       purchaseRegistration: LocalPurchaseRepository(db),
@@ -403,6 +437,173 @@ void main() {
     expect(find.text('Leite Po'), findsOneWidget);
     expect(find.byKey(const Key('history.price.change')), findsOneWidget);
   });
+
+  testWidgets('Purchase requires an existing Store', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    final composition = _composition(
+      db: db,
+      queries: queries,
+      registration: LocalPurchaseRepository(db),
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
+    expect(find.byKey(const Key('purchase.store.required')), findsOneWidget);
+
+    await _stageItem(
+      tester,
+      code: 'ARROZ-001',
+      name: 'Arroz Branco',
+      total: '12.99',
+    );
+    await _enterPurchaseMoment(tester);
+    await _tapVisible(tester, find.byKey(const Key('purchase.review')));
+    await _pumpReady(tester);
+    await _tapVisible(tester, find.byKey(const Key('purchase.register')));
+    await _pumpReady(tester);
+
+    expect(find.textContaining('Create a Store in Catalogue'), findsOneWidget);
+    expect(find.byKey(const Key('purchase.line.1')), findsOneWidget);
+  });
+
+  testWidgets('registration failure preserves the staged draft', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
+    final composition = _composition(
+      db: db,
+      queries: queries,
+      registration: const _ThrowingRegistration(
+        AppFailure(
+          code: 'missing-store',
+          operation: 'Purchase registration',
+          field: 'Store',
+          recovery: 'Choose an existing Store for this account.',
+          retryable: true,
+          outcome: FailureOutcome.notApplied,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
+    await _registerAttempt(tester);
+
+    expect(find.byKey(const Key('purchase.line.1')), findsOneWidget);
+    expect(find.textContaining('missing-store'), findsOneWidget);
+    expect(
+      find.textContaining('The draft is still available.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('typed AppFailure produces sanitized UI diagnostics', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    await queries.createStore(
+      const AccountId('11111111-1111-4111-8111-111111111111'),
+      'Mercado Central',
+    );
+    final composition = _composition(
+      db: db,
+      queries: queries,
+      registration: const _ThrowingRegistration(
+        AppFailure(
+          code: 'invalid-package-count',
+          operation: 'Purchase registration',
+          field: 'Packages bought',
+          recovery: 'Enter a positive whole package count.',
+          retryable: true,
+          outcome: FailureOutcome.notApplied,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+
+    await tester.tap(find.text('Purchase'));
+    await _pumpReady(tester);
+    await _registerAttempt(tester);
+
+    expect(find.textContaining('invalid-package-count'), findsOneWidget);
+    expect(find.textContaining('StackTrace'), findsNothing);
+    expect(find.textContaining('SELECT'), findsNothing);
+    expect(find.textContaining('11111111-1111'), findsNothing);
+  });
+
+  testWidgets(
+    'unexpected failure produces a stable generic code and logs no provider credentials or facts',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final db = LocalDatabase.memory();
+      addTearDown(db.close);
+      final queries = LocalQueryRepository(db);
+      await queries.createStore(
+        const AccountId('11111111-1111-4111-8111-111111111111'),
+        'Mercado Central',
+      );
+      final composition = _composition(
+        db: db,
+        queries: queries,
+        registration: _ThrowingRegistration(
+          StateError('SELECT internal from C:\\internal\\file 11111111-1111'),
+        ),
+      );
+
+      await tester.pumpWidget(MarkeiApp(composition: composition));
+      await _pumpReady(tester);
+
+      await tester.tap(find.text('Purchase'));
+      await _pumpReady(tester);
+      await _registerAttempt(tester);
+
+      expect(
+        find.textContaining('purchase-registration-unknown'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('SELECT internal'), findsNothing);
+      expect(find.textContaining('C:\\internal'), findsNothing);
+      expect(find.textContaining('11111111-1111'), findsNothing);
+      expect(find.byKey(const Key('purchase.line.1')), findsOneWidget);
+    },
+  );
 }
 
 final class _FailingThenEmptyHistory implements PurchaseHistoryRepository {
@@ -450,6 +651,38 @@ final class _EmptyExportRepository implements PurchaseExportRepository {
   }
 }
 
+final class _ThrowingRegistration implements PurchaseRegistrationRepository {
+  const _ThrowingRegistration(this.error);
+
+  final Object error;
+
+  @override
+  Future<PurchaseRegistrationResult> registerPurchase(
+    RegisterPurchaseCommand command,
+  ) async {
+    throw error;
+  }
+}
+
+MarkeiComposition _composition({
+  required LocalDatabase db,
+  required LocalQueryRepository queries,
+  required PurchaseRegistrationRepository registration,
+}) {
+  return MarkeiComposition(
+    database: db,
+    purchaseRegistration: registration,
+    catalogueQueries: queries,
+    purchaseHistory: queries,
+    references: queries,
+    preferences: queries,
+    productLists: queries,
+    purchaseExports: queries,
+    accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
+    deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
+  );
+}
+
 Future<void> _stageItem(
   WidgetTester tester, {
   required String code,
@@ -479,6 +712,20 @@ Future<void> _registerSingleItemPurchase(
   required String total,
 }) async {
   await _stageItem(tester, code: code, name: name, total: total);
+  await _enterPurchaseMoment(tester);
+  await _tapVisible(tester, find.byKey(const Key('purchase.review')));
+  await _pumpReady(tester);
+  await _tapVisible(tester, find.byKey(const Key('purchase.register')));
+  await _pumpReady(tester);
+}
+
+Future<void> _registerAttempt(WidgetTester tester) async {
+  await _stageItem(
+    tester,
+    code: 'ARROZ-001',
+    name: 'Arroz Branco',
+    total: '12.99',
+  );
   await _enterPurchaseMoment(tester);
   await _tapVisible(tester, find.byKey(const Key('purchase.review')));
   await _pumpReady(tester);

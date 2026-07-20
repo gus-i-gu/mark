@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../application/app_failure.dart';
 import '../../application/catalogue_queries.dart';
 import '../../application/bulk_pricing.dart';
 import '../../application/local_references.dart';
@@ -20,6 +21,7 @@ class PurchasePage extends StatefulWidget {
     required this.registration,
     required this.catalogueQueries,
     required this.references,
+    required this.refreshSignal,
     required this.onRegistered,
     super.key,
   });
@@ -29,6 +31,7 @@ class PurchasePage extends StatefulWidget {
   final PurchaseRegistrationRepository registration;
   final CatalogueQueryRepository catalogueQueries;
   final LocalReferenceRepository references;
+  final int refreshSignal;
   final VoidCallback onRegistered;
 
   @override
@@ -36,7 +39,6 @@ class PurchasePage extends StatefulWidget {
 }
 
 class _PurchasePageState extends State<PurchasePage> {
-  final _storeController = TextEditingController(text: 'Mercado Central');
   final _purchaseDateController = TextEditingController();
   final _purchaseTimeController = TextEditingController();
   final _codeController = TextEditingController();
@@ -85,8 +87,15 @@ class _PurchasePageState extends State<PurchasePage> {
   }
 
   @override
+  void didUpdateWidget(covariant PurchasePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshSignal != widget.refreshSignal) {
+      _loadCatalogue(clearFeedback: false);
+    }
+  }
+
+  @override
   void dispose() {
-    _storeController.dispose();
     _purchaseDateController.dispose();
     _purchaseTimeController.dispose();
     _codeController.dispose();
@@ -408,7 +417,9 @@ class _PurchasePageState extends State<PurchasePage> {
     if (storeReference == null || _lines.isEmpty) {
       setState(() {
         _feedback = _PurchaseFeedback.error(
-          'Choose or create a Store and stage at least one Item.',
+          storeReference == null
+              ? 'Create a Store in Catalogue, then choose it for this purchase.'
+              : 'Stage at least one Item.',
         );
       });
       return;
@@ -443,6 +454,16 @@ class _PurchasePageState extends State<PurchasePage> {
       });
       await _loadCatalogue(clearFeedback: false);
       widget.onRegistered();
+    } on AppFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _submitting = false;
+        _feedback = _PurchaseFeedback.error(
+          '${failure.code}: ${failure.userMessage} The draft is still available.',
+        );
+      });
     } on Object {
       if (!mounted) {
         return;
@@ -450,7 +471,7 @@ class _PurchasePageState extends State<PurchasePage> {
       setState(() {
         _submitting = false;
         _feedback = _PurchaseFeedback.error(
-          'Purchase could not be registered. The draft is still available.',
+          'purchase-registration-unknown: Purchase registration failed. The result is unknown; keep the draft and check History before retrying. The draft is still available.',
         );
       });
     }
@@ -461,15 +482,7 @@ class _PurchasePageState extends State<PurchasePage> {
     if (selected != null) {
       return ExistingStoreReference(selected.id);
     }
-    final displayName = _storeController.text.trim();
-    if (displayName.isEmpty) {
-      return null;
-    }
-    final exact = _stores.where((store) => store.displayName == displayName);
-    if (exact.isNotEmpty) {
-      return ExistingStoreReference(exact.first.id);
-    }
-    return NewStoreReference(displayName);
+    return null;
   }
 
   ProductDraft _productDraft() {
@@ -674,37 +687,25 @@ class _PurchasePageState extends State<PurchasePage> {
   }
 
   Widget _storeSection() {
-    final exactStore = _stores.any(
-      (store) => store.displayName == _storeController.text.trim(),
-    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Choose Store', style: TextStyle(fontSize: 18)),
         if (_stores.isEmpty)
-          const Text('No Stores yet. Create a Store for this purchase.')
+          const Text(
+            'No Stores yet. Create one in Catalogue before registering a purchase.',
+            key: Key('purchase.store.required'),
+          )
         else
-          DropdownButton<Store?>(
+          DropdownButton<Store>(
             key: const Key('purchase.store.select'),
             value: _selectedStore,
             isExpanded: true,
             items: [
               for (final store in _stores)
                 DropdownMenuItem(value: store, child: Text(store.displayName)),
-              const DropdownMenuItem(value: null, child: Text('Create Store')),
             ],
             onChanged: (value) => setState(() => _selectedStore = value),
-          ),
-        if (_selectedStore == null)
-          TextField(
-            key: const Key('purchase.store'),
-            controller: _storeController,
-            decoration: InputDecoration(
-              labelText: 'Create Store',
-              helperText: exactStore
-                  ? 'Store name already available for reuse.'
-                  : null,
-            ),
           ),
         Row(
           children: [
