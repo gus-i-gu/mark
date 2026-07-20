@@ -884,3 +884,42 @@ MCG-03                                                               INACTIVE
 D/E/F carrying marker `C10-MCG02-WINDOWS-RUNTIME-PACKAGING_20260719T155742Z` are the only active
 Codex authority. Success authorizes a clean human authentication retest; it does not authorize
 Enroll, Sync, provider mutation, MCG-02 closure or MCG-03.
+
+---
+
+## 51. Fresh-chat continuity handoff
+
+> Continuity marker: C10-MCG02-04-CLOSURE-HANDOFF_20260720T120703Z
+> Recorded at UTC: 2026-07-20T12:07:03Z
+> Recorded at America/Sao_Paulo: 2026-07-20T09:07:03-03:00
+> Current remote evidence tip: 734c559087a62ac2530a94326c3449005ce87d03
+> Status: **READ-ONLY CONTINUITY; CURRENT HUMAN GATE UNCHANGED**
+
+This section supports a fresh Main chat and does not promote evidence or replace D/E/F. After the
+canonical methodology boot, the new chat must read J through this section, then current D/E/F and
+G/H/I together. It must retain the following exact execution order:
+
+~~~text
+1. clean Windows provider authentication retest without PATH/manual DLL copying
+2. Main reconciliation of that sanitized human evidence
+3. restage hosted Account/Device binding and Account/Device-scoped synchronization
+4. Codex implementation and local decisive proof
+5. controlled provider membership and two distinct Device enrollments
+6. Windows + Android hosted synchronization/convergence and negative authorization proof
+7. MCG-02 reconciliation, permanent-domain promotion and closure
+8. Main definition/staging of MCG-03
+9. MCG-03 evidence/reconciliation before MCG-04 activation
+10. MCG-04 evidence/reconciliation and Cycle 10 closure
+~~~
+
+The current executable authority remains D/E/F marker
+`C10-MCG02-WINDOWS-RUNTIME-PACKAGING_20260719T155742Z`. Codex reports at `734c559` support
+`MCG-02_WINDOWS_RUNTIME_PACKAGING_CORRECTED` and require a clean human provider retest. Until that
+retest is recorded, **Enroll**, **Query**, **Sync**, provider membership mutation, hosted-binding
+implementation, MCG-03 and MCG-04 remain unauthorized.
+
+The fresh chat must not infer the content of MCG-03 or MCG-04 from their labels. Their objectives,
+provider boundaries, data effects, tests and terminal conditions require new Main reconciliation
+after MCG-02 closes. Any provider-dependent action must be presented as a gated human procedure;
+credentials, tokens, complete callback URLs, identity subjects and database connection strings stay
+outside Git, chat and staging.
