@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 13926)
+Total output lines: 1151
+
 # J_MAIN_STAGE — Cycle 10 R04C01 Vertical-Slice Coordination
 
 > Sequence: FLX-ORD-01
@@ -481,312 +484,7 @@ R05 local Flutter/global proof                                      VALIDATED
 MCG-02 human Auth0 + Neon + Render provider proof                   NEXT
 Cycle 10 proof-module pruning and permanent domain promotion        PENDING
 Main Cycle 10 closure                                               PENDING
-MCG-03 / MCG-04 definition                                          INACTIVE
-~~~
-
-MCG-02 provider proof must use sanitized evidence and the existing manual instructions. It must
-validate the configured issuer/audience/JWKS boundary, direct migrator versus pooled runtime Neon
-roles, forward migrations, Render HTTPS composition, explicit Account membership and Device
-enrollment, denial cases and one synthetic hosted synchronization path. Secrets, provider IDs,
-tokens, hostnames and connection strings must remain outside Git and reports.
-
-## 28. Forward authority
-
-R05 D/E/F are spent implementation authority. No replacement D/E/F or Codex implementation seed is
-issued at this gate because provider-console actions and sanitized human evidence are required
-first. Main must reconcile that evidence before authorizing pruning, permanent promotion, Cycle 10
-closure or defining MCG-03/04.
-
----
-
-## 29. Provider-proof staging activation
-
-> Authority marker: C10-MCG02-PROVIDER-PROOF_20260717T171443Z
-> Activated at UTC: 2026-07-17T17:14:43Z
-> Activated at America/Sao_Paulo: 2026-07-17T14:14:43-03:00
-> Parent reconciliation: 2158c03f22b5181f1cccaf74d3aafa0450bf39ec
-
-At the human operator's request, D/E/F now carry a bounded MCG-02 provider-proof contract. This does
-not reopen Codex source implementation. It authorizes human configuration and sanitized evidence
-capture across the disposable Auth0, Neon and Render development resources, with Codex limited to
-read-only preparation, redacted diagnosis and later evidence reconciliation.
-
-Repository inspection found bearer-token transport ports but no Flutter Auth0 SDK/login composition
-or production credential supplier. The active unit is therefore narrowed to provider containment,
-Auth0 contract, Neon migrations/privileges and Render HTTPS foundation readiness. Main will
-reconcile that evidence before staging native client authentication and the decisive hosted proof.
-Manual token copying cannot stand in for native login evidence.
-
-D/E/F carrying marker `C10-MCG02-PROVIDER-PROOF_20260717T171443Z` are current authority. MCG-03/04,
-production launch, pruning/promotion and Cycle 10 closure remain inactive.
-
----
-
-## 30. Append-only reconciliation — provider foundation result
-
-> Reconciliation marker: C10-MCG02-NATIVE-CLOSURE_20260718T140335Z
-> Reconciled at UTC: 2026-07-18T14:03:35Z
-> Reconciled at America/Sao_Paulo: 2026-07-18T11:03:35-03:00
-> Provider authority commit: ade6e2c1f19ae3ebf318457d7ef76ac8dbe3bcae
-> Current status: **PROVIDER FOUNDATION VALIDATED; NATIVE CLOSURE SELECTED**
-
-Main accepts the sanitized human evidence for the disposable provider foundation:
-
-- all exposed owner, migrator and runtime credentials were rotated and old access contained;
-- Neon migrations 002–006 have the expected ledger identifiers and checksum tags;
-- direct `markei_migrator` and pooled `markei_runtime` remain separate;
-- runtime readiness returned true while DDL, ledger access, role administration, controlled-table
-  mutation and Account visibility without context failed closed;
-- Render built and deployed exact commit `ade6e2c`, emitted `MARKEI_HOSTED_SYNC_READY`, returned 200
-  from live/ready and 401 from an unauthenticated protected route;
-- Render logs disclosed no connection string, password, bearer token or fact payload;
-- Auth0 discovery and JWKS returned 200, issuer/JWKS URI matched, RS256 was advertised and two keys
-  were present;
-- the Android and Windows applications remain Native applications with Authorization Code enabled,
-  Client Credentials disabled and no native client secret.
-
-Accepted foundation terminal:
-
-~~~text
-MCG-02_PROVIDER_CONTAINMENT=true
-MCG-02_AUTH0_TOKEN_CONTRACT=true
-MCG-02_NEON_MIGRATIONS_AND_PRIVILEGES=true
-MCG-02_RENDER_HTTPS_RUNTIME=true
-MCG-02_PROVIDER_FOUNDATION_READY
-~~~
-
-This evidence closes provider configuration only. No Android or Windows client has yet obtained an
-Auth0 access token through the Markei Flutter composition, and no two-Device hosted convergence has
-been executed. `MCG-02_NATIVE_CLIENT_AUTH_INTEGRATION` and full MCG-02 remain false.
-
-## 31. Repository reconciliation
-
-The repository already has application ports and tested HTTP adapters for authentication state,
-ephemeral bearer-token supply, identity lookup and Device enrollment. It does not have an Auth0
-Flutter dependency, production Auth0 adapter, typed native configuration or Android/Windows login
-composition. Existing lab authentication must remain confined to tests and loopback proof code.
-
-The next unit therefore changes only the native authentication edge and its proof harness. It does
-not reopen PostgreSQL migrations 001–006, server authorization, provider resources, retention,
-snapshots or synchronization semantics.
-
-## 32. Current phase scheme
-
-~~~text
-R05 local Flutter/global proof                                      VALIDATED
-MCG-02 provider containment/Auth0/Neon/Render foundation            VALIDATED
-MCG-02 native Auth0 composition and closure harness                 ACTIVE
-MCG-02 human two-client hosted acceptance                           PENDING
-Cycle 10 pruning and permanent promotion                            PENDING
-Main Cycle 10 closure                                               PENDING
-MCG-03 / MCG-04 definition                                          INACTIVE
-~~~
-
-## 33. Native closure acceptance boundary
-
-Codex must implement one fail-closed Auth0 composition for Android and Windows behind the existing
-application ports. Non-secret provider configuration must be injected, validated and absent from
-committed defaults. Access tokens must be requested for the exact Markei API audience, remain
-ephemeral, never enter Drift/logs, and be cleared on logout, rejection and expiry.
-
-The unit must provide deterministic tests and a bounded development-only closure surface or runner
-that allows the human operator to perform native login, identity resolution, Device enrollment and
-hosted synchronization without copying tokens. It must not seed membership, operate provider
-consoles or claim real provider acceptance from fakes.
-
-After Codex reports local composition readiness, the human proof must execute Android and Windows
-native login, explicit identity/membership mapping, two distinct Device enrollments, one synthetic
-Account convergence and the required denial matrix through Render HTTPS and Neon. Main must
-reconcile that sanitized evidence before MCG-02 or Cycle 10 can close.
-
-## 34. Forward authority
-
-D/E/F carrying marker `C10-MCG02-NATIVE-CLOSURE_20260718T140335Z` are the only active Codex
-authority. Provider mutation, database migration, automatic user provisioning, permanent promotion,
-Cycle 10 closure and MCG-03/04 remain unauthorized.
-
----
-
-## 35. Append-only reconciliation — native composition result
-
-> Reconciliation marker: C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z
-> Reconciled at UTC: 2026-07-18T14:51:21Z
-> Reconciled at America/Sao_Paulo: 2026-07-18T11:51:21-03:00
-> Reconciled implementation: 214df17b
-> Controlling authority: 6fffad609bb83523d467a849e2d91f3c668af721
-> Current status: **NATIVE AUTH COMPOSITION ACCEPTED; CLOSURE HARNESS CORRECTION REQUIRED**
-
-Main accepts the following implementation evidence:
-
-- Auth0 Flutter 2.4.0 is pinned behind infrastructure adapters;
-- typed compile-time configuration fails closed without committed provider values;
-- Authorization Code + PKCE requests the exact configured API audience;
-- access tokens remain process-memory bounded and clear on logout, expiry or rejection;
-- ID-token substitution is rejected and lab authentication is not selected by production
-  composition;
-- Android callback composition and debug build passed;
-- 10 focused tests and the complete 72-test Flutter suite passed with two existing skips;
-- analysis, formatting, dependency lock and secret checks passed;
-- migrations, server authorization, Drift schema and provider resources were unchanged.
-
-Main could not independently rerun Flutter because the reconciliation environment has no Flutter
-toolchain. This is an environment exclusion, not contrary evidence.
-
-## 36. Material gaps
-
-The implementation does not yet satisfy the closure harness required by section 33:
-
-1. `NativeAuthClosureRunner` is composed and tested but has no development-only app entry point;
-   a human cannot initiate the required sequence from Android or Windows.
-2. `hostedSyncProbe()` calls Device-enrollment replay and returns `hosted-sync-available` when a
-   server Device exists. It does not upload/download events, apply them, acknowledge them or compare
-   Account facts; its name and success state therefore overclaim the executed behavior.
-3. Windows runner code exists, but no Windows release binary was built because Developer Mode and
-   symlink support were unavailable on the Codex host.
-4. G/H/I still say final commit status pending; later reports must record the actual final SHA.
-
-These are bounded closure deficiencies, not a rejection of the Auth0 adapter. MCG-02 remains open,
-and MCG-03 remains inactive.
-
-## 37. Revised phase scheme
-
-~~~text
-R05 local Flutter/global proof                                      VALIDATED
-MCG-02 provider foundation                                          VALIDATED
-MCG-02 native Auth0 adapter and Android composition                  VALIDATED
-MCG-02 executable native closure surface + real sync path           ACTIVE
-MCG-02 human Android/Windows/two-Device hosted acceptance            PENDING
-Cycle 10 promotion/closure                                          PENDING
-MCG-03 / MCG-04 definition                                          INACTIVE
-~~~
-
-## 38. Forward authority
-
-D/E/F carrying marker `C10-MCG02-NATIVE-CLOSURE-R1_20260718T145121Z` are the only active Codex
-authority. The unit must correct the observable closure path without changing the accepted Auth0,
-server, database or synchronization contracts. Real provider operation remains human-controlled.
-
----
-
-## 39. Append-only reconciliation — executable closure result
-
-> Reconciliation marker: C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z
-> Reconciled at UTC: 2026-07-18T15:28:29Z
-> Reconciled at America/Sao_Paulo: 2026-07-18T12:28:29-03:00
-> Reconciled implementation: df904fb
-> Controlling authority: e59d919ecb776597b13615137cd23413dae42c36
-> Current status: **LOCAL NATIVE CLOSURE VALIDATED; HUMAN PROVIDER ACCEPTANCE NEXT**
-
-Main accepts the R1 correction:
-
-- the development closure page defaults absent and requires an explicit compile-time flag plus
-  valid native configuration;
-- Device enrollment and synchronization now have distinct truthful states;
-- `hostedSyncProbe()` invokes the existing upload/download/apply/ack services;
-- loopback HTTP and file-backed Drift executed upload, download, atomic application,
-  acknowledgement and reopen persistence;
-- stable installation and enrollment request identity survive retry and Drift reopen;
-- format, analysis, dependency lock, 79 Flutter tests with two existing skips, Android debug build,
-  diff check and secret scan passed;
-- migrations, server authorization, Drift schema, dependencies and provider resources were
-  unchanged.
-
-The reconciliation host has no Flutter toolchain, so Main did not independently rerun Flutter.
-Windows release remains host-excluded because Developer Mode/symlink support was unavailable.
-
-Accepted local terminal:
-
-~~~text
-MCG-02_NATIVE_CLOSURE_SURFACE=true
-MCG-02_REAL_HOSTED_SYNC_PATH=true
-MCG-02_STABLE_DEVICE_EXECUTION=true
-MCG-02_TOKEN_EPHEMERAL=true
-MCG-02_NATIVE_PROVIDER_PROOF_READY
-~~~
-
-## 40. MCG-03 decision
-
-MCG-03 is not yet available. R1 proves an executable local closure path, not a real Auth0/Render/
-Neon client run. MCG-02 still requires Android and Windows native login, two distinct enrolled
-Devices, one synthetic Account convergence, selected fail-closed denials, local continuity during
-provider unavailability and sanitized evidence. Manual token copying is not accepted.
-
-No further source refactor is selected before this evidence. The next unit is human-operated
-provider acceptance under D/E/F. Codex may provide read-only redacted diagnosis but must not receive
-or operate credentials, tokens or provider resources.
-
-## 41. Phase projection
-
-~~~text
-MCG-02 provider foundation                                          VALIDATED
-MCG-02 native authentication and executable local closure           VALIDATED
-MCG-02 decisive Android/Windows hosted provider acceptance          ACTIVE
-Cycle 10 proof pruning and permanent promotion                      PENDING
-Main Cycle 10 closure                                                PENDING
-MCG-03 definition/investigation                                     INACTIVE
-~~~
-
-After decisive provider evidence passes, Main should close MCG-02, run bounded proof-file pruning,
-request A/B/C permanent-memory promotion, reconcile Cycle 10, and only then define MCG-03 from
-current permanent memory rather than assuming its scope.
-
-## 42. Forward authority
-
-D/E/F carrying marker `C10-MCG02-DECISIVE-PROVIDER_20260718T152829Z` are the active human evidence
-contract. They authorize no Codex source mutation and no production deployment.
-
----
-
-## 43. Provider-proof preflight contradiction
-
-> Reconciliation marker: C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z
-> Reconciled at UTC: 2026-07-18T15:58:56Z
-> Reconciled at America/Sao_Paulo: 2026-07-18T12:58:56-03:00
-> Inspected implementation: df904fb
-> Current status: **PROVIDER PROOF BLOCKED; HOSTED IDENTITY BINDING CORRECTION ACTIVE**
-
-Main's preflight found that the production composition still registers purchases under local-only
-Account/Device aliases while enrollment returns PostgreSQL Account and server Device UUIDs. The
-server correctly rejects uploaded events whose embedded AccountId or DeviceId differs from the
-authorized hosted context. The existing loopback proof manually aligned fixture identifiers and
-therefore did not expose this production mismatch.
-
-The unscoped local outbox may also lease older local-only pending events during hosted sync, and the
-remote applier chooses an arbitrary non-null Account cursor. Human provider proof would therefore be
-predictably unsafe or fail closed even though native login/enrollment could pass.
-
-## 44. Selected correction
-
-After enrollment, a restart may select the stored hosted AccountId and server DeviceId as the active
-composition identity for new hosted facts. Existing local-only facts/events remain immutable under
-their original local Account and are never rewritten or uploaded. Hosted outbox, cursor, inbox and
-applier operations must be explicitly scoped to the active hosted Account/Device.
-
-The first process that completes enrollment must report `hosted-restart-required`; it must not sync
-with the pre-enrollment local composition. After restart and verified binding, new synthetic hosted
-purchases may synchronize. This is a development-proof binding, not general Account migration or
-automatic merge.
-
-## 45. Revised projection
-
-~~~text
-MCG-02 local native closure                                          VALIDATED
-MCG-02 hosted Account/Device binding and scoped sync                 ACTIVE
-MCG-02 decisive human provider proof                                BLOCKED BY ACTIVE UNIT
-Cycle 10 closure / MCG-03                                            INACTIVE
-~~~
-
-D/E/F carrying marker `C10-MCG02-HOSTED-IDENTITY-BINDING_20260718T155856Z` supersede the human
-provider contract until Codex returns corrected G/H/I evidence.
-
----
-
-## 46. Append-only reconciliation — Windows provider callback evidence
-
-> Reconciliation marker: C10-MCG02-WINDOWS-AUTH-CALLBACK_20260719T011836Z
-> Reconciled at UTC: 2026-07-19T01:18:36Z
-> Reconciled at America/Sao_Paulo: 2026-07-18T22:18:36-03:00
-> Inspected implementation: df904fb plus staged hosted-binding authority at 65ae6a7
+MCG-03 / MCG-04 definition…3926 tokens truncated…pected implementation: df904fb plus staged hosted-binding authority at 65ae6a7
 > Current status: **AUTH0 LOGIN VALIDATED; NATIVE CREDENTIAL ACCEPTANCE CORRECTION ACTIVE**
 
 Human provider evidence established more than the earlier host exclusion:
@@ -1115,3 +813,37 @@ MCG-02 closure / MCG-03 / MCG-04                                    INACTIVE
 
 D/E/F carrying `C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z` are the only active Codex
 authority. Provider resources and existing local databases remain untouched.
+
+---
+
+## 62. Append-only reconciliation — persistent Purchase transaction failure
+
+> Reconciliation marker: C10-MCG02-PURCHASE-TRANSACTION-DIAGNOSTIC_20260720T205714Z
+> Reconciled at UTC: 2026-07-20T20:57:14Z
+> Implementation evidence: bf824cea0648202cf9e04ad98553239c00dab6e0
+> Status: **SELECTION VALIDATED HUMAN; TRANSACTION DIAGNOSTIC ACTIVE**
+
+G/H/I at `bf824ce` validate explicit StoreId selection, refresh persistence and the synthetic
+Catalogue-to-Purchase fixture. Human retest confirms the Store is explicitly selected and visibly
+confirmed, the Product Item is staged, registration reports `purchase-registration-unknown`, and
+Purchase A is absent from History. The registration transaction therefore failed and rolled back;
+this is not a Store-selection or post-commit refresh failure.
+
+The fresh hosted fixture did not reproduce the long-lived Windows database failure. Main selects a
+diagnostic-first unit: classify every registration phase with safe codes, reproduce a migrated
+file-backed local-to-hosted lifecycle, and fix only an evidenced cause. The human database, Device A
+binding, Catalogue facts and provider state must not be reset, copied into Git or supplied to Codex.
+
+## 63. Revised projection
+
+~~~text
+MCG-02 Store creation and explicit selection                        VALIDATED LOCAL + HUMAN
+MCG-02 persistent hosted Purchase transaction                       BLOCKED / DIAGNOSTIC ACTIVE
+MCG-02 Purchase A hosted sync                                       PAUSED
+MCG-02 Android Device B / convergence / closure                     PAUSED
+MCG-03 / MCG-04                                                     INACTIVE
+~~~
+
+D/E/F carrying `C10-MCG02-PURCHASE-TRANSACTION-DIAGNOSTIC_20260720T205714Z` are the only active
+Codex authority. If the cause cannot be reproduced safely, Codex may materialize diagnostics and
+report partial; it must not guess a data rewrite or claim the transaction corrected.

@@ -1,31 +1,39 @@
-# F_DSN_STAGE — Store Selection Design Correction
+# F_DSN_STAGE — Persistent Transaction Diagnostic Design
 
-> Authority marker: C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z
+> Authority marker: C10-MCG02-PURCHASE-TRANSACTION-DIAGNOSTIC_20260720T205714Z
 > Status: **ACTIVE CODEX DESIGN AUTHORITY**
 
-## Selected state model
+## Boundary
 
 ~~~text
-Account-scoped List<Store>
-  + selectedStoreId: StoreId?
-  -> resolve Store by ID in current list
-  -> ExistingStoreReference(selectedStoreId)
-  -> LocalPurchaseRepository transaction
+PurchasePage
+  -> RegisterPurchaseCommand
+  -> LocalPurchaseRepository phase boundary
+  -> one Drift transaction
+  -> typed safe failure or committed Purchase/event/outbox
 ~~~
 
-The widget stores a stable ID, not a `Store` row/object instance. An explicit placeholder represents
-null selection. Refresh retains the ID only when the current Account-scoped list contains it.
-Presentation resolves the Store name from the current list and shows explicit confirmation.
+Phase classification belongs at the application/infrastructure boundary that knows the current
+operation. UI renders the closed result and does not inspect Drift exceptions. Tests may retain the
+original exception as an in-memory cause for assertions; production messages/logs may not serialize
+it.
+
+## Representative lifecycle
+
+~~~text
+historical schema -> supported migration to v7 -> reopen
+local Account/Device/facts -> hosted enrollment state -> restart binding
+existing hosted Store/Product -> explicit selection -> registration
+~~~
 
 ## Invariants
 
-- availability, display and selection are separate states;
-- no first-row implicit fallback after initial load or refresh;
-- foreign/cross-Account Store IDs cannot become command references;
-- selection survives valid refresh/navigation and clears deterministically when invalid;
-- Purchase submission uses only `ExistingStoreReference`;
-- Store selection and Item staging failures remain distinguishable;
-- registration, event v3, outbox, binding and rollback invariants from `bf78a39` remain unchanged.
+- one outer transaction owns every registration mutation and phase;
+- phase wrapping does not convert typed domain failures into unknown failures;
+- rollback never advances Device sequence or creates partial event/outbox state;
+- migrated and fresh databases obey the same Account/Device/Store/Product relationships;
+- no fix may relabel local facts, synthesize missing human rows or weaken foreign keys;
+- payload v3, StoreId selection, hosted binding and provider configuration remain unchanged.
 
-No schema, migration, API, event or provider change is authorized. Durable Purchase draft storage,
-Store edit/archive UX, broader Catalogue redesign and MCG-03/04 remain deferred.
+No schema migration is authorized. If the cause needs one, stop for Main restaging. Human database
+forensics, durable drafts, broader error telemetry, provider operations and MCG-03/04 are deferred.
