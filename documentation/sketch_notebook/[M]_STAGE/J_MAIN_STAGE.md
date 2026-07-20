@@ -1079,3 +1079,39 @@ D/E/F carrying `C10-MCG02-HOSTED-PURCHASE-CORRECTION_20260720T193745Z` are the o
 authority. They authorize source, focused tests and G/H/I evidence for this correction only. They
 do not authorize provider access, migration, deployment, permanent promotion, MCG-02 closure,
 MCG-03 or MCG-04.
+
+---
+
+## 60. Append-only reconciliation — Store selection remains blocked
+
+> Reconciliation marker: C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z
+> Reconciled at UTC: 2026-07-20T20:19:04Z
+> Implementation evidence: bf78a3908ad05b3e7a0decc197fa2f99970059f1
+> Status: **STORE CREATION VALIDATED LOCAL; PURCHASE SELECTION CORRECTION ACTIVE**
+
+G/H/I at `bf78a39` support the local repository correction: explicit Catalogue Store creation,
+Account-scoped listing, typed diagnostics, hosted-bound registration tests, exact event/outbox
+counts and supported platform builds passed. Human provider retest confirms Store creation is
+visible, but the Purchase Store control does not provide a reliable explicit selection contract.
+It silently defaults to the first `Store` object and binds the widget value by object instance;
+refresh and navigation reconstruct Store objects. The screenshot displays a Store label but does
+not prove a stable StoreId was selected for the command. Purchase A remains blocked.
+
+Main selects a UI/application correction, not a data-model change: bind selection by stable StoreId,
+require an explicit choice, visibly confirm the selected Store, preserve it by ID across refresh,
+and prove the complete Catalogue-create -> Purchase-select -> Product-stage -> register flow. Codex
+must reproduce the human symptom before choosing the final fix; object-instance drift is a working
+hypothesis, not promoted fact.
+
+## 61. Revised projection
+
+~~~text
+MCG-02 Store repository and Catalogue creation                      VALIDATED LOCAL
+MCG-02 explicit Purchase Store selection                            BLOCKED / ACTIVE CORRECTION
+MCG-02 Purchase A registration and hosted sync                      PAUSED
+MCG-02 Android Device B and two-Device convergence                  PAUSED
+MCG-02 closure / MCG-03 / MCG-04                                    INACTIVE
+~~~
+
+D/E/F carrying `C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z` are the only active Codex
+authority. Provider resources and existing local databases remain untouched.

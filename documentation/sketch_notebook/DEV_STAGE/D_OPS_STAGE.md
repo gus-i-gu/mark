@@ -1,50 +1,52 @@
-# D_OPS_STAGE — Hosted Purchase Registration Correction
+# D_OPS_STAGE — Explicit Purchase Store Selection Correction
 
-> Authority marker: C10-MCG02-HOSTED-PURCHASE-CORRECTION_20260720T193745Z
-> Required ancestor: a3d2c782584054fdd53a71a90aab0d8ead78e12f
+> Authority marker: C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z
+> Required ancestor: bf78a3908ad05b3e7a0decc197fa2f99970059f1
 > Status: **ACTIVE CODEX MATERIALIZATION AUTHORITY**
 
 ## Objective
 
-Reproduce and correct failed local Purchase registration after a valid hosted Account/Device
-restart, expose sanitized typed failure evidence, and add explicit Account-scoped Store creation to
-Catalogue. Resume provider proof only after deterministic local validation.
+Make an existing same-Account Store explicitly and durably selectable in Purchase, then prove the
+complete Catalogue Store creation through local Purchase registration flow under a hosted binding.
 
 ## Checkpoints
 
-1. Reproduce the failure with file-backed Drift using a hosted binding, existing Product and Store.
-2. Capture the exact failure in tests; production diagnostics expose only stable code and recovery.
-3. Add a separate Catalogue Stores section: list, create, trim/validate and deterministic duplicate
-   handling through an application port and repository implementation.
-4. Make Purchase select an existing Store; when none exists, direct the user truthfully to
-   Catalogue. Remove ambiguous inline Store creation.
-5. Fix the proven hosted-binding registration cause without weakening Account/Device scope.
-6. Prove success creates exactly one Purchase, Item set, `purchase.registered` v3 event and pending
-   outbox row; failure rolls back all mutations including Store and sequence advance.
-7. Reopen file-backed Drift and prove Store, Purchase, event, outbox, binding and sequence persist.
-8. Run formatting, analysis, full Flutter tests, focused tests, supported Windows/Android builds,
-   `git diff --check` and tracked/staged secret scan.
+1. Reproduce the observed flow with a widget/integration test before fixing it: create Store in
+   Catalogue, navigate to Purchase, select it, refresh/navigate, stage an existing Product and
+   register.
+2. Determine whether failure is selection state, object identity, refresh ordering, missing staged
+   Product or another evidenced cause. Record the exact cause in G/I; do not preserve a hypothesis
+   as fact.
+3. Bind Purchase selection through stable `StoreId` rather than reconstructed Store object identity.
+4. Do not silently select the first Store. Show a `Select Store` placeholder and require a deliberate
+   user choice. Display a bounded `Selected Store: <name>` confirmation after selection.
+5. Preserve a valid selected StoreId across Catalogue refresh and IndexedStack navigation; clear it
+   with truthful feedback only when that Store is absent from the active Account.
+6. Keep Store creation in Catalogue and Purchase registration limited to `ExistingStoreReference`.
+7. Distinguish `store-required` from `item-required`; registration must not imply the Store is unset
+   when only the Item draft is missing.
+8. Prove successful hosted-bound registration creates one Purchase, one v3 event and one pending
+   outbox row, with rollback and draft-preservation regressions still passing.
 
-## Required tests
+## Validation
 
-- empty Store rejected; same-Account duplicate deterministic; cross-Account visibility denied;
-- Purchase requires existing Store and retains the staged in-memory draft on failure;
-- typed `AppFailure` and unexpected error produce bounded, non-secret diagnostics;
-- local-only and hosted-bound registration both succeed;
-- atomic rollback and exact event/outbox counts;
-- close/reopen persistence and existing enrollment/binding preservation.
+- focused Store-selection and full Catalogue-to-Purchase widget tests;
+- local-only and hosted-binding repository tests;
+- `flutter analyze`, complete `flutter test`, format check;
+- supported Android debug and Windows release builds;
+- `git diff --check`, exact changed paths and tracked/staged secret scan.
 
-## Stop and scope rules
+## Boundaries and stop rules
 
-Stop on evidence requiring migration, provider access, data reset, payload-version change, weakened
-authorization or unrelated UI redesign. Do not access Auth0, Render or Neon; deploy; read secrets;
-delete user databases; alter permanent documentation; or begin MCG-03/04. Replace only G/H/I after
-implementation. Commit and push one bounded correction without force.
+Do not migrate/reset Drift, access Auth0/Render/Neon, deploy, alter event/API contracts, redesign
+navigation, change unrelated pages, promote permanent memory or start MCG-03/04. Preserve private
+untracked files and existing application databases. Replace G/H/I with evidence, commit and push
+one bounded correction without force.
 
 Success terminal:
 
 ~~~text
-C10_MCG02_HOSTED_PURCHASE_REGISTRATION_CORRECTED
+C10_MCG02_STORE_SELECTION_CORRECTED
 ~~~
 
-Otherwise report `C10_MCG02_HOSTED_PURCHASE_REGISTRATION_PARTIAL` and the exact blocker.
+Otherwise report `C10_MCG02_STORE_SELECTION_PARTIAL` and the exact blocker.
