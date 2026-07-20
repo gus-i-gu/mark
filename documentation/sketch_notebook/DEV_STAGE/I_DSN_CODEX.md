@@ -1,68 +1,87 @@
-# I_DSN_CODEX - Windows Runtime Packaging Design Evidence
+# I_DSN_CODEX - Hosted Binding Design Evidence
 
-- Authority marker: C10-MCG02-WINDOWS-RUNTIME-PACKAGING_20260719T155742Z
-- Baseline SHA after fast-forward: a892c2628df7425124be0e64db66697b7b572b4d
-- Final commit SHA: resolved by Git after this report is committed and pushed; Codex terminal response reports it.
-- Dependency decision: `auth0_flutter` remains pinned at 2.4.0; no dependency update was needed.
+- Authority marker: C10-MCG02-HOSTED-BINDING-R2_20260720T131954Z
+- Baseline after fast-forward: 9e7af2e306a5159eb51eba9169f5fe0c5f60b5e7
+- Final commit SHA: resolved after commit; Codex terminal response reports it.
 
-## CMake Direction
+## Dependency Direction
 
-The final deployment direction is:
+The implementation keeps production composition at the app boundary:
 
-`pinned auth0_flutter/cpprestsdk imported targets -> runner executable link closure -> CMake TARGET_RUNTIME_DLLS/TARGET_RUNTIME_DLL_DIRS -> post-build recursive helper -> configuration-specific runner directory`.
+`hosted state repository -> validated HostedIdentityBinding -> MarkeiComposition identity -> scoped outbox/applier adapters -> sync use cases`.
 
-The post-build command is attached in `windows/runner/CMakeLists.txt`, the same CMake directory
-that creates `${BINARY_NAME}`. This placement satisfies CMake's `add_custom_command(TARGET ...)`
-directory rule while still allowing generated plugin linkage to contribute to the executable's
-runtime dependency closure at generation/build time. The tracked helper
-`windows/runner/copy_runtime_dependencies.cmake` copies direct target DLLs, copies DLLs from
-target-derived non-build runtime directories and then runs CMake runtime dependency verification
-against the runner directory.
+Domain entities, event payload v3, server authorization and database schema remain unchanged. The
+new scope object lives in application ports and is consumed by infrastructure adapters without
+creating a dependency from domain code back to hosted authentication.
 
-## Configuration Selection
+## Binding Validation
 
-The implementation does not select Debug or Release paths manually. CMake evaluates
-`$<TARGET_RUNTIME_DLLS:${BINARY_NAME}>` and
-`$<TARGET_RUNTIME_DLL_DIRS:${BINARY_NAME}>` for the active configuration. The helper excludes
-generated build-output directories as search roots and uses the remaining target-derived runtime
-directories for configuration-correct native dependency closure.
+`DriftHostedIdentityRepository.loadActiveBinding()` validates:
 
-Observed outputs confirm configuration separation:
+- exact expected environment alias;
+- active completed enrollment state: `device-enrolled` or `duplicate-equivalent`;
+- syntactically valid hosted AccountId;
+- syntactically valid server DeviceId;
+- stable installation identity string;
+- positive generation.
 
-- Debug received debug-suffixed vcpkg libraries, including `cpprest_2_10d.dll` and Boost `gd` DLLs.
-- Release received release libraries, including `cpprest_2_10.dll`, OpenSSL, zlib and brotli DLLs.
-- Release debug-suffix scan returned empty.
+Revoked, expired, incomplete, malformed or wrong-environment states return no active binding. The
+sync guard maps revoked/expired explicitly and otherwise fails closed as `binding-invalid` or
+`enrollment-required`.
 
-## Runtime Closure Rules
+## Restart Composition
 
-- The executable directory owns the deployable runtime closure.
-- Runtime dependencies come from CMake target/imported-target metadata rather than PATH or manual copy.
-- CMake versions older than 3.27 fail during configuration with a Markei-specific message because the required target runtime metadata is unavailable.
-- No username, drive letter, vcpkg root, generated build directory, configuration directory or single DLL name is encoded in tracked source.
-- DLLs, vcpkg packages, native caches and generated build outputs remain untracked.
+`MarkeiComposition.appPrivate()` remains local-only when no active binding exists. When an active
+binding exists after restart, it:
 
-## Runner and Plugin Boundary
+- ensures the hosted Account row exists with insert-ignore behavior;
+- ensures the hosted server Device row exists with insert-ignore behavior;
+- ensures the hosted sync cursor row exists with insert-ignore behavior;
+- selects exactly the stored hosted AccountId and server DeviceId for new purchase registration;
+- constructs scoped hosted outbox and applier adapters.
 
-The source correction does not change Windows callback forwarding, single-instance behavior,
-SDK lock handoff, diagnostic mapping, credential validation or token lifecycle behavior accepted at
-`1922ffc`. The runner remains responsible for process activation and the Auth0 SDK remains
-responsible for OAuth transaction state, PKCE and code exchange.
+The installation metadata path remains owned by `LocalDeviceIdentityRepository`; hosted activation
+does not rewrite the existing local installation metadata row.
 
-## Rollback Boundary
+Successful enrollment persists the binding but returns `hosted-restart-required`. The native closure
+runner reports that state directly. When the current process was composed without an active binding,
+its hosted sync guard is a blocked guard and cannot use the newly stored binding until restart.
 
-Rollback removes only:
+## Outbox Scope
 
-- the post-build runtime deployment block in `clients/markei_flutter/windows/runner/CMakeLists.txt`;
-- the helper script in `clients/markei_flutter/windows/runner/copy_runtime_dependencies.cmake`;
-- the packaging contract test in `clients/markei_flutter/test/infrastructure/windows_runtime_packaging_contract_test.dart`;
-- these G/H/I reports.
+`DriftSyncOutboxRepository.scoped()` filters pending-event leasing by AccountId and DeviceId through
+the `sync_events` row joined to `pending_events`. Unknown submission replay filters
+`sync_submissions` by the same AccountId and DeviceId and reorders member events by submission
+position. `persistUploadResult()` is a no-op when a scoped caller tries to complete a submission
+outside its Account/Device binding.
 
-Rollback must not remove the accepted Windows callback/credential correction, native Auth0
-composition, closure surface, provider diagnostics or local synchronization proof work.
+The original unscoped constructor remains for isolated local lab compatibility.
 
-## Deferred Work
+## Applier, Cursor and Acknowledgement Scope
 
-Clean real Auth0 provider retest remains human-operated and must occur after this package-ready
-commit is published. Device enrollment, hosted synchronization, provider mutation, installer
-registration work, dependency upgrades, MCG-02 closure, MCG-03 and Cycle 10 closure remain outside
-this correction.
+`DriftRemoteEventApplier.scoped()` validates every downloaded event against the bound AccountId
+inside the existing transaction before applying facts. Cross-Account pages return conflict before
+fact, inbox or cursor mutation. Cursor lookup and update are scoped to the bound Account; therefore
+acknowledgement uses that Account's cursor and does not select an arbitrary first cursor from a
+multi-Account database.
+
+The original unscoped applier remains for existing local lab compatibility.
+
+## Transaction Boundaries
+
+Hosted outbox leasing and result persistence remain transactional. Remote page validation, fact
+application, inbox insertion and cursor update remain one transaction. Cross-scope rejection exits
+before mutation.
+
+## Compatibility Choices
+
+Existing tests that use `HostedSyncDecision.allowed(String deviceId)` remain source-compatible.
+Binding-aware hosted code uses `HostedSyncDecision.allowedBinding(HostedIdentityBinding)`.
+Existing isolated local synchronization tests keep unscoped adapters; production/native hosted
+composition uses scoped adapters only after validated restart activation.
+
+## Deviations and Residual Risks
+
+No schema migration was authorized or needed. The local decisive proof uses synthetic UUID fixtures
+and a disposable Docker/PostgreSQL lab; it is provider-ready but not provider-validated. Fresh human
+Auth0 retest, controlled provider enrollment and two-provider-Device convergence remain pending.

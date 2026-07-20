@@ -100,6 +100,7 @@ final class NativeAuthClosureRunner {
 
   static String _outcomeName(HostedEnrollmentOutcome outcome) {
     return switch (outcome.status) {
+      'hosted-restart-required' => 'hosted-restart-required',
       'applied' => 'device-enrolled',
       'duplicate-equivalent' => 'device-enrolled',
       'unknown' => 'sync-interrupted',

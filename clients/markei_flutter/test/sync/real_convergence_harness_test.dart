@@ -50,6 +50,7 @@ void main() {
       addTearDown(a.close);
       addTearDown(b.close);
       final account = const AccountId('11111111-1111-4111-8111-111111111111');
+      const localOnlyDevice = DeviceId('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
       final deviceA = await LocalDeviceIdentityRepository(
         a,
       ).loadOrCreateDeviceId(account);
@@ -68,6 +69,9 @@ void main() {
 
       await LocalPurchaseRepository(
         a,
+      ).registerPurchase(fixturePurchaseCommand(localOnlyDevice));
+      await LocalPurchaseRepository(
+        a,
       ).registerPurchase(fixturePurchaseCommand(deviceA));
       final apiA = await startLabApi(
         repo,
@@ -83,8 +87,14 @@ void main() {
       );
       addTearDown(apiA.close);
       addTearDown(apiB.close);
-      final outbox = DriftSyncOutboxRepository(a);
+      final outbox = DriftSyncOutboxRepository.scoped(
+        a,
+        accountId: account,
+        deviceId: deviceA,
+      );
       final first = await outbox.leasePending(limit: 25);
+      expect(first?.events, hasLength(1));
+      expect(first?.events.single['accountId'], account.value);
       final timeoutTransport = labTransport(apiA.uri, CommitDropClient());
       final unknown = await timeoutTransport.uploadSubmission(first!);
       await outbox.persistUploadResult(first.id, unknown);
@@ -99,7 +109,14 @@ void main() {
       expect(accepted.code, SyncStatusCode.serverAccepted);
       expect(await labCount(lab, 'sync_events'), 1);
 
-      final applier = DriftRemoteEventApplier(b);
+      expect(
+        (await a.select(a.pendingEvents).get()).where(
+          (row) => row.state == 'pending',
+        ),
+        hasLength(1),
+      );
+
+      final applier = DriftRemoteEventApplier.scoped(b, accountId: account);
       final page = await labTransport(
         apiB.uri,
         http.Client(),
@@ -127,11 +144,11 @@ void main() {
       final reopenedB = LocalDatabase.file(File('${temp.path}/local02.sqlite'));
       addTearDown(reopenedA.close);
       addTearDown(reopenedB.close);
-      expect(await reopenedA.select(reopenedA.purchases).get(), hasLength(1));
+      expect(await reopenedA.select(reopenedA.purchases).get(), hasLength(2));
       expect(await reopenedB.select(reopenedB.purchases).get(), hasLength(1));
       expect(
         await reopenedA.select(reopenedA.purchaseItems).get(),
-        hasLength(1),
+        hasLength(2),
       );
       expect(
         await reopenedB.select(reopenedB.purchaseItems).get(),

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../application/catalogue_queries.dart';
 import '../application/history_export.dart';
+import '../application/hosted_auth_ports.dart';
 import '../application/hosted_enrollment_coordinator.dart';
 import '../application/hosted_sync_coordinator.dart';
 import '../application/local_references.dart';
@@ -62,14 +63,31 @@ final class MarkeiComposition {
     final database = LocalDatabase.appPrivate();
     final queries = LocalQueryRepository(database);
     final nativeConfig = NativeAuthConfiguration.fromEnvironment();
-    final nativeClosureRunner = _nativeClosureRunner(database, nativeConfig);
+    const environmentAlias = 'provider-native';
+    final hostedRepository = DriftHostedIdentityRepository(database);
+    final hostedBinding = await hostedRepository.loadActiveBinding(
+      environmentAlias,
+    );
+    final AccountId accountId;
+    final DeviceId deviceId;
+    if (hostedBinding == null) {
+      accountId = const AccountId('local-account');
+      deviceId = await LocalDeviceIdentityRepository(
+        database,
+      ).loadOrCreateDeviceId(accountId);
+    } else {
+      await hostedRepository.ensureLocalHostedIdentity(hostedBinding);
+      accountId = AccountId(hostedBinding.accountId);
+      deviceId = DeviceId(hostedBinding.serverDeviceId);
+    }
+    final nativeClosureRunner = _nativeClosureRunner(
+      database,
+      nativeConfig,
+      activeBinding: hostedBinding,
+    );
     final nativeClosureSurfaceEnabled =
         const bool.fromEnvironment('MARKEI_NATIVE_CLOSURE_SURFACE') &&
         nativeConfig is NativeAuthConfigurationReady;
-    const accountId = AccountId('local-account');
-    final deviceId = await LocalDeviceIdentityRepository(
-      database,
-    ).loadOrCreateDeviceId(accountId);
     return MarkeiComposition(
       database: database,
       purchaseRegistration: LocalPurchaseRepository(database),
@@ -89,8 +107,9 @@ final class MarkeiComposition {
 
   static NativeAuthClosureRunner _nativeClosureRunner(
     LocalDatabase database,
-    NativeAuthConfigurationResult config,
-  ) {
+    NativeAuthConfigurationResult config, {
+    HostedIdentityBinding? activeBinding,
+  }) {
     if (config is! NativeAuthConfigurationReady) {
       return NativeAuthClosureRunner.unavailable();
     }
@@ -111,8 +130,20 @@ final class MarkeiComposition {
       },
       correlationSource: () => 'native-closure',
     );
-    final syncOutbox = DriftSyncOutboxRepository(database);
-    final remoteApplier = DriftRemoteEventApplier(database);
+    final binding = activeBinding;
+    final syncOutbox = binding == null
+        ? DriftSyncOutboxRepository(database)
+        : DriftSyncOutboxRepository.scoped(
+            database,
+            accountId: AccountId(binding.accountId),
+            deviceId: DeviceId(binding.serverDeviceId),
+          );
+    final remoteApplier = binding == null
+        ? DriftRemoteEventApplier(database)
+        : DriftRemoteEventApplier.scoped(
+            database,
+            accountId: AccountId(binding.accountId),
+          );
     const uuid = Uuid();
     const environmentAlias = 'provider-native';
     final commandFactory = StableDeviceEnrollmentCommandFactory(
@@ -140,7 +171,9 @@ final class MarkeiComposition {
       commandFactory: commandFactory.call,
       hostedSyncCoordinator: HostedSyncCoordinator(
         authenticationSession: authentication,
-        syncGuard: DriftHostedSyncGuard(repository),
+        syncGuard: binding == null
+            ? const BlockedHostedSyncGuard('hosted-restart-required')
+            : DriftHostedSyncGuard(repository),
         applier: remoteApplier,
         uploadPendingEvents: UploadPendingEvents(syncOutbox, syncTransport),
         downloadAndApplyEvents: DownloadAndApplyEvents(

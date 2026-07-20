@@ -1,15 +1,20 @@
 import 'package:drift/drift.dart';
 
 import '../../../application/sync/sync_ports.dart';
+import '../../../domain/shared/ids.dart';
 import '../../../domain/sync/canonical_json.dart';
 import '../../../domain/sync/sync_event.dart';
 import '../local_database.dart';
 import 'remote_purchase_fact_writer.dart';
 
 final class DriftRemoteEventApplier implements RemoteEventApplier {
-  DriftRemoteEventApplier(this._db);
+  DriftRemoteEventApplier(this._db) : _accountId = null;
+
+  DriftRemoteEventApplier.scoped(this._db, {required AccountId accountId})
+    : _accountId = accountId.value;
 
   final LocalDatabase _db;
+  final String? _accountId;
   late final RemotePurchaseFactWriter _facts = RemotePurchaseFactWriter(_db);
 
   @override
@@ -52,7 +57,7 @@ final class DriftRemoteEventApplier implements RemoteEventApplier {
           .into(_db.syncState)
           .insertOnConflictUpdate(
             SyncStateCompanion.insert(
-              accountId: last.event['accountId'] as String,
+              accountId: _accountId ?? (last.event['accountId'] as String),
               accountCursor: Value(page.nextCursor ?? last.serverCursor),
               updatedAt: DateTime.now().toUtc(),
             ),
@@ -67,17 +72,25 @@ final class DriftRemoteEventApplier implements RemoteEventApplier {
 
   @override
   Future<String?> greatestContiguousAppliedCursor() async {
-    final row =
-        await (_db.select(_db.syncState)
-              ..where((table) => table.accountCursor.isNotNull())
-              ..limit(1))
-            .getSingleOrNull();
+    final accountId = _accountId;
+    Expression<bool> predicate = _db.syncState.accountCursor.isNotNull();
+    if (accountId != null) {
+      predicate = predicate & _db.syncState.accountId.equals(accountId);
+    }
+    final query = _db.select(_db.syncState)
+      ..where((table) => predicate)
+      ..limit(1);
+    final row = await query.getSingleOrNull();
     return row?.accountCursor;
   }
 
   Future<SyncResult?> _validatePage(DownloadPage page) async {
     final accountId = page.events.first.event['accountId'] as String?;
     if (accountId == null) {
+      return _conflict();
+    }
+    final scopedAccountId = _accountId;
+    if (scopedAccountId != null && accountId != scopedAccountId) {
       return _conflict();
     }
     final state = await (_db.select(

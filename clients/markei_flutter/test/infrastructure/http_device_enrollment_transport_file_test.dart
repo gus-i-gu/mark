@@ -45,7 +45,7 @@ void main() {
           .select(firstDb.pendingEvents)
           .get();
 
-      expect(applied.status, 'applied');
+      expect(applied.status, 'hosted-restart-required');
       expect(duplicate.status, 'duplicate-equivalent');
       expect(state?.enrollmentState, 'device-enrolled');
       expect(state?.enrollmentRequestId, _requestId);

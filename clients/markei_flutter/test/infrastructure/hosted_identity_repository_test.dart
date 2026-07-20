@@ -94,7 +94,7 @@ void main() {
         environmentAlias: 'local-hosted',
       );
 
-      expect(applied.status, 'applied');
+      expect(applied.status, 'hosted-restart-required');
       expect(replayed.status, 'duplicate-equivalent');
       expect(loaded?.serverDeviceId, '22222222-2222-4222-8222-222222222222');
       expect(loaded.toString().contains('synthetic-token'), isFalse);
@@ -133,6 +133,100 @@ void main() {
       expect(loaded?.enrollmentState, 'duplicate-equivalent');
     },
   );
+
+  test('binding validation fails closed for inactive or malformed state', () {
+    final valid = HostedIdentityState(
+      environmentAlias: 'local-hosted',
+      installationId: 'install-stable',
+      enrollmentRequestId: '55555555-5555-4555-8555-555555555555',
+      enrollmentState: 'device-enrolled',
+      accountId: '11111111-1111-4111-8111-111111111111',
+      serverDeviceId: '22222222-2222-4222-8222-222222222222',
+      generation: 1,
+      updatedAt: DateTime.utc(2026, 7, 20),
+    );
+
+    expect(
+      validateHostedIdentityBinding(
+        valid,
+        expectedEnvironmentAlias: 'local-hosted',
+      )?.serverDeviceId,
+      '22222222-2222-4222-8222-222222222222',
+    );
+    for (final state in [
+      HostedIdentityState(
+        environmentAlias: 'other',
+        installationId: valid.installationId,
+        enrollmentState: valid.enrollmentState,
+        accountId: valid.accountId,
+        serverDeviceId: valid.serverDeviceId,
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'enrolling',
+        accountId: valid.accountId,
+        serverDeviceId: valid.serverDeviceId,
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'device-enrolled',
+        accountId: null,
+        serverDeviceId: valid.serverDeviceId,
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'device-enrolled',
+        accountId: valid.accountId,
+        serverDeviceId: 'not-a-device-id',
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'device-enrolled',
+        accountId: valid.accountId,
+        serverDeviceId: valid.serverDeviceId,
+        generation: 0,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'device-revoked',
+        accountId: valid.accountId,
+        serverDeviceId: valid.serverDeviceId,
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+      HostedIdentityState(
+        environmentAlias: valid.environmentAlias,
+        installationId: valid.installationId,
+        enrollmentState: 'device-expired',
+        accountId: valid.accountId,
+        serverDeviceId: valid.serverDeviceId,
+        generation: valid.generation,
+        updatedAt: valid.updatedAt,
+      ),
+    ]) {
+      expect(
+        validateHostedIdentityBinding(
+          state,
+          expectedEnvironmentAlias: 'local-hosted',
+        ),
+        isNull,
+      );
+    }
+  });
 
   test(
     'coordinator preserves local state on cancellation, rejection and outage',

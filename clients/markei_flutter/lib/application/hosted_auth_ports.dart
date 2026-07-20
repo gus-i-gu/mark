@@ -152,10 +152,36 @@ final class HostedIdentityState {
   final int? generation;
 }
 
-final class HostedSyncDecision {
-  const HostedSyncDecision.allowed(this.deviceId) : blockedReason = null;
-  const HostedSyncDecision.blocked(this.blockedReason) : deviceId = null;
+final class HostedIdentityBinding {
+  const HostedIdentityBinding({
+    required this.environmentAlias,
+    required this.accountId,
+    required this.serverDeviceId,
+    required this.installationId,
+    required this.generation,
+  });
 
+  final String environmentAlias;
+  final String accountId;
+  final String serverDeviceId;
+  final String installationId;
+  final int generation;
+}
+
+final class HostedSyncDecision {
+  const HostedSyncDecision.allowed(this.deviceId)
+    : binding = null,
+      blockedReason = null;
+
+  HostedSyncDecision.allowedBinding(HostedIdentityBinding scope)
+    : binding = scope,
+      deviceId = scope.serverDeviceId,
+      blockedReason = null;
+  const HostedSyncDecision.blocked(this.blockedReason)
+    : binding = null,
+      deviceId = null;
+
+  final HostedIdentityBinding? binding;
   final String? deviceId;
   final String? blockedReason;
 }

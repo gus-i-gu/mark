@@ -115,7 +115,7 @@ final class _ProofRun {
       );
       final counts = await fixture.counts();
       final state = await fixture.repository.load('real-applied');
-      _require(outcome.status == 'applied');
+      _require(outcome.status == 'hosted-restart-required');
       _require(state?.serverDeviceId != null);
       _require(counts.purchases == 1 && counts.pendingEvents == 1);
       return counts.toJson(state: state?.enrollmentState);

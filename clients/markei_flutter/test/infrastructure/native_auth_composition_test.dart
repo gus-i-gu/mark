@@ -365,7 +365,10 @@ void main() {
     );
 
     expect((await runner.status()).state, 'authenticated');
-    expect((await runner.enrollOrQueryDevice()).state, 'device-enrolled');
+    expect(
+      (await runner.enrollOrQueryDevice()).state,
+      'hosted-restart-required',
+    );
     expect((await runner.hostedSyncProbe()).state, 'sync-completed');
     expect((await runner.logout()).state, 'signed-out-cleared');
   });
@@ -454,7 +457,10 @@ void main() {
       ),
     );
 
-    expect((await runner.enrollOrQueryDevice()).state, 'device-enrolled');
+    expect(
+      (await runner.enrollOrQueryDevice()).state,
+      'hosted-restart-required',
+    );
     expect(
       (await runner.hostedSyncProbe()).state,
       'device-enrollment-required',

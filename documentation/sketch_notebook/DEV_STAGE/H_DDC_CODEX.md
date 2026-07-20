@@ -1,41 +1,51 @@
-# H_DDC_CODEX - Windows Runtime Packaging State Evidence
+# H_DDC_CODEX - Hosted Binding State Evidence
 
-- Authority marker: C10-MCG02-WINDOWS-RUNTIME-PACKAGING_20260719T155742Z
-- Baseline SHA after fast-forward: a892c2628df7425124be0e64db66697b7b572b4d
-- Final commit SHA: resolved by Git after this report is committed and pushed; Codex terminal response reports it.
-- Result classification: runtime package ready locally; clean provider retest required.
+- Authority marker: C10-MCG02-HOSTED-BINDING-R2_20260720T131954Z
+- Baseline after fast-forward: 9e7af2e306a5159eb51eba9169f5fe0c5f60b5e7
+- Final commit SHA: resolved after commit; Codex terminal response reports it.
+- Evidence boundary: local file-backed Drift, loopback HTTP, disposable Docker/PostgreSQL lab API, Flutter/Dart tests, Android/Windows local builds. No provider operation.
 
-## States Distinguished
+## Materialized States
 
-- `authentication-validated`: retained from sanitized human evidence after `1922ffc`; provider login, protocol callback consumption, authorization-code exchange, credential acceptance, stable status, logout and re-sign-in passed.
-- `runtime-dependency-missing`: retained as the prior failure mode; the callback-launched process could not load `cpprest_2_10.dll` until DLLs were manually copied beside `markei.exe`.
-- `runtime-package-ready`: materialized locally by CMake target-runtime deployment plus Debug and Release build/output launch evidence.
-- `clean-provider-retest-required`: current post-Codex state; real Auth0 login must be repeated from clean packaged output without PATH or manual-copy assistance.
+- `local-only-identity`: retained. Fresh production composition without a valid hosted binding still selects `local-account` and a local Device.
+- `hosted-binding-recorded`: retained and tightened. Enrollment persists hosted AccountId, server DeviceId, installationId, requestId, state and generation.
+- `hosted-restart-required`: materialized. First successful enrollment returns this state, and the same process cannot authorize hosted sync from the pre-enrollment local composition.
+- `hosted-binding-active`: materialized on restart only after validation of environment, active completed state, AccountId, server DeviceId, installation identity and positive generation.
+- `local-only-pending`: materialized in tests. Older pending events remain unchanged and outside scoped hosted leasing.
+- `hosted-sync-ready`: locally evidenced by scoped file-backed/loopback and Docker lab proofs only.
+- `binding-invalid`, `binding-revoked`, `binding-expired`: materialized as fail-closed guard outcomes; invalid/revoked/expired bindings do not authorize hosted sync.
+- `cross-account-rejected`: materialized. A foreign Account page returns conflict with no purchase, inbox or cursor mutation.
 
-Reserved and not claimed:
+## Wording Guard
 
-- `clean-provider-retest-passed`
-- Device enrollment success
-- hosted synchronization success
-- MCG-02 closure
-- Cycle 10 closure
-- MCG-03 activation
+No source, test or report claims:
 
-## Semantic Tests
+- provider synchronization passed;
+- provider convergence passed;
+- clean Auth0 retest passed;
+- MCG-02 closed;
+- MCG-03 or MCG-04 started.
 
-- Packaging contract test proves the tracked CMake contract uses executable target runtime metadata, target runtime directories and a recursive helper script that fails clearly when runtime dependency closure is unresolved.
-- Packaging contract test proves no hard-coded vcpkg path, drive path, username, build directory, Debug/Release directory or one-DLL model entered the tracked runner CMake contract.
-- Packaging contract test proves generated Windows build outputs, DLLs and EXEs are not tracked in the Flutter client path.
-- Callback contract tests remain passing and preserve exact callback prefix, bounded forwarding, current-user pipe security, SDK lock usage and no callback logging.
-- Native authentication and closure-surface focused tests remain passing; no phase before usable credentials says authenticated.
-- Full Flutter suite remains passing with existing skips.
+The implementation uses local proof wording: `hosted-restart-required`, `hosted-binding-active`,
+`sync-completed`, `sync-interrupted`, `device-revoked`, `binding-invalid`, and `cross-account`
+conflict behavior. The accepted packaging proof remains separate, and the fresh human Auth0 retest
+remains pending/unpromoted.
 
-## Privacy and Wording Evidence
+## Didactic Evidence Boundary
 
-No report, source change or test output exposes tokens, authorization codes, PKCE material, state,
-nonce, email, user ID, full callback URLs, provider credentials, Neon strings or Render secrets.
-The sanitized invalid callback used for launch validation contains no secret-bearing material.
+This unit reinforces the distinction between:
 
-User-facing semantics remain neutral: authentication can be validated, runtime packaging can be
-ready, and provider retest can remain required without claiming enrollment, synchronization or
-overall MCG-02 completion.
+- enrollment recording and synchronization;
+- stored binding and active composition;
+- local-only facts and hosted facts;
+- local loopback/server proof and provider proof;
+- duplicate-equivalent enrollment and restart-required enrollment.
+
+The R05 proof fixture was updated so the first enrollment case accepts `hosted-restart-required`
+instead of the previous generic `applied` status. Existing duplicate-equivalent replay remains a
+distinct state.
+
+## Exclusions
+
+No provider credentials, tokens, callback URLs, identity subjects, Neon strings, Render secrets or
+private provider files were read or persisted. No provider-validated wording was introduced.

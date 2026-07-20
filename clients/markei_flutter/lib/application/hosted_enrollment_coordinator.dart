@@ -27,7 +27,7 @@ final class HostedEnrollmentCoordinator {
   }) async {
     final existing = await _repository.load(environmentAlias);
     if (existing?.serverDeviceId != null) {
-      return HostedEnrollmentOutcome.duplicateEquivalent(existing!);
+      return HostedEnrollmentOutcome.restartRequired(existing!);
     }
     await _repository.save(
       HostedIdentityState(
@@ -129,7 +129,7 @@ final class HostedEnrollmentCoordinator {
     await _repository.save(completed);
     return result.status == 'duplicate-equivalent'
         ? HostedEnrollmentOutcome.duplicateEquivalent(completed)
-        : HostedEnrollmentOutcome.applied(completed);
+        : HostedEnrollmentOutcome.restartRequired(completed);
   }
 
   Future<void> _mark(
@@ -175,6 +175,9 @@ final class HostedEnrollmentOutcome {
 
   HostedEnrollmentOutcome.applied(HostedIdentityState state)
     : this._('applied', null, state);
+
+  HostedEnrollmentOutcome.restartRequired(HostedIdentityState state)
+    : this._('hosted-restart-required', null, state);
 
   HostedEnrollmentOutcome.duplicateEquivalent(HostedIdentityState state)
     : this._('duplicate-equivalent', null, state);

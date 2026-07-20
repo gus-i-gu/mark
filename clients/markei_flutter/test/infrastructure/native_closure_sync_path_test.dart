@@ -7,12 +7,15 @@ import 'package:markei/application/hosted_auth_ports.dart';
 import 'package:markei/application/hosted_enrollment_coordinator.dart';
 import 'package:markei/application/hosted_sync_coordinator.dart';
 import 'package:markei/application/register_purchase.dart';
+import 'package:markei/application/sync/sync_ports.dart';
 import 'package:markei/application/sync/sync_use_cases.dart';
 import 'package:markei/domain/catalogue/product.dart';
 import 'package:markei/domain/purchase/purchase.dart';
 import 'package:markei/domain/shared/ids.dart';
 import 'package:markei/domain/shared/money.dart';
 import 'package:markei/domain/shared/quantity.dart';
+import 'package:markei/domain/sync/canonical_json.dart';
+import 'package:markei/domain/sync/sync_event.dart';
 import 'package:markei/infrastructure/local/hosted_identity_repository.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/local/local_purchase_repository.dart';
@@ -89,13 +92,213 @@ void main() {
         (await local.select(local.pendingEvents).get()).single.state,
         'accepted',
       );
-      expect(await local.select(local.syncInbox).get(), hasLength(1));
+      expect(await local.select(local.syncInbox).get(), hasLength(2));
 
       await local.close();
       final reopened = LocalDatabase.file(File('${temp.path}/local.sqlite'));
       addTearDown(reopened.close);
       expect(await reopened.select(reopened.purchases).get(), hasLength(2));
-      expect(await reopened.select(reopened.syncInbox).get(), hasLength(1));
+      expect(await reopened.select(reopened.syncInbox).get(), hasLength(2));
+    },
+  );
+
+  test(
+    'restart binding scopes hosted registration, outbox, replay and applier',
+    () async {
+      final temp = await Directory.systemTemp.createTemp(
+        'markei-hosted-binding-',
+      );
+      addTearDown(() => temp.delete(recursive: true));
+      final fileA = File('${temp.path}/device-a.sqlite');
+      final fileB = File('${temp.path}/device-b.sqlite');
+
+      const localAccount = AccountId('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+      const localDevice = DeviceId('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+      const hostedAccount = AccountId('11111111-1111-4111-8111-111111111111');
+      const hostedDeviceA = DeviceId('22222222-2222-4222-8222-222222222222');
+      const hostedDeviceB = DeviceId('33333333-3333-4333-8333-333333333333');
+      const foreignAccount = AccountId('99999999-9999-4999-8999-999999999999');
+
+      final firstA = LocalDatabase.file(fileA);
+      addTearDown(firstA.close);
+      await LocalPurchaseRepository(
+        firstA,
+      ).registerPurchase(_command(localAccount, localDevice, 'LOCAL-ONLY'));
+      await DriftHostedIdentityRepository(firstA).save(
+        HostedIdentityState(
+          environmentAlias: 'native',
+          installationId: 'install-stable-a',
+          enrollmentRequestId: 'request-stable-a',
+          enrollmentState: 'device-enrolled',
+          accountId: hostedAccount.value,
+          serverDeviceId: hostedDeviceA.value,
+          generation: 1,
+          updatedAt: DateTime.utc(2026, 7, 20),
+        ),
+      );
+      final preRestartOutbox = DriftSyncOutboxRepository.scoped(
+        firstA,
+        accountId: hostedAccount,
+        deviceId: hostedDeviceA,
+      );
+      expect(await preRestartOutbox.leasePending(limit: 25), isNull);
+      expect(
+        (await firstA.select(firstA.pendingEvents).get()).single.state,
+        'pending',
+      );
+      await firstA.close();
+
+      final restartedA = LocalDatabase.file(fileA);
+      addTearDown(restartedA.close);
+      final bindingA = await DriftHostedIdentityRepository(
+        restartedA,
+      ).loadActiveBinding('native');
+      expect(bindingA?.accountId, hostedAccount.value);
+      expect(bindingA?.serverDeviceId, hostedDeviceA.value);
+      await DriftHostedIdentityRepository(
+        restartedA,
+      ).ensureLocalHostedIdentity(bindingA!);
+      await LocalPurchaseRepository(
+        restartedA,
+      ).registerPurchase(_command(hostedAccount, hostedDeviceA, 'HOSTED-A'));
+      final hostedEventRow =
+          (await restartedA.select(restartedA.syncEvents).get()).singleWhere(
+            (row) => row.accountId == hostedAccount.value,
+          );
+      final hostedEvent =
+          jsonDecode(hostedEventRow.payloadJson) as Map<String, Object?>;
+      expect(hostedEvent['accountId'], hostedAccount.value);
+      expect(hostedEvent['deviceId'], hostedDeviceA.value);
+      expect(
+        hostedEvent['contentHash'],
+        canonicalUtf8Sha256(
+          Map<String, Object?>.from(hostedEvent)..remove('contentHash'),
+        ),
+      );
+
+      final scopedOutboxA = DriftSyncOutboxRepository.scoped(
+        restartedA,
+        accountId: hostedAccount,
+        deviceId: hostedDeviceA,
+      );
+      final leasedA = await scopedOutboxA.leasePending(limit: 25);
+      expect(leasedA?.events, hasLength(1));
+      expect(leasedA?.events.single['accountId'], hostedAccount.value);
+      expect(
+        (await restartedA.select(restartedA.pendingEvents).get()).where(
+          (row) => row.state == 'pending',
+        ),
+        hasLength(1),
+      );
+      await scopedOutboxA.persistUploadResult(
+        leasedA!.id,
+        const SyncResult(
+          code: SyncStatusCode.unknownOutcome,
+          outcome: SyncOutcome.unknown,
+          retryable: true,
+        ),
+      );
+      final replayedA = await scopedOutboxA.leasePending(limit: 25);
+      expect(replayedA?.id, leasedA.id);
+      await DriftSyncOutboxRepository.scoped(
+        restartedA,
+        accountId: hostedAccount,
+        deviceId: hostedDeviceB,
+      ).persistUploadResult(
+        leasedA.id,
+        const SyncResult(
+          code: SyncStatusCode.serverAccepted,
+          outcome: SyncOutcome.applied,
+          retryable: false,
+        ),
+      );
+      expect(
+        (await restartedA.select(restartedA.syncSubmissions).get())
+            .single
+            .state,
+        'unknown',
+      );
+
+      final server = await _SyncFixtureServer.start();
+      addTearDown(server.close);
+      final transportA = HttpSyncTransport(
+        client: http.Client(),
+        baseUri: server.uri,
+        tokenSource: () => 'synthetic-access-token-a',
+        correlationSource: () => 'hosted-binding-a',
+      );
+      final acceptedA = await transportA.uploadSubmission(replayedA!);
+      await scopedOutboxA.persistUploadResult(replayedA.id, acceptedA);
+      expect(acceptedA.code, SyncStatusCode.serverAccepted);
+      expect(server.uploadCount, 1);
+
+      final dbB = LocalDatabase.file(fileB);
+      addTearDown(dbB.close);
+      await DriftHostedIdentityRepository(dbB).save(
+        HostedIdentityState(
+          environmentAlias: 'native',
+          installationId: 'install-stable-b',
+          enrollmentRequestId: 'request-stable-b',
+          enrollmentState: 'device-enrolled',
+          accountId: hostedAccount.value,
+          serverDeviceId: hostedDeviceB.value,
+          generation: 1,
+          updatedAt: DateTime.utc(2026, 7, 20),
+        ),
+      );
+      final bindingB = await DriftHostedIdentityRepository(
+        dbB,
+      ).loadActiveBinding('native');
+      expect(bindingB?.serverDeviceId, hostedDeviceB.value);
+      await DriftHostedIdentityRepository(
+        dbB,
+      ).ensureLocalHostedIdentity(bindingB!);
+      final applierB = DriftRemoteEventApplier.scoped(
+        dbB,
+        accountId: hostedAccount,
+      );
+      final transportB = HttpSyncTransport(
+        client: http.Client(),
+        baseUri: server.uri,
+        tokenSource: () => 'synthetic-access-token-b',
+        correlationSource: () => 'hosted-binding-b',
+      );
+      expect(
+        (await applierB.applyPage(
+          DownloadPage(
+            nextCursor: 'c10b:1',
+            events: [
+              DownloadedEvent(
+                event: {...hostedEvent, 'accountId': foreignAccount.value},
+                serverCursor: 'c10b:1',
+              ),
+            ],
+          ),
+        )).code,
+        SyncStatusCode.conflict,
+      );
+      expect(await dbB.select(dbB.purchases).get(), isEmpty);
+      expect(await dbB.select(dbB.syncInbox).get(), isEmpty);
+      expect(await dbB.select(dbB.syncState).get(), hasLength(1));
+
+      final downloaded = await transportB.downloadAfter(null, limit: 25);
+      expect(
+        (await applierB.applyPage(downloaded)).code,
+        SyncStatusCode.downloadedApplied,
+      );
+      final ack = await transportB.acknowledge(
+        (await applierB.greatestContiguousAppliedCursor())!,
+      );
+      expect(ack.code, SyncStatusCode.acknowledged);
+      expect(server.acknowledgeCount, 1);
+      expect(await dbB.select(dbB.purchases).get(), hasLength(1));
+      expect(await dbB.select(dbB.syncInbox).get(), hasLength(1));
+
+      await dbB.close();
+      final reopenedB = LocalDatabase.file(fileB);
+      addTearDown(reopenedB.close);
+      expect(await reopenedB.select(reopenedB.purchases).get(), hasLength(1));
+      expect(await reopenedB.select(reopenedB.syncInbox).get(), hasLength(1));
     },
   );
 }
@@ -146,14 +349,14 @@ final class _SyncFixtureServer {
   int downloadCount = 0;
   int acknowledgeCount = 0;
 
-  static Future<_SyncFixtureServer> start(
-    List<Map<String, Object?>> events,
-  ) async {
+  static Future<_SyncFixtureServer> start([
+    List<Map<String, Object?>> events = const [],
+  ]) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final fixture = _SyncFixtureServer._(
       server,
       Uri.parse('http://127.0.0.1:${server.port}'),
-      events,
+      events.toList(growable: true),
     );
     fixture._listen();
     return fixture;
@@ -169,7 +372,12 @@ final class _SyncFixtureServer {
       if (request.method == 'POST' &&
           request.uri.path == '/v1/sync/submissions') {
         uploadCount++;
-        await utf8.decoder.bind(request).join();
+        final body =
+            jsonDecode(await utf8.decoder.bind(request).join())
+                as Map<String, Object?>;
+        final uploaded = (body['events'] as List<Object?>? ?? [])
+            .cast<Map<String, Object?>>();
+        _events.addAll(uploaded);
         request.response.write(jsonEncode({'status': 'server-accepted'}));
       } else if (request.method == 'GET' &&
           request.uri.path == '/v1/sync/events') {
