@@ -8,6 +8,7 @@ final class AppFailure implements Exception {
     required this.retryable,
     required this.outcome,
     this.field,
+    this.debugCause,
   });
 
   final String code;
@@ -16,6 +17,7 @@ final class AppFailure implements Exception {
   final String recovery;
   final bool retryable;
   final FailureOutcome outcome;
+  final Object? debugCause;
 
   String get userMessage {
     final fieldText = field == null ? '' : ' Check $field.';

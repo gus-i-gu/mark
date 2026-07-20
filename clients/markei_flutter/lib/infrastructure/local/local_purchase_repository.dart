@@ -24,180 +24,224 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
   Future<PurchaseRegistrationResult> registerPurchase(
     RegisterPurchaseCommand command,
   ) {
+    var phase = _PurchaseRegistrationPhase.ensureAccount;
     return _db.transaction(() async {
-      if (command.items.isEmpty) {
-        throw ArgumentError('Purchase requires at least one Item.');
-      }
-
-      final now = DateTime.now().toUtc();
-      await _db
-          .into(_db.localAccounts)
-          .insert(
-            LocalAccountsCompanion.insert(
-              id: command.accountId.value,
-              defaultCurrencyCode: command.currencyCode,
-              createdAt: now,
-            ),
-            mode: InsertMode.insertOrIgnore,
-          );
-      await _db
-          .into(_db.syncState)
-          .insert(
-            SyncStateCompanion.insert(
-              accountId: command.accountId.value,
-              accountCursor: const Value(null),
-              updatedAt: now,
-            ),
-            mode: InsertMode.insertOrIgnore,
-          );
-      await _db
-          .into(_db.devices)
-          .insert(
-            DevicesCompanion.insert(
-              id: command.deviceId.value,
-              accountId: command.accountId.value,
-              nextSequence: 1,
-              createdAt: now,
-            ),
-            mode: InsertMode.insertOrIgnore,
-          );
-
-      final store = await _resolveStore(command, now);
-      await _assertOptionalReference(
-        tableName: 'people',
-        accountId: command.accountId,
-        id: command.personId,
-        operation: 'Person selection',
-      );
-      await _assertOptionalReference(
-        tableName: 'payment_methods',
-        accountId: command.accountId,
-        id: command.paymentMethodId,
-        operation: 'Payment Method selection',
-      );
-      final purchaseId = PurchaseId(_uuid.v4());
-      final itemModels = <domain_purchase.PurchaseItem>[];
-      final productSnapshots = <Map<String, Object?>>[];
-
-      for (final draft in command.items) {
-        final product = await _resolveProduct(command.accountId, draft, now);
-        productSnapshots.add(product.toJson());
-        final packageCount = product.mode == domain.ProductMode.bulk
-            ? null
-            : draft.packageCount;
-        if (product.mode == domain.ProductMode.packaged &&
-            (packageCount == null || packageCount <= 0)) {
-          throw const AppFailure(
-            code: 'invalid-package-count',
-            operation: 'Purchase registration',
-            field: 'Packages bought',
-            recovery: 'Enter a positive whole package count.',
-            retryable: true,
-            outcome: FailureOutcome.notApplied,
-          );
+      try {
+        if (command.items.isEmpty) {
+          throw ArgumentError('Purchase requires at least one Item.');
         }
-        final item = domain_purchase.PurchaseItem(
-          id: PurchaseItemId(_uuid.v4()),
-          purchaseId: purchaseId,
-          productId: product.id,
-          packageCount: packageCount,
-          purchasedQuantity: draft.purchasedQuantity,
-          lineTotal: draft.lineTotal,
-        );
-        item.validate();
-        itemModels.add(item);
-      }
 
-      final purchase = domain_purchase.Purchase(
-        id: purchaseId,
-        accountId: command.accountId,
-        store: store,
-        occurrenceTime: command.occurrenceTime,
-        currencyCode: command.currencyCode,
-        items: itemModels,
-      )..validate();
-
-      await _db
-          .into(_db.purchases)
-          .insert(
-            PurchasesCompanion.insert(
-              id: purchase.id.value,
-              accountId: command.accountId.value,
-              storeId: store.id.value,
-              personId: Value(command.personId),
-              paymentMethodId: Value(command.paymentMethodId),
-              occurrenceTime: command.occurrenceTime.toUtc(),
-              currencyCode: command.currencyCode,
-              totalMinorUnits: purchase.totalMinorUnits,
-              createdAt: now,
-            ),
-          );
-
-      for (final item in purchase.items) {
+        final now = DateTime.now().toUtc();
         await _db
-            .into(_db.purchaseItems)
+            .into(_db.localAccounts)
             .insert(
-              PurchaseItemsCompanion.insert(
-                id: item.id.value,
-                purchaseId: item.purchaseId.value,
-                productId: item.productId.value,
-                packageCount: Value(item.packageCount),
-                measurementKind: item.purchasedQuantity.kind.name.toUpperCase(),
-                purchasedAmount: item.purchasedQuantity.decimalText,
-                purchasedUnit: item.purchasedQuantity.unit.name.toUpperCase(),
-                currencyCode: item.lineTotal.currencyCode,
-                lineTotalMinorUnits: item.lineTotal.minorUnits,
+              LocalAccountsCompanion.insert(
+                id: command.accountId.value,
+                defaultCurrencyCode: command.currencyCode,
+                createdAt: now,
+              ),
+              mode: InsertMode.insertOrIgnore,
+            );
+        phase = _PurchaseRegistrationPhase.ensureSyncState;
+        await _db
+            .into(_db.syncState)
+            .insert(
+              SyncStateCompanion.insert(
+                accountId: command.accountId.value,
+                accountCursor: const Value(null),
+                updatedAt: now,
+              ),
+              mode: InsertMode.insertOrIgnore,
+            );
+        phase = _PurchaseRegistrationPhase.ensureDevice;
+        await _ensureDevice(command, now);
+
+        phase = _PurchaseRegistrationPhase.resolveStore;
+        final store = await _resolveStore(command, now);
+        phase = _PurchaseRegistrationPhase.resolveReferences;
+        await _assertOptionalReference(
+          tableName: 'people',
+          accountId: command.accountId,
+          id: command.personId,
+          operation: 'Person selection',
+        );
+        await _assertOptionalReference(
+          tableName: 'payment_methods',
+          accountId: command.accountId,
+          id: command.paymentMethodId,
+          operation: 'Payment Method selection',
+        );
+        phase = _PurchaseRegistrationPhase.buildPurchase;
+        final purchaseId = PurchaseId(_uuid.v4());
+        final itemModels = <domain_purchase.PurchaseItem>[];
+        final productSnapshots = <Map<String, Object?>>[];
+
+        for (final draft in command.items) {
+          phase = _PurchaseRegistrationPhase.resolveProduct;
+          final product = await _resolveProduct(command.accountId, draft, now);
+          phase = _PurchaseRegistrationPhase.buildPurchase;
+          productSnapshots.add(product.toJson());
+          final packageCount = product.mode == domain.ProductMode.bulk
+              ? null
+              : draft.packageCount;
+          if (product.mode == domain.ProductMode.packaged &&
+              (packageCount == null || packageCount <= 0)) {
+            throw const AppFailure(
+              code: 'invalid-package-count',
+              operation: 'Purchase registration',
+              field: 'Packages bought',
+              recovery: 'Enter a positive whole package count.',
+              retryable: true,
+              outcome: FailureOutcome.notApplied,
+            );
+          }
+          final item = domain_purchase.PurchaseItem(
+            id: PurchaseItemId(_uuid.v4()),
+            purchaseId: purchaseId,
+            productId: product.id,
+            packageCount: packageCount,
+            purchasedQuantity: draft.purchasedQuantity,
+            lineTotal: draft.lineTotal,
+          );
+          item.validate();
+          itemModels.add(item);
+        }
+
+        final purchase = domain_purchase.Purchase(
+          id: purchaseId,
+          accountId: command.accountId,
+          store: store,
+          occurrenceTime: command.occurrenceTime,
+          currencyCode: command.currencyCode,
+          items: itemModels,
+        )..validate();
+
+        phase = _PurchaseRegistrationPhase.insertPurchase;
+        await _db
+            .into(_db.purchases)
+            .insert(
+              PurchasesCompanion.insert(
+                id: purchase.id.value,
+                accountId: command.accountId.value,
+                storeId: store.id.value,
+                personId: Value(command.personId),
+                paymentMethodId: Value(command.paymentMethodId),
+                occurrenceTime: command.occurrenceTime.toUtc(),
+                currencyCode: command.currencyCode,
+                totalMinorUnits: purchase.totalMinorUnits,
+                createdAt: now,
               ),
             );
+
+        phase = _PurchaseRegistrationPhase.insertItems;
+        for (final item in purchase.items) {
+          await _db
+              .into(_db.purchaseItems)
+              .insert(
+                PurchaseItemsCompanion.insert(
+                  id: item.id.value,
+                  purchaseId: item.purchaseId.value,
+                  productId: item.productId.value,
+                  packageCount: Value(item.packageCount),
+                  measurementKind: item.purchasedQuantity.kind.name
+                      .toUpperCase(),
+                  purchasedAmount: item.purchasedQuantity.decimalText,
+                  purchasedUnit: item.purchasedQuantity.unit.name.toUpperCase(),
+                  currencyCode: item.lineTotal.currencyCode,
+                  lineTotalMinorUnits: item.lineTotal.minorUnits,
+                ),
+              );
+        }
+
+        phase = _PurchaseRegistrationPhase.allocateSequence;
+        final sequence = await _allocateDeviceSequence(command.deviceId);
+        phase = _PurchaseRegistrationPhase.serializeEvent;
+        final event = domain_sync.SyncEvent(
+          id: EventId(_uuid.v4()),
+          accountId: command.accountId,
+          deviceId: command.deviceId,
+          deviceSequence: sequence,
+          eventType: 'purchase.registered',
+          payloadVersion: 3,
+          occurrenceTime: command.occurrenceTime,
+          purchase: purchase,
+          productSnapshots: productSnapshots,
+        );
+        final payload = canonicalJson(event.toJson());
+        final contentHash = event.contentHash;
+
+        phase = _PurchaseRegistrationPhase.insertEvent;
+        await _db
+            .into(_db.syncEvents)
+            .insert(
+              SyncEventsCompanion.insert(
+                id: event.id.value,
+                accountId: command.accountId.value,
+                deviceId: command.deviceId.value,
+                deviceSequence: sequence,
+                eventType: event.eventType,
+                payloadVersion: event.payloadVersion,
+                occurrenceTime: command.occurrenceTime.toUtc(),
+                payloadJson: payload,
+                contentHash: contentHash,
+                createdAt: now,
+              ),
+            );
+        phase = _PurchaseRegistrationPhase.insertOutbox;
+        await _db
+            .into(_db.pendingEvents)
+            .insert(
+              PendingEventsCompanion.insert(
+                eventId: event.id.value,
+                state: domain_sync.PendingEventState.pending.name,
+                enqueuedAt: now,
+              ),
+            );
+
+        return PurchaseRegistrationResult(
+          purchaseId: purchase.id,
+          eventId: event.id,
+          deviceSequence: sequence,
+        );
+      } on AppFailure {
+        rethrow;
+      } on Object catch (error) {
+        throw _phaseFailure(phase, error);
       }
-
-      final sequence = await _allocateDeviceSequence(command.deviceId);
-      final event = domain_sync.SyncEvent(
-        id: EventId(_uuid.v4()),
-        accountId: command.accountId,
-        deviceId: command.deviceId,
-        deviceSequence: sequence,
-        eventType: 'purchase.registered',
-        payloadVersion: 3,
-        occurrenceTime: command.occurrenceTime,
-        purchase: purchase,
-        productSnapshots: productSnapshots,
-      );
-      final payload = canonicalJson(event.toJson());
-      final contentHash = event.contentHash;
-
-      await _db
-          .into(_db.syncEvents)
-          .insert(
-            SyncEventsCompanion.insert(
-              id: event.id.value,
-              accountId: command.accountId.value,
-              deviceId: command.deviceId.value,
-              deviceSequence: sequence,
-              eventType: event.eventType,
-              payloadVersion: event.payloadVersion,
-              occurrenceTime: command.occurrenceTime.toUtc(),
-              payloadJson: payload,
-              contentHash: contentHash,
-              createdAt: now,
-            ),
-          );
-      await _db
-          .into(_db.pendingEvents)
-          .insert(
-            PendingEventsCompanion.insert(
-              eventId: event.id.value,
-              state: domain_sync.PendingEventState.pending.name,
-              enqueuedAt: now,
-            ),
-          );
-
-      return PurchaseRegistrationResult(
-        purchaseId: purchase.id,
-        eventId: event.id,
-        deviceSequence: sequence,
-      );
     });
+  }
+
+  Future<void> _ensureDevice(
+    RegisterPurchaseCommand command,
+    DateTime now,
+  ) async {
+    final existing =
+        await (_db.select(_db.devices)
+              ..where((table) => table.id.equals(command.deviceId.value)))
+            .getSingleOrNull();
+    if (existing != null) {
+      if (existing.accountId != command.accountId.value) {
+        throw const AppFailure(
+          code: 'device-account-mismatch',
+          operation: 'Purchase registration',
+          field: 'Device',
+          recovery: 'Restart the app and verify hosted enrollment.',
+          retryable: false,
+          outcome: FailureOutcome.notApplied,
+        );
+      }
+      return;
+    }
+    await _db
+        .into(_db.devices)
+        .insert(
+          DevicesCompanion.insert(
+            id: command.deviceId.value,
+            accountId: command.accountId.value,
+            nextSequence: 1,
+            createdAt: now,
+          ),
+        );
   }
 
   Future<domain_store.Store> _resolveStore(
@@ -443,4 +487,36 @@ class LocalPurchaseRepository implements PurchaseRegistrationRepository {
         .write(DevicesCompanion(nextSequence: Value(sequence + 1)));
     return sequence;
   }
+}
+
+enum _PurchaseRegistrationPhase {
+  ensureAccount('ensure-account'),
+  ensureSyncState('ensure-sync-state'),
+  ensureDevice('ensure-device'),
+  resolveStore('resolve-store'),
+  resolveReferences('resolve-references'),
+  resolveProduct('resolve-product'),
+  buildPurchase('build-purchase'),
+  insertPurchase('insert-purchase'),
+  insertItems('insert-items'),
+  allocateSequence('allocate-sequence'),
+  serializeEvent('serialize-event'),
+  insertEvent('insert-event'),
+  insertOutbox('insert-outbox');
+
+  const _PurchaseRegistrationPhase(this.code);
+
+  final String code;
+}
+
+AppFailure _phaseFailure(_PurchaseRegistrationPhase phase, Object cause) {
+  return AppFailure(
+    code: 'purchase-registration-${phase.code}-failed',
+    operation: 'Purchase registration',
+    recovery:
+        'The operation was rolled back. Keep the draft and report this code.',
+    retryable: false,
+    outcome: FailureOutcome.notApplied,
+    debugCause: cause,
+  );
 }

@@ -1,44 +1,36 @@
-# H_DDC_CODEX - Explicit Store Selection Semantics
+# H_DDC_CODEX - Purchase Transaction Diagnostic Semantics
 
-- Authority marker: C10-MCG02-STORE-SELECTION-CORRECTION_20260720T201904Z
-- Baseline HEAD before correction: f37dfb49502756a21c6de02fc1a8c662311b1e6a
+- Authority marker: C10-MCG02-PURCHASE-TRANSACTION-DIAGNOSTIC_20260720T205714Z
+- Baseline HEAD before diagnostic: 3bad6f819776094a0e621231c2bee3d4a252a1ff
 - Final commit SHA: self-referential Git SHA is reported in the Codex terminal response.
-- Evidence boundary: local Flutter source, widget tests, repository regressions, local Android/Windows builds. No provider operation.
+- Evidence boundary: local Flutter source, file-backed migration fixture, repository/widget tests, local Android/Windows builds. No provider or private database operation.
 
-## Materialized Vocabulary
+## Materialized Diagnostics
 
-- `store-available`: a Store appears in the active Account-scoped list; this no longer selects it.
-- `store-selection-required`: no Store ID has been deliberately selected.
-- `store-selected`: the visible Store name resolves to one stable same-Account Store ID.
-- `store-selection-invalidated`: the selected ID disappeared from the refreshed active Account list and no fallback was inferred.
-- `item-required`: a Store is selected but no Purchase Item is staged.
-- `purchase-registered-locally`: selected Store and staged Items committed atomically to local Drift.
+- `purchase-registration-<phase>-failed`: materialized for unexpected repository failures before commit.
+- `purchase-registration-insert-purchase-failed`: reproduced from the migrated file-backed fixture.
+- `purchase-registration-not-applied`: represented by `FailureOutcome.notApplied` and verified by unchanged History/Purchase/event/outbox/sequence counts.
+- `purchase-registration-unknown`: retained for UI-level unexpected failures outside typed repository diagnostics.
+- `draft-preserved-in-memory`: retained by existing widget tests for typed and unexpected registration failures.
+- `binding-preserved`: verified in the migrated lifecycle by applying hosted binding before the failing registration and preserving persisted identity state.
 
-## UI Semantics
+## User-Visible Semantics
 
-Purchase now starts with a visible `Select Store` placeholder whenever Stores are available but no Store has been selected. It does not silently select the first Store, including when only one Store exists. After explicit choice, it shows `Selected Store: <name>` and never exposes Store UUIDs.
+Production UI receives an `AppFailure` code and existing bounded recovery wording. It does not display SQL text, raw exception messages, stack traces, filesystem paths, Account/Device/Store/Product/Purchase identifiers, payload facts, credentials or provider configuration.
 
-Refresh and IndexedStack navigation preserve selection only by Store ID. If the selected Store is missing from the refreshed Account-scoped list, the selection clears and the UI reports `store-selection-invalidated`. If a valid Store is selected and no Item is staged, the UI reports only `item-required`, not a missing Store.
+The original exception is retained only in `AppFailure.debugCause` for in-memory test assertions. `AppFailure.userMessage` and `toString()` do not render that cause.
 
-Draft preservation semantics from the prior correction remain: staged in-memory Items remain available after typed or unexpected registration failures. This unit does not claim durable Purchase draft persistence.
+## History Semantics
+
+The migrated fixture proves that absence from History after this phase failure means `not-applied`: after the registration attempt, History still contains exactly the one pre-existing Purchase and no new Purchase/event/outbox row appears.
+
+This unit intentionally does not use wording that implies a hidden successful commit, provider synchronization, convergence, MCG-02 closure, MCG-03 activation or MCG-04 activation.
 
 ## Named Tests
 
-- `no implicit Store selection after load`
-- `explicit selection with one Store`
-- `selection uses stable StoreId`
-- `selection survives Store-list object reconstruction`
-- `selection survives Catalogue navigation and refresh`
-- `deleted or missing selected Store clears safely`
-- `cross-Account Store cannot be selected`
-- `Store selected plus no Item reports item-required`
-- `complete Catalogue-create-to-Purchase-register flow`
-- Existing retained tests: `Purchase requires an existing Store`, `registration failure preserves the staged draft`, `typed AppFailure produces sanitized UI diagnostics`, `unexpected failure produces a stable generic code and logs no provider credentials or facts`, local-only and hosted-bound repository registration, rollback, event/outbox counts, and close/reopen persistence.
+- `migrated hosted lifecycle reports insert-purchase phase and preserves state`
+- Retained focused tests: local-only registration, hosted-bound registration, exactly one event/outbox on success, rollback without partial mutation, close/reopen preservation, Store selection and draft-preservation widget tests, and local database migration tests.
 
-## Wording Guard
+## Partial Boundary
 
-No source, test or report claims provider convergence, provider synchronization completion, MCG-02 closure, MCG-03 activation or MCG-04 activation. This is a local corrective selection and registration-readiness boundary only.
-
-## Exclusions
-
-No provider credentials, tokens, callback URLs, identity subjects, Neon strings, Render secrets, SQL connection strings or private provider files were read or persisted.
+The semantic correction is diagnostic, not a completed transaction repair. The reproduced root cause needs a schema repair/restaging, which is outside the current D/E/F authority.
