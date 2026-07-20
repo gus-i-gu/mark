@@ -923,3 +923,53 @@ provider boundaries, data effects, tests and terminal conditions require new Mai
 after MCG-02 closes. Any provider-dependent action must be presented as a gated human procedure;
 credentials, tokens, complete callback URLs, identity subjects and database connection strings stay
 outside Git, chat and staging.
+
+---
+
+## 52. Append-only reconciliation — hosted binding execution resumed
+
+> Reconciliation marker: C10-MCG02-HOSTED-BINDING-R2_20260720T131954Z
+> Reconciled at UTC: 2026-07-20T13:19:54Z
+> Reconciled at America/Sao_Paulo: 2026-07-20T10:19:54-03:00
+> Authority baseline: 4382c09c038e41c1dc269141d40c31c258516b61
+> Packaging evidence: 734c559087a62ac2530a94326c3449005ce87d03
+> Current status: **LOCAL HOSTED-BINDING CORRECTION ACTIVE; PROVIDER RETEST PENDING**
+
+The clean remote history and current source confirm the unresolved mismatch from sections 43–45:
+application composition boots with `local-account` and a local Device, enrollment stores different
+hosted Account/server Device identifiers, and hosted sync constructs unscoped outbox/applier
+adapters. Provider synchronization must not proceed in that state.
+
+Codex's packaging evidence at `734c559` is accepted for automated purposes. A fresh human Auth0
+retest from that exact clean artifact is not available as reconciled evidence and remains
+provenance-unresolved. Main now reorders two independent gates: the provider retest remains pending,
+while the local-only binding/scoping correction may proceed because it needs no credentials,
+provider access or remote mutation.
+
+## 53. Selected implementation unit
+
+The restarted composition must validate the durable hosted binding and select its hosted AccountId
+and server DeviceId for new hosted facts. The enrolling process reports `hosted-restart-required`
+and cannot sync. Hosted outbox, unknown replay, inbox, cursor, fact application and acknowledgement
+must be explicitly scoped. Existing local-only facts/events remain immutable, pending and excluded.
+
+The decisive proof uses file-backed Drift, real loopback HTTP/server authorization and two isolated
+Devices. It must demonstrate restart activation, exact envelope identities, preserved local-only
+work, cross-Account atomic rejection, scoped acknowledgement, close/reopen persistence and
+two-Device convergence. It may not weaken server checks or substitute direct event injection.
+
+## 54. Revised phase projection and authority
+
+~~~text
+MCG-02 Windows runtime packaging automated proof                    VALIDATED
+MCG-02 clean human Auth0 retest                                     PENDING / UNRECONCILED
+MCG-02 hosted Account/Device binding and scoped sync                ACTIVE LOCAL UNIT
+MCG-02 controlled provider enrollment and two-Device convergence    BLOCKED NEXT
+MCG-02 permanent promotion and closure                             PENDING
+MCG-03 / MCG-04                                                     INACTIVE
+~~~
+
+D/E/F carrying marker `C10-MCG02-HOSTED-BINDING-R2_20260720T131954Z` are synchronized and are the
+only active Codex authority. They authorize source changes and local decisive tests only. They do
+not authorize Auth0 login, Enroll/Query/Sync against Render/Neon, provider mutation, migration,
+production deployment, permanent-memory promotion, MCG-02 closure, MCG-03 or MCG-04.
