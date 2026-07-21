@@ -566,6 +566,7 @@ void main() {
         baseUri: Uri.parse('http://127.0.0.1:${server.port}'),
         tokenSource: () => 'fixture-token',
         correlationSource: () => 'fixture-correlation',
+        hostedDeviceId: '22222222-2222-4222-8222-222222222222',
       );
 
       final result = await transport.uploadSubmission(

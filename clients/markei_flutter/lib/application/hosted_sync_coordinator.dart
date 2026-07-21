@@ -82,6 +82,8 @@ final class HostedSyncCoordinator {
     return switch (result.code) {
       SyncStatusCode.authRequired =>
         const HostedSyncOutcome.authenticationRequired(),
+      SyncStatusCode.deviceEnrollmentRequired =>
+        const HostedSyncOutcome.deviceEnrollmentRequired(),
       SyncStatusCode.deviceRevoked ||
       SyncStatusCode.deviceExpired => const HostedSyncOutcome.deviceRevoked(),
       SyncStatusCode.unknownOutcome => const HostedSyncOutcome.interrupted(),

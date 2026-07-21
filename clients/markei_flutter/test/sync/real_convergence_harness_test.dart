@@ -101,7 +101,11 @@ void main() {
       final first = await outbox.leasePending(limit: 25);
       expect(first?.events, hasLength(1));
       expect(first?.events.single['accountId'], account.value);
-      final timeoutTransport = labTransport(apiA.uri, CommitDropClient());
+      final timeoutTransport = labTransport(
+        apiA.uri,
+        CommitDropClient(),
+        hostedDeviceId: deviceA.value,
+      );
       final unknown = await timeoutTransport.uploadSubmission(first!);
       await outbox.persistUploadResult(first.id, unknown);
       expect(unknown.code, SyncStatusCode.unknownOutcome);
@@ -110,6 +114,7 @@ void main() {
       final accepted = await labTransport(
         apiA.uri,
         http.Client(),
+        hostedDeviceId: deviceA.value,
       ).uploadSubmission(retry);
       await outbox.persistUploadResult(retry.id, accepted);
       expect(accepted.code, SyncStatusCode.serverAccepted);
@@ -126,6 +131,7 @@ void main() {
       final page = await labTransport(
         apiB.uri,
         http.Client(),
+        hostedDeviceId: deviceB.value,
       ).downloadAfter(null, limit: 25);
       expect(page.events, hasLength(1));
       expect(
@@ -140,6 +146,7 @@ void main() {
       final ack = await labTransport(
         apiB.uri,
         http.Client(),
+        hostedDeviceId: deviceB.value,
       ).acknowledge((await applier.greatestContiguousAppliedCursor())!);
       expect(ack.code, SyncStatusCode.acknowledged);
       expect(await labCount(lab, 'device_acknowledgements'), 1);
@@ -239,7 +246,11 @@ void main() {
         runtimePassword,
       );
       addTearDown(api.close);
-      final transport = labTransport(api.uri, http.Client());
+      final transport = labTransport(
+        api.uri,
+        http.Client(),
+        hostedDeviceId: device.value,
+      );
 
       final reversedEvents = [seq2, seq1];
       final reversedId = '11111111-2222-4333-8444-555555555555';
@@ -386,7 +397,11 @@ void main() {
         runtimePassword,
       );
       addTearDown(api.close);
-      final transport = labTransport(api.uri, http.Client());
+      final transport = labTransport(
+        api.uri,
+        http.Client(),
+        hostedDeviceId: device.value,
+      );
       final outbox = DriftSyncOutboxRepository.scoped(
         db,
         accountId: account,

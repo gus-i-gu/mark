@@ -13,13 +13,17 @@ import 'package:markei/domain/sync/canonical_json.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 import 'package:markei/infrastructure/remote/http_sync_transport.dart';
 
-HttpSyncTransport labTransport(Uri uri, http.Client client) =>
-    HttpSyncTransport(
-      client: client,
-      baseUri: uri,
-      tokenSource: () => 'fixture-token',
-      correlationSource: () => 'c10-s01b',
-    );
+HttpSyncTransport labTransport(
+  Uri uri,
+  http.Client client, {
+  String hostedDeviceId = '22222222-2222-4222-8222-222222222222',
+}) => HttpSyncTransport(
+  client: client,
+  baseUri: uri,
+  tokenSource: () => 'fixture-token',
+  correlationSource: () => 'c10-s01b',
+  hostedDeviceId: hostedDeviceId,
+);
 
 Future<void> seedLocalDevice(
   LocalDatabase db,

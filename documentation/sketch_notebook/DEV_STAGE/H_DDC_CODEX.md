@@ -1,58 +1,44 @@
-# H_DDC_CODEX - Recovery Orchestration Semantics
+# H_DDC_CODEX - Hosted Device Header Semantics
 
-> Unit: C10-MCG02-RECOVERY-ORCHESTRATION_20260721T003303Z
-> Result: C10_MCG02_RECOVERY_ORCHESTRATION_PROVED
+> Unit: C10-MCG02-HOSTED-DEVICE-HEADER-CORRECTION_20260721T124452Z
+> Result: HOSTED_FIXTURE_REJECTS_MISSING_OR_WRONG_DEVICE=true
 
-## Materialized Recovery States
+## Materialized Semantics
 
-- `no-recoverable-failure`: scoped discovery found no failed/notApplied candidate for the active Account and Device; sync proceeds normally.
-- `failed-recovery-available`: exactly one valid failed/notApplied candidate was safely retired and its immutable member events were returned to the canonical pending upload path.
-- `failed-recovery-blocked`: discovery found ambiguity or unsafe structure; sync stops with bounded unavailable behavior and no upload.
-- `superseded`: retained evidence state for the legacy failed attempt after safe recovery.
-- `pending`: recovered immutable member events waiting for the existing ordered lease path.
-- `uploading`: one active retry submission owns the recovered event membership during transport.
-- `accepted`: server accepted the retry and local member pending rows were accepted.
-- `unknown`: interrupted or unknown transport outcome preserves the same retry identity for later retry.
+- Hosted Sync transport is scoped to one active hosted server Device ID.
+- Every protected Sync request carries `x-markei-device-id`.
+- A missing active hosted binding is a closed hosted-composition failure, not a transport created with guessed or empty identity.
+- Server protocol code `device-enrollment-required` remains distinct from generic conflict in Flutter.
+- Native hosted fixture now enforces the same protected-route Device header requirement that Render enforces.
 
-Unsupported or closure wording was intentionally not added. Provider/human completion is not claimed by this unit; the human database still requires a separate authorized retest.
+## Named Semantic Tests
 
-## Semantic Tests
-
-- `scoped recovery discovery reports no candidate as no-op`
-- `scoped recovery discovery blocks ambiguous candidates`
-- `scoped recovery discovery blocks malformed failed candidate`
-- `scoped recovery ignores non-failed-notApplied states`
-- `scoped recovery blocks missing membership and hash mismatch`
-- `scoped recovery leaves cross-device failed attempts untouched`
-- `coordinator discovers failed recovery and uploads canonically`
-- `concurrent scoped recovery creates one pending recovery`
-- `unknown upload after recovery preserves same retry submission`
-- `RECOVERY_ORCHESTRATION_HTTP_PROOF=true for coordinator recovery upload`
-
-Existing ordered outbox, typed server-code, hosted binding, native closure, registration, migration, Purchase history, recovery, and local-first tests remained passing.
-
-## Bounded User-Visible Outcomes
-
-The UI continues to invoke the existing Sync action. It receives only closed synchronization states:
-
-- ordinary completed/no-op behavior when there is no recoverable failure;
-- ordinary completed behavior after one safe recovery and upload;
-- bounded unavailable behavior when recovery is blocked or ambiguous;
-- bounded interrupted behavior for unknown transport outcome.
-
-Submission IDs, event IDs, Account IDs, Device IDs, hashes, payloads, SQL, provider configuration, and database details remain inside application/infrastructure layers and are not surfaced to presentation diagnostics.
+- `HttpSyncTransport sends the hosted Device header on every protected route`
+- `hosted sync fixture rejects missing or wrong Device header`
+- existing local Sync application tests for ordered upload, typed failures, rollback, and recovery
+- existing real convergence harness tests for canonical order and production coordinator behavior
+- existing real recovery harness tests for rebootstrap and recovery closure behavior
+- full Flutter test suite
+- server format, lint, typecheck, tests, and build
 
 ## Failure-Code Behavior
 
-The previous ordered-outbox semantics remain preserved:
+- `device-enrollment-required` maps to `SyncStatusCode.deviceEnrollmentRequired`.
+- `HostedSyncCoordinator` maps that status to the existing Device-enrollment-required hosted outcome.
+- Existing recognized server codes remain preserved:
+  - `sequence-gap`;
+  - `wrong-account`;
+  - `hash-mismatch`.
+- Unknown server codes remain bounded and do not expose IDs, hashes, payloads, SQL, tokens, provider configuration, or database internals.
 
-- `sequence-gap` -> `SyncStatusCode.sequenceGap`
-- `wrong-account` -> `SyncStatusCode.wrongAccount`
-- `hash-mismatch` -> `SyncStatusCode.hashMismatch`
-- unknown server codes -> generic conflict
+## User-Visible Bounds
 
-Recovery orchestration does not reinterpret server rejection as success. It only admits stored failed submissions whose outcome is definitely `notApplied` and whose immutable members pass local structural validation.
+The UI still invokes the existing Sync action. No submission-ID control, repair page, Device reenrollment flow, provider retest control, or diagnostic disclosure was added.
+
+The user-visible effect is bounded: hosted Sync without the required server Device identity fails closed through existing hosted unavailable/enrollment outcomes, while valid hosted composition sends the Device header on all protected routes.
 
 ## Privacy Evidence
 
-Tests and reports use semantic states, candidate counts, row counts, and transmitted sequence order only. No production diagnostic exposes identifiers, hashes, payloads, SQL, tokens, provider configuration, or private database contents.
+Tests use fixture UUIDs, semantic protocol codes, request-header assertions, counts, and route names. No production provider data, private credential, hosted token, human database row, payload content, content hash, or SQL detail was read or exposed.
+
+Provider/human completion is not claimed by this unit. The Windows provider retest remains a later human-controlled step.

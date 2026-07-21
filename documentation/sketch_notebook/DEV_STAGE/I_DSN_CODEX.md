@@ -1,87 +1,70 @@
-# I_DSN_CODEX - Recovery Orchestration Design
+# I_DSN_CODEX - Hosted Device Header Design
 
-> Unit: C10-MCG02-RECOVERY-ORCHESTRATION_20260721T003303Z
-> Result: C10_MCG02_RECOVERY_ORCHESTRATION_PROVED
+> Unit: C10-MCG02-HOSTED-DEVICE-HEADER-CORRECTION_20260721T124452Z
+> Result: HOSTED_DEVICE_HEADER_ALL_PROTECTED_ROUTES=true
 
 ## Final Dependency Direction
 
-Recovery orchestration follows the existing application dependency direction:
+Hosted Sync keeps the existing dependency direction:
 
 ```text
-HostedSyncCoordinator
-  -> RecoverFailedNotApplied use case
-  -> SyncOutboxRepository port
-  -> DriftSyncOutboxRepository adapter
-  -> existing UploadPendingEvents use case
+MarkeiComposition
+  -> HostedSyncCoordinator
+  -> Sync use cases
   -> HttpSyncTransport
+  -> hosted Sync API
 ```
 
-The coordinator depends on a closed application use case, not on Drift queries or submission IDs. Presentation still depends only on the existing Sync action.
+The production composition is responsible for supplying `activeBinding.serverDeviceId`. The transport is responsible for applying that identity to every protected HTTP request.
 
-## Port And Use-Case Responsibilities
+## Transport Boundary
 
-`SyncOutboxRepository.recoverOneFailedNotApplied()` is the scoped storage operation. It requires the repository to be bound to one Account and one Device, deterministically inspects failed/notApplied candidates, revalidates structure transactionally, and returns only closed `SyncResult` values.
+`HttpSyncTransport` now requires `hostedDeviceId`. The value is stored once and attached by the common protected-request path so upload, download, acknowledgement, and recovery methods share the same header behavior.
 
-`RecoverFailedNotApplied` is the focused application use case. It delegates all storage mechanics to the outbox repository and gives the coordinator a single orchestration step with no infrastructure identifiers.
+Protected methods covered by the invariant:
 
-## Coordinator Ordering
+- `uploadSubmission`
+- `downloadAfter`
+- `acknowledge`
+- `startRecovery`
+- `queryRecovery`
+- `downloadChunk`
+- `completeRecovery`
 
-`HostedSyncCoordinator.run` now orders work as:
+Authentication, correlation ID generation, timeout handling, JSON content negotiation, request body serialization, response decoding, and recognized protocol-code handling remain inside the same transport boundary.
 
-1. authentication/session confirmation;
-2. Account/Device binding confirmation through the existing guard;
-3. Device enrollment/allowed check through the existing guard;
-4. scoped failed/notApplied discovery and recovery;
-5. existing upload path once;
-6. existing download path;
-7. existing acknowledgement path.
+## Composition Boundary
 
-Recovery does not run before authentication, binding, or Device checks. Recovery does not bypass `UploadPendingEvents` or `HttpSyncTransport`.
+Native hosted composition now reads the active binding before constructing the transport. With a binding, it passes `activeBinding.serverDeviceId`. Without a binding, it fails closed through the existing hosted guard path and does not create a usable HTTP transport with missing or synthetic Device identity.
 
-## Transactional Discovery And Recovery Boundary
+No UI or coordinator submission-ID surface was added.
 
-The Drift adapter performs candidate discovery and state transition in one transaction. It admits only submissions with `state=failed` and `outcome=notApplied` for the scoped Account/Device.
+## Fixture Boundary
 
-For each candidate it validates:
+The native-closure hosted fixture now models the provider fence for protected routes by rejecting missing or incorrect `x-markei-device-id` with:
 
-- non-empty membership;
-- exactly one Account and one Device matching scope;
-- immutable event rows exist;
-- pending rows exist and are not accepted;
-- event IDs are unique;
-- Device sequences are unique and strictly contiguous;
-- payload identity fields match stored event identity;
-- canonical payload hash matches stored content hash;
-- no active equivalent retry already exists.
+```text
+device-enrollment-required
+```
 
-Exactly one valid candidate is recovered. Multiple valid candidates are ambiguous and fail closed. Invalid candidate structure fails closed without upload.
+The fixture increments no upload/download/acknowledgement counters for rejected requests, preserving a clear pre-transport authorization boundary.
 
-## Recovery Representation And Idempotency
+## Preservation Guarantees
 
-No schema migration was required. Existing state fields express the durable recovery boundary:
+This correction does not modify:
 
-- old failed attempt: retained as `state=superseded`;
-- member pending rows: returned to `state=pending`;
-- retry submission: created only by the existing ordered lease path;
-- unknown retry: retains the same retry submission identity/hash.
+- Drift schema version or migrations;
+- PostgreSQL migrations;
+- event versions;
+- EventId, AccountId, DeviceId, Device sequence, payload, occurrence time, or content hash;
+- ordered outbox selection and hydration rules;
+- failed/notApplied recovery representation;
+- server transaction behavior;
+- hosted Account/Device binding records;
+- cursor or acknowledgement state.
 
-Concurrent recovery calls are serialized by the transaction and conditional update. Repeated Sync after recovery finds no second eligible failed attempt. Close/reopen after recovery leaves either one pending retry path before upload or one accepted result after upload. An accepted upload cannot return to failed recovery because accepted member rows are rejected by candidate validation.
+## Deviations And Remaining Work
 
-## Immutable-Event Guarantees
+`dart format` completed on the changed Dart files. The stricter `--set-exit-if-changed` check repeatedly reported line-ending normalization on four files after formatting; analysis, focused tests, full tests, and platform builds were stable.
 
-Recovery never modifies:
-
-- EventId;
-- AccountId;
-- DeviceId;
-- Device sequence;
-- payload;
-- payload version;
-- occurrence time;
-- content hash.
-
-The recovered events are reused through the ordered lease invariant from `bbb5922`: ascending Device sequence with stable event identity tie-breaker, then membership position and transport serialization in that same order.
-
-## Deviations And Blockers
-
-No deviations or unresolved blockers remain for this unit. Provider/runtime acceptance against the human database is intentionally outside this commit and requires a separate authorized retest.
+The Windows provider retest was intentionally not performed. No provider acceptance is claimed by this commit.

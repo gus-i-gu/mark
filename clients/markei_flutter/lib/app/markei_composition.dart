@@ -11,6 +11,7 @@ import '../application/product_lists.dart';
 import '../application/purchase_history.dart';
 import '../application/register_purchase.dart';
 import '../application/stable_device_enrollment_command_factory.dart';
+import '../application/sync/sync_ports.dart';
 import '../application/sync/sync_use_cases.dart';
 import '../domain/shared/ids.dart';
 import '../infrastructure/auth/auth0_native_authentication.dart';
@@ -117,20 +118,23 @@ final class MarkeiComposition {
       configuration: config.configuration,
     );
     final repository = DriftHostedIdentityRepository(database);
-    final syncTransport = HttpSyncTransport(
-      client: http.Client(),
-      baseUri: config.configuration.hostedOrigin,
-      tokenSource: () async {
-        final result = await authentication.accessToken();
-        final token = result.accessToken;
-        if (token == null) {
-          throw StateError(result.errorCode ?? 'auth-required');
-        }
-        return token;
-      },
-      correlationSource: () => 'native-closure',
-    );
     final binding = activeBinding;
+    final syncTransport = binding == null
+        ? const _BlockedSyncTransport()
+        : HttpSyncTransport(
+            client: http.Client(),
+            baseUri: config.configuration.hostedOrigin,
+            tokenSource: () async {
+              final result = await authentication.accessToken();
+              final token = result.accessToken;
+              if (token == null) {
+                throw StateError(result.errorCode ?? 'auth-required');
+              }
+              return token;
+            },
+            correlationSource: () => 'native-closure',
+            hostedDeviceId: binding.serverDeviceId,
+          );
     final syncOutbox = binding == null
         ? DriftSyncOutboxRepository(database)
         : DriftSyncOutboxRepository.scoped(
@@ -187,5 +191,24 @@ final class MarkeiComposition {
         ),
       ),
     );
+  }
+}
+
+final class _BlockedSyncTransport implements SyncTransport {
+  const _BlockedSyncTransport();
+
+  @override
+  Future<SyncResult> acknowledge(String greatestContiguousCursor) {
+    throw StateError('hosted-restart-required');
+  }
+
+  @override
+  Future<DownloadPage> downloadAfter(String? cursor, {required int limit}) {
+    throw StateError('hosted-restart-required');
+  }
+
+  @override
+  Future<SyncResult> uploadSubmission(SyncUploadSubmission submission) {
+    throw StateError('hosted-restart-required');
   }
 }

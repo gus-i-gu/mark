@@ -25,6 +25,7 @@ enum SyncStatusCode {
   localBatchInvalid,
   failedRecoveryBlocked,
   authRequired,
+  deviceEnrollmentRequired,
   deviceRevoked,
   deviceExpired,
   cursorExpired,

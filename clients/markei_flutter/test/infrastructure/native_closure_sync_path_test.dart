@@ -24,6 +24,49 @@ import 'package:markei/infrastructure/local/sync/remote_purchase_event_applier.d
 import 'package:markei/infrastructure/remote/http_sync_transport.dart';
 
 void main() {
+  test('hosted sync fixture rejects missing or wrong Device header', () async {
+    const device = DeviceId('22222222-2222-4222-8222-222222222222');
+    final server = await _SyncFixtureServer.start(
+      allowedDeviceIds: {device.value},
+    );
+    addTearDown(server.close);
+
+    final missing = await http.Client().post(
+      server.uri.replace(path: '/v1/sync/submissions'),
+      headers: {
+        'authorization': 'Bearer synthetic-token',
+        'x-correlation-id': 'missing-device-regression',
+        'accept': 'application/json',
+        'content-type': 'application/json',
+      },
+      body: jsonEncode({'events': <Object?>[]}),
+    );
+    expect(
+      jsonDecode(missing.body),
+      containsPair('code', 'device-enrollment-required'),
+    );
+
+    final wrong =
+        await HttpSyncTransport(
+          client: http.Client(),
+          baseUri: server.uri,
+          tokenSource: () => 'synthetic-token',
+          correlationSource: () => 'wrong-device-regression',
+          hostedDeviceId: '33333333-3333-4333-8333-333333333333',
+        ).uploadSubmission(
+          const SyncUploadSubmission(
+            id: 'submission-1',
+            deviceId: '33333333-3333-4333-8333-333333333333',
+            requestHash: 'request-hash',
+            events: [],
+          ),
+        );
+
+    expect(wrong.code, SyncStatusCode.deviceEnrollmentRequired);
+    expect(wrong.protocolCode, 'device-enrollment-required');
+    expect(server.uploadCount, 0);
+  });
+
   test(
     'loopback HTTP and file-backed Drift execute hosted sync path',
     () async {
@@ -51,7 +94,10 @@ void main() {
                     .payloadJson,
               )
               as Map<String, Object?>;
-      final server = await _SyncFixtureServer.start([remoteEvent]);
+      final server = await _SyncFixtureServer.start(
+        events: [remoteEvent],
+        allowedDeviceIds: {localDevice.value},
+      );
       addTearDown(server.close);
 
       await DriftHostedIdentityRepository(local).save(
@@ -71,6 +117,7 @@ void main() {
         baseUri: server.uri,
         tokenSource: () => 'synthetic-access-token',
         correlationSource: () => 'native-closure-test',
+        hostedDeviceId: localDevice.value,
       );
       final outbox = DriftSyncOutboxRepository.scoped(
         local,
@@ -224,13 +271,16 @@ void main() {
         'unknown',
       );
 
-      final server = await _SyncFixtureServer.start();
+      final server = await _SyncFixtureServer.start(
+        allowedDeviceIds: {hostedDeviceA.value, hostedDeviceB.value},
+      );
       addTearDown(server.close);
       final transportA = HttpSyncTransport(
         client: http.Client(),
         baseUri: server.uri,
         tokenSource: () => 'synthetic-access-token-a',
         correlationSource: () => 'hosted-binding-a',
+        hostedDeviceId: hostedDeviceA.value,
       );
       final acceptedA = await transportA.uploadSubmission(replayedA!);
       await scopedOutboxA.persistUploadResult(replayedA.id, acceptedA);
@@ -267,6 +317,7 @@ void main() {
         baseUri: server.uri,
         tokenSource: () => 'synthetic-access-token-b',
         correlationSource: () => 'hosted-binding-b',
+        hostedDeviceId: hostedDeviceB.value,
       );
       expect(
         (await applierB.applyPage(
@@ -345,23 +396,31 @@ RegisterPurchaseCommand _command(
 }
 
 final class _SyncFixtureServer {
-  _SyncFixtureServer._(this._server, this.uri, this._events);
+  _SyncFixtureServer._(
+    this._server,
+    this.uri,
+    this._events,
+    this._allowedDeviceIds,
+  );
 
   final HttpServer _server;
   final Uri uri;
   final List<Map<String, Object?>> _events;
+  final Set<String> _allowedDeviceIds;
   int uploadCount = 0;
   int downloadCount = 0;
   int acknowledgeCount = 0;
 
-  static Future<_SyncFixtureServer> start([
+  static Future<_SyncFixtureServer> start({
     List<Map<String, Object?>> events = const [],
-  ]) async {
+    required Set<String> allowedDeviceIds,
+  }) async {
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final fixture = _SyncFixtureServer._(
       server,
       Uri.parse('http://127.0.0.1:${server.port}'),
       events.toList(growable: true),
+      allowedDeviceIds,
     );
     fixture._listen();
     return fixture;
@@ -374,6 +433,17 @@ final class _SyncFixtureServer {
   void _listen() {
     _server.listen((request) async {
       request.response.headers.contentType = ContentType.json;
+      if (!_acceptedDeviceHeader(request)) {
+        request.response.statusCode = HttpStatus.forbidden;
+        request.response.write(
+          jsonEncode({
+            'code': 'device-enrollment-required',
+            'retryable': false,
+          }),
+        );
+        await request.response.close();
+        return;
+      }
       if (request.method == 'POST' &&
           request.uri.path == '/v1/sync/submissions') {
         uploadCount++;
@@ -407,5 +477,11 @@ final class _SyncFixtureServer {
       }
       await request.response.close();
     });
+  }
+
+  bool _acceptedDeviceHeader(HttpRequest request) {
+    final deviceIds = request.headers['x-markei-device-id'] ?? const [];
+    return deviceIds.length == 1 &&
+        _allowedDeviceIds.contains(deviceIds.single);
   }
 }

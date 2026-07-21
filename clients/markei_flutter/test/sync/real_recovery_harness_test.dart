@@ -96,9 +96,21 @@ void main() {
       addTearDown(apiA.close);
       addTearDown(apiB.close);
       addTearDown(apiC.close);
-      final transportA = labTransport(apiA.uri, http.Client());
-      final transportB = labTransport(apiB.uri, http.Client());
-      final transportC = labTransport(apiC.uri, http.Client());
+      final transportA = labTransport(
+        apiA.uri,
+        http.Client(),
+        hostedDeviceId: deviceA.value,
+      );
+      final transportB = labTransport(
+        apiB.uri,
+        http.Client(),
+        hostedDeviceId: deviceB.value,
+      );
+      final transportC = labTransport(
+        apiC.uri,
+        http.Client(),
+        hostedDeviceId: deviceC.value,
+      );
 
       final purchaseRepo = LocalPurchaseRepository(a);
       final outboxA = DriftSyncOutboxRepository(a);

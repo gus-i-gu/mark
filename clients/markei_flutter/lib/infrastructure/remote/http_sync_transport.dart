@@ -16,6 +16,7 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
     required this.baseUri,
     required this.tokenSource,
     required this.correlationSource,
+    required this.hostedDeviceId,
     this.timeout = const Duration(seconds: 5),
     this.maxResponseBytes = 262144,
   });
@@ -24,6 +25,7 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
   final Uri baseUri;
   final SyncTokenSource tokenSource;
   final SyncCorrelationSource correlationSource;
+  final String hostedDeviceId;
   final Duration timeout;
   final int maxResponseBytes;
 
@@ -69,7 +71,8 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
       path: _join('/v1/sync/events'),
       queryParameters: query,
     );
-    final response = await _request(http.Request('GET', uri)).timeout(timeout);
+    final request = await _protectedRequest('GET', uri);
+    final response = await _request(request).timeout(timeout);
     final body = await _decodeResponse(response);
     if (body['code'] == 'cursor-expired') {
       throw StateError('cursor-expired');
@@ -138,8 +141,9 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
     final uri = baseUri.replace(
       path: _join('/v1/sync/rebootstrap/$recoverySessionId'),
     );
+    final request = await _protectedRequest('GET', uri);
     final body = await _decodeResponse(
-      await _request(http.Request('GET', uri)).timeout(timeout),
+      await _request(request).timeout(timeout),
     );
     if (body['code'] != null) {
       throw StateError(body['code']! as String);
@@ -155,8 +159,9 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
     final uri = baseUri.replace(
       path: _join('/v1/sync/rebootstrap/$recoverySessionId/chunks/$index'),
     );
+    final request = await _protectedRequest('GET', uri);
     final body = await _decodeResponse(
-      await _request(http.Request('GET', uri)).timeout(timeout),
+      await _request(request).timeout(timeout),
     );
     if (body['code'] != null) {
       throw StateError(body['code']! as String);
@@ -203,12 +208,13 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
     String path,
     Map<String, Object?> body,
   ) async {
-    final request = http.Request(method, baseUri.replace(path: _join(path)))
-      ..body = jsonEncode(body);
+    final request = await _protectedRequest(
+      method,
+      baseUri.replace(path: _join(path)),
+    );
+    request.body = jsonEncode(body);
     request.headers['content-type'] = 'application/json';
     request.headers['accept'] = 'application/json';
-    request.headers['x-correlation-id'] = correlationSource();
-    request.headers['authorization'] = 'Bearer ${await tokenSource()}';
     try {
       return _decodeResponse(await _request(request).timeout(timeout));
     } on TimeoutException {
@@ -216,6 +222,14 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
     } on http.ClientException {
       return null;
     }
+  }
+
+  Future<http.Request> _protectedRequest(String method, Uri uri) async {
+    final request = http.Request(method, uri);
+    request.headers['x-correlation-id'] = correlationSource();
+    request.headers['authorization'] = 'Bearer ${await tokenSource()}';
+    request.headers['x-markei-device-id'] = hostedDeviceId;
+    return request;
   }
 
   Future<http.StreamedResponse> _request(http.BaseRequest request) {
@@ -245,6 +259,7 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
   SyncResult _failure(Map<String, Object?> body) {
     final code = switch (body['code']) {
       'auth-required' => SyncStatusCode.authRequired,
+      'device-enrollment-required' => SyncStatusCode.deviceEnrollmentRequired,
       'device-revoked' => SyncStatusCode.deviceRevoked,
       'device-expired' => SyncStatusCode.deviceExpired,
       'sequence-gap' => SyncStatusCode.sequenceGap,

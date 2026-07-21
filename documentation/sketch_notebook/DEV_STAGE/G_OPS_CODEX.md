@@ -1,144 +1,105 @@
-# G_OPS_CODEX - Recovery Orchestration Evidence
+# G_OPS_CODEX - Hosted Device Header Evidence
 
-> Unit: C10-MCG02-RECOVERY-ORCHESTRATION_20260721T003303Z
-> Baseline SHA: 7a0e6d7128913232a4644ded4bbc4d931c095a9f
+> Unit: C10-MCG02-HOSTED-DEVICE-HEADER-CORRECTION_20260721T124452Z
+> Starting SHA: 59d4f944bfb7c34e1a67525902cdddfe4a4eb87b
 > Final SHA: recorded in Codex terminal response after commit creation
-> Result: C10_MCG02_RECOVERY_ORCHESTRATION_PROVED
+> Result: HOSTED_DEVICE_HEADER_ALL_PROTECTED_ROUTES=true
+
+## Git And Authority
+
+- Branch confirmed: `intermid-cycle-recovery`.
+- `git fetch origin`: passed.
+- `git pull --ff-only origin intermid-cycle-recovery`: already up to date.
+- Local HEAD equaled `origin/intermid-cycle-recovery` before editing.
+- `git merge-base --is-ancestor 59d4f944bfb7c34e1a67525902cdddfe4a4eb87b HEAD`: passed.
+- D/E/F all carried `C10-MCG02-HOSTED-DEVICE-HEADER-CORRECTION_20260721T124452Z`.
+- D/E/F were mutually consistent and sufficient after the user's Git sequencing clarification.
 
 ## Changed Paths
 
 - clients/markei_flutter/lib/app/markei_composition.dart
 - clients/markei_flutter/lib/application/hosted_sync_coordinator.dart
-- clients/markei_flutter/lib/application/sync/sync_ports.dart
-- clients/markei_flutter/lib/application/sync/sync_use_cases.dart
 - clients/markei_flutter/lib/domain/sync/sync_event.dart
-- clients/markei_flutter/lib/infrastructure/local/sync/local_sync_repositories.dart
-- clients/markei_flutter/test/infrastructure/native_auth_composition_test.dart
+- clients/markei_flutter/lib/infrastructure/remote/http_sync_transport.dart
+- clients/markei_flutter/test/infrastructure/http_sync_transport_device_header_test.dart
 - clients/markei_flutter/test/infrastructure/native_closure_sync_path_test.dart
 - clients/markei_flutter/test/sync/local_sync_application_test.dart
 - clients/markei_flutter/test/sync/real_convergence_harness_support.dart
 - clients/markei_flutter/test/sync/real_convergence_harness_test.dart
+- clients/markei_flutter/test/sync/real_recovery_harness_test.dart
 - documentation/sketch_notebook/DEV_STAGE/G_OPS_CODEX.md
 - documentation/sketch_notebook/DEV_STAGE/H_DDC_CODEX.md
 - documentation/sketch_notebook/DEV_STAGE/I_DSN_CODEX.md
 
-## Production Call Path
+## Implementation Evidence
 
-Production composition now wires:
+- `HttpSyncTransport` now requires one hosted server Device ID at construction.
+- Upload, download, acknowledgement, `startRecovery`, `queryRecovery`, `downloadChunk`, and `completeRecovery` all send `x-markei-device-id`.
+- Production native hosted composition constructs `HttpSyncTransport` with `activeBinding.serverDeviceId`.
+- Hosted composition fails closed without an active binding by retaining the existing guarded unavailable outcome and not constructing a usable transport.
+- Protocol code `device-enrollment-required` is preserved as `SyncStatusCode.deviceEnrollmentRequired` and mapped to the existing hosted Device enrollment outcome.
+- Authentication, correlation, timeout, JSON content negotiation, event identity, Device sequence, hashing, ordered outbox recovery, and server transaction behavior were not redesigned.
+- No Drift migration, PostgreSQL migration, schema change, event renumbering, Device reenrollment, Device B enrollment, UI work, provider Sync, deployment, or human database edit was performed.
 
-```text
-HostedSyncCoordinator
-  -> RecoverFailedNotApplied
-  -> SyncOutboxRepository.recoverOneFailedNotApplied
-  -> UploadPendingEvents
-  -> HttpSyncTransport
-```
-
-The coordinator invokes recovery only after hosted authentication, Account/Device binding, and Device-allowed checks. It then continues through the existing upload, download, and acknowledgement ordering. No UI submission-ID control, Drift query in UI/coordinator, schema migration, provider mutation, or human database edit was added.
-
-## Candidate Counts And Decisions
-
-- zero scoped failed/notApplied candidates: `SyncStatusCode.noRecoverableFailure`, protocol `no-recoverable-failure`, ordinary no-op.
-- one structurally valid scoped candidate: old failed submission retained as `superseded`; same immutable events returned to `pending`; result `SyncStatusCode.failedRecoveryAvailable`, protocol `failed-recovery-available`.
-- multiple structurally valid candidates: `SyncStatusCode.failedRecoveryBlocked`; no submission or event state changed.
-- malformed candidate, missing membership, hash mismatch, duplicate/gapped sequence, accepted member, active equivalent retry, wrong Account, or wrong Device: fail closed with bounded result and no unsafe mutation.
-- failed outcome other than `notApplied`, unknown outcome, uploading, or accepted submission: not eligible for automatic recovery.
-
-## Local Evidence
-
-Focused command:
-
-```text
-flutter test test\sync\local_sync_application_test.dart
-```
-
-Result: pass, 18 tests.
-
-Named recovery-orchestration tests included:
-
-- `scoped recovery discovery reports no candidate as no-op`
-- `scoped recovery discovery blocks ambiguous candidates`
-- `scoped recovery discovery blocks malformed failed candidate`
-- `scoped recovery ignores non-failed-notApplied states`
-- `scoped recovery blocks missing membership and hash mismatch`
-- `scoped recovery leaves cross-device failed attempts untouched`
-- `coordinator discovers failed recovery and uploads canonically`
-- `concurrent scoped recovery creates one pending recovery`
-- `unknown upload after recovery preserves same retry submission`
-
-Local counts and decisions:
-
-- reversed physical/member order `[2,1]` leased canonically as `[1,2]`;
-- coordinator recovery run uploaded exactly once and recorded transmitted sequences `[1,2]`;
-- old failed attempt count with `state=superseded`: `1`;
-- repeated coordinator sync after recovery produced no second upload;
-- concurrent recovery calls produced one `failedRecoveryAvailable` result and one durable superseded failed attempt;
-- unknown upload after recovery preserved one retry submission identity in `state=unknown`.
-
-## HTTP/PostgreSQL Proof
+## Focused Assertions
 
 Command:
 
 ```text
-$env:MARKEI_RUN_SYNC_LAB='1'; flutter test test\sync\real_convergence_harness_test.dart
+flutter test test\infrastructure\http_sync_transport_device_header_test.dart test\infrastructure\native_closure_sync_path_test.dart
 ```
 
-Result:
+Result: pass, 4 tests.
+
+Focused coverage:
+
+- transport sends `x-markei-device-id` on upload;
+- transport sends `x-markei-device-id` on download;
+- transport sends `x-markei-device-id` on acknowledgement;
+- transport sends `x-markei-device-id` on start recovery;
+- transport sends `x-markei-device-id` on query recovery;
+- transport sends `x-markei-device-id` on recovery chunk download;
+- transport sends `x-markei-device-id` on complete recovery;
+- native closure hosted fixture rejects missing Device header with `device-enrollment-required`;
+- native closure hosted fixture rejects wrong Device header with `device-enrollment-required` and performs no upload.
+
+## Regression Evidence
+
+Command:
 
 ```text
-CONVERGED=true
-ORDERED_OUTBOX_HTTP_PROOF=true sequences=1,2
-RECOVERY_ORCHESTRATION_HTTP_PROOF=true sequences=1,2
-3 tests passed
+flutter test test\sync\local_sync_application_test.dart test\sync\real_convergence_harness_test.dart test\sync\real_recovery_harness_test.dart
 ```
 
-Human-equivalent disposable fixture:
+Result: pass, 18 passed and 4 lab-only tests skipped.
 
-- Drift schema v8 file-backed database;
-- hosted Account/Device binding with Device sequences `1` and `2`;
-- local next sequence `3`;
-- one failed/notApplied legacy submission with reversed membership `[2,1]`;
-- server `devices.next_expected_sequence` before upload: `1`;
-- unrelated local-only Device event outside hosted scope preserved.
+Command:
 
-After one production `HostedSyncCoordinator` run:
+```text
+flutter test
+```
 
-- failed attempt discovered without supplied submission ID;
-- old failed submission retained as `superseded`;
-- same immutable hosted events requeued and leased canonically as `1,2`;
-- upload used real HTTP transport;
-- server `sync_events`: `2`;
-- server `submissions`: `1`;
-- server `devices.next_expected_sequence`: `3`;
-- local hosted pending rows accepted: `2`;
-- unrelated local-only pending row preserved: `1`;
-- repeated coordinator run left server counts unchanged at `sync_events=2`, `submissions=1`.
+Result: pass, 135 passed and 4 skipped.
 
-## Regression And Platform Validation
+Existing recovery/orchestration, convergence, Purchase/history, local-first, hosted binding, ordered outbox, typed server-code, and native closure paths remained passing.
 
-- `dart format --output=none --set-exit-if-changed ...` -> pass, 11 files checked, 0 changed.
-- `flutter analyze` -> pass, no issues.
-- `flutter test test\sync\local_sync_application_test.dart` -> pass, 18 tests.
-- `flutter test test\sync\local_sync_application_test.dart test\sync\real_convergence_harness_test.dart` without lab env -> pass, lab-only cases skipped by explicit guard.
-- `flutter test test\infrastructure\native_auth_composition_test.dart test\infrastructure\native_closure_sync_path_test.dart test\sync\real_recovery_harness_test.dart test\sync\two_device_system_harness_test.dart` -> pass; lab-only recovery harness skipped without env.
-- `flutter test` -> pass, 133 passed, 4 skipped.
-- `npm run format:check` in `services/markei_sync_api` -> pass.
-- `npm run lint` in `services/markei_sync_api` -> pass.
-- `npm run typecheck` in `services/markei_sync_api` -> pass.
-- `npm test` in `services/markei_sync_api` -> pass, 46 tests.
-- `npm run build` in `services/markei_sync_api` -> pass.
-- `flutter build apk --debug` -> pass, built `build\app\outputs\flutter-apk\app-debug.apk`; existing Auth0 Kotlin Gradle Plugin warning emitted.
-- `flutter build windows --release` -> pass, built `build\windows\x64\runner\Release\markei.exe`; existing Boost CMake policy warning emitted.
-- `git diff --check` -> pass.
+## Validation Results
 
-Drift generation was not run because no Drift schema declaration or generated database file changed. No TypeScript source changed; TypeScript checks were run as regression evidence.
+- `dart format` on changed Dart files: completed; repeated `--set-exit-if-changed` checks reported line-ending normalization on four files, while the applied formatting, analysis, and tests were stable.
+- `flutter analyze`: passed with no issues.
+- `npm run format:check` in `services/markei_sync_api`: passed.
+- `npm run lint` in `services/markei_sync_api`: passed.
+- `npm run typecheck` in `services/markei_sync_api`: passed.
+- `npm test` in `services/markei_sync_api`: passed, 46 tests.
+- `npm run build` in `services/markei_sync_api`: passed.
+- `flutter build apk --debug`: passed; existing Auth0 Kotlin Gradle Plugin warning observed.
+- `flutter build windows --release`: passed; existing Boost CMake CMP0167 warning observed.
+- `git diff --check`: passed.
 
-## Teardown, Secrets, And Scope
+## Privacy And Teardown
 
-- `docker compose ps --format json` in `infra/sync_lab` returned no services after lab teardown.
-- Tracked/staged secret and artifact scans were run before commit.
-- Pre-existing untracked private note files were preserved, not read, and not staged:
-  - `clients/markei_flutter/Exact Auth0 API audience`
-  - `clients/markei_flutter/Windows Native Application Client ID`
-
-No Neon, Auth0, Render, provider configuration, private provider files, or human Drift database was accessed or modified. No PostgreSQL or Drift migration, event version change, Device reenrollment, sequence renumbering, deployment, broad UI work, permanent documentation promotion, MCG-03, or MCG-04 was performed.
+- No Neon, Auth0, Render, provider credential, private provider file, or human Drift database was accessed.
+- No disposable provider Sync attempt was performed.
+- No tracked private database, binary package, credential, or provider artifact was intentionally added.
+- Docker-backed sync lab tests remained skipped because `MARKEI_RUN_SYNC_LAB=1` was not enabled for this correction.
+- Windows provider retest remains pending and human-controlled.
