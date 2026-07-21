@@ -122,6 +122,7 @@ class _MarkeiAppState extends State<MarkeiApp> {
                         selectedIndex: _selectedIndex,
                         onDestinationSelected: _selectDestination,
                         labelType: NavigationRailLabelType.all,
+                        scrollable: true,
                         destinations: [
                           for (final destination in destinations)
                             NavigationRailDestination(

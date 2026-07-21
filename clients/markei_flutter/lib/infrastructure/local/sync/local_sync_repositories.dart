@@ -58,29 +58,26 @@ final class DriftSyncOutboxRepository implements SyncOutboxRepository {
       final events = (await pendingQuery.get())
           .map((row) => row.readTable(_db.syncEvents))
           .toList(growable: false);
+      final unknowns = await _unknownSubmissions();
+      if (events.isNotEmpty && unknowns.isNotEmpty) {
+        _throwLocalBatchInvalid();
+      }
       if (events.isEmpty) {
-        Expression<bool> unknownPredicate = _db.syncSubmissions.state.equals(
-          'unknown',
-        );
-        if (accountId != null && deviceId != null) {
-          unknownPredicate =
-              unknownPredicate &
-              _db.syncSubmissions.accountId.equals(accountId) &
-              _db.syncSubmissions.deviceId.equals(deviceId);
-        }
-        final unknownQuery = _db.select(_db.syncSubmissions)
-          ..where((table) => unknownPredicate)
-          ..orderBy([(table) => OrderingTerm.asc(table.createdAt)])
-          ..limit(1);
-        final unknown = await unknownQuery.getSingleOrNull();
-        if (unknown == null) {
+        if (unknowns.isEmpty) {
           return null;
         }
+        if (unknowns.length != 1) {
+          _throwLocalBatchInvalid();
+        }
+        final unknown = unknowns.single;
         final members =
             await (_db.select(_db.syncSubmissionEvents)
                   ..where((table) => table.submissionId.equals(unknown.id))
                   ..orderBy([(table) => OrderingTerm.asc(table.position)]))
                 .get();
+        if (!_positionsAreContiguous(members)) {
+          _throwLocalBatchInvalid();
+        }
         final rows =
             await (_db.select(_db.syncEvents)..where(
                   (table) =>
@@ -91,14 +88,45 @@ final class DriftSyncOutboxRepository implements SyncOutboxRepository {
         final orderedRows = [
           for (final member in members) rowsById[member.eventId],
         ].nonNulls.toList(growable: false);
+        if (orderedRows.length != members.length) {
+          _throwLocalBatchInvalid();
+        }
         _preflightOrThrow(orderedRows);
+        final memberIds = orderedRows.map((row) => row.id).toList();
+        final states = await (_db.select(
+          _db.pendingEvents,
+        )..where((table) => table.eventId.isIn(memberIds))).get();
+        if (states.length != memberIds.length ||
+            states.any((row) => row.state != 'unknown')) {
+          _throwLocalBatchInvalid();
+        }
+        final eventJson = orderedRows
+            .map((row) => jsonDecode(row.payloadJson) as Map<String, Object?>)
+            .toList(growable: false);
+        final requestHash = canonicalUtf8Sha256({
+          'deviceId': unknown.deviceId,
+          'events': eventJson,
+          'submissionId': unknown.id,
+        });
+        if (requestHash != unknown.requestHash) {
+          _throwLocalBatchInvalid();
+        }
+        final device =
+            await (_db.select(_db.devices)..where(
+                  (table) =>
+                      table.id.equals(unknown.deviceId) &
+                      table.accountId.equals(unknown.accountId),
+                ))
+                .getSingleOrNull();
+        if (device == null ||
+            device.nextSequence != orderedRows.last.deviceSequence + 1) {
+          _throwLocalBatchInvalid();
+        }
         return SyncUploadSubmission(
           id: unknown.id,
           deviceId: unknown.deviceId,
           requestHash: unknown.requestHash,
-          events: orderedRows
-              .map((row) => jsonDecode(row.payloadJson) as Map<String, Object?>)
-              .toList(growable: false),
+          events: eventJson,
         );
       }
       _preflightOrThrow(events);
@@ -149,6 +177,25 @@ final class DriftSyncOutboxRepository implements SyncOutboxRepository {
         events: eventJson,
       );
     });
+  }
+
+  Future<List<SyncSubmission>> _unknownSubmissions() {
+    Expression<bool> unknownPredicate = _db.syncSubmissions.state.equals(
+      'unknown',
+    );
+    if (_accountId != null && _deviceId != null) {
+      unknownPredicate =
+          unknownPredicate &
+          _db.syncSubmissions.accountId.equals(_accountId) &
+          _db.syncSubmissions.deviceId.equals(_deviceId);
+    }
+    final query = _db.select(_db.syncSubmissions)
+      ..where((table) => unknownPredicate)
+      ..orderBy([
+        (table) => OrderingTerm.asc(table.createdAt),
+        (table) => OrderingTerm.asc(table.id),
+      ]);
+    return query.get();
   }
 
   @override
@@ -270,15 +317,29 @@ final class DriftSyncOutboxRepository implements SyncOutboxRepository {
 
   void _preflightOrThrow(List<SyncEvent> events) {
     if (!_preflightValid(events)) {
-      throw const SyncBatchPreflightException(
-        SyncResult(
-          code: SyncStatusCode.localBatchInvalid,
-          outcome: SyncOutcome.notApplied,
-          retryable: false,
-          protocolCode: 'local-batch-invalid',
-        ),
-      );
+      _throwLocalBatchInvalid();
     }
+  }
+
+  Never _throwLocalBatchInvalid() {
+    throw const SyncBatchPreflightException(
+      SyncResult(
+        code: SyncStatusCode.localBatchInvalid,
+        outcome: SyncOutcome.notApplied,
+        retryable: false,
+        protocolCode: 'local-batch-invalid',
+      ),
+    );
+  }
+
+  bool _positionsAreContiguous(List<SyncSubmissionEvent> members) {
+    final positions = <int>{};
+    for (var i = 0; i < members.length; i++) {
+      if (!positions.add(members[i].position) || members[i].position != i) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool _preflightValid(

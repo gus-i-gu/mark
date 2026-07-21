@@ -6,6 +6,7 @@ import 'package:markei/application/purchase_history.dart';
 import 'package:markei/application/register_purchase.dart';
 import 'package:markei/app/markei_app.dart';
 import 'package:markei/app/markei_composition.dart';
+import 'package:markei/app/native_auth_closure_runner.dart';
 import 'package:markei/app/pages/history_page.dart';
 import 'package:markei/domain/catalogue/product.dart';
 import 'package:markei/domain/shared/ids.dart';
@@ -268,6 +269,67 @@ void main() {
     expect(find.byKey(const Key('markei.navigationRail')), findsOneWidget);
     expect(find.byKey(const Key('markei.navigationBar')), findsNothing);
     expect(find.byKey(const Key('history.empty')), findsOneWidget);
+  });
+
+  testWidgets('desktop rail reaches Closure at short height without overflow', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 520);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    final composition = _composition(
+      db: db,
+      queries: queries,
+      registration: LocalPurchaseRepository(db),
+      nativeClosureSurfaceEnabled: true,
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+    final railScrollable = find.descendant(
+      of: find.byKey(const Key('markei.navigationRail')),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Closure'),
+      200,
+      scrollable: railScrollable,
+    );
+    await tester.tap(find.text('Closure'));
+    await _pumpReady(tester);
+
+    expect(find.byKey(const Key('nativeClosure.page')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('desktop rail reaches Closure at tall height without overflow', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    final queries = LocalQueryRepository(db);
+    final composition = _composition(
+      db: db,
+      queries: queries,
+      registration: LocalPurchaseRepository(db),
+      nativeClosureSurfaceEnabled: true,
+    );
+
+    await tester.pumpWidget(MarkeiApp(composition: composition));
+    await _pumpReady(tester);
+    await tester.tap(find.text('Closure'));
+    await _pumpReady(tester);
+
+    expect(find.byKey(const Key('nativeClosure.page')), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('history separates loading, error, and empty states', (
@@ -1001,6 +1063,7 @@ MarkeiComposition _composition({
   required LocalDatabase db,
   required LocalQueryRepository queries,
   required PurchaseRegistrationRepository registration,
+  bool nativeClosureSurfaceEnabled = false,
 }) {
   return MarkeiComposition(
     database: db,
@@ -1013,6 +1076,8 @@ MarkeiComposition _composition({
     purchaseExports: queries,
     accountId: const AccountId('11111111-1111-4111-8111-111111111111'),
     deviceId: const DeviceId('22222222-2222-4222-8222-222222222222'),
+    nativeClosureRunner: const NativeAuthClosureRunner.unavailable(),
+    nativeClosureSurfaceEnabled: nativeClosureSurfaceEnabled,
   );
 }
 

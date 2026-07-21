@@ -1,89 +1,104 @@
-# I_DSN_CODEX - Closure Diagnostics Design
+# I_DSN_CODEX - Unknown Recovery Design
 
-> Unit: C10-MCG02-CLOSURE-DIAGNOSTICS_20260721
-> Result: C10_MCG02_CLOSURE_DIAGNOSTICS_IMPLEMENTED
+> Unit: C10-MCG02-UNKNOWN-RECOVERY_20260721
+> Result: C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED
 
-## Final Architecture
+## Final Dependency Direction
 
 ```text
 NativeClosurePage
   -> NativeAuthClosureRunner
-       -> existing auth/enrollment/sync commands
+       -> ExternalAuthenticationSession
        -> ClosureDiagnosticsQuery
-       -> SyncAttemptRecorder
+       -> existing hosted Sync probe
 
-ClosureDiagnosticsQuery / SyncAttemptRecorder
+ClosureDiagnosticsQuery
   -> DriftClosureDiagnosticsRepository
-       -> local Drift tables only
+       -> local Drift diagnostic and outbox tables
+
+UploadPendingEvents
+  -> SyncOutboxRepository
+       -> DriftSyncOutboxRepository
+  -> SyncTransport
 ```
 
-Closure remains separate from Settings. Widgets render diagnostic view models and never depend on Drift rows.
+Closure remains separate from Settings. Widgets consume application view models and do not depend on Drift rows.
 
-## Query And Ledger Responsibilities
+## Port And Repository Responsibilities
 
-`ClosureDiagnosticsQuery` owns read-only snapshot retrieval for the active Account/environment scope.
+`ClosureDiagnosticsQuery.unknownSubmissionRetryPreflight` is the read-only application query for the Closure recovery action. It accepts only the current authentication state from the runner and uses the repository's configured Account/environment/Device scope.
 
-`SyncAttemptRecorder` owns the local-only attempt lifecycle:
+`DriftClosureDiagnosticsRepository` verifies:
 
-```text
-beginSyncAttempt
-  -> HostedSyncCoordinator.run
-  -> completeSyncAttempt exactly once for returned/caught terminal outcome
-```
+- authenticated state;
+- active local hosted binding and enrollment;
+- scoped Device row;
+- zero scoped pending/uploading/failed work beside unknown work;
+- exactly one scoped unknown submission;
+- complete membership rows ordered by position;
+- unique and contiguous membership positions;
+- existing member events;
+- scoped Account/Device consistency;
+- unique and contiguous Device sequences;
+- event payload/content hash consistency;
+- pending rows for every member in `unknown`;
+- recomputed request identity equals the stored identity;
+- local next Device sequence follows the last member sequence.
 
-The recorder is outside Purchase/event/outbox transactions. A diagnostic write does not change synchronization decisions, transport behavior, event identity, outbox ordering, recovery representation or server transaction boundaries.
+It returns only bounded state/guidance codes and sanitized counts/fingerprint.
 
-## Migration Direction
+## Retry Boundary
 
-Local Drift schema version is now 9.
+`NativeClosurePage` performs preflight before confirmation. Cancellation or blocked preflight stops locally without transport, outbox mutation or attempt-ledger write.
 
-The migration direction is strictly forward:
+After user confirmation, `NativeAuthClosureRunner.retryUnresolvedSubmission` delegates to the existing hosted Sync probe. That path retains the existing authentication, enrollment, coordinator, attempt ledger, transport and outbox behavior.
 
-```text
-v8 -> v9: create sync_attempts
-```
+`DriftSyncOutboxRepository.leasePending` now treats a single valid unknown submission as an exact idempotent retry candidate when no pending rows exist. It returns the original upload submission and does not create a replacement submission. If scoped pending work exists beside unknown work, or if multiple unknown submissions exist, it fails closed with `local-batch-invalid`.
 
-No existing user fact is reset, relabeled, deleted, merged or synthesized. No PostgreSQL migration or server schema change exists in this unit.
+## Immutable Event Guarantees
 
-## Snapshot Invariants
+The implementation never modifies:
 
-Snapshots are Account/environment scoped and contain:
+- EventId;
+- AccountId;
+- DeviceId;
+- Device sequence;
+- payload;
+- payload version;
+- occurrence time;
+- content hash;
+- stored request hash for unknown retry;
+- ordered submission membership.
 
-- authentication state supplied by the runner;
-- hosted enrollment state from local hosted-auth state;
-- readiness code derived from auth, enrollment and local queue state;
-- pending, uploading, failed and unknown queue counts;
-- current local Device next sequence;
-- last locally recorded successful Sync completion;
-- newest 20 Sync attempts;
-- newest 20 pending/failed/unknown actionable events;
-- redacted Device summaries;
-- refresh timestamp.
+The only durable state transitions happen through the existing upload-result persistence:
 
-Ordering is deterministic: newest timestamps first where applicable, with local ID or stable event order tie-breakers. Fingerprints are presentation-safe derivatives and are not replacement identities.
+- accepted and duplicate-equivalent -> accepted submission and pending rows;
+- repeated unknown -> unknown submission and pending rows remain reusable;
+- stable not-applied/conflict -> failed submission and pending rows, available to existing failed/notApplied recovery rules where eligible.
 
-## UI Boundary
+## Idempotency And Concurrency Rules
 
-The Closure page contains vertically stacked diagnostic sections plus the existing command buttons. `Refresh diagnostics` invokes only the local query. `Clear diagnostic history` is guarded by a confirmation dialog and delegates only to the attempt-ledger clear operation.
+The durable idempotency key is the existing unknown submission identity plus stored request hash and ordered member list. Reopen or repeated retry uses the same rows as long as the state remains unknown and valid.
 
-Actions refresh diagnostics after completion and do not clear prior diagnostics while running.
+Preflight is transactional and read-only. Upload lease revalidates the persisted unknown shape in a transaction immediately before returning the upload submission. Ambiguous or malformed state returns a bounded local failure before transport.
 
-## Preservation Guarantees
+The existing upload-result transaction remains the convergence boundary for accepted, duplicate-equivalent, unknown and failed outcomes.
 
-This unit does not modify:
+## Windows Design
 
-- server API routes;
-- event versions or payload contracts;
-- EventId, AccountId, DeviceId, Device sequence, payload, occurrence time or content hash;
-- sync upload/download/acknowledgement decisions;
-- ordered outbox selection or failed/notApplied recovery representation;
-- hosted Account/Device binding semantics;
-- cursor or acknowledgement state;
-- Purchase registration or History behavior;
-- Settings navigation or unrelated pages.
+`tool/register_windows_auth0flutter_protocol.ps1` is a repository-owned development/install helper for Windows. It writes the current-user protocol registration under `HKCU:\Software\Classes\auth0flutter`, resolves the supplied executable path, and stores a command with quoted executable and quoted `%1`.
+
+The helper intentionally contains no tenant, credential, provider origin or callback data. Strict callback-prefix validation and single-instance forwarding stay in the existing runtime code.
+
+Desktop navigation uses `NavigationRail(scrollable: true)`, preserving destination order, selected-index alignment and compact navigation behavior while allowing short-height Windows layouts to reach Closure.
+
+## Schema And Migration
+
+No Drift or PostgreSQL migration was added. The local Drift schema remains at the prior version from the Closure Diagnostics unit.
 
 ## Deviations And Residual Work
 
-The first Windows release build failed because a local `markei` process locked build output. After stopping that local process only, the Windows release build passed.
-
-No provider retest was run. Human/provider completion remains pending outside this commit.
+- No real provider Sync or unknown recovery invocation was performed.
+- No hosted state freshness is claimed.
+- The Windows provider retest remains a later human-controlled step.
+- Final commit and tree SHAs are reported by Codex after commit because they cannot be embedded in the committed report file without changing themselves.

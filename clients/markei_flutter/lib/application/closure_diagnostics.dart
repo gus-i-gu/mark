@@ -4,6 +4,9 @@ abstract interface class ClosureDiagnosticsQuery {
   Future<ClosureDiagnosticsSnapshot> snapshot({
     required String authenticationState,
   });
+  Future<UnknownSubmissionRetryPreflight> unknownSubmissionRetryPreflight({
+    required String authenticationState,
+  });
   Future<void> clearAttemptHistory();
 }
 
@@ -116,6 +119,37 @@ final class ClosureActionableEventSummary {
   final String state;
   final DateTime enqueuedAt;
   final DateTime occurredAt;
+}
+
+final class UnknownSubmissionRetryPreflight {
+  const UnknownSubmissionRetryPreflight.eligible({
+    required this.submissionFingerprint,
+    required this.eventCount,
+    required this.firstDeviceSequence,
+    required this.lastDeviceSequence,
+    required this.nextLocalDeviceSequence,
+  }) : state = 'unknown-retry-eligible',
+       guidance = 'confirm-exact-unknown-retry',
+       eligible = true;
+
+  const UnknownSubmissionRetryPreflight.blocked({
+    required this.state,
+    required this.guidance,
+  }) : eligible = false,
+       submissionFingerprint = null,
+       eventCount = null,
+       firstDeviceSequence = null,
+       lastDeviceSequence = null,
+       nextLocalDeviceSequence = null;
+
+  final bool eligible;
+  final String state;
+  final String guidance;
+  final String? submissionFingerprint;
+  final int? eventCount;
+  final int? firstDeviceSequence;
+  final int? lastDeviceSequence;
+  final int? nextLocalDeviceSequence;
 }
 
 final class ClosureDiagnosticsScope {

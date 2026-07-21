@@ -1,17 +1,31 @@
-# markei
+# Markei Flutter Client
 
-A new Flutter project.
+## Windows Development Setup
 
-## Getting Started
+The Windows desktop build requires Flutter's Windows toolchain and native
+dependencies discoverable through vcpkg. Use local placeholder values for your
+machine:
 
-This project is a starting point for a Flutter application.
+```powershell
+$env:VCPKG_ROOT = '<path-to-vcpkg>'
+$env:CMAKE_TOOLCHAIN_FILE = '<path-to-vcpkg>\scripts\buildsystems\vcpkg.cmake'
+vcpkg install cpprestsdk:x64-windows
+```
 
-A few resources to get you started if this is your first Flutter project:
+Enable the native Closure surface only for diagnostic Windows runs:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```powershell
+flutter run -d windows --dart-define=MARKEI_NATIVE_CLOSURE_SURFACE=true
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Register the Auth0 Flutter callback protocol for the current Windows user after
+building the desktop executable:
+
+```powershell
+.\tool\register_windows_auth0flutter_protocol.ps1 `
+  -ExecutablePath '<path-to-built-markei.exe>'
+```
+
+The registration script writes only the `auth0flutter` protocol handler under
+`HKCU:\Software\Classes`, requires no administrator rights, and does not contain
+tenant, credential, callback, or provider configuration values.

@@ -7,6 +7,7 @@ import 'package:drift/drift.dart';
 
 import '../../application/closure_diagnostics.dart';
 import '../../domain/shared/ids.dart';
+import '../../domain/sync/canonical_json.dart';
 import 'local_database.dart';
 
 final class DriftClosureDiagnosticsRepository
@@ -83,6 +84,130 @@ final class DriftClosureDiagnosticsRepository
   }
 
   @override
+  Future<UnknownSubmissionRetryPreflight> unknownSubmissionRetryPreflight({
+    required String authenticationState,
+  }) {
+    return _db.transaction(() async {
+      if (authenticationState != 'authenticated') {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-authentication-required',
+          guidance: 'sign-in-required',
+        );
+      }
+      final hosted =
+          await (_db.select(_db.hostedAuthStates)..where(
+                (table) => table.environmentAlias.equals(_environmentAlias),
+              ))
+              .getSingleOrNull();
+      if (hosted == null ||
+          !_activeEnrollmentStates.contains(hosted.enrollmentState) ||
+          hosted.accountId != _accountId ||
+          hosted.serverDeviceId != _deviceId) {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-device-enrollment-required',
+          guidance: 'enroll-or-query-device',
+        );
+      }
+      final device =
+          await (_db.select(_db.devices)..where(
+                (table) =>
+                    table.id.equals(_deviceId) &
+                    table.accountId.equals(_accountId),
+              ))
+              .getSingleOrNull();
+      if (device == null) {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-device-enrollment-required',
+          guidance: 'enroll-or-query-device',
+        );
+      }
+      final counts = await _queueCountsForDevice();
+      if (counts.pending > 0 || counts.uploading > 0 || counts.failed > 0) {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-queue-not-isolated',
+          guidance: 'review-local-sync-state-before-retry',
+        );
+      }
+      final submissions =
+          await (_db.select(_db.syncSubmissions)
+                ..where(
+                  (table) =>
+                      table.accountId.equals(_accountId) &
+                      table.deviceId.equals(_deviceId) &
+                      table.state.equals('unknown'),
+                )
+                ..orderBy([
+                  (table) => OrderingTerm.asc(table.createdAt),
+                  (table) => OrderingTerm.asc(table.id),
+                ]))
+              .get();
+      if (submissions.isEmpty) {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-no-unresolved-submission',
+          guidance: 'no-local-sync-action-needed',
+        );
+      }
+      if (submissions.length != 1) {
+        return const UnknownSubmissionRetryPreflight.blocked(
+          state: 'unknown-retry-ambiguous-unresolved-submission',
+          guidance: 'review-local-sync-state-before-retry',
+        );
+      }
+      final submission = submissions.single;
+      final members =
+          await (_db.select(_db.syncSubmissionEvents)
+                ..where((table) => table.submissionId.equals(submission.id))
+                ..orderBy([(table) => OrderingTerm.asc(table.position)]))
+              .get();
+      if (members.isEmpty || !_positionsAreContiguous(members)) {
+        return _malformedUnknownRetry();
+      }
+      final rows =
+          await (_db.select(_db.syncEvents)..where(
+                (table) => table.id.isIn(
+                  members.map((member) => member.eventId).toList(),
+                ),
+              ))
+              .get();
+      final rowsById = {for (final row in rows) row.id: row};
+      final orderedRows = [
+        for (final member in members) rowsById[member.eventId],
+      ].nonNulls.toList(growable: false);
+      if (orderedRows.length != members.length ||
+          !_unknownRetryRowsValid(orderedRows)) {
+        return _malformedUnknownRetry();
+      }
+      final memberIds = orderedRows.map((row) => row.id).toList();
+      final pendingRows = await (_db.select(
+        _db.pendingEvents,
+      )..where((table) => table.eventId.isIn(memberIds))).get();
+      if (pendingRows.length != memberIds.length ||
+          pendingRows.any((row) => row.state != 'unknown')) {
+        return _malformedUnknownRetry();
+      }
+      final eventJson = orderedRows
+          .map((row) => jsonDecode(row.payloadJson) as Map<String, Object?>)
+          .toList(growable: false);
+      final requestHash = canonicalUtf8Sha256({
+        'deviceId': submission.deviceId,
+        'events': eventJson,
+        'submissionId': submission.id,
+      });
+      if (requestHash != submission.requestHash ||
+          device.nextSequence != orderedRows.last.deviceSequence + 1) {
+        return _malformedUnknownRetry();
+      }
+      return UnknownSubmissionRetryPreflight.eligible(
+        submissionFingerprint: _fingerprint(submission.id),
+        eventCount: orderedRows.length,
+        firstDeviceSequence: orderedRows.first.deviceSequence,
+        lastDeviceSequence: orderedRows.last.deviceSequence,
+        nextLocalDeviceSequence: device.nextSequence,
+      );
+    });
+  }
+
+  @override
   Future<ClosureDiagnosticsSnapshot> snapshot({
     required String authenticationState,
   }) async {
@@ -145,6 +270,46 @@ final class DriftClosureDiagnosticsRepository
         _db.syncEvents.id.equalsExp(_db.pendingEvents.eventId),
       ),
     ])..where(_db.syncEvents.accountId.equals(_accountId))).get();
+    var pending = 0;
+    var uploading = 0;
+    var failed = 0;
+    var unknown = 0;
+    for (final row in rows) {
+      switch (row.readTable(_db.pendingEvents).state) {
+        case 'pending':
+          pending++;
+        case 'uploading':
+          uploading++;
+        case 'failed':
+          failed++;
+        case 'unknown':
+          unknown++;
+      }
+    }
+    return ClosureQueueCounts(
+      pending: pending,
+      uploading: uploading,
+      failed: failed,
+      unknown: unknown,
+    );
+  }
+
+  Future<ClosureQueueCounts> _queueCountsForDevice() async {
+    final rows =
+        await (_db.select(_db.pendingEvents).join([
+              innerJoin(
+                _db.syncEvents,
+                _db.syncEvents.id.equalsExp(_db.pendingEvents.eventId),
+              ),
+            ])..where(
+              _db.syncEvents.accountId.equals(_accountId) &
+                  _db.syncEvents.deviceId.equals(_deviceId),
+            ))
+            .get();
+    return _countPendingRows(rows);
+  }
+
+  ClosureQueueCounts _countPendingRows(List<TypedResult> rows) {
     var pending = 0;
     var uploading = 0;
     var failed = 0;
@@ -285,6 +450,51 @@ final class DriftClosureDiagnosticsRepository
     }
     if (counts.pending > 0) return 'sync-can-upload-local-work';
     return 'no-local-sync-action-needed';
+  }
+
+  bool _positionsAreContiguous(List<SyncSubmissionEvent> members) {
+    final positions = <int>{};
+    for (var i = 0; i < members.length; i++) {
+      if (!positions.add(members[i].position) || members[i].position != i) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _unknownRetryRowsValid(List<SyncEvent> rows) {
+    if (rows.isEmpty) return false;
+    final eventIds = <String>{};
+    final sequences = <int>{};
+    var previousSequence = rows.first.deviceSequence - 1;
+    for (final row in rows) {
+      if (row.accountId != _accountId ||
+          row.deviceId != _deviceId ||
+          !eventIds.add(row.id) ||
+          !sequences.add(row.deviceSequence) ||
+          row.deviceSequence != previousSequence + 1) {
+        return false;
+      }
+      final payload = jsonDecode(row.payloadJson) as Map<String, Object?>;
+      final content = Map<String, Object?>.from(payload)..remove('contentHash');
+      if (payload['eventId'] != row.id ||
+          payload['accountId'] != row.accountId ||
+          payload['deviceId'] != row.deviceId ||
+          payload['deviceSequence'] != row.deviceSequence ||
+          payload['contentHash'] != row.contentHash ||
+          canonicalUtf8Sha256(content) != row.contentHash) {
+        return false;
+      }
+      previousSequence = row.deviceSequence;
+    }
+    return true;
+  }
+
+  UnknownSubmissionRetryPreflight _malformedUnknownRetry() {
+    return const UnknownSubmissionRetryPreflight.blocked(
+      state: 'unknown-retry-state-invalid',
+      guidance: 'preserve-local-evidence-and-stop',
+    );
   }
 }
 

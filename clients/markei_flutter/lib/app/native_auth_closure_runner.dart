@@ -108,6 +108,27 @@ final class NativeAuthClosureRunner {
     }
   }
 
+  Future<UnknownSubmissionRetryPreflight> unknownRetryPreflight() async {
+    if (_unavailable) {
+      return const UnknownSubmissionRetryPreflight.blocked(
+        state: 'configuration-missing',
+        guidance: 'configuration-required',
+      );
+    }
+    final auth = await _authenticationSession!.currentState();
+    return _diagnosticsQuery!.unknownSubmissionRetryPreflight(
+      authenticationState: _stateName(auth),
+    );
+  }
+
+  Future<NativeClosureStatus> retryUnresolvedSubmission() async {
+    final preflight = await unknownRetryPreflight();
+    if (!preflight.eligible) {
+      return NativeClosureStatus(preflight.state);
+    }
+    return hostedSyncProbe();
+  }
+
   Future<NativeClosureStatus> logout() async {
     if (_unavailable) {
       return const NativeClosureStatus('configuration-missing');

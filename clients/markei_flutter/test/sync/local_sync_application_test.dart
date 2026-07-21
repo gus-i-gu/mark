@@ -144,6 +144,118 @@ void main() {
     },
   );
 
+  test(
+    'file-backed unknown retry reuses exact submission for sequences one and two',
+    () async {
+      final fixture = await _fileBackedOutboxFixture();
+      final db = fixture.db;
+      addTearDown(fixture.close);
+      final seq2 = _eventPayload(sequence: 2, eventId: _eventId(2));
+      final seq1 = _eventPayload(sequence: 1, eventId: _eventId(1));
+      await _insertRawEvent(db, seq2, state: 'unknown');
+      await _insertRawEvent(db, seq1, state: 'unknown');
+      final requestHash = await _insertUnknownSubmission(db, 'unknown-one', [
+        seq1,
+        seq2,
+      ]);
+
+      final retry = await DriftSyncOutboxRepository.scoped(
+        db,
+        accountId: _accountId(),
+        deviceId: _deviceId(),
+      ).leasePending(limit: 25);
+
+      expect(retry!.id, 'unknown-one');
+      expect(retry.requestHash, requestHash);
+      expect(retry.events.map((event) => event['deviceSequence']), [1, 2]);
+      expect((await db.select(db.devices).getSingle()).nextSequence, 3);
+      expect(
+        (await db.select(db.syncSubmissions).getSingle()).state,
+        'unknown',
+      );
+      expect(
+        (await db.select(db.pendingEvents).get()).map((row) => row.state),
+        everyElement('unknown'),
+      );
+    },
+  );
+
+  for (final scenario in [
+    (
+      name: 'accepted',
+      result: const SyncResult(
+        code: SyncStatusCode.serverAccepted,
+        outcome: SyncOutcome.applied,
+        retryable: false,
+      ),
+      expectedState: 'accepted',
+    ),
+    (
+      name: 'duplicate-equivalent',
+      result: const SyncResult(
+        code: SyncStatusCode.duplicateIgnored,
+        outcome: SyncOutcome.duplicateEquivalent,
+        retryable: false,
+      ),
+      expectedState: 'accepted',
+    ),
+    (
+      name: 'repeated-unknown',
+      result: const SyncResult(
+        code: SyncStatusCode.unknownOutcome,
+        outcome: SyncOutcome.unknown,
+        retryable: true,
+      ),
+      expectedState: 'unknown',
+    ),
+    (
+      name: 'stable-not-applied',
+      result: const SyncResult(
+        code: SyncStatusCode.sequenceGap,
+        outcome: SyncOutcome.notApplied,
+        retryable: false,
+        protocolCode: 'sequence-gap',
+      ),
+      expectedState: 'failed',
+    ),
+  ]) {
+    test('same-submission unknown retry persists ${scenario.name}', () async {
+      final fixture = await _fileBackedOutboxFixture();
+      final db = fixture.db;
+      addTearDown(fixture.close);
+      final seq1 = _eventPayload(sequence: 1, eventId: _eventId(1));
+      final seq2 = _eventPayload(sequence: 2, eventId: _eventId(2));
+      await _insertRawEvent(db, seq2, state: 'unknown');
+      await _insertRawEvent(db, seq1, state: 'unknown');
+      final requestHash = await _insertUnknownSubmission(db, 'unknown-one', [
+        seq1,
+        seq2,
+      ]);
+      final transport = _RecordingUploadTransport(result: scenario.result);
+
+      final result = await UploadPendingEvents(
+        DriftSyncOutboxRepository.scoped(
+          db,
+          accountId: _accountId(),
+          deviceId: _deviceId(),
+        ),
+        transport,
+      )();
+
+      final submission = await db.select(db.syncSubmissions).getSingle();
+      expect(result, scenario.result);
+      expect(transport.uploadCount, 1);
+      expect(transport.uploadedSequences.single, [1, 2]);
+      expect(submission.id, 'unknown-one');
+      expect(submission.requestHash, requestHash);
+      expect(submission.state, scenario.expectedState);
+      expect(
+        (await db.select(db.pendingEvents).get()).map((row) => row.state),
+        everyElement(scenario.expectedState),
+      );
+    });
+  }
+
   test('file-backed outbox preflight blocks non-contiguous batches', () async {
     final fixture = await _fileBackedOutboxFixture();
     final db = fixture.db;
@@ -165,6 +277,66 @@ void main() {
     expect(
       (await db.select(db.pendingEvents).get()).map((row) => row.state),
       everyElement('pending'),
+    );
+  });
+
+  test(
+    'ordinary sync cannot bypass a scoped unknown submission with pending work',
+    () async {
+      final fixture = await _fileBackedOutboxFixture();
+      final db = fixture.db;
+      addTearDown(fixture.close);
+      final seq1 = _eventPayload(sequence: 1, eventId: _eventId(1));
+      final seq2 = _eventPayload(sequence: 2, eventId: _eventId(2));
+      await _insertRawEvent(db, seq1, state: 'unknown');
+      await _insertRawEvent(db, seq2);
+      await _insertUnknownSubmission(db, 'unknown-one', [seq1]);
+      final transport = _RecordingUploadTransport();
+
+      final result = await UploadPendingEvents(
+        DriftSyncOutboxRepository.scoped(
+          db,
+          accountId: _accountId(),
+          deviceId: _deviceId(),
+        ),
+        transport,
+      )();
+
+      expect(result!.code, SyncStatusCode.localBatchInvalid);
+      expect(transport.uploadCount, 0);
+      expect(
+        (await db.select(db.pendingEvents).get()).map((row) => row.state),
+        containsAll(['unknown', 'pending']),
+      );
+    },
+  );
+
+  test('ordinary sync fails closed for multiple unknown submissions', () async {
+    final fixture = await _fileBackedOutboxFixture();
+    final db = fixture.db;
+    addTearDown(fixture.close);
+    final seq1 = _eventPayload(sequence: 1, eventId: _eventId(1));
+    final seq2 = _eventPayload(sequence: 2, eventId: _eventId(2));
+    await _insertRawEvent(db, seq1, state: 'unknown');
+    await _insertRawEvent(db, seq2, state: 'unknown');
+    await _insertUnknownSubmission(db, 'unknown-one', [seq1]);
+    await _insertUnknownSubmission(db, 'unknown-two', [seq2]);
+    final transport = _RecordingUploadTransport();
+
+    final result = await UploadPendingEvents(
+      DriftSyncOutboxRepository.scoped(
+        db,
+        accountId: _accountId(),
+        deviceId: _deviceId(),
+      ),
+      transport,
+    )();
+
+    expect(result!.code, SyncStatusCode.localBatchInvalid);
+    expect(transport.uploadCount, 0);
+    expect(
+      (await db.select(db.syncSubmissions).get()).map((row) => row.state),
+      everyElement('unknown'),
     );
   });
 
@@ -659,6 +831,15 @@ final class _RecordingTransport implements SyncTransport {
 }
 
 final class _RecordingUploadTransport implements SyncTransport {
+  _RecordingUploadTransport({
+    this.result = const SyncResult(
+      code: SyncStatusCode.serverAccepted,
+      outcome: SyncOutcome.applied,
+      retryable: false,
+    ),
+  });
+
+  final SyncResult result;
   int uploadCount = 0;
   final uploadedSequences = <List<int>>[];
 
@@ -680,11 +861,7 @@ final class _RecordingUploadTransport implements SyncTransport {
           .map((event) => event['deviceSequence']! as int)
           .toList(growable: false),
     );
-    return const SyncResult(
-      code: SyncStatusCode.serverAccepted,
-      outcome: SyncOutcome.applied,
-      retryable: false,
-    );
+    return result;
   }
 }
 
@@ -830,6 +1007,19 @@ Future<void> _insertRawEvent(
           enqueuedAt: now,
         ),
       );
+  await (db.update(db.devices)..where(
+        (table) =>
+            table.id.equals(event['deviceId']! as String) &
+            table.accountId.equals(event['accountId']! as String) &
+            table.nextSequence.isSmallerThanValue(
+              (event['deviceSequence']! as int) + 1,
+            ),
+      ))
+      .write(
+        DevicesCompanion(
+          nextSequence: Value((event['deviceSequence']! as int) + 1),
+        ),
+      );
 }
 
 Future<void> _insertFailedSubmission(
@@ -867,6 +1057,47 @@ Future<void> _insertFailedSubmission(
           ),
         );
   }
+}
+
+Future<String> _insertUnknownSubmission(
+  LocalDatabase db,
+  String submissionId,
+  List<Map<String, Object?>> events,
+) async {
+  final requestHash = canonicalUtf8Sha256({
+    'deviceId': events.first['deviceId'],
+    'events': events,
+    'submissionId': submissionId,
+  });
+  final now = DateTime.utc(2026, 7, 21, 1);
+  await db
+      .into(db.syncSubmissions)
+      .insert(
+        SyncSubmissionsCompanion.insert(
+          id: submissionId,
+          accountId: events.first['accountId']! as String,
+          deviceId: events.first['deviceId']! as String,
+          requestHash: requestHash,
+          state: 'unknown',
+          outcome: const Value('unknown'),
+          responseCode: const Value('unknownOutcome'),
+          attemptCount: const Value(1),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+  for (var i = 0; i < events.length; i++) {
+    await db
+        .into(db.syncSubmissionEvents)
+        .insert(
+          SyncSubmissionEventsCompanion.insert(
+            submissionId: submissionId,
+            eventId: events[i]['eventId']! as String,
+            position: i,
+          ),
+        );
+  }
+  return requestHash;
 }
 
 Future<List<int>> _legacyUnorderedLeaseSequences(LocalDatabase db) async {

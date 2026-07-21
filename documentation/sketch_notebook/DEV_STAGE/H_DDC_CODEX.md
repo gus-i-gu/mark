@@ -1,60 +1,90 @@
-# H_DDC_CODEX - Closure Diagnostics Semantics
+# H_DDC_CODEX - Unknown Recovery Semantics
 
-> Unit: C10-MCG02-CLOSURE-DIAGNOSTICS_20260721
-> Result: C10_MCG02_CLOSURE_DIAGNOSTICS_IMPLEMENTED
+> Unit: C10-MCG02-UNKNOWN-RECOVERY_20260721
+> Result: C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED
 
 ## Materialized States
 
-- `current status`: refreshed local observation from authentication state plus scoped local database snapshot.
-- `sync attempt`: one explicit user Sync invocation recorded from start to one terminal result.
-- `pending`, `uploading`, `failed`, `unknown`: queue states counted from durable local pending-event rows.
-- `next Device sequence`: local current Device sequence only; no Neon expectation is inferred.
-- `last successful sync`: displayed only from a persisted local attempt with completed outcome.
-- `no-recorded-attempts`: the post-implementation ledger has no rows; it does not claim Sync was never tried.
+- `unknown-retry-authentication-required`: Closure recovery action is blocked before transport when the user is not authenticated.
+- `unknown-retry-device-enrollment-required`: recovery is blocked when the active local hosted binding is absent or not enrolled for the scoped Account/Device.
+- `unknown-retry-no-unresolved-submission`: zero eligible unknown submissions is an ordinary no-op.
+- `unknown-retry-ambiguous-unresolved-submission`: multiple scoped unknown submissions are ambiguous and fail closed.
+- `unknown-retry-queue-not-isolated`: unknown recovery is blocked while scoped pending/uploading/failed work is also present.
+- `unknown-retry-state-invalid`: malformed membership, missing member rows, non-contiguous positions or sequences, request identity mismatch, payload/content mismatch or stale local sequence fails closed.
+- `unknown-retry-eligible`: one scoped unresolved submission can be retried through normal Sync after explicit user confirmation.
+- `unknown-retry-cancelled`: user cancellation performs no transport request and no queue or submission mutation.
 
-## Display Behavior
+## User Semantics
 
-Closure now shows:
+Closure now includes `Retry unresolved submission` as a deliberate action separate from ordinary Refresh and Sync. The confirmation dialog displays only sanitized facts:
 
-- Sync overview: authentication, enrollment, readiness, last result, last successful Sync and recovery guidance;
-- Local queue: pending, uploading, failed, unknown and next Device sequence;
-- Recent sync attempts: newest 20, with fingerprint, stable code, outcome, phase, sanitized recovery code and duration;
-- Devices: redacted current/local Device summaries;
-- Actionable events: newest 20 pending/failed/unknown rows with fingerprint, event type, sequence, state and timestamps;
-- Closure actions: existing Status, Sign in, Enroll, Query, Sync and Logout plus Refresh diagnostics and confirmed Clear diagnostic history.
+- bounded Device sequence range;
+- next local Device sequence;
+- short submission fingerprint;
+- stable guidance that the hosted outcome is unresolved.
 
-Missing current values render as `Unavailable` or `Not recorded`; attempt-history absence renders as `No locally recorded attempt history`.
+The UI does not display submission IDs, request hashes, event IDs, Account IDs, Device IDs, payloads, provider hosts, tokens, SQL, stack traces or raw exception text.
+
+Blocked preflight and cancellation do not record a diagnostic attempt. A confirmed eligible recovery delegates to the existing hosted Sync probe path, which records exactly one durable diagnostic attempt for the invocation and refreshes diagnostics after the terminal result.
+
+## Retry Semantics
+
+Ordinary Sync already preserved unknown retry identity once the outbox contained one unknown submission and no pending work. This unit strengthens that behavior by:
+
+- proving the persisted membership shape before exposing a user action;
+- rejecting ambiguous or malformed unknown state;
+- preventing ordinary scoped Sync from bypassing unknown work with unrelated pending work;
+- proving upload serialization uses the existing ordered membership.
+
+The retry reuses:
+
+- the same submission identity;
+- the same request hash;
+- the same ordered members;
+- the same event identity and content;
+- the same Device sequences.
+
+No replacement submission is allocated for an eligible unknown retry.
+
+## Outcome Semantics
+
+Terminal persistence through the normal outbox path now has focused tests for:
+
+- accepted: original rows converge to accepted;
+- duplicate-equivalent: original rows converge to accepted without duplicate local identity;
+- repeated unknown: original rows remain unknown with the same retry identity;
+- stable not-applied: original rows move to failed using existing failed/recovery representation;
+- sequence/hash/Account/Device conflicts: existing typed failure-code behavior remains preserved and visible through bounded result codes.
+
+Malformed, cross-scope, non-contiguous, missing-member, multiple-unknown or non-isolated states fail closed before transport.
 
 ## Semantic Tests
 
-- `snapshot is scoped, ordered, bounded and redacted`
-- `clear history preserves queue, Device, binding and cursor state`
-- `Closure renders signed-out empty diagnostics`
-- `Closure renders enrolled pending failed unknown and history`
-- `Refresh diagnostics is local only and does not invoke Sync`
-- `Clear diagnostic history is confirmed and scoped to attempts`
-- `runner records auth-required Sync terminal outcome once`
-- `runner records no-new-events Sync terminal outcome once`
-- `runner records completed Sync terminal outcome once`
-- `runner records unavailable Sync terminal outcome once`
-- `runner records interrupted Sync terminal outcome once`
-- `migrates v8 database to v9 attempt ledger without reset`
+- `unknown retry preflight proves exact persisted submission shape`
+- `unknown retry preflight blocks malformed persisted identity`
+- `unknown retry preflight fails closed for ambiguous candidates`
+- `unknown retry preflight blocks unauthenticated and non-isolated queues`
+- `file-backed unknown retry reuses exact submission for sequences one and two`
+- `same-submission unknown retry persists accepted`
+- `same-submission unknown retry persists duplicate-equivalent`
+- `same-submission unknown retry persists repeated-unknown`
+- `same-submission unknown retry persists stable-not-applied`
+- `ordinary sync cannot bypass a scoped unknown submission with pending work`
+- `ordinary sync fails closed for multiple unknown submissions`
+- `Retry unresolved submission cancellation does not start Sync`
+- `Retry unresolved submission confirms and refreshes diagnostics`
+- `Retry unresolved submission blocked preflight is non-mutating`
+- `runner retry blocks before ledger when preflight is ineligible`
+- `Windows auth0flutter protocol registration contract`
+- `desktop rail reaches Closure at short height without overflow`
+- `desktop rail reaches Closure at tall height without overflow`
 
-## Privacy Semantics
+## Windows Semantics
 
-The diagnostic surface uses short non-reversible fingerprints for row distinction. It does not display or persist access tokens, refresh tokens, Auth0 subjects, complete Account/Device/Event/Submission UUIDs, provider URLs or hosts, connection strings, HTTP bodies, event or purchase payload JSON, SQL, filesystem paths, stack traces or raw exception text.
+The repository-owned Windows helper registers only the current-user `auth0flutter` protocol handler. It requires a local executable path, quotes the executable and `%1`, and carries no tenant/provider/callback values. Developer setup guidance uses placeholders only.
 
-Sync result history persists only stable bounded codes:
+Desktop navigation preserves destination order and selected-index alignment. The rail is vertically scrollable at short heights, so Closure remains reachable without RenderFlex overflow.
 
-- phase;
-- result code;
-- outcome class;
-- sanitized recovery code.
+## Privacy Evidence
 
-Provider-side success, request arrival and convergence remain unclaimed. The old real provider attempt remains external evidence only and is not backfilled into the ledger.
-
-## User Boundaries
-
-Refresh diagnostics is explicit, offline and read-only. It cannot start Sync, transport, recovery, download or acknowledgement.
-
-Clear diagnostic history is user-confirmed and deletes only local attempt history. It does not alter queue rows, immutable events, Devices, purchases, hosted binding, credentials, sync cursor or acknowledgement state.
+Reports and UI use stable bounded codes and short fingerprints only. No provider-side success, hosted state freshness, or human database correction is claimed. The real Windows provider retest remains pending.

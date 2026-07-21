@@ -83,6 +83,11 @@ class _NativeClosurePageState extends State<NativeClosurePage> {
                 child: const Text('Refresh diagnostics'),
               ),
               OutlinedButton(
+                key: const Key('nativeClosure.Retry unresolved submission'),
+                onPressed: _running ? null : _confirmRetryUnresolved,
+                child: const Text('Retry unresolved submission'),
+              ),
+              OutlinedButton(
                 key: const Key('nativeClosure.Clear diagnostic history'),
                 onPressed: _running ? null : _confirmClearHistory,
                 child: const Text('Clear diagnostic history'),
@@ -110,6 +115,58 @@ class _NativeClosurePageState extends State<NativeClosurePage> {
     final snapshot = await widget.runner.diagnostics();
     if (!mounted) return;
     setState(() => _snapshot = snapshot);
+  }
+
+  Future<void> _confirmRetryUnresolved() async {
+    final preflight = await widget.runner.unknownRetryPreflight();
+    if (!mounted) return;
+    if (!preflight.eligible) {
+      final snapshot = await widget.runner.diagnostics();
+      if (!mounted) return;
+      setState(() {
+        _state = preflight.state;
+        _snapshot = snapshot;
+      });
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Retry unresolved submission'),
+        content: Text(
+          'This will retry the same unresolved submission without changing '
+          'local events. Events ${preflight.firstDeviceSequence}-'
+          '${preflight.lastDeviceSequence}; next local sequence '
+          '${preflight.nextLocalDeviceSequence}; submission '
+          '#${preflight.submissionFingerprint}. Hosted outcome is unresolved.',
+          key: const Key('nativeClosure.retry.guidance'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const Key('nativeClosure.retry.confirm'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      setState(() => _state = 'unknown-retry-cancelled');
+      return;
+    }
+    setState(() => _running = true);
+    final result = await widget.runner.retryUnresolvedSubmission();
+    final snapshot = await widget.runner.diagnostics();
+    if (!mounted) return;
+    setState(() {
+      _state = result.state;
+      _snapshot = snapshot;
+      _running = false;
+    });
   }
 
   Future<void> _confirmClearHistory() async {

@@ -947,6 +947,16 @@ final class _FakeClosureDiagnostics
   Future<void> clearAttemptHistory() async {}
 
   @override
+  Future<UnknownSubmissionRetryPreflight> unknownSubmissionRetryPreflight({
+    required String authenticationState,
+  }) async {
+    return const UnknownSubmissionRetryPreflight.blocked(
+      state: 'unknown-retry-no-unresolved-submission',
+      guidance: 'no-local-sync-action-needed',
+    );
+  }
+
+  @override
   Future<ClosureDiagnosticsSnapshot> snapshot({
     required String authenticationState,
   }) async {
