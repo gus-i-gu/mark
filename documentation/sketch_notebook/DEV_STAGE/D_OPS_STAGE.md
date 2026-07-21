@@ -1,93 +1,174 @@
-# D_OPS_STAGE — Unknown-Outbox Recovery and Windows Closure Completion
+# D_OPS_STAGE — Hosted Transport Observability
 
-> Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-UNKNOWN-RECOVERY_20260721
-> Required ancestor: `301ea19b216f46a2d0375b9e52a3cbb27d8de998`
-> Status: **ACTIVE CODEX MATERIALIZATION AUTHORITY**
+> Unit: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+> Authority: Main Chat
+> Status: READY FOR MATERIALIZATION
 
-## Accepted evidence
+## 1. Verified baseline
 
-The Closure-diagnostics implementation passed repository validation and manual Windows verification:
+One controlled exact-identity retry of the preserved unknown submission was invoked. The local
+attempt ledger recorded `sync-interrupted / transport-or-closure`; local events 1–2 remained
+`unknown`; next local Device sequence remained 3; Render exposed no corresponding application log;
+and Neon remained `accounts 1 / devices 1 / cursor 0 / submissions 0 / events 0 /
+acknowledgements 0`.
 
-~~~text
-authentication                  authenticated
-enrollment                      device-enrolled
-readiness                       unknown-work-needs-review
-pending/uploading/failed        0 / 0 / 0
-unknown                         2 (Device sequences 1 and 2)
-next local Device sequence      3
-recent recorded attempts        empty (the interrupted attempt predates the ledger)
-second diagnostic refresh       local-only and non-mutating
-last provider observation       submissions 0 / events 0 / next expected sequence 1
-~~~
+This proves neither a Render outage nor a client-only fault. It localizes the missing evidence to
+the client-to-hosted transport boundary. No second submission retry is authorized by this unit.
 
-The Windows client also required manual current-user registration of `auth0flutter://` before the
-browser callback returned to Markei. With Closure visible, the navigation rail overflowed by about
-90 pixels at one tested window height.
+Repository inspection also establishes:
 
-These observations validate Closure diagnostics. They do not validate synchronization convergence
-or authorize an uncontrolled retry.
+- Fastify currently uses `logger: false`;
+- the API already owns unauthenticated `GET /health/live` and `GET /health/ready` routes;
+- the Flutter Sync transport defaults to a five-second timeout;
+- the Closure runner collapses the interruption to `transport-or-closure`.
 
-## Required materialization
+The human has selected a paid Render service instance for Markei's early MVP phases. Record this as
+an operational environment decision that removes free-instance sleeping as a future test variable.
+Do not claim that payment fixes the observed fault, and do not purchase, configure or deploy Render
+from Codex.
 
-1. Trace and document the exact persisted relationship among the two `unknown` pending-event rows,
-   their submission row, submission membership/order, request hash and Device sequence. Do not
-   print payloads or complete identifiers.
-2. Preserve the existing idempotency invariant: an unknown submission may be retried only as the
-   exact same submission identity, request hash, ordered event membership and event content. Never
-   allocate a replacement submission or skip/resequence its events.
-3. Add an explicit, user-confirmed Closure recovery action for eligible unknown work. It must:
-   - require authenticated, active enrollment and one scoped unknown submission;
-   - show a sanitized preflight summary and warn that hosted outcome is unresolved;
-   - reuse the normal coordinator/transport and the exact persisted submission;
-   - create one durable diagnostic attempt record;
-   - disable conflicting actions while running;
-   - refresh diagnostics after the terminal outcome.
-4. Fail closed with stable guidance when unknown state is malformed, cross-scope, has missing or
-   mismatched members, is non-contiguous, has multiple competing unknown submissions, or cannot
-   prove exact retry identity. Do not mutate the queue in those cases.
-5. Preserve response semantics:
-   - accepted or duplicate-equivalent may transition the original submission/events to accepted;
-   - another unknown result remains unknown and preserves the same retry identity;
-   - stable not-applied results follow the existing failed/recovery representation;
-   - sequence/hash/account/device conflicts remain blocked and visible.
-6. Package/register the Windows `auth0flutter` callback protocol through a repository-owned,
-   current-user-scoped development/install mechanism appropriate to Flutter Windows. Registration
-   must quote the executable and `%1`, require no administrator rights, contain no credentials, and
-   be testable. Keep the existing single-instance callback forwarding and validation.
-7. Make desktop navigation vertically responsive/scrollable so all destinations, including
-   Closure, remain reachable without RenderFlex overflow at supported Windows heights. Preserve
-   compact navigation behavior and destination/index alignment.
-8. Update developer-facing Windows run/setup guidance with the verified vcpkg discovery variables
-   and Closure feature flag, using placeholders only.
+## 2. Operational objective
 
-## Validation
+Make every future hosted connectivity or Sync attempt answer, without private data:
 
-- repository snapshot test for the real shape: one unknown submission containing sequences 1–2,
-  local next sequence 3, and exact same-submission retry;
-- accepted, duplicate-equivalent, repeated-unknown, stable-not-applied, conflict and malformed-state
-  tests with queue/submission invariants checked after each outcome;
-- proof that confirmation cancellation and failed preflight make no transport call and no mutation;
-- proof that exactly one attempt ledger entry is finalized per recovery invocation;
-- widget tests for recovery visibility, sanitized confirmation, busy state and guidance;
-- Windows protocol-registration contract test plus callback-forwarding regression;
-- navigation tests at representative short and tall desktop heights, with no overflow exceptions;
-- complete formatting, analysis, Flutter tests, Android debug build and Windows release build;
+1. whether local preflight completed;
+2. whether access-token acquisition completed;
+3. whether an HTTP request was constructed and transport began;
+4. whether any HTTP response was received;
+5. whether the response was parsed into a protocol outcome;
+6. which bounded failure class terminated the attempt;
+7. whether Render received and completed the correlated request.
+
+Before another unknown-submission retry, Closure must provide a deliberate non-mutating
+`Check hosted connection` action that probes the existing live and ready endpoints and records a
+sanitized result. It must never upload, download, enroll, authenticate through a browser, mutate the
+outbox, or write hosted data.
+
+## 3. Client attempt evidence
+
+Extend the durable Closure attempt evidence with a bounded stage/result model. Use stable codes,
+not raw exceptions. At minimum distinguish:
+
+- `preflight-passed`;
+- `token-acquired` or `token-acquisition-failed`;
+- `request-created`;
+- `transport-started`;
+- `response-received` with bounded HTTP status when available;
+- `response-parsed`;
+- `dns-failed`;
+- `tls-failed`;
+- `connection-failed`;
+- `timeout-before-response`;
+- `timeout-during-response` when the transport can prove it;
+- `request-cancelled`;
+- `authorization-rejected` for 401/403;
+- `hosted-rejected` for other bounded non-success statuses;
+- `protocol-failed`;
+- `closure-failed` for non-transport client defects;
+- `outcome-unknown` only when no more stable classification is justified.
+
+Persist only what is needed for diagnostic continuity: operation kind, latest completed stage,
+bounded result code, start/finish timestamps, shortened correlation fingerprint, optional HTTP
+status, whether response headers were received, and stable guidance. Preserve historical rows and
+provide an additive Drift migration if the schema must change.
+
+Never store or display tokens, authorization headers, payloads, response bodies, full URLs,
+provider hosts, callback URLs, SQL, stack traces, raw exception text, complete identifiers or full
+correlation values.
+
+## 4. Hosted connection check
+
+Add a Closure action that:
+
+- confirms the configured HTTPS origin is structurally valid without displaying it;
+- calls existing `/health/live` first;
+- calls `/health/ready` only after live returns successfully;
+- uses no bearer token because these existing health routes are deliberately outside protected
+  route inventory;
+- uses a cold-start-tolerant, explicitly bounded deadline separate from the five-second Sync
+  default;
+- displays live reachability, database readiness, elapsed-time band, bounded failure stage/result,
+  and a shortened correlation fingerprint;
+- records exactly one durable diagnostic attempt for one confirmed check;
+- disables duplicate invocation while busy;
+- changes no authentication, enrollment, queue, submission or provider state.
+
+The UI must make clear that `live` proves process reachability, `ready` proves the API's existing
+database-readiness contract, and neither proves that Sync will succeed.
+
+## 5. Hosted request logs
+
+Add structured sanitized application logging at the API boundary. The hosted process must emit
+bounded events for:
+
+- request received;
+- authentication accepted/rejected for protected routes;
+- operation validation started;
+- database transaction started when applicable;
+- response completed;
+- request failed.
+
+Each record may contain timestamp, stable operation/route class, method, bounded status/result,
+elapsed-time band and a correlation fingerprint suitable for matching the client display. Do not
+log raw headers, bearer tokens, bodies, query parameters, provider configuration, complete paths
+containing identifiers, full correlation IDs, Account/Device/Event/Submission IDs, hashes, SQL or
+stack traces.
+
+Health logging must be visible enough to prove the harmless connectivity check reached the same
+deployed process. Tests must also prove that arbitrary or malformed correlation input cannot inject
+log lines or bypass redaction.
+
+## 6. Timeout and failure handling
+
+Inspect enrollment and Sync URL construction side by side and report whether they share the same
+validated origin/path policy. Do not silently change the hosted protocol.
+
+Replace broad exception collapse only where a stable bounded classification is possible. Preserve
+unknown-outcome semantics: a timeout after transport started must never be represented as a known
+non-application, and it must not reclassify the preserved unknown events.
+
+Timeout policy must be explicit and tested. The harmless health check may tolerate a cold start;
+submission transport must retain a finite deadline and exact-idempotency behavior. Codex may adjust
+the five-second submission deadline only if repository tests and documented reasoning show that the
+new value remains bounded and does not blur timeout versus response handling.
+
+## 7. Validation
+
+Run and report:
+
+- client unit tests for every reachable failure classification;
+- live-only success, live-not-ready, live failure, ready failure, timeout, cancellation,
+  malformed response, repeated press and missing/invalid origin tests;
+- proof that the connection check sends no authorization header and mutates no local Sync state;
+- attempt-ledger migration/reopen/backfill tests if schema changes;
+- exact one-attempt finalization and shortened-correlation tests;
+- API structured-log success, 401/403, validation failure, database failure, completion and
+  redaction/injection tests;
+- regression tests for route inventory and both health routes;
+- comparison tests for enrollment and Sync origin/path construction;
+- existing exact-identity unknown-retry tests without executing a real retry;
+- Dart formatting, Flutter analysis and complete Flutter tests;
+- API format, lint, typecheck, tests and build;
+- Android debug and Windows release builds;
 - `git diff --check`, exact changed-path review and tracked/staged secret scan.
 
-## Boundaries and stop rules
+Use local injection/fake transports and disposable local PostgreSQL/Docker only where existing
+repository validation requires them. Do not contact Auth0, Render or Neon.
 
-Do not access or mutate Auth0, Render or Neon; deploy; execute the real recovery; edit the user's
-database; reset/reclassify unknown rows directly; change event identity/content/order; introduce a
-new server endpoint unless existing protocol behavior makes safe recovery impossible; merge Closure
-with Settings; expose payloads, tokens, full identifiers or raw exceptions; start MCG-03/04; or
-update permanent notebook memory.
+## 8. Stop conditions and prohibitions
 
-If exact retry identity cannot be proven from persisted local state and existing server semantics,
-stop with the precise gap rather than creating a destructive repair.
+Stop and report if safe correlation requires revealing a full identifier, health routes differ
+from the inspected contract, a migration would overwrite historical evidence, or classification
+would require guessing whether the server applied a request.
 
-Replace G/H/I with evidence, commit and push one bounded implementation without force.
+Do not:
 
-Success terminal: `C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED`
-
-Otherwise: `C10_MCG02_UNKNOWN_RECOVERY_PARTIAL` with the exact blocker.
+- execute Sync or retry the human unknown submission;
+- edit the human local database;
+- mutate providers, purchase/configure Render, deploy or run Neon SQL;
+- relabel, replace, resequence or delete events 1–2;
+- weaken JWT, RLS, enrollment, route-inventory or callback validation;
+- enable raw Fastify request/body/header logging;
+- add telemetry, analytics or diagnostic export;
+- begin MCG-03/04 or Cycle 11;
+- update permanent domain memory.

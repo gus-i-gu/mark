@@ -1,94 +1,100 @@
-# J_MAIN_STAGE — Unknown-Outbox Recovery Reconciliation
+# J_MAIN_STAGE — Hosted Transport Observability Coordination
 
-> Sequence: FLX-PRM-04
-> Authority marker: C10-MCG02-UNKNOWN-RECOVERY_20260721
-> Materialization commit: `3d99f20f634a26ed04c72eafa5caf930ad6619d0`
-> Materialization tree: `a7a20635866b7718e82e0870ebc95bf2b9103226`
-> Status: **IMPLEMENTATION ACCEPTED; CANCELLED PREFLIGHT VERIFICATION ACTIVE**
+> Sequence: FLX-ORD-01
+> Authority marker: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+> Required ancestor: `f8557105ad478c85c82b99b6b60b371d2cb9ddd8`
+> Status: **TRANSPORT OBSERVABILITY D/E/F ACTIVE; SYNC BLOCKED**
 
-## 1. Reconciliation result
+## 1. Reconciled runtime evidence
 
-Closure diagnostics are implemented, repository-validated and manually verified on the upgraded
-Windows database. Two consecutive refreshes showed the same sanitized state and the second refresh
-performed no Sync, authentication flow or mutation.
+The unknown-recovery implementation passed repository validation and its cancelled preflight passed
+manual Windows verification. One subsequently authorized controlled retry was invoked exactly once.
+
+After that invocation:
 
 ~~~text
-authenticated / device-enrolled
-unknown-work-needs-review
-pending 0 / uploading 0 / failed 0 / unknown 2
-unknown Device sequences 1 and 2
-next local Device sequence 3
-no locally recorded attempt history
+local attempt: sync-interrupted / transport-or-closure
+local unknown events: 2, Device sequences 1–2
+next local Device sequence: 3
+Render application request evidence: absent
+Neon: accounts 1 / devices 1 / cursor 0 / submissions 0 / events 0 / acknowledgements 0
 ~~~
 
-The latest bounded hosted observation remains `submissions 0 / events 0 / next sequence 1`. This is
-consistent with a retryable first submission but does not by itself authorize queue mutation or
-prove the exact local submission shape.
+The events remain preserved and no hosted duplication or corruption is evidenced. The result does
+not prove whether the request failed before transport, timed out during a sleeping-service wake,
+reached Render's edge but not application logging, failed token acquisition, or stopped in local
+Closure orchestration. `transport-or-closure` is therefore too broad for the next controlled test.
 
-Manual verification also exposed two separate product defects: Windows lacked installed
-`auth0flutter://` protocol registration, and the desktop navigation rail overflowed at the tested
-height. Manual current-user registration enabled sign-in; it is evidence of the missing packaging
-step, not the permanent solution.
+## 2. Source reconciliation
 
-## 2. Materialization reconciliation
+Repository inspection confirms three relevant conditions:
 
-Codex returned:
+- the API already exposes `/health/live` and `/health/ready`;
+- its Fastify composition currently disables logging with `logger: false`;
+- Flutter Sync uses a five-second default transport timeout and Closure collapses the terminal
+  interruption into one broad phase.
 
-`C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED`
+These facts make a free-instance cold start plausible but not proved. They also show that the
+repository can gain decisive evidence without risking another submission: instrument the boundary
+and exercise the existing health routes first.
 
-The branch is exactly one bounded commit ahead of the authorized stage. The changed paths match the
-unit: Closure application/repository/UI code, Sync outbox behavior, Windows registration helper,
-developer guidance, focused tests, and G/H/I. No migration, server API, event contract or provider
-configuration changed.
+## 3. Human operational decision
 
-Repository evidence accepts these implementation claims:
+The human selects a paid Render web-service instance for Markei's early MVP phases because an
+always-on hosted API is the sober operating baseline for continuing development. This is an
+accepted environment/cost decision, not retroactive proof that sleeping caused the failed retry.
 
-- one eligible unknown submission is retried with its original submission identity, request hash,
-  ordered members, event identity/content and Device sequences;
-- malformed, ambiguous, cross-scope and non-isolated state fails closed before transport;
-- cancellation and blocked preflight do not start transport or mutate the queue;
-- a confirmed invocation delegates to the existing authenticated coordinator and attempt ledger;
-- accepted, duplicate-equivalent, repeated-unknown and stable-not-applied outcomes have focused
-  persistence tests;
-- Windows callback registration is repository-owned and current-user scoped;
-- desktop navigation remains reachable without overflow at tested short and tall heights.
+Codex must not purchase, configure or deploy the service. After implementation and reconciliation,
+the human will apply the Render instance change and deploy through the existing controlled workflow.
 
-Reported validation passed: 167 Flutter tests with 4 skips, clean Flutter analysis and formatting,
-Android debug and Windows release builds, 46 API tests plus API format/lint/typecheck/build, diff
-checking and bounded privacy/path review.
+## 4. Active unit
 
-## 3. PRC-01 classification record
+The next bounded unit is:
 
-| Candidate claim | Evidence / confidence | Semantic owner and state |
-| --- | --- | --- |
-| Guarded exact-identity unknown retry exists | Source inspection plus named file-backed and outcome tests; high for repository behavior | Design/Operational permanent memory: eligible after cancelled runtime preflight |
-| Windows protocol helper and scrollable navigation exist | Source inspection, contract/widget tests and successful Windows release build; high for implementation | Operational/Design permanent memory: eligible after Windows observation |
-| Real sequences 1–2 converge with hosted state | Not tested; provider access was prohibited | Remains unvalidated and must not be promoted |
-| Hosted state is still `0 / 0 / 1` | Earlier bounded observation only | Observational and stale until explicitly rechecked |
-| MCG-02 is complete | Unknown recovery implementation exists, but provider convergence remains pending | Blocked; no canonical acceptance yet |
+`C10-MCG02-TRANSPORT-OBSERVABILITY`
 
-G/H/I remain observational evidence. Domain chats may absorb repository architecture and validation
-only after the cancelled preflight gate; they must preserve the distinction between local behavior,
-platform observation and real hosted convergence.
+Only D/E/F bearing `C10-MCG02-TRANSPORT-OBSERVABILITY_20260721` authorize materialization.
+G/H/I remain prior-unit observational evidence and must be replaced.
 
-## 4. Acceptance sequence
+The unit must:
 
-1. Human updates the Windows checkout to the reconciled materialization commit.
-2. Human runs the repository-owned current-user protocol-registration helper for the built debug
-   executable and relaunches Markei with the existing private configuration.
-3. Human verifies sign-in, scrollable navigation and unchanged Closure baseline.
-4. Human opens `Retry unresolved submission`, verifies an eligible sanitized preflight and cancels.
-5. Main reviews that cancellation caused no transport, attempt record or queue mutation.
-6. Main may then authorize at most one controlled unknown-submission retry.
-7. Human captures sanitized Closure before/after evidence plus hosted `submissions/events/next`
-   counts.
-8. Convergence is accepted only if local and hosted evidence agree; otherwise Sync remains blocked
-   and the stable outcome determines the next unit.
+1. add a non-mutating Closure hosted-connection check using existing live/ready routes;
+2. preserve exactly one sanitized durable diagnostic attempt per invocation;
+3. distinguish token, request creation/start, response, parsing, timeout/cancellation, bounded
+   transport failures, authorization rejection, protocol failure and local closure failure;
+4. correlate the client display with sanitized hosted request lifecycle logs;
+5. compare enrollment and Sync origin/path/deadline behavior;
+6. preserve unknown-outcome and exact-retry identity semantics;
+7. validate everything without contacting Auth0, Render or Neon.
 
-## 5. Current prohibition
+## 5. Evidence classification
 
-Until step 6, do not confirm recovery or press ordinary Sync. Query, Enroll, Clear diagnostic
-history, direct database editing, new purchase creation and provider mutation are outside the
-verification path. Opening the recovery preflight and cancelling it is authorized.
+| Claim | Current state |
+| --- | --- |
+| Unknown recovery invocation occurred | Accepted local observational evidence |
+| Events 1–2 were applied by hosted API | Not evidenced; Neon remained empty |
+| Request never reached any Render boundary | Not proved; application logs are insufficient |
+| Free Render sleeping caused the interruption | Plausible hypothesis only |
+| Paid Render is selected for MVP operation | Accepted human operational decision |
+| Existing health routes can support a safe probe | Repository fact; implementation pending |
+| MCG-02 hosted convergence is complete | Rejected; Sync remains blocked |
 
-Success terminal: `C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED`
+## 6. Post-materialization gate
+
+After Codex returns G/H/I:
+
+1. Main reconciles the implementation, migration, privacy and validation evidence.
+2. Human updates the Windows checkout and Render service instance/deployment through the existing
+   private configuration workflow.
+3. Human opens Closure and runs only `Check hosted connection` once.
+4. Client and Render correlation fingerprints, stages and results are compared.
+5. Neon counts remain read-only comparison evidence.
+6. Only after live and ready checks are observable and the transport taxonomy is proven may Main
+   consider one further exact-identity unknown retry.
+
+Until then, do not press ordinary Sync, retry the unresolved submission, Enroll, Query, Clear
+diagnostic history, edit the local database, or create new synchronized purchase work.
+
+Success terminal for Codex:
+
+`C10_MCG02_TRANSPORT_OBSERVABILITY_IMPLEMENTED`

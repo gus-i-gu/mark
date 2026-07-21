@@ -1,39 +1,95 @@
-# E_DDC_STAGE — Unknown Recovery Semantics
+# E_DDC_STAGE — Transport Evidence Semantics
 
-> Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-UNKNOWN-RECOVERY_20260721
-> Status: **ACTIVE CODEX SEMANTIC AUTHORITY**
+> Unit: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+> Authority: Main Chat
+> Status: READY FOR MATERIALIZATION
 
-## Vocabulary
+## 1. Learning objective
 
-- `unknown` — the client cannot prove whether the hosted transaction applied; it is neither pending
-  nor failed.
-- `exact retry` — retransmission of the same persisted submission ID, request hash, ordered members
-  and event facts.
-- `duplicate-equivalent` — the server proves the exact earlier submission/effect already exists; it
-  is a successful convergence result, not a second application.
-- `next local sequence 3` — sequences 1 and 2 were allocated locally; it does not claim that either
-  was accepted remotely.
-- `server next expected sequence 1` — bounded provider evidence observed before this unit; it must
-  be re-established during the later human verification and not hard-coded into the client.
-- `recovery action` — an explicit guarded retry of eligible unknown work, not manual reclassification.
+The unit must turn the opaque phrase `transport-or-closure` into a truthful bounded explanation of
+where execution stopped. The learner-facing distinction is:
 
-## User meaning
+```text
+command accepted locally
+!= request began
+!= server received request
+!= server authenticated request
+!= database transaction began
+!= hosted outcome committed
+```
 
-Closure must explain that unknown work needs review because its remote outcome was not established.
-The recovery action must say what it will preserve, require confirmation, and report only stable
-outcomes and safe next guidance. It must not invite the user to create replacement purchases,
-reenroll, clear data, or repeatedly press Sync.
+The UI and reports must not infer a later stage from an earlier one.
 
-`Retry unresolved submission` is distinct from ordinary `Sync`: it targets the persisted unknown
-submission under stricter preflight rules. Cancellation, ineligibility and unavailable evidence are
-distinct from failure.
+## 2. Required semantic distinctions
 
-## Evidence and privacy
+Teach through stable UI guidance and tests:
 
-The displayed sequence numbers and bounded state codes are diagnostic facts. Complete IDs, hashes,
-payloads, tokens, provider addresses, callback URLs, raw errors and registry command contents do not
-belong in the UI or G/H/I evidence.
+- **Process liveness:** the deployed API process answered `/health/live`.
+- **Service readiness:** `/health/ready` confirmed the API's existing database-readiness function.
+- **Transport reachability:** an HTTP response was observed.
+- **Authorization:** a protected request was accepted or rejected by hosted authentication.
+- **Protocol validity:** the response matched the expected Markei contract.
+- **Application outcome:** the server returned a stable Sync result.
+- **Unknown outcome:** transport began but available evidence cannot prove application or
+  non-application.
 
-Repository tests establish implementation behavior. Only a later controlled run against the real
-Windows database and disposable hosted environment can validate recovery and convergence.
+`live`, `ready`, and a paid always-on instance reduce uncertainty but do not prove Sync correctness.
+
+## 3. User-facing diagnostics
+
+Closure must show a compact latest-attempt explanation containing:
+
+- operation (`hosted-connection-check`, ordinary Sync, or unresolved-submission retry);
+- latest completed stage;
+- bounded result;
+- shortened correlation fingerprint;
+- HTTP status only when actually received;
+- whether response headers were received;
+- elapsed-time band, not false precision where unavailable;
+- one stable next-action sentence.
+
+Good guidance examples are semantic, not literal copy requirements:
+
+- live timed out before any response: the hosted service was not reached within the bounded
+  deadline; no Sync was attempted;
+- ready returned not-ready: the API process answered but its database-readiness check did not pass;
+- 401/403: the hosted service answered but rejected authorization;
+- response parse failed: the service answered, but the client could not validate the Markei
+  response contract;
+- closure failed: a local non-transport step failed before a stable hosted outcome.
+
+Do not expose raw exception messages or imply that the user should repeatedly retry.
+
+## 4. Attempt history semantics
+
+Preserve historical attempts. A stage is monotonic evidence within one invocation: later evidence
+may supersede the displayed current stage but must not rewrite what operation occurred. One button
+invocation produces one attempt record, finalized once.
+
+The harmless connectivity check is observational. Its success must not be called synchronization,
+enrollment, hosted convergence or MCG-02 completion.
+
+The previous real attempt remains truthfully recorded as
+`sync-interrupted / transport-or-closure`; do not retroactively invent a finer classification for
+historical evidence that did not capture it.
+
+## 5. Privacy and accessibility
+
+Use short stable codes with plain-language explanations. Diagnostic text must be selectable or
+otherwise readable, keyboard reachable, and usable at supported short/tall Windows heights.
+Busy, success, failure and disabled states must not depend on color alone.
+
+No complete identifiers, origins, tokens, headers, bodies, hashes, SQL, stack traces or provider
+secrets may appear in UI, logs, fixtures or G/H/I.
+
+## 6. Didactic evidence required in H
+
+Report:
+
+- the final stage/result vocabulary;
+- how each term maps to observable evidence;
+- how liveness, readiness, reachability, authorization, protocol and application outcome differ;
+- why paid hosting removes sleeping but is not itself fault evidence;
+- how historical opaque attempts are preserved;
+- exact UI/test examples using synthetic values only;
+- residual ambiguity after implementation.
