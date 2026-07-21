@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/app/native_auth_closure_runner.dart';
+import 'package:markei/application/closure_diagnostics.dart';
 import 'package:markei/application/hosted_auth_ports.dart';
 import 'package:markei/application/hosted_enrollment_coordinator.dart';
 import 'package:markei/application/hosted_sync_coordinator.dart';
@@ -345,6 +346,8 @@ void main() {
       ),
       environmentAlias: 'native',
       commandFactory: () async => _command(),
+      diagnosticsQuery: _FakeClosureDiagnostics(),
+      syncAttemptRecorder: _FakeClosureDiagnostics(),
       hostedSyncCoordinator: HostedSyncCoordinator(
         authenticationSession: LabAuthenticationSession(),
         syncGuard: _MemorySyncGuard.allowing(),
@@ -396,6 +399,8 @@ void main() {
       ),
       environmentAlias: 'native',
       commandFactory: () async => _command(),
+      diagnosticsQuery: _FakeClosureDiagnostics(),
+      syncAttemptRecorder: _FakeClosureDiagnostics(),
       hostedSyncCoordinator: HostedSyncCoordinator(
         authenticationSession: LabAuthenticationSession(),
         syncGuard: _MemorySyncGuard.allowing(),
@@ -440,6 +445,8 @@ void main() {
       ),
       environmentAlias: 'native',
       commandFactory: () async => _command(),
+      diagnosticsQuery: _FakeClosureDiagnostics(),
+      syncAttemptRecorder: _FakeClosureDiagnostics(),
       hostedSyncCoordinator: HostedSyncCoordinator(
         authenticationSession: LabAuthenticationSession(),
         syncGuard: _MemorySyncGuard.blocked('enrollment-required'),
@@ -920,4 +927,47 @@ Map<String, Object?> _syncEvent() {
     'payload': <String, Object?>{},
   };
   return {...content, 'contentHash': base64Encode(utf8.encode('safe-hash'))};
+}
+
+final class _FakeClosureDiagnostics
+    implements ClosureDiagnosticsQuery, SyncAttemptRecorder {
+  @override
+  Future<int> beginSyncAttempt() async => 1;
+
+  @override
+  Future<void> completeSyncAttempt(
+    int attemptId, {
+    required String resultCode,
+    required String outcomeClass,
+    required String phase,
+    String? recoveryCode,
+  }) async {}
+
+  @override
+  Future<void> clearAttemptHistory() async {}
+
+  @override
+  Future<ClosureDiagnosticsSnapshot> snapshot({
+    required String authenticationState,
+  }) async {
+    return ClosureDiagnosticsSnapshot(
+      authenticationState: authenticationState,
+      enrollmentState: 'device-enrolled',
+      syncReadiness: 'ready-no-local-work',
+      lastResult: 'no-recorded-attempts',
+      queueCounts: const ClosureQueueCounts(
+        pending: 0,
+        uploading: 0,
+        failed: 0,
+        unknown: 0,
+      ),
+      nextDeviceSequence: 1,
+      lastSuccessfulSyncAt: null,
+      recoveryGuidance: 'no-local-sync-action-needed',
+      recentAttempts: const [],
+      devices: const [],
+      actionableEvents: const [],
+      refreshedAt: DateTime.utc(2026, 7, 21),
+    );
+  }
 }

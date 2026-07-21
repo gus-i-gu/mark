@@ -17,6 +17,7 @@ import '../domain/shared/ids.dart';
 import '../infrastructure/auth/auth0_native_authentication.dart';
 import '../infrastructure/auth/native_auth_config.dart';
 import '../infrastructure/local/hosted_identity_repository.dart';
+import '../infrastructure/local/closure_diagnostics_repository.dart';
 import '../infrastructure/local/local_database.dart';
 import '../infrastructure/local/local_device_identity_repository.dart';
 import '../infrastructure/local/local_purchase_repository.dart';
@@ -150,6 +151,16 @@ final class MarkeiComposition {
           );
     const uuid = Uuid();
     const environmentAlias = 'provider-native';
+    final diagnostics = DriftClosureDiagnosticsRepository(
+      database,
+      accountId: binding == null
+          ? const AccountId('local-account')
+          : AccountId(binding.accountId),
+      deviceId: binding == null
+          ? const DeviceId('local-device')
+          : DeviceId(binding.serverDeviceId),
+      environmentAlias: environmentAlias,
+    );
     final commandFactory = StableDeviceEnrollmentCommandFactory(
       repository: repository,
       environmentAlias: environmentAlias,
@@ -173,6 +184,8 @@ final class MarkeiComposition {
       ),
       environmentAlias: environmentAlias,
       commandFactory: commandFactory.call,
+      diagnosticsQuery: diagnostics,
+      syncAttemptRecorder: diagnostics,
       hostedSyncCoordinator: HostedSyncCoordinator(
         authenticationSession: authentication,
         syncGuard: binding == null

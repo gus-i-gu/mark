@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/infrastructure/local/local_database.dart';
 
 void main() {
-  test('migrates v1 database to v8 with hosted auth readiness state', () async {
+  test('migrates v1 database to v9 with sync attempt ledger', () async {
     final temp = await Directory.systemTemp.createTemp('markei_migration_');
     addTearDown(() => temp.delete(recursive: true));
     final file = File('${temp.path}/markei.sqlite');
@@ -15,7 +15,7 @@ void main() {
     );
     addTearDown(migratingDb.close);
 
-    expect(migratingDb.schemaVersion, 8);
+    expect(migratingDb.schemaVersion, 9);
     final products = await migratingDb.select(migratingDb.products).get();
     final ledger = await migratingDb.select(migratingDb.migrationLedger).get();
 
@@ -26,8 +26,8 @@ void main() {
     expect(products.single.exactIdentityKey, contains('|v3|'));
     expect(products.single.displayName, 'arroz branco');
     expect(ledger.last.fromVersion, 1);
-    expect(ledger.last.toVersion, 8);
-    expect(ledger.last.migrationId, 'v7-to-v8-purchase-fk-repair');
+    expect(ledger.last.toVersion, 9);
+    expect(ledger.last.migrationId, 'v8-to-v9-sync-attempt-ledger');
     expect(
       await migratingDb.select(migratingDb.installationMetadata).get(),
       isEmpty,
@@ -43,6 +43,7 @@ void main() {
       await migratingDb.select(migratingDb.hostedAuthStates).get(),
       isEmpty,
     );
+    expect(await migratingDb.select(migratingDb.syncAttempts).get(), isEmpty);
     await migratingDb.close();
 
     final reopened = LocalDatabase.file(file);
@@ -51,12 +52,12 @@ void main() {
   });
 
   test(
-    'fresh v8 database creates local, recovery and hosted auth tables',
+    'fresh v9 database creates local, recovery, hosted auth and attempt tables',
     () async {
       final db = LocalDatabase.memory();
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 8);
+      expect(db.schemaVersion, 9);
       expect(await db.select(db.people).get(), isEmpty);
       expect(await db.select(db.paymentMethods).get(), isEmpty);
       expect(await db.select(db.accountPreferences).get(), isEmpty);
@@ -65,10 +66,11 @@ void main() {
       expect(await db.select(db.recoverySessions).get(), isEmpty);
       expect(await db.select(db.recoveryChunks).get(), isEmpty);
       expect(await db.select(db.hostedAuthStates).get(), isEmpty);
+      expect(await db.select(db.syncAttempts).get(), isEmpty);
     },
   );
 
-  test('migrates file-backed v2 database to v8 and reopens', () async {
+  test('migrates file-backed v2 database to v9 and reopens', () async {
     final temp = await Directory.systemTemp.createTemp('markei_migration_v2_');
     addTearDown(() => temp.delete(recursive: true));
     final file = File('${temp.path}/markei.sqlite');
@@ -84,7 +86,7 @@ void main() {
     expect(products.single.normalizationVersion, 3);
     expect(products.single.exactIdentityKey, contains('|v3|'));
     expect(items.single.packageCount, 1);
-    expect(ledger.last.migrationId, 'v7-to-v8-purchase-fk-repair');
+    expect(ledger.last.migrationId, 'v8-to-v9-sync-attempt-ledger');
     expect(
       await migratingDb.select(migratingDb.installationMetadata).get(),
       hasLength(1),
@@ -97,6 +99,7 @@ void main() {
     addTearDown(reopened.close);
     expect(await reopened.select(reopened.purchases).get(), hasLength(1));
     expect(await reopened.select(reopened.hostedAuthStates).get(), isEmpty);
+    expect(await reopened.select(reopened.syncAttempts).get(), isEmpty);
     expect(await reopened.select(reopened.people).get(), isEmpty);
   });
 
@@ -134,7 +137,7 @@ void main() {
       hasLength(1),
     );
     final ledger = await migratingDb.select(migratingDb.migrationLedger).get();
-    expect(ledger.last.migrationId, 'v7-to-v8-purchase-fk-repair');
+    expect(ledger.last.migrationId, 'v8-to-v9-sync-attempt-ledger');
     await migratingDb.close();
 
     final reopened = LocalDatabase.file(file);
@@ -182,7 +185,7 @@ void main() {
   });
 
   test(
-    'reopening an already migrated v8 database does not rewrite rows',
+    'reopening an already migrated v9 database does not rewrite rows',
     () async {
       final temp = await Directory.systemTemp.createTemp(
         'markei_migration_v8_idempotent_',
@@ -214,6 +217,36 @@ void main() {
       expect(await reopened.select(reopened.purchaseItems).get(), hasLength(1));
     },
   );
+
+  test('migrates v8 database to v9 attempt ledger without reset', () async {
+    final temp = await Directory.systemTemp.createTemp(
+      'markei_migration_v8_to_v9_',
+    );
+    addTearDown(() => temp.delete(recursive: true));
+    final file = File('${temp.path}/markei.sqlite');
+
+    final migratingDb = LocalDatabase(
+      NativeDatabase.createInBackground(file, setup: _createV8Database),
+    );
+
+    expect(migratingDb.schemaVersion, 9);
+    expect(await migratingDb.select(migratingDb.syncAttempts).get(), isEmpty);
+    expect(await migratingDb.select(migratingDb.pendingEvents).get(), isEmpty);
+    expect(
+      (await migratingDb.select(migratingDb.devices).get()).single.nextSequence,
+      1,
+    );
+    final ledger = await migratingDb.select(migratingDb.migrationLedger).get();
+    expect(ledger.last.fromVersion, 8);
+    expect(ledger.last.toVersion, 9);
+    expect(ledger.last.migrationId, 'v8-to-v9-sync-attempt-ledger');
+    await migratingDb.close();
+
+    final reopened = LocalDatabase.file(file);
+    addTearDown(reopened.close);
+    expect(await reopened.select(reopened.syncAttempts).get(), isEmpty);
+    expect(await reopened.select(reopened.hostedAuthStates).get(), isEmpty);
+  });
 
   test('v5 migration stops on ambiguous current Device without reset', () async {
     final temp = await Directory.systemTemp.createTemp('markei_migration_bad_');
@@ -796,4 +829,86 @@ void _insertCommonV7Rows(dynamic database) {
   database.execute(
     "INSERT INTO sync_state VALUES ('11111111-1111-4111-8111-111111111111', 'cursor-before-repair', 1783857600000)",
   );
+}
+
+void _createV8Database(dynamic database) {
+  database.execute('PRAGMA foreign_keys = OFF');
+  database.execute('''
+CREATE TABLE local_accounts (
+  id TEXT NOT NULL PRIMARY KEY,
+  default_currency_code TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+''');
+  database.execute('''
+CREATE TABLE devices (
+  id TEXT NOT NULL PRIMARY KEY,
+  account_id TEXT NOT NULL REFERENCES local_accounts(id) ON DELETE RESTRICT,
+  next_sequence INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(account_id, id)
+);
+''');
+  database.execute('''
+CREATE TABLE sync_events (
+  id TEXT NOT NULL PRIMARY KEY,
+  account_id TEXT NOT NULL REFERENCES local_accounts(id) ON DELETE RESTRICT,
+  device_id TEXT NOT NULL REFERENCES devices(id) ON DELETE RESTRICT,
+  device_sequence INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_version INTEGER NOT NULL,
+  occurrence_time INTEGER NOT NULL,
+  payload_json TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(account_id, device_id, device_sequence)
+);
+''');
+  database.execute('''
+CREATE TABLE pending_events (
+  event_id TEXT NOT NULL PRIMARY KEY REFERENCES sync_events(id) ON DELETE CASCADE,
+  state TEXT NOT NULL,
+  enqueued_at INTEGER NOT NULL
+);
+''');
+  database.execute('''
+CREATE TABLE sync_state (
+  account_id TEXT NOT NULL PRIMARY KEY REFERENCES local_accounts(id) ON DELETE CASCADE,
+  account_cursor TEXT,
+  updated_at INTEGER NOT NULL
+);
+''');
+  database.execute('''
+CREATE TABLE hosted_auth_states (
+  environment_alias TEXT NOT NULL PRIMARY KEY,
+  installation_id TEXT NOT NULL,
+  enrollment_request_id TEXT,
+  enrollment_state TEXT NOT NULL,
+  account_id TEXT,
+  server_device_id TEXT,
+  generation INTEGER,
+  updated_at INTEGER NOT NULL
+);
+''');
+  database.execute('''
+CREATE TABLE migration_ledger (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  schema_name TEXT NOT NULL,
+  schema_version INTEGER NOT NULL,
+  from_version INTEGER,
+  to_version INTEGER,
+  migration_id TEXT,
+  applied_at INTEGER NOT NULL
+);
+''');
+  database.execute(
+    "INSERT INTO local_accounts VALUES ('11111111-1111-4111-8111-111111111111', 'BRL', 1783857600000)",
+  );
+  database.execute(
+    "INSERT INTO devices VALUES ('22222222-2222-4222-8222-222222222222', '11111111-1111-4111-8111-111111111111', 1, 1783857600000)",
+  );
+  database.execute(
+    "INSERT INTO migration_ledger (schema_name, schema_version, from_version, to_version, migration_id, applied_at) VALUES ('shared_beta_local', 8, 7, 8, 'v7-to-v8-purchase-fk-repair', 1783857600000)",
+  );
+  database.execute('PRAGMA user_version = 8');
 }

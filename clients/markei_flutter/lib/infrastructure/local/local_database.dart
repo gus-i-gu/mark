@@ -317,6 +317,19 @@ class HostedAuthStates extends Table {
   Set<Column<Object>> get primaryKey => {environmentAlias};
 }
 
+class SyncAttempts extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get accountId =>
+      text().references(LocalAccounts, #id, onDelete: KeyAction.cascade)();
+  TextColumn get environmentAlias => text()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  TextColumn get phase => text()();
+  TextColumn get resultCode => text()();
+  TextColumn get outcomeClass => text()();
+  TextColumn get recoveryCode => text().nullable()();
+}
+
 class MigrationLedger extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get schemaName => text()();
@@ -348,6 +361,7 @@ class MigrationLedger extends Table {
     RecoverySessions,
     RecoveryChunks,
     HostedAuthStates,
+    SyncAttempts,
     MigrationLedger,
   ],
 )
@@ -372,7 +386,7 @@ class LocalDatabase extends _$LocalDatabase {
       LocalDatabase(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -384,7 +398,7 @@ class LocalDatabase extends _$LocalDatabase {
           schemaVersion: schemaVersion,
           fromVersion: const Value(null),
           toVersion: Value(schemaVersion),
-          migrationId: const Value('create-v8'),
+          migrationId: const Value('create-v9'),
           appliedAt: DateTime.utc(2026, 7, 12),
         ),
       );
@@ -521,7 +535,20 @@ SELECT id, 5, strftime('%s','now') * 1000 FROM local_accounts
           ),
         );
       }
-      if (from > 8) {
+      if (from < 9) {
+        await migrator.createTable(syncAttempts);
+        await into(migrationLedger).insert(
+          MigrationLedgerCompanion.insert(
+            schemaName: 'shared_beta_local',
+            schemaVersion: to,
+            fromVersion: Value(from),
+            toVersion: const Value(9),
+            migrationId: const Value('v8-to-v9-sync-attempt-ledger'),
+            appliedAt: DateTime.now().toUtc(),
+          ),
+        );
+      }
+      if (from > 9) {
         throw UnsupportedError(
           'Unsupported local database migration $from to $to.',
         );

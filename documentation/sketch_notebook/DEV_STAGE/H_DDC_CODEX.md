@@ -1,44 +1,60 @@
-# H_DDC_CODEX - Hosted Device Header Semantics
+# H_DDC_CODEX - Closure Diagnostics Semantics
 
-> Unit: C10-MCG02-HOSTED-DEVICE-HEADER-CORRECTION_20260721T124452Z
-> Result: HOSTED_FIXTURE_REJECTS_MISSING_OR_WRONG_DEVICE=true
+> Unit: C10-MCG02-CLOSURE-DIAGNOSTICS_20260721
+> Result: C10_MCG02_CLOSURE_DIAGNOSTICS_IMPLEMENTED
 
-## Materialized Semantics
+## Materialized States
 
-- Hosted Sync transport is scoped to one active hosted server Device ID.
-- Every protected Sync request carries `x-markei-device-id`.
-- A missing active hosted binding is a closed hosted-composition failure, not a transport created with guessed or empty identity.
-- Server protocol code `device-enrollment-required` remains distinct from generic conflict in Flutter.
-- Native hosted fixture now enforces the same protected-route Device header requirement that Render enforces.
+- `current status`: refreshed local observation from authentication state plus scoped local database snapshot.
+- `sync attempt`: one explicit user Sync invocation recorded from start to one terminal result.
+- `pending`, `uploading`, `failed`, `unknown`: queue states counted from durable local pending-event rows.
+- `next Device sequence`: local current Device sequence only; no Neon expectation is inferred.
+- `last successful sync`: displayed only from a persisted local attempt with completed outcome.
+- `no-recorded-attempts`: the post-implementation ledger has no rows; it does not claim Sync was never tried.
 
-## Named Semantic Tests
+## Display Behavior
 
-- `HttpSyncTransport sends the hosted Device header on every protected route`
-- `hosted sync fixture rejects missing or wrong Device header`
-- existing local Sync application tests for ordered upload, typed failures, rollback, and recovery
-- existing real convergence harness tests for canonical order and production coordinator behavior
-- existing real recovery harness tests for rebootstrap and recovery closure behavior
-- full Flutter test suite
-- server format, lint, typecheck, tests, and build
+Closure now shows:
 
-## Failure-Code Behavior
+- Sync overview: authentication, enrollment, readiness, last result, last successful Sync and recovery guidance;
+- Local queue: pending, uploading, failed, unknown and next Device sequence;
+- Recent sync attempts: newest 20, with fingerprint, stable code, outcome, phase, sanitized recovery code and duration;
+- Devices: redacted current/local Device summaries;
+- Actionable events: newest 20 pending/failed/unknown rows with fingerprint, event type, sequence, state and timestamps;
+- Closure actions: existing Status, Sign in, Enroll, Query, Sync and Logout plus Refresh diagnostics and confirmed Clear diagnostic history.
 
-- `device-enrollment-required` maps to `SyncStatusCode.deviceEnrollmentRequired`.
-- `HostedSyncCoordinator` maps that status to the existing Device-enrollment-required hosted outcome.
-- Existing recognized server codes remain preserved:
-  - `sequence-gap`;
-  - `wrong-account`;
-  - `hash-mismatch`.
-- Unknown server codes remain bounded and do not expose IDs, hashes, payloads, SQL, tokens, provider configuration, or database internals.
+Missing current values render as `Unavailable` or `Not recorded`; attempt-history absence renders as `No locally recorded attempt history`.
 
-## User-Visible Bounds
+## Semantic Tests
 
-The UI still invokes the existing Sync action. No submission-ID control, repair page, Device reenrollment flow, provider retest control, or diagnostic disclosure was added.
+- `snapshot is scoped, ordered, bounded and redacted`
+- `clear history preserves queue, Device, binding and cursor state`
+- `Closure renders signed-out empty diagnostics`
+- `Closure renders enrolled pending failed unknown and history`
+- `Refresh diagnostics is local only and does not invoke Sync`
+- `Clear diagnostic history is confirmed and scoped to attempts`
+- `runner records auth-required Sync terminal outcome once`
+- `runner records no-new-events Sync terminal outcome once`
+- `runner records completed Sync terminal outcome once`
+- `runner records unavailable Sync terminal outcome once`
+- `runner records interrupted Sync terminal outcome once`
+- `migrates v8 database to v9 attempt ledger without reset`
 
-The user-visible effect is bounded: hosted Sync without the required server Device identity fails closed through existing hosted unavailable/enrollment outcomes, while valid hosted composition sends the Device header on all protected routes.
+## Privacy Semantics
 
-## Privacy Evidence
+The diagnostic surface uses short non-reversible fingerprints for row distinction. It does not display or persist access tokens, refresh tokens, Auth0 subjects, complete Account/Device/Event/Submission UUIDs, provider URLs or hosts, connection strings, HTTP bodies, event or purchase payload JSON, SQL, filesystem paths, stack traces or raw exception text.
 
-Tests use fixture UUIDs, semantic protocol codes, request-header assertions, counts, and route names. No production provider data, private credential, hosted token, human database row, payload content, content hash, or SQL detail was read or exposed.
+Sync result history persists only stable bounded codes:
 
-Provider/human completion is not claimed by this unit. The Windows provider retest remains a later human-controlled step.
+- phase;
+- result code;
+- outcome class;
+- sanitized recovery code.
+
+Provider-side success, request arrival and convergence remain unclaimed. The old real provider attempt remains external evidence only and is not backfilled into the ledger.
+
+## User Boundaries
+
+Refresh diagnostics is explicit, offline and read-only. It cannot start Sync, transport, recovery, download or acknowledgement.
+
+Clear diagnostic history is user-confirmed and deletes only local attempt history. It does not alter queue rows, immutable events, Devices, purchases, hosted binding, credentials, sync cursor or acknowledgement state.

@@ -9280,6 +9280,581 @@ class HostedAuthStatesCompanion extends UpdateCompanion<HostedAuthState> {
   }
 }
 
+class $SyncAttemptsTable extends SyncAttempts
+    with TableInfo<$SyncAttemptsTable, SyncAttempt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncAttemptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES local_accounts (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _environmentAliasMeta = const VerificationMeta(
+    'environmentAlias',
+  );
+  @override
+  late final GeneratedColumn<String> environmentAlias = GeneratedColumn<String>(
+    'environment_alias',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phaseMeta = const VerificationMeta('phase');
+  @override
+  late final GeneratedColumn<String> phase = GeneratedColumn<String>(
+    'phase',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resultCodeMeta = const VerificationMeta(
+    'resultCode',
+  );
+  @override
+  late final GeneratedColumn<String> resultCode = GeneratedColumn<String>(
+    'result_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _outcomeClassMeta = const VerificationMeta(
+    'outcomeClass',
+  );
+  @override
+  late final GeneratedColumn<String> outcomeClass = GeneratedColumn<String>(
+    'outcome_class',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recoveryCodeMeta = const VerificationMeta(
+    'recoveryCode',
+  );
+  @override
+  late final GeneratedColumn<String> recoveryCode = GeneratedColumn<String>(
+    'recovery_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    accountId,
+    environmentAlias,
+    startedAt,
+    completedAt,
+    phase,
+    resultCode,
+    outcomeClass,
+    recoveryCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_attempts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncAttempt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('environment_alias')) {
+      context.handle(
+        _environmentAliasMeta,
+        environmentAlias.isAcceptableOrUnknown(
+          data['environment_alias']!,
+          _environmentAliasMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_environmentAliasMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('phase')) {
+      context.handle(
+        _phaseMeta,
+        phase.isAcceptableOrUnknown(data['phase']!, _phaseMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_phaseMeta);
+    }
+    if (data.containsKey('result_code')) {
+      context.handle(
+        _resultCodeMeta,
+        resultCode.isAcceptableOrUnknown(data['result_code']!, _resultCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_resultCodeMeta);
+    }
+    if (data.containsKey('outcome_class')) {
+      context.handle(
+        _outcomeClassMeta,
+        outcomeClass.isAcceptableOrUnknown(
+          data['outcome_class']!,
+          _outcomeClassMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_outcomeClassMeta);
+    }
+    if (data.containsKey('recovery_code')) {
+      context.handle(
+        _recoveryCodeMeta,
+        recoveryCode.isAcceptableOrUnknown(
+          data['recovery_code']!,
+          _recoveryCodeMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncAttempt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncAttempt(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      )!,
+      environmentAlias: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}environment_alias'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      phase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phase'],
+      )!,
+      resultCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_code'],
+      )!,
+      outcomeClass: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome_class'],
+      )!,
+      recoveryCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recovery_code'],
+      ),
+    );
+  }
+
+  @override
+  $SyncAttemptsTable createAlias(String alias) {
+    return $SyncAttemptsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
+  final int id;
+  final String accountId;
+  final String environmentAlias;
+  final DateTime startedAt;
+  final DateTime? completedAt;
+  final String phase;
+  final String resultCode;
+  final String outcomeClass;
+  final String? recoveryCode;
+  const SyncAttempt({
+    required this.id,
+    required this.accountId,
+    required this.environmentAlias,
+    required this.startedAt,
+    this.completedAt,
+    required this.phase,
+    required this.resultCode,
+    required this.outcomeClass,
+    this.recoveryCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['account_id'] = Variable<String>(accountId);
+    map['environment_alias'] = Variable<String>(environmentAlias);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['phase'] = Variable<String>(phase);
+    map['result_code'] = Variable<String>(resultCode);
+    map['outcome_class'] = Variable<String>(outcomeClass);
+    if (!nullToAbsent || recoveryCode != null) {
+      map['recovery_code'] = Variable<String>(recoveryCode);
+    }
+    return map;
+  }
+
+  SyncAttemptsCompanion toCompanion(bool nullToAbsent) {
+    return SyncAttemptsCompanion(
+      id: Value(id),
+      accountId: Value(accountId),
+      environmentAlias: Value(environmentAlias),
+      startedAt: Value(startedAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      phase: Value(phase),
+      resultCode: Value(resultCode),
+      outcomeClass: Value(outcomeClass),
+      recoveryCode: recoveryCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recoveryCode),
+    );
+  }
+
+  factory SyncAttempt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncAttempt(
+      id: serializer.fromJson<int>(json['id']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      environmentAlias: serializer.fromJson<String>(json['environmentAlias']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      phase: serializer.fromJson<String>(json['phase']),
+      resultCode: serializer.fromJson<String>(json['resultCode']),
+      outcomeClass: serializer.fromJson<String>(json['outcomeClass']),
+      recoveryCode: serializer.fromJson<String?>(json['recoveryCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'accountId': serializer.toJson<String>(accountId),
+      'environmentAlias': serializer.toJson<String>(environmentAlias),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'phase': serializer.toJson<String>(phase),
+      'resultCode': serializer.toJson<String>(resultCode),
+      'outcomeClass': serializer.toJson<String>(outcomeClass),
+      'recoveryCode': serializer.toJson<String?>(recoveryCode),
+    };
+  }
+
+  SyncAttempt copyWith({
+    int? id,
+    String? accountId,
+    String? environmentAlias,
+    DateTime? startedAt,
+    Value<DateTime?> completedAt = const Value.absent(),
+    String? phase,
+    String? resultCode,
+    String? outcomeClass,
+    Value<String?> recoveryCode = const Value.absent(),
+  }) => SyncAttempt(
+    id: id ?? this.id,
+    accountId: accountId ?? this.accountId,
+    environmentAlias: environmentAlias ?? this.environmentAlias,
+    startedAt: startedAt ?? this.startedAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    phase: phase ?? this.phase,
+    resultCode: resultCode ?? this.resultCode,
+    outcomeClass: outcomeClass ?? this.outcomeClass,
+    recoveryCode: recoveryCode.present ? recoveryCode.value : this.recoveryCode,
+  );
+  SyncAttempt copyWithCompanion(SyncAttemptsCompanion data) {
+    return SyncAttempt(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      environmentAlias: data.environmentAlias.present
+          ? data.environmentAlias.value
+          : this.environmentAlias,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      phase: data.phase.present ? data.phase.value : this.phase,
+      resultCode: data.resultCode.present
+          ? data.resultCode.value
+          : this.resultCode,
+      outcomeClass: data.outcomeClass.present
+          ? data.outcomeClass.value
+          : this.outcomeClass,
+      recoveryCode: data.recoveryCode.present
+          ? data.recoveryCode.value
+          : this.recoveryCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncAttempt(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('environmentAlias: $environmentAlias, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('phase: $phase, ')
+          ..write('resultCode: $resultCode, ')
+          ..write('outcomeClass: $outcomeClass, ')
+          ..write('recoveryCode: $recoveryCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    accountId,
+    environmentAlias,
+    startedAt,
+    completedAt,
+    phase,
+    resultCode,
+    outcomeClass,
+    recoveryCode,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncAttempt &&
+          other.id == this.id &&
+          other.accountId == this.accountId &&
+          other.environmentAlias == this.environmentAlias &&
+          other.startedAt == this.startedAt &&
+          other.completedAt == this.completedAt &&
+          other.phase == this.phase &&
+          other.resultCode == this.resultCode &&
+          other.outcomeClass == this.outcomeClass &&
+          other.recoveryCode == this.recoveryCode);
+}
+
+class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
+  final Value<int> id;
+  final Value<String> accountId;
+  final Value<String> environmentAlias;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> completedAt;
+  final Value<String> phase;
+  final Value<String> resultCode;
+  final Value<String> outcomeClass;
+  final Value<String?> recoveryCode;
+  const SyncAttemptsCompanion({
+    this.id = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.environmentAlias = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.phase = const Value.absent(),
+    this.resultCode = const Value.absent(),
+    this.outcomeClass = const Value.absent(),
+    this.recoveryCode = const Value.absent(),
+  });
+  SyncAttemptsCompanion.insert({
+    this.id = const Value.absent(),
+    required String accountId,
+    required String environmentAlias,
+    required DateTime startedAt,
+    this.completedAt = const Value.absent(),
+    required String phase,
+    required String resultCode,
+    required String outcomeClass,
+    this.recoveryCode = const Value.absent(),
+  }) : accountId = Value(accountId),
+       environmentAlias = Value(environmentAlias),
+       startedAt = Value(startedAt),
+       phase = Value(phase),
+       resultCode = Value(resultCode),
+       outcomeClass = Value(outcomeClass);
+  static Insertable<SyncAttempt> custom({
+    Expression<int>? id,
+    Expression<String>? accountId,
+    Expression<String>? environmentAlias,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? completedAt,
+    Expression<String>? phase,
+    Expression<String>? resultCode,
+    Expression<String>? outcomeClass,
+    Expression<String>? recoveryCode,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (accountId != null) 'account_id': accountId,
+      if (environmentAlias != null) 'environment_alias': environmentAlias,
+      if (startedAt != null) 'started_at': startedAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (phase != null) 'phase': phase,
+      if (resultCode != null) 'result_code': resultCode,
+      if (outcomeClass != null) 'outcome_class': outcomeClass,
+      if (recoveryCode != null) 'recovery_code': recoveryCode,
+    });
+  }
+
+  SyncAttemptsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? accountId,
+    Value<String>? environmentAlias,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? completedAt,
+    Value<String>? phase,
+    Value<String>? resultCode,
+    Value<String>? outcomeClass,
+    Value<String?>? recoveryCode,
+  }) {
+    return SyncAttemptsCompanion(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      environmentAlias: environmentAlias ?? this.environmentAlias,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      phase: phase ?? this.phase,
+      resultCode: resultCode ?? this.resultCode,
+      outcomeClass: outcomeClass ?? this.outcomeClass,
+      recoveryCode: recoveryCode ?? this.recoveryCode,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (environmentAlias.present) {
+      map['environment_alias'] = Variable<String>(environmentAlias.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (phase.present) {
+      map['phase'] = Variable<String>(phase.value);
+    }
+    if (resultCode.present) {
+      map['result_code'] = Variable<String>(resultCode.value);
+    }
+    if (outcomeClass.present) {
+      map['outcome_class'] = Variable<String>(outcomeClass.value);
+    }
+    if (recoveryCode.present) {
+      map['recovery_code'] = Variable<String>(recoveryCode.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncAttemptsCompanion(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('environmentAlias: $environmentAlias, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('phase: $phase, ')
+          ..write('resultCode: $resultCode, ')
+          ..write('outcomeClass: $outcomeClass, ')
+          ..write('recoveryCode: $recoveryCode')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MigrationLedgerTable extends MigrationLedger
     with TableInfo<$MigrationLedgerTable, MigrationLedgerData> {
   @override
@@ -9786,6 +10361,7 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
   late final $HostedAuthStatesTable hostedAuthStates = $HostedAuthStatesTable(
     this,
   );
+  late final $SyncAttemptsTable syncAttempts = $SyncAttemptsTable(this);
   late final $MigrationLedgerTable migrationLedger = $MigrationLedgerTable(
     this,
   );
@@ -9813,6 +10389,7 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
     recoverySessions,
     recoveryChunks,
     hostedAuthStates,
+    syncAttempts,
     migrationLedger,
   ];
   @override
@@ -9872,6 +10449,13 @@ abstract class _$LocalDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('recovery_chunks', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'local_accounts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('sync_attempts', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -10127,6 +10711,24 @@ final class $$LocalAccountsTableReferences
     ).filter((f) => f.accountId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_syncInboxRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SyncAttemptsTable, List<SyncAttempt>>
+  _syncAttemptsRefsTable(_$LocalDatabase db) => MultiTypedResultKey.fromTable(
+    db.syncAttempts,
+    aliasName: 'local_accounts__id__sync_attempts__account_id',
+  );
+
+  $$SyncAttemptsTableProcessedTableManager get syncAttemptsRefs {
+    final manager = $$SyncAttemptsTableTableManager(
+      $_db,
+      $_db.syncAttempts,
+    ).filter((f) => f.accountId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_syncAttemptsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -10448,6 +11050,31 @@ class $$LocalAccountsTableFilterComposer
           }) => $$SyncInboxTableFilterComposer(
             $db: $db,
             $table: $db.syncInbox,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> syncAttemptsRefs(
+    Expression<bool> Function($$SyncAttemptsTableFilterComposer f) f,
+  ) {
+    final $$SyncAttemptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syncAttempts,
+      getReferencedColumn: (t) => t.accountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyncAttemptsTableFilterComposer(
+            $db: $db,
+            $table: $db.syncAttempts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10804,6 +11431,31 @@ class $$LocalAccountsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> syncAttemptsRefs<T extends Object>(
+    Expression<T> Function($$SyncAttemptsTableAnnotationComposer a) f,
+  ) {
+    final $$SyncAttemptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syncAttempts,
+      getReferencedColumn: (t) => t.accountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyncAttemptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.syncAttempts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$LocalAccountsTableTableManager
@@ -10832,6 +11484,7 @@ class $$LocalAccountsTableTableManager
             bool installationMetadataRefs,
             bool syncSubmissionsRefs,
             bool syncInboxRefs,
+            bool syncAttemptsRefs,
           })
         > {
   $$LocalAccountsTableTableManager(
@@ -10893,6 +11546,7 @@ class $$LocalAccountsTableTableManager
                 installationMetadataRefs = false,
                 syncSubmissionsRefs = false,
                 syncInboxRefs = false,
+                syncAttemptsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -10909,6 +11563,7 @@ class $$LocalAccountsTableTableManager
                     if (installationMetadataRefs) db.installationMetadata,
                     if (syncSubmissionsRefs) db.syncSubmissions,
                     if (syncInboxRefs) db.syncInbox,
+                    if (syncAttemptsRefs) db.syncAttempts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -11165,6 +11820,27 @@ class $$LocalAccountsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (syncAttemptsRefs)
+                        await $_getPrefetchedData<
+                          LocalAccount,
+                          $LocalAccountsTable,
+                          SyncAttempt
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LocalAccountsTableReferences
+                              ._syncAttemptsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LocalAccountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).syncAttemptsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.accountId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -11198,6 +11874,7 @@ typedef $$LocalAccountsTableProcessedTableManager =
         bool installationMetadataRefs,
         bool syncSubmissionsRefs,
         bool syncInboxRefs,
+        bool syncAttemptsRefs,
       })
     >;
 typedef $$DevicesTableCreateCompanionBuilder =
@@ -19548,6 +20225,404 @@ typedef $$HostedAuthStatesTableProcessedTableManager =
       HostedAuthState,
       PrefetchHooks Function()
     >;
+typedef $$SyncAttemptsTableCreateCompanionBuilder =
+    SyncAttemptsCompanion Function({
+      Value<int> id,
+      required String accountId,
+      required String environmentAlias,
+      required DateTime startedAt,
+      Value<DateTime?> completedAt,
+      required String phase,
+      required String resultCode,
+      required String outcomeClass,
+      Value<String?> recoveryCode,
+    });
+typedef $$SyncAttemptsTableUpdateCompanionBuilder =
+    SyncAttemptsCompanion Function({
+      Value<int> id,
+      Value<String> accountId,
+      Value<String> environmentAlias,
+      Value<DateTime> startedAt,
+      Value<DateTime?> completedAt,
+      Value<String> phase,
+      Value<String> resultCode,
+      Value<String> outcomeClass,
+      Value<String?> recoveryCode,
+    });
+
+final class $$SyncAttemptsTableReferences
+    extends BaseReferences<_$LocalDatabase, $SyncAttemptsTable, SyncAttempt> {
+  $$SyncAttemptsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $LocalAccountsTable _accountIdTable(_$LocalDatabase db) => db
+      .localAccounts
+      .createAlias('sync_attempts__account_id__local_accounts__id');
+
+  $$LocalAccountsTableProcessedTableManager get accountId {
+    final $_column = $_itemColumn<String>('account_id')!;
+
+    final manager = $$LocalAccountsTableTableManager(
+      $_db,
+      $_db.localAccounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_accountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SyncAttemptsTableFilterComposer
+    extends Composer<_$LocalDatabase, $SyncAttemptsTable> {
+  $$SyncAttemptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultCode => $composableBuilder(
+    column: $table.resultCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcomeClass => $composableBuilder(
+    column: $table.outcomeClass,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recoveryCode => $composableBuilder(
+    column: $table.recoveryCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LocalAccountsTableFilterComposer get accountId {
+    final $$LocalAccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.localAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalAccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.localAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncAttemptsTableOrderingComposer
+    extends Composer<_$LocalDatabase, $SyncAttemptsTable> {
+  $$SyncAttemptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phase => $composableBuilder(
+    column: $table.phase,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultCode => $composableBuilder(
+    column: $table.resultCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcomeClass => $composableBuilder(
+    column: $table.outcomeClass,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recoveryCode => $composableBuilder(
+    column: $table.recoveryCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LocalAccountsTableOrderingComposer get accountId {
+    final $$LocalAccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.localAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalAccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.localAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncAttemptsTableAnnotationComposer
+    extends Composer<_$LocalDatabase, $SyncAttemptsTable> {
+  $$SyncAttemptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get environmentAlias => $composableBuilder(
+    column: $table.environmentAlias,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phase =>
+      $composableBuilder(column: $table.phase, builder: (column) => column);
+
+  GeneratedColumn<String> get resultCode => $composableBuilder(
+    column: $table.resultCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get outcomeClass => $composableBuilder(
+    column: $table.outcomeClass,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recoveryCode => $composableBuilder(
+    column: $table.recoveryCode,
+    builder: (column) => column,
+  );
+
+  $$LocalAccountsTableAnnotationComposer get accountId {
+    final $$LocalAccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.localAccounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LocalAccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.localAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncAttemptsTableTableManager
+    extends
+        RootTableManager<
+          _$LocalDatabase,
+          $SyncAttemptsTable,
+          SyncAttempt,
+          $$SyncAttemptsTableFilterComposer,
+          $$SyncAttemptsTableOrderingComposer,
+          $$SyncAttemptsTableAnnotationComposer,
+          $$SyncAttemptsTableCreateCompanionBuilder,
+          $$SyncAttemptsTableUpdateCompanionBuilder,
+          (SyncAttempt, $$SyncAttemptsTableReferences),
+          SyncAttempt,
+          PrefetchHooks Function({bool accountId})
+        > {
+  $$SyncAttemptsTableTableManager(_$LocalDatabase db, $SyncAttemptsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncAttemptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncAttemptsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncAttemptsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> accountId = const Value.absent(),
+                Value<String> environmentAlias = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<String> phase = const Value.absent(),
+                Value<String> resultCode = const Value.absent(),
+                Value<String> outcomeClass = const Value.absent(),
+                Value<String?> recoveryCode = const Value.absent(),
+              }) => SyncAttemptsCompanion(
+                id: id,
+                accountId: accountId,
+                environmentAlias: environmentAlias,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                phase: phase,
+                resultCode: resultCode,
+                outcomeClass: outcomeClass,
+                recoveryCode: recoveryCode,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String accountId,
+                required String environmentAlias,
+                required DateTime startedAt,
+                Value<DateTime?> completedAt = const Value.absent(),
+                required String phase,
+                required String resultCode,
+                required String outcomeClass,
+                Value<String?> recoveryCode = const Value.absent(),
+              }) => SyncAttemptsCompanion.insert(
+                id: id,
+                accountId: accountId,
+                environmentAlias: environmentAlias,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                phase: phase,
+                resultCode: resultCode,
+                outcomeClass: outcomeClass,
+                recoveryCode: recoveryCode,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SyncAttemptsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({accountId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (accountId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.accountId,
+                                referencedTable: $$SyncAttemptsTableReferences
+                                    ._accountIdTable(db),
+                                referencedColumn: $$SyncAttemptsTableReferences
+                                    ._accountIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SyncAttemptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LocalDatabase,
+      $SyncAttemptsTable,
+      SyncAttempt,
+      $$SyncAttemptsTableFilterComposer,
+      $$SyncAttemptsTableOrderingComposer,
+      $$SyncAttemptsTableAnnotationComposer,
+      $$SyncAttemptsTableCreateCompanionBuilder,
+      $$SyncAttemptsTableUpdateCompanionBuilder,
+      (SyncAttempt, $$SyncAttemptsTableReferences),
+      SyncAttempt,
+      PrefetchHooks Function({bool accountId})
+    >;
 typedef $$MigrationLedgerTableCreateCompanionBuilder =
     MigrationLedgerCompanion Function({
       Value<int> id,
@@ -19840,6 +20915,8 @@ class $LocalDatabaseManager {
       $$RecoveryChunksTableTableManager(_db, _db.recoveryChunks);
   $$HostedAuthStatesTableTableManager get hostedAuthStates =>
       $$HostedAuthStatesTableTableManager(_db, _db.hostedAuthStates);
+  $$SyncAttemptsTableTableManager get syncAttempts =>
+      $$SyncAttemptsTableTableManager(_db, _db.syncAttempts);
   $$MigrationLedgerTableTableManager get migrationLedger =>
       $$MigrationLedgerTableTableManager(_db, _db.migrationLedger);
 }
