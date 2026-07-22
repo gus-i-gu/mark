@@ -93,6 +93,8 @@ final class _ProofRun {
     try {
       final evidence = await action();
       results.add(_CaseResult(caseId, true, evidence: evidence));
+    } on _ProofFailure catch (error) {
+      results.add(_CaseResult(caseId, false, blocker: error.blocker));
     } catch (_) {
       results.add(_CaseResult(caseId, false, blocker: 'case-failed'));
     }
@@ -212,10 +214,15 @@ final class _ProofRun {
       final outcome = await replay.replay(environmentAlias: environment);
       final state = await repository.load(environment);
       _require(
-        outcome.status == 'applied' || outcome.status == 'duplicate-equivalent',
+        outcome.status == 'hosted-restart-required' ||
+            outcome.status == 'duplicate-equivalent',
+        _replayMismatchBlocker(outcome),
       );
-      _require(state?.enrollmentRequestId == command.enrollmentRequestId);
-      _require(state?.serverDeviceId != null);
+      _require(
+        state?.enrollmentRequestId == command.enrollmentRequestId,
+        'request-id-mismatch',
+      );
+      _require(state?.serverDeviceId != null, 'server-device-missing');
       return (await fixture.counts()).toJson(state: state?.enrollmentState);
     } finally {
       await fixture.dispose();
@@ -494,8 +501,30 @@ String _uuidFor(String prefix, String value) {
       '8$prefix$prefix$prefix-${hash.substring(hash.length - 12)}';
 }
 
-void _require(bool condition) {
-  if (!condition) throw StateError('r05-proof-condition-failed');
+void _require(bool condition, [String blocker = 'condition-failed']) {
+  if (!condition) throw _ProofFailure(blocker);
+}
+
+final class _ProofFailure implements Exception {
+  const _ProofFailure(this.blocker);
+
+  final String blocker;
+}
+
+String _replayMismatchBlocker(HostedEnrollmentOutcome outcome) {
+  if (outcome.status == 'unknown' && outcome.reason == 'service-unavailable') {
+    return 'replay-service-unavailable';
+  }
+  if (outcome.status == 'unknown' && outcome.reason == 'unknown-outcome') {
+    return 'replay-unknown-outcome';
+  }
+  if (outcome.status == 'not-applied' && outcome.reason == 'conflict') {
+    return 'replay-conflict';
+  }
+  if (outcome.status == 'not-applied') {
+    return 'replay-not-applied';
+  }
+  return 'replay-equivalence-mismatch';
 }
 
 bool _containsBytes(List<int> haystack, List<int> needle) {
