@@ -772,9 +772,9 @@ async function readyStatus(database: Database | undefined) {
   if (!database) return "not-ready";
   try {
     const result = await database.pool.query(
-      "select public.markei_hosted_runtime_ready() as ready",
+      "select public.markei_hosted_runtime_ready_v2() as ready",
     );
-    return result.rows[0]?.ready ? "ready" : "not-ready";
+    return result.rows[0]?.ready === true ? "ready" : "not-ready";
   } catch {
     return "not-ready";
   }

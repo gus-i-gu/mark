@@ -5,6 +5,10 @@ import type { ProofProducerName, ProofProducerResult } from "./producer.js";
 const producerScripts: readonly [ProofProducerName, string][] = [
   ["authorization-race", "src/proof/authorization_producer.ts"],
   ["migration-006-lifecycle-acl", "src/proof/migration_006_probe.ts"],
+  [
+    "migration-007-account-cursor-provisioning",
+    "src/proof/migration_007_account_cursor_provisioning_probe.ts",
+  ],
   ["jwks-state-machine", "src/proof/jwks_producer.ts"],
   ["route-inventory", "src/proof/route_inventory_producer.ts"],
   ["flutter-http-file-backed", "src/proof/flutter_producer.ts"],
@@ -51,6 +55,7 @@ const requiredPassed = new Map(
 const pipelineIntegrity =
   blockers.length === 0 &&
   requiredPassed.get("migration-006-lifecycle-acl") === true &&
+  requiredPassed.get("migration-007-account-cursor-provisioning") === true &&
   requiredPassed.get("jwks-state-machine") === true &&
   requiredPassed.get("route-inventory") === true &&
   requiredPassed.get("static-regression") === true &&
@@ -64,6 +69,9 @@ for (const blocker of allBlockers) {
 }
 process.stdout.write(
   `MIGRATION_006_LIFECYCLE_ACL=${requiredPassed.get("migration-006-lifecycle-acl") === true}\n`,
+);
+process.stdout.write(
+  `MIGRATION_007_ACCOUNT_CURSOR_PROVISIONING=${requiredPassed.get("migration-007-account-cursor-provisioning") === true}\n`,
 );
 process.stdout.write(
   `JWKS_STATE_MACHINE_PRODUCER=${requiredPassed.get("jwks-state-machine") === true}\n`,

@@ -85,8 +85,9 @@ function parseCaseResults(output: string) {
   const required = new Set(REQUIRED_PROOF_CASES["flutter-http-file-backed"]);
   const results: Record<string, ProofCaseResult> = {};
   for (const line of output.split(/\r?\n/u)) {
-    if (!line.startsWith("R05_CASE ")) continue;
-    const parsed = JSON.parse(line.slice("R05_CASE ".length)) as {
+    const markerIndex = line.indexOf("R05_CASE ");
+    if (markerIndex < 0) continue;
+    const parsed = JSON.parse(line.slice(markerIndex + "R05_CASE ".length)) as {
       caseId?: unknown;
       passed?: unknown;
       blocker?: unknown;
@@ -190,6 +191,7 @@ async function migrate(pool: pg.Pool) {
       "004_hosted_identity_enrollment",
       "005_hosted_authorization_fence",
       "006_hosted_authorization_r3",
+      "007_account_cursor_provisioning",
     ]) {
       const path = resolve(serverRoot, "migrations", `${id}.sql`);
       await client.query(readFileSync(path, "utf8"));
@@ -201,11 +203,6 @@ async function migrate(pool: pg.Pool) {
 
 async function seed(pool: pg.Pool, issuer: string) {
   await pool.query("insert into accounts(account_id) values($1)", [accountId]);
-  await pool.query(
-    `insert into account_cursor_state(account_id, next_cursor)
-     values($1,1)`,
-    [accountId],
-  );
   await pool.query(
     `insert into external_identities(identity_id, issuer, subject, status)
      values($1,$2,$3,'active')`,
@@ -251,6 +248,20 @@ async function startContainer() {
     [0],
   );
   if (code !== 0) throw new Error("postgres unavailable");
+  for (let attempt = 0; attempt < 30; attempt++) {
+    if (
+      (await run(
+        "docker",
+        ["exec", containerName, "pg_isready", "-U", "postgres"],
+        repositoryRoot,
+        [0, 1],
+      )) === 0
+    ) {
+      await waitForSql();
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
   await waitForSql();
 }
 
@@ -363,10 +374,28 @@ function runText(
       clearTimeout(timeout);
       const output = Buffer.concat(stdout).toString("utf8");
       if (code !== 0) {
+        if (output.includes("R05_CASE ")) {
+          resolveText(output);
+          return;
+        }
+        const detail = [
+          ...output.split(/\r?\n/u),
+          ...Buffer.concat(stderr).toString("utf8").split(/\r?\n/u),
+        ]
+          .map((line) => line.trim())
+          .filter(
+            (line) =>
+              line.length > 0 &&
+              !line.includes(": loading ") &&
+              !line.startsWith("00:"),
+          )
+          .slice(0, 5)
+          .join(" ");
         reject(
           new Error(
-            Buffer.concat(stderr).toString("utf8").split(/\r?\n/u)[0] ||
-              "flutter proof failed",
+            `flutter proof failed ${code ?? "unknown"} ${
+              detail || "no-detail"
+            }`,
           ),
         );
         return;

@@ -103,6 +103,7 @@ async function migrate(pool: pg.Pool) {
       "004_hosted_identity_enrollment",
       "005_hosted_authorization_fence",
       "006_hosted_authorization_r3",
+      "007_account_cursor_provisioning",
     ]) {
       const path = new URL(`../migrations/${id}.sql`, import.meta.url);
       await client.query(readFileSync(path, "utf8"));
@@ -115,11 +116,6 @@ async function migrate(pool: pg.Pool) {
 async function seed(pool: pg.Pool, issuer: string) {
   await pool.query(
     "insert into accounts(account_id) values($1) on conflict do nothing",
-    [membershipSliceIds.account],
-  );
-  await pool.query(
-    `insert into account_cursor_state(account_id, next_cursor)
-     values($1,1) on conflict do nothing`,
     [membershipSliceIds.account],
   );
   await pool.query(

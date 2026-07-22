@@ -5,6 +5,10 @@ import type { ProofProducerName, ProofProducerResult } from "./producer.js";
 const producerScripts: readonly [ProofProducerName, string][] = [
   ["authorization-race", "src/proof/authorization_producer.ts"],
   ["migration-006-lifecycle-acl", "src/proof/migration_006_probe.ts"],
+  [
+    "migration-007-account-cursor-provisioning",
+    "src/proof/migration_007_account_cursor_provisioning_probe.ts",
+  ],
   ["jwks-state-machine", "src/proof/jwks_producer.ts"],
   ["route-inventory", "src/proof/route_inventory_producer.ts"],
   ["flutter-http-file-backed", "src/proof/flutter_producer.ts"],
@@ -49,6 +53,9 @@ for (const blocker of [...blockers, ...aggregate.blockers].sort()) {
 }
 process.stdout.write(
   `MIGRATION_006_LIFECYCLE_ACL=${requiredPassed.get("migration-006-lifecycle-acl") === true}\n`,
+);
+process.stdout.write(
+  `MIGRATION_007_ACCOUNT_CURSOR_PROVISIONING=${requiredPassed.get("migration-007-account-cursor-provisioning") === true}\n`,
 );
 process.stdout.write(
   `JWKS_STATE_MACHINE_PRODUCER=${requiredPassed.get("jwks-state-machine") === true}\n`,

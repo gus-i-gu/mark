@@ -1,44 +1,63 @@
 # I_DSN_CODEX
 
-Authority marker: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
+Authority marker: C10-MCG02-ACCOUNT-CURSOR-PROVISIONING-REPAIR_20260722
 
 Final dependency direction:
-- Flutter Closure/Sync coordinator -> `HttpSyncTransport` -> Fastify protected Sync route.
-- Fastify protected route -> authorization fixture/hosted composition -> transaction wrapper -> Sync application service -> PostgreSQL client.
-- Sync application service owns protocol result selection; Fastify owns HTTP status mapping and sanitized lifecycle logging.
+- PostgreSQL migration 007 owns the Account cursor provisioning invariant.
+- Server readiness checks depend on `public.markei_hosted_runtime_ready_v2()`.
+- Enrollment, re-enrollment, first Sync, Flutter and provider scripts do not repair missing cursor state.
+- Sync service still advances existing cursor state and fails closed if the row is absent.
 
-Failing call boundary:
-- The failing boundary was inside `acceptSubmission` after Device sequence validation and before hosted event/submission insertion.
-- Missing `account_cursor_state` caused a zero-row cursor update; the previous implementation treated the returned row as mandatory and threw.
-- The correction checks the update row count and returns bounded `service-unavailable` without allocating a cursor or writing event/submission rows.
+Migration objects:
+- File: `services/markei_sync_api/migrations/007_account_cursor_provisioning.sql`
+- Ledger migration_id: `007_account_cursor_provisioning`
+- Ledger checksum: `c10-mcg02-account-cursor-provisioning-v1`
+- Trigger function: `public.markei_provision_account_cursor_state()`
+- Trigger: `accounts_provision_cursor_state_after_insert`
+- Readiness function: `public.markei_hosted_runtime_ready_v2()`
 
-Error mapping:
-- Protected Sync and recovery routes now use the existing `sendHostedResult` helper so `ProtocolFailure` maps to non-2xx HTTP status.
-- `service-unavailable` maps to HTTP 503.
-- Flutter maps protocol code `service-unavailable` to `SyncStatusCode.serviceUnavailable`.
-- Coordinator treats that status as Sync unavailable, distinct from `unknownOutcome` interruption.
+Trigger and security:
+- Timing: AFTER INSERT on `public.accounts`, because `public.account_cursor_state.account_id` references the parent Account.
+- Function mode: SECURITY DEFINER, owned by migrator in disposable proof.
+- Search path: fixed `pg_catalog, public`.
+- References: fully qualified `public.account_cursor_state`; no dynamic SQL.
+- Direct execution: denied to PUBLIC and runtime; execution is through the Account trigger.
+- Atomicity: Account INSERT and cursor provisioning commit or roll back together.
 
-Transaction observation:
-- The missing cursor-state result is a typed not-applied application result, so the transaction commits no hosted user facts and performs no immutable event/submission insert.
-- Unexpected exceptions still flow through rollback and the error handler.
-- Lifecycle request-failed no longer records a successful status when Fastify has not yet assigned the final error response.
+Backfill behavior:
+- Only missing Accounts are backfilled.
+- Missing/no-events Account gets next_cursor 1.
+- Missing/with-events Account gets max(`sync_events.server_cursor`) + 1.
+- Existing cursor rows keep their exact pre-migration next_cursor.
+- Mixed complete/incomplete Accounts preserve complete state and repair only incomplete state.
 
-Logging placement:
-- Fastify lifecycle observer remains bounded and sanitized.
-- The request-failed hook records either a non-success status already known at the hook or an `unexpected-server-error` result without status.
-- Final `response-completed` remains the authoritative terminal HTTP status event.
+ACL/RLS behavior:
+- Runtime cursor INSERT and DELETE revoked.
+- Runtime scoped cursor SELECT and `next_cursor` UPDATE preserved under existing Account RLS.
+- Runtime Account INSERT remains denied.
+- Runtime ledger, DDL and role-administration operations denied.
+- Object-shadowing resistance validated by temp-table shadow attempt against readiness-v2.
 
-Deadline decision:
-- No client deadline extension was made.
-- The local server cause is understood and corrected; timeout/no-response semantics remain unknown-outcome preserving.
-- Observed HTTP 503 JSON before deadline is classified as a server protocol failure.
+Readiness compatibility:
+- `public.markei_hosted_runtime_ready()` is unchanged for old-binary rollback compatibility.
+- New application code calls only `public.markei_hosted_runtime_ready_v2()`.
+- New binary plus database through 006 is not ready because v2 is absent.
+- New binary plus exact 006+007 state is ready.
+- False, absent or malformed v2 results fail closed as not-ready.
+- Old readiness remains callable after 007.
 
-Migration decision:
-- No Drift or PostgreSQL migration was added.
-- Existing migrations 001-006 remain unchanged.
-- The missing-row runtime path is now fail-closed; creating or repairing provider cursor state remains outside this unit unless Main authorizes a database policy change.
+Fixture adaptations:
+- Hosted local harness and Flutter producer migration lists include 007.
+- Post-007 Account fixtures rely on the trigger instead of manual cursor insert.
+- Manual cursor insert remains only in pre-007/incomplete-state or historical harness contexts.
 
 Preserved invariants:
-- Event identity, payload, content hash, Device sequence and request identity are unchanged.
-- JWT/JWKS, hosted authorization, Device enrollment, RLS, route inventory, recovery identity and server transaction behavior are not weakened.
-- No provider configuration, credentials, private database, human event rows or deployment state were accessed or changed.
+- No PostgreSQL migrations 001-006 edited.
+- No Flutter schema, Drift migration, UI or sync protocol payload change.
+- No event identity, sequence, content hash, Account/Device authorization, JWT/JWKS validation, route inventory or exact-retry behavior changed.
+- Existing missing-state HTTP 503 defense remains as defense in depth and produces no partial Sync application.
+
+Residual design risks:
+- Provider deployment ordering remains a future gate: apply migration 007, redeploy new server code, then perform human-controlled provider verification.
+- The aggregate `r3_local_orchestrator` still reports the existing Flutter producer `query-replay-same-request-id` case as failed; direct Flutter suite and opt-in convergence/recovery harnesses passed.
+- Package-lock was minimally updated to patched transitive `fast-uri` versions to satisfy required production audit without changing declared dependencies.

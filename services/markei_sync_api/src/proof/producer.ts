@@ -1,6 +1,7 @@
 export type ProofProducerName =
   | "authorization-race"
   | "migration-006-lifecycle-acl"
+  | "migration-007-account-cursor-provisioning"
   | "jwks-state-machine"
   | "route-inventory"
   | "flutter-http-file-backed"
@@ -80,6 +81,37 @@ export const REQUIRED_PROOF_CASES: Record<
     "hostile-shadowing-resistant",
     "absent-ledger-not-ready",
     "tampered-ledger-not-ready",
+  ],
+  "migration-007-account-cursor-provisioning": [
+    "pre007-account-can-commit-without-cursor",
+    "pre007-incomplete-account-remains-incomplete",
+    "pre007-old-readiness-true",
+    "pre007-runtime-cursor-insert-allowed",
+    "fresh-001-to-007",
+    "upgrade-001-to-006-then-007-no-accounts",
+    "missing-row-no-events-next-cursor-1",
+    "missing-row-existing-events-high-water-plus-1",
+    "existing-cursor-row-preserved",
+    "mixed-complete-incomplete-accounts",
+    "duplicate-007-idempotent",
+    "concurrent-account-creation-provisions-cursors",
+    "account-insert-rollback-removes-cursor",
+    "migration-failure-rolls-back-all-007-effects",
+    "trigger-function-owner-is-migrator",
+    "trigger-function-security-definer",
+    "trigger-function-fixed-search-path",
+    "trigger-function-qualified-no-dynamic-sql",
+    "public-runtime-trigger-function-denied",
+    "runtime-account-and-cursor-insert-denied",
+    "runtime-cursor-delete-denied",
+    "runtime-scoped-cursor-select-update-allowed",
+    "runtime-ledger-ddl-role-denied",
+    "object-shadowing-resistant",
+    "readiness-v2-true-false-absent",
+    "old-readiness-remains-available",
+    "first-submission-after-provisioning-allocates-cursor",
+    "missing-state-503-defense-in-depth",
+    "missing-state-503-no-partial-sync",
   ],
   "jwks-state-machine": [
     "expired-cache-miss-fetches-once",

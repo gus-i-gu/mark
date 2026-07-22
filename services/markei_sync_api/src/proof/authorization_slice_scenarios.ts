@@ -1484,10 +1484,6 @@ async function resetAndSeed(
     ...(options.includeForeignAccount ? [foreignAccountId(caseId)] : []),
   ]) {
     await pool.query("insert into accounts(account_id) values($1)", [id]);
-    await pool.query(
-      "insert into account_cursor_state(account_id, next_cursor) values($1,1)",
-      [id],
-    );
   }
   for (const role of ["owner", "member"] as const) {
     await pool.query(

@@ -82,6 +82,32 @@ function databaseThatThrowsDuringSubmission() {
   };
 }
 
+function databaseWithReadinessResult(value: unknown) {
+  const queries: string[] = [];
+  return {
+    queries,
+    pool: {
+      query: async (sql: string) => {
+        queries.push(sql);
+        return { rows: [{ ready: value }], rowCount: 1 };
+      },
+    } as never,
+  };
+}
+
+function databaseWithMissingReadinessV2() {
+  const queries: string[] = [];
+  return {
+    queries,
+    pool: {
+      query: async (sql: string) => {
+        queries.push(sql);
+        throw new Error("missing readiness capability");
+      },
+    } as never,
+  };
+}
+
 test("v3 fixture hash matches TypeScript canonical serialization", () => {
   const event = JSON.parse(
     readFileSync(
@@ -183,6 +209,44 @@ test("lifecycle observer failure does not alter health response", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.json(), { status: "live" });
+});
+
+test("health readiness calls v2 and preserves v1 rollback compatibility by not calling it", async () => {
+  const database = databaseWithReadinessResult(true);
+  const app = buildApp({
+    authorization: { kind: "disabled" },
+    database,
+  });
+
+  const response = await app.inject({ method: "GET", url: "/health/ready" });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.json(), { status: "ready" });
+  assert.deepEqual(database.queries, [
+    "select public.markei_hosted_runtime_ready_v2() as ready",
+  ]);
+});
+
+test("health readiness fails closed for absent, false, and malformed v2 results", async () => {
+  const cases = [
+    databaseWithMissingReadinessV2(),
+    databaseWithReadinessResult(false),
+    databaseWithReadinessResult("true"),
+    databaseWithReadinessResult(1),
+  ];
+
+  for (const database of cases) {
+    const app = buildApp({
+      authorization: { kind: "disabled" },
+      database,
+    });
+    const response = await app.inject({ method: "GET", url: "/health/ready" });
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(response.json(), { status: "not-ready" });
+    assert.deepEqual(database.queries, [
+      "select public.markei_hosted_runtime_ready_v2() as ready",
+    ]);
+  }
 });
 
 test("protected route authentication rejection is lifecycle logged", async () => {

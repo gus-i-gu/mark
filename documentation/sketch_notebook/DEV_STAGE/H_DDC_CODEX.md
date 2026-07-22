@@ -1,33 +1,47 @@
 # H_DDC_CODEX
 
-Authority marker: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
+Authority marker: C10-MCG02-ACCOUNT-CURSOR-PROVISIONING-REPAIR_20260722
 
-Didactic result: the failure vocabulary now separates an observed bounded server failure from client timeout and from genuinely unknown application outcome.
+Didactic result:
+- Validated concept: hosted Account lifecycle now has a database-enforced local invariant: every Account inserted after migration 007 receives exactly one `account_cursor_state` row in the same transaction.
+- Historical correction: migration 007 backfills only missing rows. Missing rows use high-water derivation from existing `sync_events.server_cursor`; Accounts without events get next_cursor 1.
+- Existing cursor rows are preserved exactly. The migration does not reset, decrease, recompute or overwrite valid cursor state.
+- Runtime least privilege is tightened: runtime retains scoped SELECT and `next_cursor` UPDATE, but loses cursor INSERT and DELETE.
 
-Final bounded vocabulary:
-- `service-unavailable`: server reached and returned a bounded protocol failure. For the reproduced missing cursor-state case it is `not-applied`, retryable false, and instructs preservation of evidence.
-- `unknownOutcome`: transport did not provide a trustworthy protocol response, such as timeout/no response before classification.
-- `conflict`, `sequence-gap`, `wrong-account`, `hash-mismatch`: remain distinct recognized non-application or non-accepted protocol failures.
-- `sync-interrupted` / `transport-or-closure`: historical Closure attempt remains unchanged and was not reinterpreted.
+Bounded vocabulary:
+- `ready`: readiness-v2 returned boolean true.
+- `not-ready`: readiness-v2 absent, false, malformed, or query failure.
+- `service-unavailable` / `not-applied`: defense-in-depth protected submission result when an Account still lacks cursor state.
 
-Named semantic tests:
-- `protected submission fails closed when account cursor state is missing`
-- `unexpected protected submission failures do not log successful request-failed status`
-- `HTTP sync transport preserves observed service failure response`
-- existing exact-identity unknown retry regressions in the full Flutter suite
-- disposable HTTP/PostgreSQL convergence and recovery harness tests
+Semantic tests added or retained:
+- `pre007-account-can-commit-without-cursor`
+- `pre007-incomplete-account-remains-incomplete`
+- `pre007-old-readiness-true`
+- `pre007-runtime-cursor-insert-allowed`
+- `fresh-001-to-007`
+- `missing-row-no-events-next-cursor-1`
+- `missing-row-existing-events-high-water-plus-1`
+- `existing-cursor-row-preserved`
+- `concurrent-account-creation-provisions-cursors`
+- `migration-failure-rolls-back-all-007-effects`
+- `runtime-account-and-cursor-insert-denied`
+- `runtime-scoped-cursor-select-update-allowed`
+- `readiness-v2-true-false-absent`
+- `old-readiness-remains-available`
+- `first-submission-after-provisioning-allocates-cursor`
+- `missing-state-503-defense-in-depth`
+- `health readiness calls v2 and preserves v1 rollback compatibility by not calling it`
+- `health readiness fails closed for absent, false, and malformed v2 results`
 
-User-visible semantics:
-- An observed `service-unavailable` response is not presented as a generic conflict.
-- A timeout/no-response path remains unknown and retry-preserving.
-- No complete identifiers, payloads, hashes, headers, tokens, provider origins, SQL, stack traces or raw exceptions are surfaced.
+Evidence classification:
+- Observed: early dirty implementation existed before authority re-debut and was reviewed as candidate work.
+- Validated: migration/backfill/trigger/ACL/RLS/readiness behavior in disposable PostgreSQL; Flutter and server regression suites; local hosted authorization harness; opt-in disposable convergence/recovery harnesses.
+- Inferred: production Account creation through future migrations or administrative provisioning will invoke the trigger when 007 is applied.
+- Provisional: provider behavior after Neon migration and Render redeploy remains untested.
+- Unavailable: pytest was unavailable because pytest is not installed.
+- Not performed: provider migration, deployment, real Sync, human database inspection, human unresolved-submission retry.
 
-Privacy evidence:
-- Tests use synthetic Account/Device/Event/Submission values only.
-- Lifecycle assertions inspect bounded event names, status classes and short correlation behavior only.
-- Raw fixture exception text is asserted absent from lifecycle events.
-- No provider credentials, private files, human database rows or real provider requests were accessed.
-
-Provider boundary:
-- This unit corrects the locally reproduced failure mode and observability anomaly.
-- Human provider completion remains a separate retest; no provider success or MCG-02 closure is claimed.
+Learning boundary:
+- This unit proves local database provisioning behavior and application readiness adaptation.
+- It does not prove Neon has migration 007, Render is running new code, or the preserved real submission can now be retried.
+- No learner maturity or permanent notebook promotion is claimed.
