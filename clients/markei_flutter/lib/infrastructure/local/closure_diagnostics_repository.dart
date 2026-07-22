@@ -37,10 +37,41 @@ final class DriftClosureDiagnosticsRepository
           SyncAttemptsCompanion.insert(
             accountId: _accountId,
             environmentAlias: _environmentAlias,
+            operationKind: const Value('sync'),
             startedAt: _now(),
             phase: 'started',
+            latestStage: const Value('preflight-passed'),
             resultCode: 'sync-started',
             outcomeClass: 'in-progress',
+            responseHeadersReceived: const Value(false),
+          ),
+        );
+  }
+
+  @override
+  Future<int> beginDiagnosticAttempt({
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String correlationFingerprint,
+  }) async {
+    return _db
+        .into(_db.syncAttempts)
+        .insert(
+          SyncAttemptsCompanion.insert(
+            accountId: _accountId,
+            environmentAlias: _environmentAlias,
+            operationKind: Value(_sanitizeCode(operationKind)),
+            startedAt: _now(),
+            phase: _sanitizeCode(latestStage),
+            latestStage: Value(_sanitizeCode(latestStage)),
+            resultCode: _sanitizeCode(resultCode),
+            outcomeClass: _sanitizeCode(outcomeClass),
+            correlationFingerprint: Value(
+              _sanitizeFingerprint(correlationFingerprint),
+            ),
+            responseHeadersReceived: const Value(false),
           ),
         );
   }
@@ -64,11 +95,51 @@ final class DriftClosureDiagnosticsRepository
           SyncAttemptsCompanion(
             completedAt: Value(_now()),
             phase: Value(_sanitizeCode(phase)),
+            latestStage: Value(_sanitizeCode(phase)),
             resultCode: Value(_sanitizeCode(resultCode)),
             outcomeClass: Value(_sanitizeCode(outcomeClass)),
             recoveryCode: Value(
               recoveryCode == null ? null : _sanitizeCode(recoveryCode),
             ),
+          ),
+        );
+  }
+
+  @override
+  Future<void> completeDiagnosticAttempt(
+    int attemptId, {
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String recoveryCode,
+    required String correlationFingerprint,
+    required String elapsedBand,
+    int? httpStatus,
+    required bool responseHeadersReceived,
+  }) async {
+    await (_db.update(_db.syncAttempts)..where(
+          (table) =>
+              table.id.equals(attemptId) &
+              table.accountId.equals(_accountId) &
+              table.environmentAlias.equals(_environmentAlias) &
+              table.completedAt.isNull(),
+        ))
+        .write(
+          SyncAttemptsCompanion(
+            completedAt: Value(_now()),
+            operationKind: Value(_sanitizeCode(operationKind)),
+            phase: Value(_sanitizeCode(latestStage)),
+            latestStage: Value(_sanitizeCode(latestStage)),
+            resultCode: Value(_sanitizeCode(resultCode)),
+            outcomeClass: Value(_sanitizeCode(outcomeClass)),
+            recoveryCode: Value(_sanitizeCode(recoveryCode)),
+            correlationFingerprint: Value(
+              _sanitizeFingerprint(correlationFingerprint),
+            ),
+            elapsedBand: Value(_sanitizeCode(elapsedBand)),
+            httpStatus: Value(httpStatus),
+            responseHeadersReceived: Value(responseHeadersReceived),
           ),
         );
   }
@@ -355,10 +426,16 @@ final class DriftClosureDiagnosticsRepository
           startedAt: row.startedAt,
           completedAt: row.completedAt,
           duration: row.completedAt?.difference(row.startedAt),
+          operationKind: row.operationKind ?? 'sync',
           phase: row.phase,
+          latestStage: row.latestStage ?? row.phase,
           resultCode: row.resultCode,
           outcomeClass: row.outcomeClass,
           recoveryCode: row.recoveryCode,
+          correlationFingerprint: row.correlationFingerprint,
+          elapsedBand: row.elapsedBand,
+          httpStatus: row.httpStatus,
+          responseHeadersReceived: row.responseHeadersReceived,
         ),
     ];
   }
@@ -515,4 +592,13 @@ String _sanitizeCode(String value) {
     return 'unavailable';
   }
   return sanitized.length <= 64 ? sanitized : sanitized.substring(0, 64);
+}
+
+String _sanitizeFingerprint(String value) {
+  final sanitized = value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '')
+      .trim();
+  if (sanitized.isEmpty) return 'unavailable';
+  return sanitized.length <= 16 ? sanitized : sanitized.substring(0, 16);
 }

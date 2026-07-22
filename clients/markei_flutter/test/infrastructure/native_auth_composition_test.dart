@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:markei/app/native_auth_closure_runner.dart';
 import 'package:markei/application/closure_diagnostics.dart';
 import 'package:markei/application/hosted_auth_ports.dart';
+import 'package:markei/application/hosted_connection_check.dart';
 import 'package:markei/application/hosted_enrollment_coordinator.dart';
 import 'package:markei/application/hosted_sync_coordinator.dart';
 import 'package:markei/application/stable_device_enrollment_command_factory.dart';
@@ -366,6 +367,7 @@ void main() {
           _MemoryApplier(cursor: 'c10b:1'),
         ),
       ),
+      hostedConnectionCheck: const _FakeHostedConnectionCheck(),
     );
 
     expect((await runner.status()).state, 'authenticated');
@@ -419,6 +421,7 @@ void main() {
           _MemoryApplier(),
         ),
       ),
+      hostedConnectionCheck: const _FakeHostedConnectionCheck(),
     );
 
     expect((await runner.status()).state, 'signed-out');
@@ -465,6 +468,7 @@ void main() {
           _MemoryApplier(),
         ),
       ),
+      hostedConnectionCheck: const _FakeHostedConnectionCheck(),
     );
 
     expect(
@@ -935,12 +939,35 @@ final class _FakeClosureDiagnostics
   Future<int> beginSyncAttempt() async => 1;
 
   @override
+  Future<int> beginDiagnosticAttempt({
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String correlationFingerprint,
+  }) async => 1;
+
+  @override
   Future<void> completeSyncAttempt(
     int attemptId, {
     required String resultCode,
     required String outcomeClass,
     required String phase,
     String? recoveryCode,
+  }) async {}
+
+  @override
+  Future<void> completeDiagnosticAttempt(
+    int attemptId, {
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String recoveryCode,
+    required String correlationFingerprint,
+    required String elapsedBand,
+    int? httpStatus,
+    required bool responseHeadersReceived,
   }) async {}
 
   @override
@@ -978,6 +1005,36 @@ final class _FakeClosureDiagnostics
       devices: const [],
       actionableEvents: const [],
       refreshedAt: DateTime.utc(2026, 7, 21),
+    );
+  }
+}
+
+final class _FakeHostedConnectionCheck implements HostedConnectionCheckPort {
+  const _FakeHostedConnectionCheck();
+
+  @override
+  HostedConnectionCorrelation createCorrelation() {
+    return const HostedConnectionCorrelation(
+      value: 'correlation-fixture',
+      fingerprint: 'corr1234',
+    );
+  }
+
+  @override
+  Future<HostedConnectionCheckResult> check(
+    HostedConnectionCorrelation correlation,
+  ) async {
+    return HostedConnectionCheckResult(
+      correlationFingerprint: correlation.fingerprint,
+      latestStage: 'response-parsed',
+      resultCode: 'hosted-connection-ready',
+      outcomeClass: 'completed',
+      recoveryCode: 'ready-does-not-prove-sync',
+      liveReachable: true,
+      ready: true,
+      elapsedBand: 'lt-1s',
+      responseHeadersReceived: true,
+      httpStatus: 200,
     );
   }
 }

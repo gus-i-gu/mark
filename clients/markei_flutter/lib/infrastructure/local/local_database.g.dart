@@ -9324,6 +9324,17 @@ class $SyncAttemptsTable extends SyncAttempts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _operationKindMeta = const VerificationMeta(
+    'operationKind',
+  );
+  @override
+  late final GeneratedColumn<String> operationKind = GeneratedColumn<String>(
+    'operation_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -9354,6 +9365,17 @@ class $SyncAttemptsTable extends SyncAttempts
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _latestStageMeta = const VerificationMeta(
+    'latestStage',
+  );
+  @override
+  late final GeneratedColumn<String> latestStage = GeneratedColumn<String>(
+    'latest_stage',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _resultCodeMeta = const VerificationMeta(
     'resultCode',
@@ -9388,17 +9410,71 @@ class $SyncAttemptsTable extends SyncAttempts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _correlationFingerprintMeta =
+      const VerificationMeta('correlationFingerprint');
+  @override
+  late final GeneratedColumn<String> correlationFingerprint =
+      GeneratedColumn<String>(
+        'correlation_fingerprint',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _elapsedBandMeta = const VerificationMeta(
+    'elapsedBand',
+  );
+  @override
+  late final GeneratedColumn<String> elapsedBand = GeneratedColumn<String>(
+    'elapsed_band',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _httpStatusMeta = const VerificationMeta(
+    'httpStatus',
+  );
+  @override
+  late final GeneratedColumn<int> httpStatus = GeneratedColumn<int>(
+    'http_status',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _responseHeadersReceivedMeta =
+      const VerificationMeta('responseHeadersReceived');
+  @override
+  late final GeneratedColumn<bool> responseHeadersReceived =
+      GeneratedColumn<bool>(
+        'response_headers_received',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("response_headers_received" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     accountId,
     environmentAlias,
+    operationKind,
     startedAt,
     completedAt,
     phase,
+    latestStage,
     resultCode,
     outcomeClass,
     recoveryCode,
+    correlationFingerprint,
+    elapsedBand,
+    httpStatus,
+    responseHeadersReceived,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -9434,6 +9510,15 @@ class $SyncAttemptsTable extends SyncAttempts
     } else if (isInserting) {
       context.missing(_environmentAliasMeta);
     }
+    if (data.containsKey('operation_kind')) {
+      context.handle(
+        _operationKindMeta,
+        operationKind.isAcceptableOrUnknown(
+          data['operation_kind']!,
+          _operationKindMeta,
+        ),
+      );
+    }
     if (data.containsKey('started_at')) {
       context.handle(
         _startedAtMeta,
@@ -9458,6 +9543,15 @@ class $SyncAttemptsTable extends SyncAttempts
       );
     } else if (isInserting) {
       context.missing(_phaseMeta);
+    }
+    if (data.containsKey('latest_stage')) {
+      context.handle(
+        _latestStageMeta,
+        latestStage.isAcceptableOrUnknown(
+          data['latest_stage']!,
+          _latestStageMeta,
+        ),
+      );
     }
     if (data.containsKey('result_code')) {
       context.handle(
@@ -9487,6 +9581,39 @@ class $SyncAttemptsTable extends SyncAttempts
         ),
       );
     }
+    if (data.containsKey('correlation_fingerprint')) {
+      context.handle(
+        _correlationFingerprintMeta,
+        correlationFingerprint.isAcceptableOrUnknown(
+          data['correlation_fingerprint']!,
+          _correlationFingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('elapsed_band')) {
+      context.handle(
+        _elapsedBandMeta,
+        elapsedBand.isAcceptableOrUnknown(
+          data['elapsed_band']!,
+          _elapsedBandMeta,
+        ),
+      );
+    }
+    if (data.containsKey('http_status')) {
+      context.handle(
+        _httpStatusMeta,
+        httpStatus.isAcceptableOrUnknown(data['http_status']!, _httpStatusMeta),
+      );
+    }
+    if (data.containsKey('response_headers_received')) {
+      context.handle(
+        _responseHeadersReceivedMeta,
+        responseHeadersReceived.isAcceptableOrUnknown(
+          data['response_headers_received']!,
+          _responseHeadersReceivedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -9508,6 +9635,10 @@ class $SyncAttemptsTable extends SyncAttempts
         DriftSqlType.string,
         data['${effectivePrefix}environment_alias'],
       )!,
+      operationKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operation_kind'],
+      ),
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -9520,6 +9651,10 @@ class $SyncAttemptsTable extends SyncAttempts
         DriftSqlType.string,
         data['${effectivePrefix}phase'],
       )!,
+      latestStage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}latest_stage'],
+      ),
       resultCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}result_code'],
@@ -9532,6 +9667,22 @@ class $SyncAttemptsTable extends SyncAttempts
         DriftSqlType.string,
         data['${effectivePrefix}recovery_code'],
       ),
+      correlationFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}correlation_fingerprint'],
+      ),
+      elapsedBand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}elapsed_band'],
+      ),
+      httpStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}http_status'],
+      ),
+      responseHeadersReceived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}response_headers_received'],
+      )!,
     );
   }
 
@@ -9545,22 +9696,34 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
   final int id;
   final String accountId;
   final String environmentAlias;
+  final String? operationKind;
   final DateTime startedAt;
   final DateTime? completedAt;
   final String phase;
+  final String? latestStage;
   final String resultCode;
   final String outcomeClass;
   final String? recoveryCode;
+  final String? correlationFingerprint;
+  final String? elapsedBand;
+  final int? httpStatus;
+  final bool responseHeadersReceived;
   const SyncAttempt({
     required this.id,
     required this.accountId,
     required this.environmentAlias,
+    this.operationKind,
     required this.startedAt,
     this.completedAt,
     required this.phase,
+    this.latestStage,
     required this.resultCode,
     required this.outcomeClass,
     this.recoveryCode,
+    this.correlationFingerprint,
+    this.elapsedBand,
+    this.httpStatus,
+    required this.responseHeadersReceived,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9568,16 +9731,32 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
     map['id'] = Variable<int>(id);
     map['account_id'] = Variable<String>(accountId);
     map['environment_alias'] = Variable<String>(environmentAlias);
+    if (!nullToAbsent || operationKind != null) {
+      map['operation_kind'] = Variable<String>(operationKind);
+    }
     map['started_at'] = Variable<DateTime>(startedAt);
     if (!nullToAbsent || completedAt != null) {
       map['completed_at'] = Variable<DateTime>(completedAt);
     }
     map['phase'] = Variable<String>(phase);
+    if (!nullToAbsent || latestStage != null) {
+      map['latest_stage'] = Variable<String>(latestStage);
+    }
     map['result_code'] = Variable<String>(resultCode);
     map['outcome_class'] = Variable<String>(outcomeClass);
     if (!nullToAbsent || recoveryCode != null) {
       map['recovery_code'] = Variable<String>(recoveryCode);
     }
+    if (!nullToAbsent || correlationFingerprint != null) {
+      map['correlation_fingerprint'] = Variable<String>(correlationFingerprint);
+    }
+    if (!nullToAbsent || elapsedBand != null) {
+      map['elapsed_band'] = Variable<String>(elapsedBand);
+    }
+    if (!nullToAbsent || httpStatus != null) {
+      map['http_status'] = Variable<int>(httpStatus);
+    }
+    map['response_headers_received'] = Variable<bool>(responseHeadersReceived);
     return map;
   }
 
@@ -9586,16 +9765,32 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
       id: Value(id),
       accountId: Value(accountId),
       environmentAlias: Value(environmentAlias),
+      operationKind: operationKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operationKind),
       startedAt: Value(startedAt),
       completedAt: completedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(completedAt),
       phase: Value(phase),
+      latestStage: latestStage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latestStage),
       resultCode: Value(resultCode),
       outcomeClass: Value(outcomeClass),
       recoveryCode: recoveryCode == null && nullToAbsent
           ? const Value.absent()
           : Value(recoveryCode),
+      correlationFingerprint: correlationFingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(correlationFingerprint),
+      elapsedBand: elapsedBand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(elapsedBand),
+      httpStatus: httpStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(httpStatus),
+      responseHeadersReceived: Value(responseHeadersReceived),
     );
   }
 
@@ -9608,12 +9803,22 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
       id: serializer.fromJson<int>(json['id']),
       accountId: serializer.fromJson<String>(json['accountId']),
       environmentAlias: serializer.fromJson<String>(json['environmentAlias']),
+      operationKind: serializer.fromJson<String?>(json['operationKind']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
       phase: serializer.fromJson<String>(json['phase']),
+      latestStage: serializer.fromJson<String?>(json['latestStage']),
       resultCode: serializer.fromJson<String>(json['resultCode']),
       outcomeClass: serializer.fromJson<String>(json['outcomeClass']),
       recoveryCode: serializer.fromJson<String?>(json['recoveryCode']),
+      correlationFingerprint: serializer.fromJson<String?>(
+        json['correlationFingerprint'],
+      ),
+      elapsedBand: serializer.fromJson<String?>(json['elapsedBand']),
+      httpStatus: serializer.fromJson<int?>(json['httpStatus']),
+      responseHeadersReceived: serializer.fromJson<bool>(
+        json['responseHeadersReceived'],
+      ),
     );
   }
   @override
@@ -9623,12 +9828,22 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
       'id': serializer.toJson<int>(id),
       'accountId': serializer.toJson<String>(accountId),
       'environmentAlias': serializer.toJson<String>(environmentAlias),
+      'operationKind': serializer.toJson<String?>(operationKind),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'completedAt': serializer.toJson<DateTime?>(completedAt),
       'phase': serializer.toJson<String>(phase),
+      'latestStage': serializer.toJson<String?>(latestStage),
       'resultCode': serializer.toJson<String>(resultCode),
       'outcomeClass': serializer.toJson<String>(outcomeClass),
       'recoveryCode': serializer.toJson<String?>(recoveryCode),
+      'correlationFingerprint': serializer.toJson<String?>(
+        correlationFingerprint,
+      ),
+      'elapsedBand': serializer.toJson<String?>(elapsedBand),
+      'httpStatus': serializer.toJson<int?>(httpStatus),
+      'responseHeadersReceived': serializer.toJson<bool>(
+        responseHeadersReceived,
+      ),
     };
   }
 
@@ -9636,22 +9851,39 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
     int? id,
     String? accountId,
     String? environmentAlias,
+    Value<String?> operationKind = const Value.absent(),
     DateTime? startedAt,
     Value<DateTime?> completedAt = const Value.absent(),
     String? phase,
+    Value<String?> latestStage = const Value.absent(),
     String? resultCode,
     String? outcomeClass,
     Value<String?> recoveryCode = const Value.absent(),
+    Value<String?> correlationFingerprint = const Value.absent(),
+    Value<String?> elapsedBand = const Value.absent(),
+    Value<int?> httpStatus = const Value.absent(),
+    bool? responseHeadersReceived,
   }) => SyncAttempt(
     id: id ?? this.id,
     accountId: accountId ?? this.accountId,
     environmentAlias: environmentAlias ?? this.environmentAlias,
+    operationKind: operationKind.present
+        ? operationKind.value
+        : this.operationKind,
     startedAt: startedAt ?? this.startedAt,
     completedAt: completedAt.present ? completedAt.value : this.completedAt,
     phase: phase ?? this.phase,
+    latestStage: latestStage.present ? latestStage.value : this.latestStage,
     resultCode: resultCode ?? this.resultCode,
     outcomeClass: outcomeClass ?? this.outcomeClass,
     recoveryCode: recoveryCode.present ? recoveryCode.value : this.recoveryCode,
+    correlationFingerprint: correlationFingerprint.present
+        ? correlationFingerprint.value
+        : this.correlationFingerprint,
+    elapsedBand: elapsedBand.present ? elapsedBand.value : this.elapsedBand,
+    httpStatus: httpStatus.present ? httpStatus.value : this.httpStatus,
+    responseHeadersReceived:
+        responseHeadersReceived ?? this.responseHeadersReceived,
   );
   SyncAttempt copyWithCompanion(SyncAttemptsCompanion data) {
     return SyncAttempt(
@@ -9660,11 +9892,17 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
       environmentAlias: data.environmentAlias.present
           ? data.environmentAlias.value
           : this.environmentAlias,
+      operationKind: data.operationKind.present
+          ? data.operationKind.value
+          : this.operationKind,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       completedAt: data.completedAt.present
           ? data.completedAt.value
           : this.completedAt,
       phase: data.phase.present ? data.phase.value : this.phase,
+      latestStage: data.latestStage.present
+          ? data.latestStage.value
+          : this.latestStage,
       resultCode: data.resultCode.present
           ? data.resultCode.value
           : this.resultCode,
@@ -9674,6 +9912,18 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
       recoveryCode: data.recoveryCode.present
           ? data.recoveryCode.value
           : this.recoveryCode,
+      correlationFingerprint: data.correlationFingerprint.present
+          ? data.correlationFingerprint.value
+          : this.correlationFingerprint,
+      elapsedBand: data.elapsedBand.present
+          ? data.elapsedBand.value
+          : this.elapsedBand,
+      httpStatus: data.httpStatus.present
+          ? data.httpStatus.value
+          : this.httpStatus,
+      responseHeadersReceived: data.responseHeadersReceived.present
+          ? data.responseHeadersReceived.value
+          : this.responseHeadersReceived,
     );
   }
 
@@ -9683,12 +9933,18 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('environmentAlias: $environmentAlias, ')
+          ..write('operationKind: $operationKind, ')
           ..write('startedAt: $startedAt, ')
           ..write('completedAt: $completedAt, ')
           ..write('phase: $phase, ')
+          ..write('latestStage: $latestStage, ')
           ..write('resultCode: $resultCode, ')
           ..write('outcomeClass: $outcomeClass, ')
-          ..write('recoveryCode: $recoveryCode')
+          ..write('recoveryCode: $recoveryCode, ')
+          ..write('correlationFingerprint: $correlationFingerprint, ')
+          ..write('elapsedBand: $elapsedBand, ')
+          ..write('httpStatus: $httpStatus, ')
+          ..write('responseHeadersReceived: $responseHeadersReceived')
           ..write(')'))
         .toString();
   }
@@ -9698,12 +9954,18 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
     id,
     accountId,
     environmentAlias,
+    operationKind,
     startedAt,
     completedAt,
     phase,
+    latestStage,
     resultCode,
     outcomeClass,
     recoveryCode,
+    correlationFingerprint,
+    elapsedBand,
+    httpStatus,
+    responseHeadersReceived,
   );
   @override
   bool operator ==(Object other) =>
@@ -9712,45 +9974,69 @@ class SyncAttempt extends DataClass implements Insertable<SyncAttempt> {
           other.id == this.id &&
           other.accountId == this.accountId &&
           other.environmentAlias == this.environmentAlias &&
+          other.operationKind == this.operationKind &&
           other.startedAt == this.startedAt &&
           other.completedAt == this.completedAt &&
           other.phase == this.phase &&
+          other.latestStage == this.latestStage &&
           other.resultCode == this.resultCode &&
           other.outcomeClass == this.outcomeClass &&
-          other.recoveryCode == this.recoveryCode);
+          other.recoveryCode == this.recoveryCode &&
+          other.correlationFingerprint == this.correlationFingerprint &&
+          other.elapsedBand == this.elapsedBand &&
+          other.httpStatus == this.httpStatus &&
+          other.responseHeadersReceived == this.responseHeadersReceived);
 }
 
 class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
   final Value<int> id;
   final Value<String> accountId;
   final Value<String> environmentAlias;
+  final Value<String?> operationKind;
   final Value<DateTime> startedAt;
   final Value<DateTime?> completedAt;
   final Value<String> phase;
+  final Value<String?> latestStage;
   final Value<String> resultCode;
   final Value<String> outcomeClass;
   final Value<String?> recoveryCode;
+  final Value<String?> correlationFingerprint;
+  final Value<String?> elapsedBand;
+  final Value<int?> httpStatus;
+  final Value<bool> responseHeadersReceived;
   const SyncAttemptsCompanion({
     this.id = const Value.absent(),
     this.accountId = const Value.absent(),
     this.environmentAlias = const Value.absent(),
+    this.operationKind = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.phase = const Value.absent(),
+    this.latestStage = const Value.absent(),
     this.resultCode = const Value.absent(),
     this.outcomeClass = const Value.absent(),
     this.recoveryCode = const Value.absent(),
+    this.correlationFingerprint = const Value.absent(),
+    this.elapsedBand = const Value.absent(),
+    this.httpStatus = const Value.absent(),
+    this.responseHeadersReceived = const Value.absent(),
   });
   SyncAttemptsCompanion.insert({
     this.id = const Value.absent(),
     required String accountId,
     required String environmentAlias,
+    this.operationKind = const Value.absent(),
     required DateTime startedAt,
     this.completedAt = const Value.absent(),
     required String phase,
+    this.latestStage = const Value.absent(),
     required String resultCode,
     required String outcomeClass,
     this.recoveryCode = const Value.absent(),
+    this.correlationFingerprint = const Value.absent(),
+    this.elapsedBand = const Value.absent(),
+    this.httpStatus = const Value.absent(),
+    this.responseHeadersReceived = const Value.absent(),
   }) : accountId = Value(accountId),
        environmentAlias = Value(environmentAlias),
        startedAt = Value(startedAt),
@@ -9761,23 +10047,37 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
     Expression<int>? id,
     Expression<String>? accountId,
     Expression<String>? environmentAlias,
+    Expression<String>? operationKind,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? completedAt,
     Expression<String>? phase,
+    Expression<String>? latestStage,
     Expression<String>? resultCode,
     Expression<String>? outcomeClass,
     Expression<String>? recoveryCode,
+    Expression<String>? correlationFingerprint,
+    Expression<String>? elapsedBand,
+    Expression<int>? httpStatus,
+    Expression<bool>? responseHeadersReceived,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (accountId != null) 'account_id': accountId,
       if (environmentAlias != null) 'environment_alias': environmentAlias,
+      if (operationKind != null) 'operation_kind': operationKind,
       if (startedAt != null) 'started_at': startedAt,
       if (completedAt != null) 'completed_at': completedAt,
       if (phase != null) 'phase': phase,
+      if (latestStage != null) 'latest_stage': latestStage,
       if (resultCode != null) 'result_code': resultCode,
       if (outcomeClass != null) 'outcome_class': outcomeClass,
       if (recoveryCode != null) 'recovery_code': recoveryCode,
+      if (correlationFingerprint != null)
+        'correlation_fingerprint': correlationFingerprint,
+      if (elapsedBand != null) 'elapsed_band': elapsedBand,
+      if (httpStatus != null) 'http_status': httpStatus,
+      if (responseHeadersReceived != null)
+        'response_headers_received': responseHeadersReceived,
     });
   }
 
@@ -9785,23 +10085,37 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
     Value<int>? id,
     Value<String>? accountId,
     Value<String>? environmentAlias,
+    Value<String?>? operationKind,
     Value<DateTime>? startedAt,
     Value<DateTime?>? completedAt,
     Value<String>? phase,
+    Value<String?>? latestStage,
     Value<String>? resultCode,
     Value<String>? outcomeClass,
     Value<String?>? recoveryCode,
+    Value<String?>? correlationFingerprint,
+    Value<String?>? elapsedBand,
+    Value<int?>? httpStatus,
+    Value<bool>? responseHeadersReceived,
   }) {
     return SyncAttemptsCompanion(
       id: id ?? this.id,
       accountId: accountId ?? this.accountId,
       environmentAlias: environmentAlias ?? this.environmentAlias,
+      operationKind: operationKind ?? this.operationKind,
       startedAt: startedAt ?? this.startedAt,
       completedAt: completedAt ?? this.completedAt,
       phase: phase ?? this.phase,
+      latestStage: latestStage ?? this.latestStage,
       resultCode: resultCode ?? this.resultCode,
       outcomeClass: outcomeClass ?? this.outcomeClass,
       recoveryCode: recoveryCode ?? this.recoveryCode,
+      correlationFingerprint:
+          correlationFingerprint ?? this.correlationFingerprint,
+      elapsedBand: elapsedBand ?? this.elapsedBand,
+      httpStatus: httpStatus ?? this.httpStatus,
+      responseHeadersReceived:
+          responseHeadersReceived ?? this.responseHeadersReceived,
     );
   }
 
@@ -9817,6 +10131,9 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
     if (environmentAlias.present) {
       map['environment_alias'] = Variable<String>(environmentAlias.value);
     }
+    if (operationKind.present) {
+      map['operation_kind'] = Variable<String>(operationKind.value);
+    }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
     }
@@ -9825,6 +10142,9 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
     }
     if (phase.present) {
       map['phase'] = Variable<String>(phase.value);
+    }
+    if (latestStage.present) {
+      map['latest_stage'] = Variable<String>(latestStage.value);
     }
     if (resultCode.present) {
       map['result_code'] = Variable<String>(resultCode.value);
@@ -9835,6 +10155,22 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
     if (recoveryCode.present) {
       map['recovery_code'] = Variable<String>(recoveryCode.value);
     }
+    if (correlationFingerprint.present) {
+      map['correlation_fingerprint'] = Variable<String>(
+        correlationFingerprint.value,
+      );
+    }
+    if (elapsedBand.present) {
+      map['elapsed_band'] = Variable<String>(elapsedBand.value);
+    }
+    if (httpStatus.present) {
+      map['http_status'] = Variable<int>(httpStatus.value);
+    }
+    if (responseHeadersReceived.present) {
+      map['response_headers_received'] = Variable<bool>(
+        responseHeadersReceived.value,
+      );
+    }
     return map;
   }
 
@@ -9844,12 +10180,18 @@ class SyncAttemptsCompanion extends UpdateCompanion<SyncAttempt> {
           ..write('id: $id, ')
           ..write('accountId: $accountId, ')
           ..write('environmentAlias: $environmentAlias, ')
+          ..write('operationKind: $operationKind, ')
           ..write('startedAt: $startedAt, ')
           ..write('completedAt: $completedAt, ')
           ..write('phase: $phase, ')
+          ..write('latestStage: $latestStage, ')
           ..write('resultCode: $resultCode, ')
           ..write('outcomeClass: $outcomeClass, ')
-          ..write('recoveryCode: $recoveryCode')
+          ..write('recoveryCode: $recoveryCode, ')
+          ..write('correlationFingerprint: $correlationFingerprint, ')
+          ..write('elapsedBand: $elapsedBand, ')
+          ..write('httpStatus: $httpStatus, ')
+          ..write('responseHeadersReceived: $responseHeadersReceived')
           ..write(')'))
         .toString();
   }
@@ -20230,24 +20572,36 @@ typedef $$SyncAttemptsTableCreateCompanionBuilder =
       Value<int> id,
       required String accountId,
       required String environmentAlias,
+      Value<String?> operationKind,
       required DateTime startedAt,
       Value<DateTime?> completedAt,
       required String phase,
+      Value<String?> latestStage,
       required String resultCode,
       required String outcomeClass,
       Value<String?> recoveryCode,
+      Value<String?> correlationFingerprint,
+      Value<String?> elapsedBand,
+      Value<int?> httpStatus,
+      Value<bool> responseHeadersReceived,
     });
 typedef $$SyncAttemptsTableUpdateCompanionBuilder =
     SyncAttemptsCompanion Function({
       Value<int> id,
       Value<String> accountId,
       Value<String> environmentAlias,
+      Value<String?> operationKind,
       Value<DateTime> startedAt,
       Value<DateTime?> completedAt,
       Value<String> phase,
+      Value<String?> latestStage,
       Value<String> resultCode,
       Value<String> outcomeClass,
       Value<String?> recoveryCode,
+      Value<String?> correlationFingerprint,
+      Value<String?> elapsedBand,
+      Value<int?> httpStatus,
+      Value<bool> responseHeadersReceived,
     });
 
 final class $$SyncAttemptsTableReferences
@@ -20292,6 +20646,11 @@ class $$SyncAttemptsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get operationKind => $composableBuilder(
+    column: $table.operationKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnFilters(column),
@@ -20307,6 +20666,11 @@ class $$SyncAttemptsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get latestStage => $composableBuilder(
+    column: $table.latestStage,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get resultCode => $composableBuilder(
     column: $table.resultCode,
     builder: (column) => ColumnFilters(column),
@@ -20319,6 +20683,26 @@ class $$SyncAttemptsTableFilterComposer
 
   ColumnFilters<String> get recoveryCode => $composableBuilder(
     column: $table.recoveryCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get correlationFingerprint => $composableBuilder(
+    column: $table.correlationFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get elapsedBand => $composableBuilder(
+    column: $table.elapsedBand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get httpStatus => $composableBuilder(
+    column: $table.httpStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get responseHeadersReceived => $composableBuilder(
+    column: $table.responseHeadersReceived,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20365,6 +20749,11 @@ class $$SyncAttemptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get operationKind => $composableBuilder(
+    column: $table.operationKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -20380,6 +20769,11 @@ class $$SyncAttemptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get latestStage => $composableBuilder(
+    column: $table.latestStage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get resultCode => $composableBuilder(
     column: $table.resultCode,
     builder: (column) => ColumnOrderings(column),
@@ -20392,6 +20786,26 @@ class $$SyncAttemptsTableOrderingComposer
 
   ColumnOrderings<String> get recoveryCode => $composableBuilder(
     column: $table.recoveryCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get correlationFingerprint => $composableBuilder(
+    column: $table.correlationFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get elapsedBand => $composableBuilder(
+    column: $table.elapsedBand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get httpStatus => $composableBuilder(
+    column: $table.httpStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get responseHeadersReceived => $composableBuilder(
+    column: $table.responseHeadersReceived,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -20436,6 +20850,11 @@ class $$SyncAttemptsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get operationKind => $composableBuilder(
+    column: $table.operationKind,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
 
@@ -20446,6 +20865,11 @@ class $$SyncAttemptsTableAnnotationComposer
 
   GeneratedColumn<String> get phase =>
       $composableBuilder(column: $table.phase, builder: (column) => column);
+
+  GeneratedColumn<String> get latestStage => $composableBuilder(
+    column: $table.latestStage,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get resultCode => $composableBuilder(
     column: $table.resultCode,
@@ -20459,6 +20883,26 @@ class $$SyncAttemptsTableAnnotationComposer
 
   GeneratedColumn<String> get recoveryCode => $composableBuilder(
     column: $table.recoveryCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get correlationFingerprint => $composableBuilder(
+    column: $table.correlationFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get elapsedBand => $composableBuilder(
+    column: $table.elapsedBand,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get httpStatus => $composableBuilder(
+    column: $table.httpStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get responseHeadersReceived => $composableBuilder(
+    column: $table.responseHeadersReceived,
     builder: (column) => column,
   );
 
@@ -20517,44 +20961,68 @@ class $$SyncAttemptsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> accountId = const Value.absent(),
                 Value<String> environmentAlias = const Value.absent(),
+                Value<String?> operationKind = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> completedAt = const Value.absent(),
                 Value<String> phase = const Value.absent(),
+                Value<String?> latestStage = const Value.absent(),
                 Value<String> resultCode = const Value.absent(),
                 Value<String> outcomeClass = const Value.absent(),
                 Value<String?> recoveryCode = const Value.absent(),
+                Value<String?> correlationFingerprint = const Value.absent(),
+                Value<String?> elapsedBand = const Value.absent(),
+                Value<int?> httpStatus = const Value.absent(),
+                Value<bool> responseHeadersReceived = const Value.absent(),
               }) => SyncAttemptsCompanion(
                 id: id,
                 accountId: accountId,
                 environmentAlias: environmentAlias,
+                operationKind: operationKind,
                 startedAt: startedAt,
                 completedAt: completedAt,
                 phase: phase,
+                latestStage: latestStage,
                 resultCode: resultCode,
                 outcomeClass: outcomeClass,
                 recoveryCode: recoveryCode,
+                correlationFingerprint: correlationFingerprint,
+                elapsedBand: elapsedBand,
+                httpStatus: httpStatus,
+                responseHeadersReceived: responseHeadersReceived,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String accountId,
                 required String environmentAlias,
+                Value<String?> operationKind = const Value.absent(),
                 required DateTime startedAt,
                 Value<DateTime?> completedAt = const Value.absent(),
                 required String phase,
+                Value<String?> latestStage = const Value.absent(),
                 required String resultCode,
                 required String outcomeClass,
                 Value<String?> recoveryCode = const Value.absent(),
+                Value<String?> correlationFingerprint = const Value.absent(),
+                Value<String?> elapsedBand = const Value.absent(),
+                Value<int?> httpStatus = const Value.absent(),
+                Value<bool> responseHeadersReceived = const Value.absent(),
               }) => SyncAttemptsCompanion.insert(
                 id: id,
                 accountId: accountId,
                 environmentAlias: environmentAlias,
+                operationKind: operationKind,
                 startedAt: startedAt,
                 completedAt: completedAt,
                 phase: phase,
+                latestStage: latestStage,
                 resultCode: resultCode,
                 outcomeClass: outcomeClass,
                 recoveryCode: recoveryCode,
+                correlationFingerprint: correlationFingerprint,
+                elapsedBand: elapsedBand,
+                httpStatus: httpStatus,
+                responseHeadersReceived: responseHeadersReceived,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -322,12 +322,19 @@ class SyncAttempts extends Table {
   TextColumn get accountId =>
       text().references(LocalAccounts, #id, onDelete: KeyAction.cascade)();
   TextColumn get environmentAlias => text()();
+  TextColumn get operationKind => text().nullable()();
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
   TextColumn get phase => text()();
+  TextColumn get latestStage => text().nullable()();
   TextColumn get resultCode => text()();
   TextColumn get outcomeClass => text()();
   TextColumn get recoveryCode => text().nullable()();
+  TextColumn get correlationFingerprint => text().nullable()();
+  TextColumn get elapsedBand => text().nullable()();
+  IntColumn get httpStatus => integer().nullable()();
+  BoolColumn get responseHeadersReceived =>
+      boolean().withDefault(const Constant(false))();
 }
 
 class MigrationLedger extends Table {
@@ -386,7 +393,7 @@ class LocalDatabase extends _$LocalDatabase {
       LocalDatabase(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -398,7 +405,7 @@ class LocalDatabase extends _$LocalDatabase {
           schemaVersion: schemaVersion,
           fromVersion: const Value(null),
           toVersion: Value(schemaVersion),
-          migrationId: const Value('create-v9'),
+          migrationId: const Value('create-v10'),
           appliedAt: DateTime.utc(2026, 7, 12),
         ),
       );
@@ -548,7 +555,33 @@ SELECT id, 5, strftime('%s','now') * 1000 FROM local_accounts
           ),
         );
       }
-      if (from > 9) {
+      if (from < 10) {
+        if (from >= 9) {
+          await migrator.addColumn(syncAttempts, syncAttempts.operationKind);
+          await migrator.addColumn(syncAttempts, syncAttempts.latestStage);
+          await migrator.addColumn(
+            syncAttempts,
+            syncAttempts.correlationFingerprint,
+          );
+          await migrator.addColumn(syncAttempts, syncAttempts.elapsedBand);
+          await migrator.addColumn(syncAttempts, syncAttempts.httpStatus);
+          await migrator.addColumn(
+            syncAttempts,
+            syncAttempts.responseHeadersReceived,
+          );
+        }
+        await into(migrationLedger).insert(
+          MigrationLedgerCompanion.insert(
+            schemaName: 'shared_beta_local',
+            schemaVersion: to,
+            fromVersion: Value(from),
+            toVersion: const Value(10),
+            migrationId: const Value('v9-to-v10-transport-observability'),
+            appliedAt: DateTime.now().toUtc(),
+          ),
+        );
+      }
+      if (from > 10) {
         throw UnsupportedError(
           'Unsupported local database migration $from to $to.',
         );

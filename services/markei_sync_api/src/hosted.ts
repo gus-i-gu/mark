@@ -6,7 +6,7 @@ import {
 import { parseHostedConfig } from "./application/hosted_config.js";
 import { systemClock } from "./application/hosted_contracts.js";
 import { Auth0JwtVerifier } from "./application/jwt_verifier.js";
-import { buildApp } from "./http/app.js";
+import { buildApp, consoleLifecycleObserver } from "./http/app.js";
 
 const config = parseHostedConfig(process.env);
 const pool = new pg.Pool({
@@ -31,6 +31,7 @@ const app = buildApp({
     transactionAuthorizer: new HostedTransactionAuthorizer(database, verifier),
   },
   database,
+  lifecycleObserver: consoleLifecycleObserver(),
 });
 
 try {

@@ -6,6 +6,7 @@ import 'package:markei/app/native_auth_closure_runner.dart';
 import 'package:markei/app/pages/native_closure_page.dart';
 import 'package:markei/application/closure_diagnostics.dart';
 import 'package:markei/application/hosted_auth_ports.dart';
+import 'package:markei/application/hosted_connection_check.dart';
 import 'package:markei/application/hosted_enrollment_coordinator.dart';
 import 'package:markei/application/hosted_sync_coordinator.dart';
 import 'package:markei/application/sync/sync_ports.dart';
@@ -49,7 +50,7 @@ void main() {
 
     expect(find.text('authenticated'), findsOneWidget);
     expect(find.text('failed-work-needs-review'), findsOneWidget);
-    expect(find.text('sync-interrupted #attempt1'), findsOneWidget);
+    expect(find.text('sync: sync-interrupted #attempt1'), findsOneWidget);
     expect(find.text('purchase.registered.v3 #event1'), findsOneWidget);
     expect(find.text('Current #device1'), findsOneWidget);
   });
@@ -78,6 +79,45 @@ void main() {
 
     expect(query.snapshots, 2);
     expect(query.beginAttempts, 0);
+  });
+
+  testWidgets('Check hosted connection records one non-Sync attempt', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 2200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final query = _FakeDiagnosticsQuery();
+    final hostedConnection = _FakeHostedConnectionCheck();
+    final runner = _runner(
+      query: query,
+      hostedConnectionCheck: hostedConnection,
+      outbox: _UploadingOutbox(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(home: NativeClosurePage(runner: runner)),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('nativeClosure.Check hosted connection')),
+    );
+    await tester.tap(
+      find.byKey(const Key('nativeClosure.Check hosted connection')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('hosted-connection-ready'), findsOneWidget);
+    expect(hostedConnection.checks, 1);
+    expect(query.beginAttempts, 0);
+    expect(query.beginDiagnosticAttempts, 1);
+    expect(query.completedResults, ['hosted-connection-ready']);
+    expect(
+      query.completedDiagnosticAttempts.single.latestStage,
+      'response-parsed',
+    );
+    expect(query.snapshots, greaterThanOrEqualTo(2));
   });
 
   testWidgets('Clear diagnostic history is confirmed and scoped to attempts', (
@@ -307,6 +347,7 @@ NativeAuthClosureRunner _runner({
   bool signedIn = true,
   SyncOutboxRepository? outbox,
   SyncTransport? transport,
+  HostedConnectionCheckPort? hostedConnectionCheck,
 }) {
   final auth = LabAuthenticationSession(signedIn: signedIn);
   final enrollmentTransport = _FakeEnrollmentTransport();
@@ -347,6 +388,8 @@ NativeAuthClosureRunner _runner({
         _NoopApplier(),
       ),
     ),
+    hostedConnectionCheck:
+        hostedConnectionCheck ?? _FakeHostedConnectionCheck(),
   );
 }
 
@@ -358,13 +401,27 @@ final class _FakeDiagnosticsQuery
   final UnknownSubmissionRetryPreflight? unknownPreflight;
   var snapshots = 0;
   var beginAttempts = 0;
+  var beginDiagnosticAttempts = 0;
   var cleared = false;
   final completedResults = <String>[];
+  final completedDiagnosticAttempts = <_CompletedDiagnosticAttempt>[];
 
   @override
   Future<int> beginSyncAttempt() async {
     beginAttempts++;
     return beginAttempts;
+  }
+
+  @override
+  Future<int> beginDiagnosticAttempt({
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String correlationFingerprint,
+  }) async {
+    beginDiagnosticAttempts++;
+    return beginDiagnosticAttempts + 100;
   }
 
   @override
@@ -376,6 +433,31 @@ final class _FakeDiagnosticsQuery
     String? recoveryCode,
   }) async {
     completedResults.add(resultCode);
+  }
+
+  @override
+  Future<void> completeDiagnosticAttempt(
+    int attemptId, {
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String recoveryCode,
+    required String correlationFingerprint,
+    required String elapsedBand,
+    int? httpStatus,
+    required bool responseHeadersReceived,
+  }) async {
+    completedResults.add(resultCode);
+    completedDiagnosticAttempts.add(
+      _CompletedDiagnosticAttempt(
+        latestStage: latestStage,
+        resultCode: resultCode,
+        correlationFingerprint: correlationFingerprint,
+        httpStatus: httpStatus,
+        responseHeadersReceived: responseHeadersReceived,
+      ),
+    );
   }
 
   @override
@@ -425,9 +507,15 @@ final class _FakeDiagnosticsQuery
                 completedAt: DateTime.utc(2026, 7, 21, 0, 0, 1),
                 duration: const Duration(seconds: 1),
                 phase: 'transport-or-closure',
+                operationKind: 'sync',
+                latestStage: 'transport-or-closure',
                 resultCode: 'sync-interrupted',
                 outcomeClass: 'unknown',
                 recoveryCode: 'retry-after-local-review',
+                correlationFingerprint: null,
+                elapsedBand: null,
+                httpStatus: null,
+                responseHeadersReceived: false,
               ),
             ]
           : const [],
@@ -452,6 +540,53 @@ final class _FakeDiagnosticsQuery
             ]
           : const [],
       refreshedAt: DateTime.utc(2026, 7, 21),
+    );
+  }
+}
+
+final class _CompletedDiagnosticAttempt {
+  const _CompletedDiagnosticAttempt({
+    required this.latestStage,
+    required this.resultCode,
+    required this.correlationFingerprint,
+    required this.httpStatus,
+    required this.responseHeadersReceived,
+  });
+
+  final String latestStage;
+  final String resultCode;
+  final String correlationFingerprint;
+  final int? httpStatus;
+  final bool responseHeadersReceived;
+}
+
+final class _FakeHostedConnectionCheck implements HostedConnectionCheckPort {
+  var checks = 0;
+
+  @override
+  HostedConnectionCorrelation createCorrelation() {
+    return const HostedConnectionCorrelation(
+      value: 'correlation-fixture',
+      fingerprint: 'corr1234',
+    );
+  }
+
+  @override
+  Future<HostedConnectionCheckResult> check(
+    HostedConnectionCorrelation correlation,
+  ) async {
+    checks++;
+    return HostedConnectionCheckResult(
+      correlationFingerprint: correlation.fingerprint,
+      latestStage: 'response-parsed',
+      resultCode: 'hosted-connection-ready',
+      outcomeClass: 'completed',
+      recoveryCode: 'ready-does-not-prove-sync',
+      liveReachable: true,
+      ready: true,
+      elapsedBand: 'lt-1s',
+      responseHeadersReceived: true,
+      httpStatus: 200,
     );
   }
 }

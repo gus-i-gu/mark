@@ -3,6 +3,7 @@
 import '../application/hosted_auth_ports.dart';
 import '../application/closure_diagnostics.dart';
 import '../application/hosted_enrollment_coordinator.dart';
+import '../application/hosted_connection_check.dart';
 import '../application/hosted_sync_coordinator.dart';
 
 final class NativeAuthClosureRunner {
@@ -14,6 +15,7 @@ final class NativeAuthClosureRunner {
     required ClosureDiagnosticsQuery diagnosticsQuery,
     required SyncAttemptRecorder syncAttemptRecorder,
     required HostedSyncCoordinator hostedSyncCoordinator,
+    required HostedConnectionCheckPort hostedConnectionCheck,
   }) : _authenticationSession = authenticationSession,
        _enrollmentCoordinator = enrollmentCoordinator,
        _environmentAlias = environmentAlias,
@@ -21,6 +23,7 @@ final class NativeAuthClosureRunner {
        _diagnosticsQuery = diagnosticsQuery,
        _syncAttemptRecorder = syncAttemptRecorder,
        _hostedSyncCoordinator = hostedSyncCoordinator,
+       _hostedConnectionCheck = hostedConnectionCheck,
        _unavailable = false;
 
   const NativeAuthClosureRunner.unavailable()
@@ -31,6 +34,7 @@ final class NativeAuthClosureRunner {
       _diagnosticsQuery = null,
       _syncAttemptRecorder = null,
       _hostedSyncCoordinator = null,
+      _hostedConnectionCheck = null,
       _unavailable = true;
 
   final ExternalAuthenticationSession? _authenticationSession;
@@ -40,6 +44,7 @@ final class NativeAuthClosureRunner {
   final ClosureDiagnosticsQuery? _diagnosticsQuery;
   final SyncAttemptRecorder? _syncAttemptRecorder;
   final HostedSyncCoordinator? _hostedSyncCoordinator;
+  final HostedConnectionCheckPort? _hostedConnectionCheck;
   final bool _unavailable;
 
   Future<NativeClosureStatus> status() async {
@@ -105,6 +110,51 @@ final class NativeAuthClosureRunner {
         recoveryCode: 'local-exception-redacted',
       );
       return const NativeClosureStatus('sync-unavailable');
+    }
+  }
+
+  Future<NativeClosureStatus> checkHostedConnection() async {
+    if (_unavailable) {
+      return const NativeClosureStatus('configuration-missing');
+    }
+    final check = _hostedConnectionCheck!;
+    final recorder = _syncAttemptRecorder!;
+    final correlation = check.createCorrelation();
+    final attemptId = await recorder.beginDiagnosticAttempt(
+      operationKind: 'hosted-connection-check',
+      latestStage: 'preflight-passed',
+      resultCode: 'hosted-connection-check-started',
+      outcomeClass: 'in-progress',
+      correlationFingerprint: correlation.fingerprint,
+    );
+    try {
+      final result = await check.check(correlation);
+      await recorder.completeDiagnosticAttempt(
+        attemptId,
+        operationKind: 'hosted-connection-check',
+        latestStage: result.latestStage,
+        resultCode: result.resultCode,
+        outcomeClass: result.outcomeClass,
+        recoveryCode: result.recoveryCode,
+        correlationFingerprint: result.correlationFingerprint,
+        elapsedBand: result.elapsedBand,
+        httpStatus: result.httpStatus,
+        responseHeadersReceived: result.responseHeadersReceived,
+      );
+      return NativeClosureStatus(result.resultCode);
+    } on Object {
+      await recorder.completeDiagnosticAttempt(
+        attemptId,
+        operationKind: 'hosted-connection-check',
+        latestStage: 'closure-failed',
+        resultCode: 'closure-failed',
+        outcomeClass: 'unavailable',
+        recoveryCode: 'local-exception-redacted',
+        correlationFingerprint: correlation.fingerprint,
+        elapsedBand: 'not-recorded',
+        responseHeadersReceived: false,
+      );
+      return const NativeClosureStatus('closure-failed');
     }
   }
 

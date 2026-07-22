@@ -1,104 +1,49 @@
-# I_DSN_CODEX - Unknown Recovery Design
+# I_DSN_CODEX
 
-> Unit: C10-MCG02-UNKNOWN-RECOVERY_20260721
-> Result: C10_MCG02_UNKNOWN_RECOVERY_IMPLEMENTED
+Authority marker: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
 
-## Final Dependency Direction
+Final dependency direction:
+- Closure UI -> NativeAuthClosureRunner.
+- NativeAuthClosureRunner -> HostedConnectionCheckPort and SyncAttemptRecorder.
+- HttpHostedConnectionCheck -> HostedHttpPolicy and package:http client.
+- DriftClosureDiagnosticsRepository -> local Sync attempt ledger.
+- Fastify buildApp -> optional sanitized LifecycleObserver.
+- hosted.ts -> consoleLifecycleObserver for hosted runtime logs.
 
-```text
-NativeClosurePage
-  -> NativeAuthClosureRunner
-       -> ExternalAuthenticationSession
-       -> ClosureDiagnosticsQuery
-       -> existing hosted Sync probe
+Ports and adapters:
+- Added HostedConnectionCheckPort as an application-owned read/diagnostic port.
+- Added HostedConnectionCorrelation so the full correlation value remains transient while its fingerprint is durable.
+- Added HostedHttpPolicy for origin validation, path joining, elapsed bands, and correlation sanitization/fingerprinting.
+- Added HttpHostedConnectionCheck for live/ready health checks.
 
-ClosureDiagnosticsQuery
-  -> DriftClosureDiagnosticsRepository
-       -> local Drift diagnostic and outbox tables
+Origin/path comparison:
+- Health uses the same configured hosted origin validation rule as hosted HTTP paths: HTTPS, nonempty host, no userinfo, no query, no fragment.
+- Health paths are joined as /health/live and /health/ready under the configured origin base path.
+- Existing Sync and recovery paths remain through HttpSyncTransport; no event identity, sequence, hash, outbox, or transaction semantics were changed.
+- Enrollment transport was not rewritten.
 
-UploadPendingEvents
-  -> SyncOutboxRepository
-       -> DriftSyncOutboxRepository
-  -> SyncTransport
-```
+Timeout decision:
+- Health check uses an explicit 20 second deadline for cold-start-tolerant diagnostics.
+- Sync submission timeout behavior was not expanded or reclassified.
+- Timeout after transport begins is still unknown-outcome territory for Sync; the two human events were not reclassified.
 
-Closure remains separate from Settings. Widgets consume application view models and do not depend on Drift rows.
+Schema/migration:
+- Drift schema version is now 10.
+- v9-to-v10 migration adds SyncAttempts.operationKind, latestStage, correlationFingerprint, elapsedBand, httpStatus, and responseHeadersReceived.
+- The migration is additive. For pre-v9 databases, sync_attempts is created directly at the v10 shape and the v10 ledger step is still recorded.
+- Historical v9 rows remain preserved with nullable new fields and default responseHeadersReceived=false.
 
-## Port And Repository Responsibilities
+Correlation/fingerprinting:
+- Correlation source generates one invocation value.
+- The outbound x-correlation-id uses a sanitized, bounded value.
+- Client and API derive the same 8-character SHA-256 fingerprint from the sanitized value.
+- Control characters and adversarial input are removed or bounded before display/log persistence.
 
-`ClosureDiagnosticsQuery.unknownSubmissionRetryPreflight` is the read-only application query for the Closure recovery action. It accepts only the current authentication state from the runner and uses the repository's configured Account/environment/Device scope.
+API lifecycle logging:
+- Fastify logger remains false.
+- Sanitized events: request-received, operation-validation-started, authentication-accepted, authentication-rejected, database-transaction-started for fixture transaction start, response-completed, request-failed.
+- Observer failure is caught and cannot alter application responses or transaction semantics.
 
-`DriftClosureDiagnosticsRepository` verifies:
-
-- authenticated state;
-- active local hosted binding and enrollment;
-- scoped Device row;
-- zero scoped pending/uploading/failed work beside unknown work;
-- exactly one scoped unknown submission;
-- complete membership rows ordered by position;
-- unique and contiguous membership positions;
-- existing member events;
-- scoped Account/Device consistency;
-- unique and contiguous Device sequences;
-- event payload/content hash consistency;
-- pending rows for every member in `unknown`;
-- recomputed request identity equals the stored identity;
-- local next Device sequence follows the last member sequence.
-
-It returns only bounded state/guidance codes and sanitized counts/fingerprint.
-
-## Retry Boundary
-
-`NativeClosurePage` performs preflight before confirmation. Cancellation or blocked preflight stops locally without transport, outbox mutation or attempt-ledger write.
-
-After user confirmation, `NativeAuthClosureRunner.retryUnresolvedSubmission` delegates to the existing hosted Sync probe. That path retains the existing authentication, enrollment, coordinator, attempt ledger, transport and outbox behavior.
-
-`DriftSyncOutboxRepository.leasePending` now treats a single valid unknown submission as an exact idempotent retry candidate when no pending rows exist. It returns the original upload submission and does not create a replacement submission. If scoped pending work exists beside unknown work, or if multiple unknown submissions exist, it fails closed with `local-batch-invalid`.
-
-## Immutable Event Guarantees
-
-The implementation never modifies:
-
-- EventId;
-- AccountId;
-- DeviceId;
-- Device sequence;
-- payload;
-- payload version;
-- occurrence time;
-- content hash;
-- stored request hash for unknown retry;
-- ordered submission membership.
-
-The only durable state transitions happen through the existing upload-result persistence:
-
-- accepted and duplicate-equivalent -> accepted submission and pending rows;
-- repeated unknown -> unknown submission and pending rows remain reusable;
-- stable not-applied/conflict -> failed submission and pending rows, available to existing failed/notApplied recovery rules where eligible.
-
-## Idempotency And Concurrency Rules
-
-The durable idempotency key is the existing unknown submission identity plus stored request hash and ordered member list. Reopen or repeated retry uses the same rows as long as the state remains unknown and valid.
-
-Preflight is transactional and read-only. Upload lease revalidates the persisted unknown shape in a transaction immediately before returning the upload submission. Ambiguous or malformed state returns a bounded local failure before transport.
-
-The existing upload-result transaction remains the convergence boundary for accepted, duplicate-equivalent, unknown and failed outcomes.
-
-## Windows Design
-
-`tool/register_windows_auth0flutter_protocol.ps1` is a repository-owned development/install helper for Windows. It writes the current-user protocol registration under `HKCU:\Software\Classes\auth0flutter`, resolves the supplied executable path, and stores a command with quoted executable and quoted `%1`.
-
-The helper intentionally contains no tenant, credential, provider origin or callback data. Strict callback-prefix validation and single-instance forwarding stay in the existing runtime code.
-
-Desktop navigation uses `NavigationRail(scrollable: true)`, preserving destination order, selected-index alignment and compact navigation behavior while allowing short-height Windows layouts to reach Closure.
-
-## Schema And Migration
-
-No Drift or PostgreSQL migration was added. The local Drift schema remains at the prior version from the Closure Diagnostics unit.
-
-## Deviations And Residual Work
-
-- No real provider Sync or unknown recovery invocation was performed.
-- No hosted state freshness is claimed.
-- The Windows provider retest remains a later human-controlled step.
-- Final commit and tree SHAs are reported by Codex after commit because they cannot be embedded in the committed report file without changing themselves.
+Deviations and residual ambiguity:
+- No provider conclusion is claimed. The next human test will determine whether the same short correlation fingerprint reaches and completes in Render.
+- Hosted database-transaction-started is not emitted from inside HostedTransactionAuthorizer because adding deeper transaction callbacks would expand the transport-observability unit. Fixture transaction start is logged where this boundary is directly owned by buildApp.

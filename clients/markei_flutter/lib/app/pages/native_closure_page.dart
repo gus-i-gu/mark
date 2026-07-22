@@ -30,6 +30,7 @@ class _NativeClosurePageState extends State<NativeClosurePage> {
       _Action('Sign in', widget.runner.signIn),
       _Action('Enroll', widget.runner.enrollOrQueryDevice),
       _Action('Query', widget.runner.queryEnrollment),
+      _Action('Check hosted connection', widget.runner.checkHostedConnection),
       _Action('Sync', widget.runner.hostedSyncProbe),
       _Action('Logout', widget.runner.logout),
     ];
@@ -210,17 +211,28 @@ final class _SyncOverview extends StatelessWidget {
   Widget build(BuildContext context) {
     return _DiagnosticsCard(
       title: 'Sync overview',
-      child: _KeyValueGrid(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _DiagnosticValue('Authentication', snapshot.authenticationState),
-          _DiagnosticValue('Enrollment', snapshot.enrollmentState),
-          _DiagnosticValue('Readiness', snapshot.syncReadiness),
-          _DiagnosticValue('Last result', snapshot.lastResult),
-          _DiagnosticValue(
-            'Last successful sync',
-            _timeOrNotRecorded(snapshot.lastSuccessfulSyncAt),
+          _KeyValueGrid(
+            children: [
+              _DiagnosticValue('Authentication', snapshot.authenticationState),
+              _DiagnosticValue('Enrollment', snapshot.enrollmentState),
+              _DiagnosticValue('Readiness', snapshot.syncReadiness),
+              _DiagnosticValue('Last result', snapshot.lastResult),
+              _DiagnosticValue(
+                'Last successful sync',
+                _timeOrNotRecorded(snapshot.lastSuccessfulSyncAt),
+              ),
+              _DiagnosticValue('Recovery guidance', snapshot.recoveryGuidance),
+            ],
           ),
-          _DiagnosticValue('Recovery guidance', snapshot.recoveryGuidance),
+          const SizedBox(height: 8),
+          const Text(
+            'Live means the API process answered. Ready means the API database '
+            'readiness contract passed. Neither proves Sync success.',
+            key: Key('nativeClosure.health.guidance'),
+          ),
         ],
       ),
     );
@@ -275,12 +287,16 @@ final class _Attempts extends StatelessWidget {
                     dense: true,
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      '${attempt.resultCode} #${attempt.fingerprint}',
+                      '${attempt.operationKind}: ${attempt.resultCode} '
+                      '#${attempt.fingerprint}',
                     ),
                     subtitle: Text(
-                      '${attempt.outcomeClass} / ${attempt.phase} / '
-                      '${attempt.recoveryCode ?? 'no-recovery-code'} / '
-                      '${_duration(attempt.duration)}',
+                      '${attempt.outcomeClass} / ${attempt.latestStage} / '
+                      '${attempt.recoveryCode ?? 'no-recovery-code'}\n'
+                      'correlation ${attempt.correlationFingerprint ?? 'not-recorded'} / '
+                      'status ${attempt.httpStatus?.toString() ?? 'not-observed'} / '
+                      'headers ${attempt.responseHeadersReceived ? 'received' : 'not-received'} / '
+                      '${attempt.elapsedBand ?? _duration(attempt.duration)}',
                     ),
                   ),
               ],

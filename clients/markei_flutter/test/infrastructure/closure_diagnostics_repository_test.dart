@@ -147,6 +147,61 @@ void main() {
     },
   );
 
+  test('records one terminal hosted connection diagnostic attempt', () async {
+    final db = LocalDatabase.memory();
+    addTearDown(db.close);
+    await _seedAccount(db, accountA.value, deviceA.value);
+    final repository = DriftClosureDiagnosticsRepository(
+      db,
+      accountId: accountA,
+      deviceId: deviceA,
+      environmentAlias: environment,
+      now: () => DateTime.utc(2026, 7, 21, 15),
+    );
+
+    final attempt = await repository.beginDiagnosticAttempt(
+      operationKind: 'hosted-connection-check',
+      latestStage: 'preflight-passed',
+      resultCode: 'hosted-connection-check-started',
+      outcomeClass: 'in-progress',
+      correlationFingerprint: 'corr\r\nsecret',
+    );
+    await repository.completeDiagnosticAttempt(
+      attempt,
+      operationKind: 'hosted-connection-check',
+      latestStage: 'response-parsed',
+      resultCode: 'hosted-connection-ready',
+      outcomeClass: 'completed',
+      recoveryCode: 'ready-does-not-prove-sync',
+      correlationFingerprint: 'corr\r\nsecret',
+      elapsedBand: 'lt-1s',
+      httpStatus: 200,
+      responseHeadersReceived: true,
+    );
+    await repository.completeDiagnosticAttempt(
+      attempt,
+      operationKind: 'hosted-connection-check',
+      latestStage: 'response-parsed',
+      resultCode: 'duplicate-finalization',
+      outcomeClass: 'completed',
+      recoveryCode: 'ready-does-not-prove-sync',
+      correlationFingerprint: 'other',
+      elapsedBand: 'lt-1s',
+      httpStatus: 200,
+      responseHeadersReceived: true,
+    );
+
+    final rows = await db.select(db.syncAttempts).get();
+    expect(rows, hasLength(1));
+    expect(rows.single.operationKind, 'hosted-connection-check');
+    expect(rows.single.latestStage, 'response-parsed');
+    expect(rows.single.resultCode, 'hosted-connection-ready');
+    expect(rows.single.correlationFingerprint, isNot(contains('\n')));
+    expect(rows.single.elapsedBand, 'lt-1s');
+    expect(rows.single.httpStatus, 200);
+    expect(rows.single.responseHeadersReceived, isTrue);
+  });
+
   test(
     'unknown retry preflight proves exact persisted submission shape',
     () async {

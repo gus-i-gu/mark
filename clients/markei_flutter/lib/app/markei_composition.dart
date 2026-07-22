@@ -25,6 +25,8 @@ import '../infrastructure/local/local_query_repository.dart';
 import '../infrastructure/local/sync/local_sync_repositories.dart';
 import '../infrastructure/local/sync/remote_purchase_event_applier.dart';
 import '../infrastructure/remote/http_device_enrollment_transport.dart';
+import '../infrastructure/remote/hosted_http_policy.dart';
+import '../infrastructure/remote/http_hosted_connection_check.dart';
 import '../infrastructure/remote/http_sync_transport.dart';
 import 'native_auth_closure_runner.dart';
 
@@ -201,6 +203,13 @@ final class MarkeiComposition {
         acknowledgeAppliedCursor: AcknowledgeAppliedCursor(
           syncTransport,
           remoteApplier,
+        ),
+      ),
+      hostedConnectionCheck: HttpHostedConnectionCheck(
+        client: http.Client(),
+        policy: HostedHttpPolicy(
+          origin: config.configuration.hostedOrigin,
+          correlationSource: uuid.v4,
         ),
       ),
     );

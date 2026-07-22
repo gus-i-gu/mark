@@ -12,12 +12,31 @@ abstract interface class ClosureDiagnosticsQuery {
 
 abstract interface class SyncAttemptRecorder {
   Future<int> beginSyncAttempt();
+  Future<int> beginDiagnosticAttempt({
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String correlationFingerprint,
+  });
   Future<void> completeSyncAttempt(
     int attemptId, {
     required String resultCode,
     required String outcomeClass,
     required String phase,
     String? recoveryCode,
+  });
+  Future<void> completeDiagnosticAttempt(
+    int attemptId, {
+    required String operationKind,
+    required String latestStage,
+    required String resultCode,
+    required String outcomeClass,
+    required String recoveryCode,
+    required String correlationFingerprint,
+    required String elapsedBand,
+    int? httpStatus,
+    required bool responseHeadersReceived,
   });
 }
 
@@ -73,20 +92,32 @@ final class ClosureSyncAttemptSummary {
     required this.startedAt,
     required this.completedAt,
     required this.duration,
+    required this.operationKind,
     required this.phase,
+    required this.latestStage,
     required this.resultCode,
     required this.outcomeClass,
     required this.recoveryCode,
+    required this.correlationFingerprint,
+    required this.elapsedBand,
+    required this.httpStatus,
+    required this.responseHeadersReceived,
   });
 
   final String fingerprint;
   final DateTime startedAt;
   final DateTime? completedAt;
   final Duration? duration;
+  final String operationKind;
   final String phase;
+  final String latestStage;
   final String resultCode;
   final String outcomeClass;
   final String? recoveryCode;
+  final String? correlationFingerprint;
+  final String? elapsedBand;
+  final int? httpStatus;
+  final bool responseHeadersReceived;
 }
 
 final class ClosureDeviceSummary {

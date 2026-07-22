@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from "node:crypto";
 import sensible from "@fastify/sensible";
 import Fastify from "fastify";
 import type {
@@ -45,6 +46,27 @@ type RouteDescriptor = {
 };
 
 type RouteAuthorizationDescriptor = Omit<RouteDescriptor, "handler">;
+
+export type LifecycleLogEvent = {
+  timestamp: string;
+  event:
+    | "request-received"
+    | "operation-validation-started"
+    | "authentication-accepted"
+    | "authentication-rejected"
+    | "database-transaction-started"
+    | "response-completed"
+    | "request-failed";
+  routeClass: string;
+  operation: string;
+  method: string;
+  correlationFingerprint: string;
+  elapsedBand?: string;
+  status?: number;
+  result?: string;
+};
+
+export type LifecycleObserver = (event: LifecycleLogEvent) => void;
 
 export type AuthorizationComposition =
   | {
@@ -146,9 +168,20 @@ export function buildApp(options: {
   authorization: AuthorizationComposition;
   database?: Database;
   recovery?: RecoveryComposition;
+  lifecycleObserver?: LifecycleObserver;
   registerUnclassifiedRouteForTest?: (app: FastifyInstance) => void;
 }) {
-  const app = Fastify({ logger: false });
+  const lifecycleObserver = options.lifecycleObserver;
+  const requestStarts = new WeakMap<FastifyRequest, number>();
+  const app = Fastify({
+    logger: false,
+    genReqId: (request) =>
+      sanitizeCorrelation(
+        Array.isArray(request.headers["x-correlation-id"])
+          ? request.headers["x-correlation-id"][0]
+          : request.headers["x-correlation-id"],
+      ) ?? randomUUID(),
+  });
   const actualRoutes: Array<{ method: string; path: string }> = [];
   app.addHook("onRoute", (routeOptions) => {
     const methods = Array.isArray(routeOptions.method)
@@ -167,6 +200,35 @@ export function buildApp(options: {
     status: await readyStatus(options.database),
   }));
   app.register(sensible);
+  app.addHook("onRequest", async (request) => {
+    requestStarts.set(request, Date.now());
+    emitLifecycle(lifecycleObserver, {
+      event: "request-received",
+      request,
+    });
+  });
+  app.addHook("preValidation", async (request) => {
+    emitLifecycle(lifecycleObserver, {
+      event: "operation-validation-started",
+      request,
+    });
+  });
+  app.addHook("onResponse", async (request, reply) => {
+    emitLifecycle(lifecycleObserver, {
+      event: "response-completed",
+      request,
+      status: reply.statusCode,
+      elapsedMs: Date.now() - (requestStarts.get(request) ?? Date.now()),
+    });
+  });
+  app.addHook("onError", async (request, reply) => {
+    emitLifecycle(lifecycleObserver, {
+      event: "request-failed",
+      request,
+      status: reply.statusCode,
+      elapsedMs: Date.now() - (requestStarts.get(request) ?? Date.now()),
+    });
+  });
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof HostedAuthError) {
@@ -293,6 +355,7 @@ export function buildApp(options: {
           "upload-submission",
           (client, auth) =>
             acceptSubmission(client, auth, request.body as never, request.id),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -327,6 +390,7 @@ export function buildApp(options: {
               query.after,
               Number(query.limit ?? 25),
             ),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -356,6 +420,7 @@ export function buildApp(options: {
           "acknowledgement",
           (client, auth) =>
             acknowledgeCursor(client, auth, body.greatestContiguousCursor),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -376,6 +441,7 @@ export function buildApp(options: {
           request,
           "capabilities",
           (client, auth) => getCapabilities(client, auth, options.recovery!),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -404,6 +470,7 @@ export function buildApp(options: {
               request.body as never,
               options.recovery!,
             ),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -433,6 +500,7 @@ export function buildApp(options: {
               params.sessionId,
               options.recovery!,
             ),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -463,6 +531,7 @@ export function buildApp(options: {
               Number(params.index),
               options.recovery!,
             ),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -493,6 +562,7 @@ export function buildApp(options: {
               { ...body, recoverySessionId: params.sessionId } as never,
               options.recovery!,
             ),
+          lifecycleObserver,
         );
         return reply.send(result);
       },
@@ -518,22 +588,111 @@ export function buildApp(options: {
 async function protectedOperation<T>(
   database: Database,
   authorization: AuthorizationComposition,
-  request: Parameters<AuthVerifier["verify"]>[0],
+  request: FastifyRequest,
   operation: string,
   action: (client: PoolClient, auth: AuthContext) => Promise<T>,
+  lifecycleObserver?: LifecycleObserver,
 ): Promise<T> {
   if (authorization.kind === "hosted") {
-    return authorization.transactionAuthorizer.authorizeOperation(
-      request,
-      operation,
-      action,
-    );
+    try {
+      const result =
+        await authorization.transactionAuthorizer.authorizeOperation(
+          request,
+          operation,
+          action,
+        );
+      emitLifecycle(lifecycleObserver, {
+        event: "authentication-accepted",
+        request,
+        operation,
+        result: "accepted",
+      });
+      return result;
+    } catch (error) {
+      if (error instanceof HostedAuthError) {
+        emitLifecycle(lifecycleObserver, {
+          event: "authentication-rejected",
+          request,
+          operation,
+          result: error.code,
+        });
+      }
+      throw error;
+    }
   }
   if (authorization.kind === "disabled") {
+    emitLifecycle(lifecycleObserver, {
+      event: "authentication-rejected",
+      request,
+      operation,
+      result: "authentication-required",
+    });
     throw new HostedAuthError("authentication-required", 401);
   }
-  const auth = await authorization.verifier.verify(request);
+  let auth: AuthContext;
+  try {
+    auth = await authorization.verifier.verify(request);
+    emitLifecycle(lifecycleObserver, {
+      event: "authentication-accepted",
+      request,
+      operation,
+      result: "accepted",
+    });
+  } catch {
+    emitLifecycle(lifecycleObserver, {
+      event: "authentication-rejected",
+      request,
+      operation,
+      result: "authentication-required",
+    });
+    throw new HostedAuthError("authentication-required", 401);
+  }
+  emitLifecycle(lifecycleObserver, {
+    event: "database-transaction-started",
+    request,
+    operation,
+  });
   return inTransaction(database, auth, (client) => action(client, auth));
+}
+
+type PendingLifecycleEvent = {
+  event: LifecycleLogEvent["event"];
+  request: FastifyRequest;
+  operation?: string;
+  status?: number;
+  result?: string;
+  elapsedMs?: number;
+};
+
+function emitLifecycle(
+  observer: LifecycleObserver | undefined,
+  pending: PendingLifecycleEvent,
+) {
+  if (!observer) return;
+  try {
+    observer({
+      timestamp: new Date().toISOString(),
+      event: pending.event,
+      routeClass: routeClass(pending.request),
+      operation: pending.operation ?? operationClass(pending.request),
+      method: pending.request.method,
+      correlationFingerprint: shortCorrelationFingerprint(pending.request.id),
+      elapsedBand:
+        pending.elapsedMs === undefined
+          ? undefined
+          : bandElapsed(pending.elapsedMs),
+      status: pending.status,
+      result: pending.result,
+    });
+  } catch {
+    // Observability must not change protocol behavior.
+  }
+}
+
+export function consoleLifecycleObserver(): LifecycleObserver {
+  return (event) => {
+    console.info(JSON.stringify(event));
+  };
 }
 
 function unreachableHostedRoute(): never {
@@ -549,6 +708,62 @@ function unavailable(operation: string, correlationId: string) {
     safeAction: "retry later",
     correlationId,
   };
+}
+
+function sanitizeCorrelation(value: string | undefined) {
+  if (!value) return undefined;
+  const sanitized = value.replace(/[^\w.:-]/g, "").slice(0, 96);
+  return sanitized || undefined;
+}
+
+function shortCorrelationFingerprint(value: string) {
+  return createHash("sha256")
+    .update(sanitizeCorrelation(value) ?? "")
+    .digest("hex")
+    .slice(0, 8);
+}
+
+function bandElapsed(elapsedMs: number) {
+  if (elapsedMs < 250) return "lt-250ms";
+  if (elapsedMs < 1000) return "lt-1s";
+  if (elapsedMs < 3000) return "lt-3s";
+  if (elapsedMs < 10000) return "lt-10s";
+  if (elapsedMs < 30000) return "lt-30s";
+  return "gte-30s";
+}
+
+function routeClass(request: FastifyRequest) {
+  const path = request.routeOptions.url ?? "";
+  if (path.startsWith("/health/")) return path;
+  if (path.startsWith("/v1/sync/rebootstrap/")) {
+    if (path.endsWith("/chunks/:index")) {
+      return "/v1/sync/rebootstrap/:sessionId/chunks/:index";
+    }
+    if (path.endsWith("/complete")) {
+      return "/v1/sync/rebootstrap/:sessionId/complete";
+    }
+    return "/v1/sync/rebootstrap/:sessionId";
+  }
+  if (path.startsWith("/v1/devices/enrollments/")) {
+    return "/v1/devices/enrollments/:requestId";
+  }
+  if (path.startsWith("/v1/devices/") && path.endsWith("/status")) {
+    return "/v1/devices/:deviceId/status";
+  }
+  if (path.startsWith("/v1/devices/") && path.endsWith("/revoke")) {
+    return "/v1/devices/:deviceId/revoke";
+  }
+  return path || "unclassified";
+}
+
+function operationClass(request: FastifyRequest) {
+  const route = routeClass(request);
+  if (route === "/health/live") return "health-live";
+  if (route === "/health/ready") return "health-ready";
+  const descriptor = ROUTE_AUTHORIZATION_DESCRIPTORS.find(
+    (item) => item.path === route && item.method === request.method,
+  );
+  return descriptor?.operation ?? "unclassified";
 }
 
 async function readyStatus(database: Database | undefined) {
