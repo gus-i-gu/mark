@@ -28,6 +28,7 @@ enum SyncStatusCode {
   deviceEnrollmentRequired,
   deviceRevoked,
   deviceExpired,
+  serviceUnavailable,
   cursorExpired,
   recoveryUnavailable,
   fullRebootstrapRequired,

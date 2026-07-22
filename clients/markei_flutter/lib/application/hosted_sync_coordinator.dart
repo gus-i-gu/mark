@@ -95,6 +95,7 @@ final class HostedSyncCoordinator {
       SyncStatusCode.hashMismatch ||
       SyncStatusCode.localBatchInvalid ||
       SyncStatusCode.failedRecoveryBlocked ||
+      SyncStatusCode.serviceUnavailable ||
       SyncStatusCode.cursorExpired ||
       SyncStatusCode.recoveryUnavailable ||
       SyncStatusCode.fullRebootstrapRequired ||

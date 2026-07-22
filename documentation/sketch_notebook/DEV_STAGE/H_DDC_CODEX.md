@@ -1,44 +1,33 @@
 # H_DDC_CODEX
 
-Authority marker: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+Authority marker: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
 
-Didactic result: Closure now teaches the operator a bounded distinction between hosted reachability and Sync success.
+Didactic result: the failure vocabulary now separates an observed bounded server failure from client timeout and from genuinely unknown application outcome.
 
-Materialized states and codes:
-- operationKind: sync, hosted-connection-check.
-- stages: preflight-passed, request-created, transport-started, response-received, response-parsed, request-not-started, closure-failed.
-- results: hosted-connection-ready, hosted-live-not-ready, invalid-origin, timeout-before-response, timeout-during-response when provable, dns-failed, tls-failed, connection-failed, request-cancelled when surfaced by the client, authorization-rejected, hosted-rejected, protocol-failed, closure-failed, outcome-unknown only as the residual category.
-- elapsed bands: lt-250ms, lt-1s, lt-3s, lt-10s, lt-30s, gte-30s.
-
-User-visible guidance:
-- Live means the API process answered.
-- Ready means the API database readiness contract passed.
-- Neither result proves Sync success.
-- Retry guidance remains stable and bounded; raw exceptions and infrastructure details are absent.
+Final bounded vocabulary:
+- `service-unavailable`: server reached and returned a bounded protocol failure. For the reproduced missing cursor-state case it is `not-applied`, retryable false, and instructs preservation of evidence.
+- `unknownOutcome`: transport did not provide a trustworthy protocol response, such as timeout/no response before classification.
+- `conflict`, `sequence-gap`, `wrong-account`, `hash-mismatch`: remain distinct recognized non-application or non-accepted protocol failures.
+- `sync-interrupted` / `transport-or-closure`: historical Closure attempt remains unchanged and was not reinterpreted.
 
 Named semantic tests:
-- hosted connection check calls live then ready without bearer auth.
-- ready not-ready is bounded and does not prove Sync success.
-- live failure does not call ready.
-- invalid origin fails before transport.
-- timeout before response is classified without raw exception details.
-- malformed JSON response is protocol-failed after headers.
-- correlation fingerprint is short and sanitized against injection.
-- Check hosted connection records one non-Sync attempt.
-- records one terminal hosted connection diagnostic attempt.
-- migrates v9 attempts to v10 observability columns without reset.
-- health lifecycle logs are sanitized and correlated by fingerprint.
-- lifecycle observer failure does not alter health response.
-- protected route authentication rejection is lifecycle logged.
+- `protected submission fails closed when account cursor state is missing`
+- `unexpected protected submission failures do not log successful request-failed status`
+- `HTTP sync transport preserves observed service failure response`
+- existing exact-identity unknown retry regressions in the full Flutter suite
+- disposable HTTP/PostgreSQL convergence and recovery harness tests
+
+User-visible semantics:
+- An observed `service-unavailable` response is not presented as a generic conflict.
+- A timeout/no-response path remains unknown and retry-preserving.
+- No complete identifiers, payloads, hashes, headers, tokens, provider origins, SQL, stack traces or raw exceptions are surfaced.
 
 Privacy evidence:
-- Closure displays short fingerprints only.
-- Ledger stores no tokens, authorization headers, request/response bodies, provider hostnames, callback URLs, SQL, hashes, stack traces, raw exceptions, payload JSON, or complete identifiers.
-- API lifecycle logs include only timestamp, bounded event/operation/route class, method, status/result, elapsed band, and short correlation fingerprint.
-- Fastify unrestricted request logging remains disabled.
+- Tests use synthetic Account/Device/Event/Submission values only.
+- Lifecycle assertions inspect bounded event names, status classes and short correlation behavior only.
+- Raw fixture exception text is asserted absent from lifecycle events.
+- No provider credentials, private files, human database rows or real provider requests were accessed.
 
-Provider/human boundary:
-- The previous sync-interrupted / transport-or-closure attempt remains historical evidence only.
-- No retrospective result was synthesized.
-- No real provider Sync or unknown recovery was executed.
-- Human provider retest remains pending.
+Provider boundary:
+- This unit corrects the locally reproduced failure mode and observability anomaly.
+- Human provider completion remains a separate retest; no provider success or MCG-02 closure is claimed.

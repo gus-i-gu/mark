@@ -262,6 +262,7 @@ final class HttpSyncTransport implements SyncTransport, RecoveryTransport {
       'device-enrollment-required' => SyncStatusCode.deviceEnrollmentRequired,
       'device-revoked' => SyncStatusCode.deviceRevoked,
       'device-expired' => SyncStatusCode.deviceExpired,
+      'service-unavailable' => SyncStatusCode.serviceUnavailable,
       'sequence-gap' => SyncStatusCode.sequenceGap,
       'wrong-account' => SyncStatusCode.wrongAccount,
       'hash-mismatch' => SyncStatusCode.hashMismatch,

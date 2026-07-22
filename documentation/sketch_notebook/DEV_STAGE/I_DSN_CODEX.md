@@ -1,49 +1,44 @@
 # I_DSN_CODEX
 
-Authority marker: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+Authority marker: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
 
 Final dependency direction:
-- Closure UI -> NativeAuthClosureRunner.
-- NativeAuthClosureRunner -> HostedConnectionCheckPort and SyncAttemptRecorder.
-- HttpHostedConnectionCheck -> HostedHttpPolicy and package:http client.
-- DriftClosureDiagnosticsRepository -> local Sync attempt ledger.
-- Fastify buildApp -> optional sanitized LifecycleObserver.
-- hosted.ts -> consoleLifecycleObserver for hosted runtime logs.
+- Flutter Closure/Sync coordinator -> `HttpSyncTransport` -> Fastify protected Sync route.
+- Fastify protected route -> authorization fixture/hosted composition -> transaction wrapper -> Sync application service -> PostgreSQL client.
+- Sync application service owns protocol result selection; Fastify owns HTTP status mapping and sanitized lifecycle logging.
 
-Ports and adapters:
-- Added HostedConnectionCheckPort as an application-owned read/diagnostic port.
-- Added HostedConnectionCorrelation so the full correlation value remains transient while its fingerprint is durable.
-- Added HostedHttpPolicy for origin validation, path joining, elapsed bands, and correlation sanitization/fingerprinting.
-- Added HttpHostedConnectionCheck for live/ready health checks.
+Failing call boundary:
+- The failing boundary was inside `acceptSubmission` after Device sequence validation and before hosted event/submission insertion.
+- Missing `account_cursor_state` caused a zero-row cursor update; the previous implementation treated the returned row as mandatory and threw.
+- The correction checks the update row count and returns bounded `service-unavailable` without allocating a cursor or writing event/submission rows.
 
-Origin/path comparison:
-- Health uses the same configured hosted origin validation rule as hosted HTTP paths: HTTPS, nonempty host, no userinfo, no query, no fragment.
-- Health paths are joined as /health/live and /health/ready under the configured origin base path.
-- Existing Sync and recovery paths remain through HttpSyncTransport; no event identity, sequence, hash, outbox, or transaction semantics were changed.
-- Enrollment transport was not rewritten.
+Error mapping:
+- Protected Sync and recovery routes now use the existing `sendHostedResult` helper so `ProtocolFailure` maps to non-2xx HTTP status.
+- `service-unavailable` maps to HTTP 503.
+- Flutter maps protocol code `service-unavailable` to `SyncStatusCode.serviceUnavailable`.
+- Coordinator treats that status as Sync unavailable, distinct from `unknownOutcome` interruption.
 
-Timeout decision:
-- Health check uses an explicit 20 second deadline for cold-start-tolerant diagnostics.
-- Sync submission timeout behavior was not expanded or reclassified.
-- Timeout after transport begins is still unknown-outcome territory for Sync; the two human events were not reclassified.
+Transaction observation:
+- The missing cursor-state result is a typed not-applied application result, so the transaction commits no hosted user facts and performs no immutable event/submission insert.
+- Unexpected exceptions still flow through rollback and the error handler.
+- Lifecycle request-failed no longer records a successful status when Fastify has not yet assigned the final error response.
 
-Schema/migration:
-- Drift schema version is now 10.
-- v9-to-v10 migration adds SyncAttempts.operationKind, latestStage, correlationFingerprint, elapsedBand, httpStatus, and responseHeadersReceived.
-- The migration is additive. For pre-v9 databases, sync_attempts is created directly at the v10 shape and the v10 ledger step is still recorded.
-- Historical v9 rows remain preserved with nullable new fields and default responseHeadersReceived=false.
+Logging placement:
+- Fastify lifecycle observer remains bounded and sanitized.
+- The request-failed hook records either a non-success status already known at the hook or an `unexpected-server-error` result without status.
+- Final `response-completed` remains the authoritative terminal HTTP status event.
 
-Correlation/fingerprinting:
-- Correlation source generates one invocation value.
-- The outbound x-correlation-id uses a sanitized, bounded value.
-- Client and API derive the same 8-character SHA-256 fingerprint from the sanitized value.
-- Control characters and adversarial input are removed or bounded before display/log persistence.
+Deadline decision:
+- No client deadline extension was made.
+- The local server cause is understood and corrected; timeout/no-response semantics remain unknown-outcome preserving.
+- Observed HTTP 503 JSON before deadline is classified as a server protocol failure.
 
-API lifecycle logging:
-- Fastify logger remains false.
-- Sanitized events: request-received, operation-validation-started, authentication-accepted, authentication-rejected, database-transaction-started for fixture transaction start, response-completed, request-failed.
-- Observer failure is caught and cannot alter application responses or transaction semantics.
+Migration decision:
+- No Drift or PostgreSQL migration was added.
+- Existing migrations 001-006 remain unchanged.
+- The missing-row runtime path is now fail-closed; creating or repairing provider cursor state remains outside this unit unless Main authorizes a database policy change.
 
-Deviations and residual ambiguity:
-- No provider conclusion is claimed. The next human test will determine whether the same short correlation fingerprint reaches and completes in Render.
-- Hosted database-transaction-started is not emitted from inside HostedTransactionAuthorizer because adding deeper transaction callbacks would expand the transport-observability unit. Fixture transaction start is logged where this boundary is directly owned by buildApp.
+Preserved invariants:
+- Event identity, payload, content hash, Device sequence and request identity are unchanged.
+- JWT/JWKS, hosted authorization, Device enrollment, RLS, route inventory, recovery identity and server transaction behavior are not weakened.
+- No provider configuration, credentials, private database, human event rows or deployment state were accessed or changed.

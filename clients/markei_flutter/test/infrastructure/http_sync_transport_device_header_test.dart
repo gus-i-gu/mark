@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:markei/application/sync/sync_ports.dart';
+import 'package:markei/domain/sync/sync_event.dart';
 import 'package:markei/infrastructure/remote/http_sync_transport.dart';
 
 void main() {
@@ -81,6 +82,43 @@ void main() {
       });
     },
   );
+
+  test(
+    'HTTP sync transport preserves observed service failure response',
+    () async {
+      final transport = HttpSyncTransport(
+        client: _StaticClient(
+          statusCode: 503,
+          body: {
+            'code': 'service-unavailable',
+            'operation': 'upload-submission',
+            'outcome': 'not-applied',
+            'retryable': false,
+            'safeAction': 'stop and preserve evidence',
+            'correlationId': 'fixture-correlation',
+          },
+        ),
+        baseUri: Uri.parse('https://sync.example.invalid'),
+        tokenSource: () => 'fixture-token',
+        correlationSource: () => 'fixture-correlation',
+        hostedDeviceId: '22222222-2222-4222-8222-222222222222',
+      );
+
+      final result = await transport.uploadSubmission(
+        const SyncUploadSubmission(
+          id: 'submission-1',
+          deviceId: '22222222-2222-4222-8222-222222222222',
+          requestHash: 'request-hash',
+          events: [],
+        ),
+      );
+
+      expect(result.code, SyncStatusCode.serviceUnavailable);
+      expect(result.protocolCode, 'service-unavailable');
+      expect(result.outcome, SyncOutcome.notApplied);
+      expect(result.retryable, isFalse);
+    },
+  );
 }
 
 final class _RecordingClient extends http.BaseClient {
@@ -129,5 +167,21 @@ final class _RecordingClient extends http.BaseClient {
       };
     }
     return {'code': 'not-found'};
+  }
+}
+
+final class _StaticClient extends http.BaseClient {
+  _StaticClient({required this.statusCode, required this.body});
+
+  final int statusCode;
+  final Map<String, Object?> body;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    return http.StreamedResponse(
+      Stream.value(utf8.encode(jsonEncode(body))),
+      statusCode,
+      headers: {'content-type': 'application/json'},
+    );
   }
 }

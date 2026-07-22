@@ -222,10 +222,12 @@ export function buildApp(options: {
     });
   });
   app.addHook("onError", async (request, reply) => {
+    const failedStatus = reply.statusCode >= 400 ? reply.statusCode : undefined;
     emitLifecycle(lifecycleObserver, {
       event: "request-failed",
       request,
-      status: reply.statusCode,
+      status: failedStatus,
+      result: failedStatus === undefined ? "unexpected-server-error" : "failed",
       elapsedMs: Date.now() - (requestStarts.get(request) ?? Date.now()),
     });
   });
@@ -357,7 +359,7 @@ export function buildApp(options: {
             acceptSubmission(client, auth, request.body as never, request.id),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -392,7 +394,7 @@ export function buildApp(options: {
             ),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -422,7 +424,7 @@ export function buildApp(options: {
             acknowledgeCursor(client, auth, body.greatestContiguousCursor),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -443,7 +445,7 @@ export function buildApp(options: {
           (client, auth) => getCapabilities(client, auth, options.recovery!),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -472,7 +474,7 @@ export function buildApp(options: {
             ),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -502,7 +504,7 @@ export function buildApp(options: {
             ),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -533,7 +535,7 @@ export function buildApp(options: {
             ),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
 
@@ -564,7 +566,7 @@ export function buildApp(options: {
             ),
           lifecycleObserver,
         );
-        return reply.send(result);
+        return sendHostedResult(reply, result);
       },
     ),
   );

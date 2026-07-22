@@ -116,6 +116,14 @@ export async function acceptSubmission(
       "update account_cursor_state set next_cursor=next_cursor+1 where account_id=$1 returning next_cursor-1 as cursor",
       [auth.accountId],
     );
+    if (!cursor.rowCount) {
+      return failure(
+        "service-unavailable",
+        "upload-submission",
+        false,
+        correlationId,
+      );
+    }
     const serverCursor = Number(cursor.rows[0].cursor);
     await client.query(
       "insert into sync_events(event_id, account_id, device_id, device_sequence, server_cursor, event_type, payload_version, occurrence_time, payload, content_hash) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
