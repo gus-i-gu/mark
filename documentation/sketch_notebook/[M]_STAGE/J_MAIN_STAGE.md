@@ -1,100 +1,89 @@
-# J_MAIN_STAGE — Hosted Transport Observability Coordination
+# J_MAIN_STAGE — Protected Submission 500 Reconciliation
 
 > Sequence: FLX-ORD-01
-> Authority marker: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
-> Required ancestor: `362de195a6aaf9522f7dd2258a29920ce9e3a6f1`
-> Status: **TRANSPORT OBSERVABILITY D/E/F ACTIVE; SYNC BLOCKED**
+> Authority marker: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
+> Runtime implementation baseline: `5b364216375514f9e43bd58c265fbabf8000c2f8`
+> Status: **SUBMISSION 500 D/E/F ACTIVE; REAL SYNC BLOCKED**
 
-## 1. Reconciled runtime evidence
+## 1. Reconciled provider evidence
 
-The unknown-recovery implementation passed repository validation and its cancelled preflight passed
-manual Windows verification. One subsequently authorized controlled retry was invoked exactly once.
+The hosted transport-observability checkpoint passed:
 
-After that invocation:
+- Closure's non-mutating connection check reached `/health/live` and `/health/ready`;
+- both requests used fingerprint `500a78db` and returned `200`;
+- client, Render and readiness evidence correlated;
+- the initial Neon six-table baseline contained one Account, one Device and no synchronization rows.
 
-~~~text
-local attempt: sync-interrupted / transport-or-closure
-local unknown events: 2, Device sequences 1–2
-next local Device sequence: 3
-Render application request evidence: absent
-Neon: accounts 1 / devices 1 / cursor 0 / submissions 0 / events 0 / acknowledgements 0
-~~~
+Main therefore accepts process liveness, database readiness, transport response observation and
+correlation as proved for that bounded check. This does not prove protected Sync correctness.
 
-The events remain preserved and no hosted duplication or corruption is evidenced. The result does
-not prove whether the request failed before transport, timed out during a sleeping-service wake,
-reached Render's edge but not application logging, failed token acquisition, or stopped in local
-Closure orchestration. `transport-or-closure` is therefore too broad for the next controlled test.
+## 2. Controlled retry result
 
-## 2. Source reconciliation
+One exact-identity retry was then invoked under the prior gate. Render recorded:
 
-Repository inspection confirms three relevant conditions:
+```text
+POST /v1/sync/submissions
+fingerprint: 46e9a131
+request received
+operation validation started
+request failed: anomalous intermediate status 200
+response completed: final status 500
+elapsed: under one second
+```
 
-- the API already exposes `/health/live` and `/health/ready`;
-- its Fastify composition currently disables logging with `logger: false`;
-- Flutter Sync uses a five-second default transport timeout and Closure collapses the terminal
-  interruption into one broad phase.
+Closure observed no response headers before its 1000 ms boundary and retained
+`provider-evidence-unavailable`. Neon remained unchanged:
 
-These facts make a free-instance cold start plausible but not proved. They also show that the
-repository can gain decisive evidence without risking another submission: instrument the boundary
-and exercise the existing health routes first.
+```text
+accounts 1 / devices 1 / cursor 0 / submissions 0 / events 0 / acknowledgements 0
+```
 
-## 3. Human operational decision
+Events 1–2 remain unknown and next local Device sequence remains 3. No duplication or hosted commit
+is evidenced.
 
-The human selects a paid Render web-service instance for Markei's early MVP phases because an
-always-on hosted API is the sober operating baseline for continuing development. This is an
-accepted environment/cost decision, not retroactive proof that sleeping caused the failed retry.
+## 3. Claim classification
 
-Codex must not purchase, configure or deploy the service. After implementation and reconciliation,
-the human will apply the Render instance change and deploy through the existing controlled workflow.
+| Claim | PRC-01 classification |
+| --- | --- |
+| Hosted health path is live and ready | Accepted bounded provider evidence |
+| Protected retry reached the API | Accepted correlated provider evidence |
+| Protected retry completed with HTTP 500 | Accepted correlated provider evidence |
+| Retry committed hosted data | Rejected; post-attempt counts remained zero |
+| Internal cause of the 500 is known | Not evidenced |
+| Auth0 rejected the request | Not evidenced; no rejection lifecycle event was captured |
+| Database transaction started | Not evidenced by current lifecycle logs |
+| Client observed the 500 | Rejected; Closure observed no headers before its deadline |
+| Historical client diagnostic should be rewritten | Rejected; preserve client-observed history |
+| Repeating the real retry is needed for diagnosis | Rejected; the failure is already reproducible enough for code-level work |
 
 ## 4. Active unit
 
 The next bounded unit is:
 
-`C10-MCG02-TRANSPORT-OBSERVABILITY`
+`C10-MCG02-SUBMISSION-500-DIAGNOSIS`
 
-Only D/E/F bearing `C10-MCG02-TRANSPORT-OBSERVABILITY_20260721` authorize materialization.
-G/H/I remain prior-unit observational evidence and must be replaced.
+Only D/E/F bearing `C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722` authorize materialization. They
+replace the consumed transport-observability instructions. Existing G/H/I are prior-unit evidence
+and must be replaced by Codex.
 
-The unit must:
+Codex must reproduce the protected failure locally with synthetic data and disposable PostgreSQL,
+identify the exact project-owned cause, correct it minimally, repair lifecycle-status semantics and
+validate the client deadline boundary. It must not contact providers or guess from the `500` alone.
 
-1. add a non-mutating Closure hosted-connection check using existing live/ready routes;
-2. preserve exactly one sanitized durable diagnostic attempt per invocation;
-3. distinguish token, request creation/start, response, parsing, timeout/cancellation, bounded
-   transport failures, authorization rejection, protocol failure and local closure failure;
-4. correlate the client display with sanitized hosted request lifecycle logs;
-5. compare enrollment and Sync origin/path/deadline behavior;
-6. preserve unknown-outcome and exact-retry identity semantics;
-7. validate everything without contacting Auth0, Render or Neon.
+## 5. Stop and continuation gate
 
-## 5. Evidence classification
+Until new G/H/I are reconciled, do not press ordinary Sync, retry the unresolved submission, enroll,
+clear local data, edit the local database, run Neon mutations, change Render/Auth0 configuration or
+create new synchronized purchase work.
 
-| Claim | Current state |
-| --- | --- |
-| Unknown recovery invocation occurred | Accepted local observational evidence |
-| Events 1–2 were applied by hosted API | Not evidenced; Neon remained empty |
-| Request never reached any Render boundary | Not proved; application logs are insufficient |
-| Free Render sleeping caused the interruption | Plausible hypothesis only |
-| Paid Render is selected for MVP operation | Accepted human operational decision |
-| Existing health routes can support a safe probe | Repository fact; implementation pending |
-| MCG-02 hosted convergence is complete | Rejected; Sync remains blocked |
+After Codex:
 
-## 6. Post-materialization gate
+1. reconcile the locally reproduced cause and validation evidence;
+2. deploy only if the correction is specific, bounded and fully validated;
+3. confirm harmless health correlation again;
+4. record a fresh Neon baseline;
+5. authorize at most one exact-identity retry only through a new Main gate.
 
-After Codex returns G/H/I:
+Success terminal:
 
-1. Main reconciles the implementation, migration, privacy and validation evidence.
-2. Human updates the Windows checkout and Render service instance/deployment through the existing
-   private configuration workflow.
-3. Human opens Closure and runs only `Check hosted connection` once.
-4. Client and Render correlation fingerprints, stages and results are compared.
-5. Neon counts remain read-only comparison evidence.
-6. Only after live and ready checks are observable and the transport taxonomy is proven may Main
-   consider one further exact-identity unknown retry.
-
-Until then, do not press ordinary Sync, retry the unresolved submission, Enroll, Query, Clear
-diagnostic history, edit the local database, or create new synchronized purchase work.
-
-Success terminal for Codex:
-
-`C10_MCG02_TRANSPORT_OBSERVABILITY_IMPLEMENTED`
+`C10_MCG02_SUBMISSION_500_CAUSE_CORRECTED`

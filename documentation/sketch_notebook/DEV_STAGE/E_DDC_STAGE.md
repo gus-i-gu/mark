@@ -1,95 +1,77 @@
-# E_DDC_STAGE — Transport Evidence Semantics
+# E_DDC_STAGE — Server Failure and Client Evidence Semantics
 
-> Unit: C10-MCG02-TRANSPORT-OBSERVABILITY_20260721
+> Unit: C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722
+> Sequence: FLX-ORD-01
 > Authority: Main Chat
 > Status: READY FOR MATERIALIZATION
 
 ## 1. Learning objective
 
-The unit must turn the opaque phrase `transport-or-closure` into a truthful bounded explanation of
-where execution stopped. The learner-facing distinction is:
+Replace the remaining ambiguous `provider-evidence-unavailable` explanation with a truthful model of
+two related but distinct observations:
 
 ```text
-command accepted locally
-!= request began
-!= server received request
-!= server authenticated request
-!= database transaction began
-!= hosted outcome committed
+server produced a final response
+!= client observed that response within its deadline
 ```
 
-The UI and reports must not infer a later stage from an earlier one.
+For the controlled retry, Render observed a protected request and returned `500`; Closure observed no
+headers before its boundary. The server outcome is therefore known from correlated external evidence,
+while the historical client row must remain an honest record of what that client invocation observed.
 
-## 2. Required semantic distinctions
+## 2. Required distinctions
 
-Teach through stable UI guidance and tests:
+Code, UI guidance, tests and H must distinguish:
 
-- **Process liveness:** the deployed API process answered `/health/live`.
-- **Service readiness:** `/health/ready` confirmed the API's existing database-readiness function.
-- **Transport reachability:** an HTTP response was observed.
-- **Authorization:** a protected request was accepted or rejected by hosted authentication.
-- **Protocol validity:** the response matched the expected Markei contract.
-- **Application outcome:** the server returned a stable Sync result.
-- **Unknown outcome:** transport began but available evidence cannot prove application or
-  non-application.
+- **transport reached server:** correlated request ingress exists;
+- **authentication accepted:** hosted authentication completed successfully;
+- **operation validation started/completed:** request shape and operation checks are distinct from
+  authentication and persistence;
+- **transaction started:** database work actually began;
+- **transaction committed or rolled back:** durable effect is evidenced;
+- **server failure:** the service returned a non-success response;
+- **client timeout:** the client did not observe the response before its deadline;
+- **unknown application outcome:** neither available client nor correlated server/database evidence
+  determines whether application occurred.
 
-`live`, `ready`, and a paid always-on instance reduce uncertainty but do not prove Sync correctness.
+A server `500` with unchanged database is not a successful Sync and is not merely a connectivity
+failure. A historical client timeout must not be rewritten retroactively, even when later Render and
+Neon evidence permits Main to classify the wider incident more precisely.
 
-## 3. User-facing diagnostics
+## 3. Stable bounded vocabulary
 
-Closure must show a compact latest-attempt explanation containing:
+Prefer existing vocabulary where it remains accurate. Add the smallest stable codes needed to name:
 
-- operation (`hosted-connection-check`, ordinary Sync, or unresolved-submission retry);
-- latest completed stage;
-- bounded result;
-- shortened correlation fingerprint;
-- HTTP status only when actually received;
-- whether response headers were received;
-- elapsed-time band, not false precision where unavailable;
-- one stable next-action sentence.
+- unexpected server failure;
+- validation rejection;
+- authorization rejection;
+- transaction failure/rollback when actually known;
+- client response deadline exceeded;
+- sanitized internal failure class for operators.
 
-Good guidance examples are semantic, not literal copy requirements:
+Do not expose raw exceptions, stack traces, SQL, bodies, tokens, origins or identifiers. Do not teach
+that HTTP `500` reveals its own cause; the cause requires local reproduction or bounded server-stage
+evidence.
 
-- live timed out before any response: the hosted service was not reached within the bounded
-  deadline; no Sync was attempted;
-- ready returned not-ready: the API process answered but its database-readiness check did not pass;
-- 401/403: the hosted service answered but rejected authorization;
-- response parse failed: the service answered, but the client could not validate the Markei
-  response contract;
-- closure failed: a local non-transport step failed before a stable hosted outcome.
+## 4. User-facing behavior
 
-Do not expose raw exception messages or imply that the user should repeatedly retry.
+Closure should explain only evidence available to that invocation. It may say that no response was
+observed before the deadline, but it must not claim that Render was not reached or that nothing was
+applied. A newly observed `500` must be shown as a hosted/server rejection or failure with bounded
+guidance, not collapsed into provider absence.
 
-## 4. Attempt history semantics
+The guidance must discourage repeated attempts and preserve the exact-identity recovery rule. Busy,
+failure and disabled states must remain keyboard reachable, readable without color, and usable at the
+supported Windows sizes.
 
-Preserve historical attempts. A stage is monotonic evidence within one invocation: later evidence
-may supersede the displayed current stage but must not rewrite what operation occurred. One button
-invocation produces one attempt record, finalized once.
-
-The harmless connectivity check is observational. Its success must not be called synchronization,
-enrollment, hosted convergence or MCG-02 completion.
-
-The previous real attempt remains truthfully recorded as
-`sync-interrupted / transport-or-closure`; do not retroactively invent a finer classification for
-historical evidence that did not capture it.
-
-## 5. Privacy and accessibility
-
-Use short stable codes with plain-language explanations. Diagnostic text must be selectable or
-otherwise readable, keyboard reachable, and usable at supported short/tall Windows heights.
-Busy, success, failure and disabled states must not depend on color alone.
-
-No complete identifiers, origins, tokens, headers, bodies, hashes, SQL, stack traces or provider
-secrets may appear in UI, logs, fixtures or G/H/I.
-
-## 6. Didactic evidence required in H
+## 5. Didactic evidence required in H
 
 Report:
 
-- the final stage/result vocabulary;
-- how each term maps to observable evidence;
-- how liveness, readiness, reachability, authorization, protocol and application outcome differ;
-- why paid hosting removes sleeping but is not itself fault evidence;
-- how historical opaque attempts are preserved;
-- exact UI/test examples using synthetic values only;
-- residual ambiguity after implementation.
+- the locally reproduced cause, or explicitly that it remains unresolved;
+- the final stage/result vocabulary and observable evidence for each term;
+- how server failure differs from client timeout and unknown application outcome;
+- why unchanged Neon counts prove no durable write for this attempt but not the internal cause;
+- how the historical attempt is preserved;
+- synthetic test examples only;
+- residual ambiguity and the next safe human check.
