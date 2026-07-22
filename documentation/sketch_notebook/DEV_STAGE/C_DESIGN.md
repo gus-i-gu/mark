@@ -1,288 +1,328 @@
-# C_DESIGN — C10-S03A-R3 Hosted Authorization Design Investigation
+# C_DESIGN — Account Cursor-State Lifecycle Reconciliation
 
-> Sequence: FLX-INV-02 investigative round
+> Sequence: FLX-PRM-04 / PRC-01 domain reconciliation
 > Role: Design/Architecture [D]
-> Branch / inspected HEAD: `intermid-cycle-recovery` / `06d694aa8fb88a43c47fca3eccd02c909c193f2f`
-> Prior implementation: `032e13ae7c19f2639d2a60ff6c12c6104c59fd54`
-> Authority: provisional Design investigation and Main handoff only
+> Branch / inspected HEAD: `intermid-cycle-recovery` / `75dc7bed0789d693af93abb3ed15e107fd77433a`
+> Source authority: `F_DSN_STAGE.md`, `I_DSN_CODEX.md`, current Design checkpoint and post-materialization J
+> Authority: Design staging and Main handoff only
 > Writable surface: `documentation/sketch_notebook/DEV_STAGE/C_DESIGN.md`
-> Evidence boundary: repository inspection and local-only architecture; no execution/provider proof
-> Status: **PROVISIONAL — NOT AUTHORIZED FOR CODEX, MIGRATION, PROVIDER MUTATION OR PROMOTION**
+> Status: **PROVISIONAL DESIGN RECOMMENDATION — GCM02 OPEN; NO IMPLEMENTATION, PROVIDER MUTATION OR RETRY AUTHORITY**
 
-## 1. Retained state and round delta
+## 1. Reconciliation result
 
-The required methodology route and current J/D/E/F/G/H/I were read. J accepts R2 as partial and
-identifies six source flaws. Direct inspection confirms all six at current HEAD. Migration 005 is
-forward history and must not be edited; R3 implementation still requires new Main D/E/F authority.
+The protected submission failure is architecturally localized. An otherwise authorized Account and
+Device reached `acceptSubmission`, but the Account had no `account_cursor_state` row. The previous
+implementation assumed that row existed after a zero-row update and threw before inserting a hosted
+event or Submission. Commit `75dc7be` now converts that missing prerequisite into a bounded
+`service-unavailable` / HTTP `503` / `not-applied` result and corrects misleading terminal logging.
 
-This round narrows R3 to project-owned boundary corrections. No external package/version change is
-architecturally required. Existing Fastify/Node APIs, injected `fetch`/Clock, `jose`, Dart `http`
-1.6.0, and Drift v7/file databases are sufficient; implementation must compile-prove the chosen
-request-abort primitive rather than upgrade dependencies speculatively.
+That correction is accepted only as safe failure classification. It does not establish the missing
+row, hosted readiness, provider convergence, GCM02 closure, or permission to retry events 1–2.
 
-## 2. Current ownership and dependency graph
+The unresolved architecture question is the lifecycle owner of the one-to-one state:
 
 ```text
-hosted.ts / hosted_local_harness.ts                 composition roots
-  ├─ Auth0JwtVerifier                              principal adapter (`jose`, fetch, Clock)
-  ├─ HostedIdentityService                         identity/enrollment/Device use cases
-  ├─ HostedTransactionAuthorizer                   sync/recovery transaction authorization
-  └─ buildApp                                      Fastify route composition
-
-app.ts
-  ├─ independent options: auth + hosted? + hostedAuthorizer? + database
-  ├─ RouteDescriptor[] → app.route
-  ├─ described-route hasRoute check (one-way only)
-  └─ protectedOperation
-       ├─ hostedAuthorizer? → one authorization/operation transaction
-       └─ otherwise auth.verify → later database transaction
-
-hosted_authorization.ts
-  ├─ PrincipalVerifier + Database application dependencies
-  ├─ migration-005 authorization fence
-  └─ PostgreSQL tables through PoolClient
-
-jwt_verifier.ts → jose + fetch + Clock
-
-Flutter HostedEnrollmentCoordinator
-  → AccessTokenSource + DeviceEnrollmentTransport + HostedIdentityRepository ports
-  → HttpDeviceEnrollmentTransport (`package:http`) / DriftHostedIdentityRepository adapters
+Account
+  -> exactly one account_cursor_state
+  -> zero or more memberships
+  -> zero or more enrolled Devices
+  -> zero or more synchronized Events
 ```
 
-Intended dependency direction remains:
+Design recommends that **Account provisioning owns creation of `account_cursor_state` in the same
+database transaction that creates the Account**. Enrollment consumes an already provisioned Account;
+Sync consumes and advances its cursor. Neither may become an implicit repair path.
+
+## 2. PRC-01 classification records
+
+### 2.1 Missing cursor state caused the protected-submission failure
 
 ```text
-domain contracts ← application ports/use cases ← Fastify/PostgreSQL/HTTP/Drift adapters
-                 ← hosted, fixture and local-proof composition roots
+Claim: Missing account_cursor_state caused the reproduced protected-submission failure.
+Source: I_DSN_CODEX; commit 75dc7be regression; post-materialization J.
+Current state: validated locally; accepted diagnosis within the correlated provider evidence boundary.
+Evidence: failing-before/passing-after synthetic route regression; provider final 500; zero hosted Sync rows.
+Evidence boundary: local disposable fixtures plus sanitized provider shape; provider internals were not inspected.
+Contradictions: none; historical client observation remains provider-evidence-unavailable at its deadline.
+Semantic owner: Design for responsibility boundary; Operational for execution evidence.
+Target role: Design staging now; permanent promotion deferred by human instruction.
+History disposition: preserve the historical 500 and client timeout; do not rewrite them as 503.
+Confidence: high for the local cause; bounded for exact provider internals.
+Human/Main authority: reconciliation requested; permanent files expressly blocked until GCM02 closure.
+Required regeneration: Main J append-only synthesis and later Design permanent memory after closure authority.
+Result: accepted staging claim; no provider or retry authority.
 ```
 
-Current leaks retained for bounded R3: application authorization contracts accept
-`FastifyRequest`, and application services issue SQL through `PoolClient`. They are pre-existing
-couplings, not causes of the six flaws; broad port extraction would enlarge R3 without improving
-its decisive proof.
-
-## 3. Six flaw diagnoses and minimal choices
-
-### 3.1 Revocation idempotence is blocked by authorization policy
-
-`authorizeActorAndTargetDevice` requires both actor and target `devices.status='active'`. Thus a
-second revoke and status of a revoked target fail before the transition-aware update. The helper
-owns both **who may target** and **which target states an operation accepts**.
-
-Alternatives:
-
-1. Add `allowRevokedTarget` boolean. Smallest diff, but hides operation semantics in a flag.
-2. Return a locked actor/target snapshot after validating active actor, identity binding,
-   same-Account and owner/member scope; let status/revoke decide target-state semantics.
-   **Recommended.** Revoke changes active→revoked once and inserts one event only when that locked
-   transition occurs; already-revoked returns `duplicate-equivalent` without a second event.
-3. Move Device management into a new security-definer procedure. Atomic but unnecessary privilege
-   and migration expansion; reject for R3.
-
-Main contradiction: universal self-revoke replay cannot coexist with “actor Device must be active.”
-After self-revoke, the same Device cannot authenticate its retry. Main must choose either:
-
-- scoped idempotence: an active actor (normally another owner Device) may repeat a target revoke;
-  self-revoke retries are denied; **recommended minimal policy**; or
-- universal exact replay: add a durable revoke-request identity/result contract and authorize that
-  replay separately without restoring Device authority. This is schema/contract-bearing and larger.
-
-No unique event index is recommended: a target row lock plus conditional active-state update gives
-one event per transition without preventing a future generation/reactivation policy.
-
-### 3.2 Hosted transaction authorization is optional in the type
-
-Production `hosted.ts` composes safely, but `buildApp` independently accepts `auth`, `hosted`, and
-optional `hostedAuthorizer`; `protectedOperation` therefore preserves the forbidden precommitted
-fallback for any future mis-composition.
-
-Alternatives:
-
-1. Runtime assertion when `hosted` lacks `hostedAuthorizer`. Detects but does not remove invalid
-   states from callers.
-2. One discriminated composition, **recommended**:
-
-   ```text
-   authorization = hosted { identityService, transactionAuthorizer }
-                 | fixture { verifier }
-                 | disabled
-   ```
-
-   `protectedOperation` switches exhaustively; hosted cannot supply/consume fixture `AuthVerifier`.
-   `hosted.ts`, `hosted_local_harness.ts`, `lab.ts`, `main.ts`, and tests select an explicit branch.
-3. Separate hosted and fixture app builders. Strong but duplicates route construction.
-
-The union belongs at the HTTP composition boundary (`app.ts` or a small project-owned composition
-type beside it), while verification/transaction behavior stays in application services.
-
-### 3.3 Route inventory proves presence, not absence
-
-Routes are registered from local descriptor values, but the exported expected list is parallel
-metadata and `hasRoute` only proves every described route exists. An extra direct Fastify route is
-not enumerated or rejected.
-
-Alternatives:
-
-1. Parse `printRoutes()`. Couples proof to presentation text; reject.
-2. Require one registration wrapper only. Improves ownership but cannot detect bypass by itself.
-3. **Recommended:** keep one classified registration gateway and also install a root `onRoute`
-   capture before registrations. At `ready`, normalize actual method/path pairs, exclude only the
-   two named health routes (and explicitly handled automatic HEAD forms), and compare actual
-   non-health routes exactly with descriptor-derived inventory. Reject duplicate, missing, extra,
-   wrong-operation, and wrong-class entries.
-
-The actual capture is Fastify-adapter responsibility and may live in `src/http/route_registry.ts`
-if extracting it makes `app.ts` reviewable. Tests must inject an extra route after app construction
-and prove `ready`/`inject` fails; comparing two constants is insufficient.
-
-### 3.4 Unknown-`kid` cooldown compares timestamps, not key-set identity
-
-`getKey` records `freshUntil`, forces refresh, and infers “changed” from a new `freshUntil`.
-Every successful unchanged fetch moves that timestamp and clears negative state, so repeated
-unknown keys can refresh repeatedly.
-
-Alternatives:
-
-1. Compare sorted `kid` values. Misses changed key material under the same ID; reject.
-2. Compare response bytes. Property order/whitespace create false changes; reject.
-3. **Recommended:** validate and normalize the accepted JWK fields, compute a deterministic
-   key-set fingerprint/revision, and have refresh return `changed | unchanged | stale-retained`.
-   Set per-key negative cooldown whenever the requested key is still absent after the one allowed
-   refresh; genuine rotation changes the revision and succeeds when the new key is present.
-
-Keep cache times separate from key identity. Honor global failure cooldown for unknown-key refresh,
-coalesce the shared refresh promise, and never satisfy an unknown key from stale material. Node
-`crypto` plus existing `jose`/Clock/fetch seams suffice; no dependency is needed.
-
-### 3.5 Flutter transport failures escape the application contract
-
-`_send` can leak `TimeoutException`, `http.ClientException`, and stream failures. The coordinator
-catches only two custom exceptions, may leave durable state at `enrolling`, and its two `.timeout`
-calls form renewable phase/inter-chunk limits rather than one absolute attempt deadline.
-
-Alternatives:
-
-1. Catch every `Object` in the coordinator. Hides programming defects and leaks adapter ownership;
-   reject.
-2. Translate known IO/timeout/parse/size/status failures to existing exceptions in the adapter.
-   Minimal, but exception categories remain ambiguous.
-3. **Recommended:** make the transport port return a closed success/conflict/unavailable/unknown
-   outcome (or an equally closed typed failure), and make the HTTP adapter own all raw exception
-   translation. Coordinator persists the matching terminal/replay state and never sees HTTP types.
-
-Use one deadline created at attempt start across connect, headers and body. On expiry trigger
-request-scoped cancellation; do not close a borrowed shared client. If the installed HTTP API cannot
-cancel one request, use an injected per-attempt owned client factory and close that client. Preserve
-the existing explicit credential flow and owned/borrowed lifecycle. Drift remains v7: the existing
-hosted state and outbox tables already support close/reopen proof; no Flutter schema change is shown.
-
-### 3.6 Readiness capability accepts caller-selected migration IDs
-
-Migration 005 grants runtime execute on `markei_required_migration_present(text)`; the function
-reads no rows directly but exposes arbitrary ledger membership queries. This violates the selected
-exact-capability boundary.
-
-Alternatives:
-
-1. Application validates the argument. Runtime can still call SQL directly; reject.
-2. Keep the function but revoke runtime and grant a view. A view broadens ledger exposure; reject.
-3. Add migration 006 with a no-argument exact readiness function, **recommended**.
-
-## 4. Prospective migration 006 boundary
-
-R3 may add exactly one forward migration, provisionally
-`006_hosted_authorization_r3` (Main owns the final identifier/checksum). It should:
-
-- create a no-argument function such as `markei_hosted_runtime_ready()` that checks only the exact
-  R3-required ledger condition;
-- use the migration owner, `SECURITY DEFINER`, fixed safe `search_path`, qualified references,
-  `STABLE`, scalar boolean return, and no dynamic SQL;
-- revoke `PUBLIC`, grant only runtime execute on the new function, and revoke runtime execute on
-  `markei_required_migration_present(text)` without dropping or editing migration-005 objects;
-- preserve runtime denial of direct `migration_ledger` access;
-- insert its own ledger identity transactionally and roll back all DDL/ledger state on failure.
-
-`readyStatus` calls only the no-argument capability. Fresh 001→006, 001→005→006, duplicate apply,
-owner/mode/ACL/search-path/object-shadowing, old-function runtime denial, direct-ledger denial, and
-failure rollback are required seams. No other R3 flaw requires SQL unless Main selects universal
-self-revoke replay; that decision must not be smuggled into 006.
-
-## 5. Recommended R3 call paths
+### 2.2 Zero-row handling is corrected
 
 ```text
-Hosted branch
-Bearer → PrincipalVerifier
-       → HostedTransactionAuthorizer
-       → migration-005 fence
-       → active actor lock
-       → protected callback on same PoolClient
-       → one commit/rollback
-
-Device management
-Principal → fence/membership → active actor authorization
-          → locked target snapshot (active or revoked)
-          → operation-specific status/revoke transition
-
-Flutter enrollment
-Coordinator → one ephemeral credential → closed transport outcome
-            → HTTP adapter absolute deadline + bounded decode
-            → Drift state transition; facts/outbox untouched
+Claim: Missing cursor state now returns service-unavailable / 503 / not-applied without hosted fact insertion.
+Source: I_DSN_CODEX; implementation diff at 75dc7be; named API and Flutter tests.
+Current state: implemented and locally validated.
+Evidence: 51 API tests; 178 Flutter tests with four gated skips; platform builds and local harnesses passed.
+Evidence boundary: local and build evidence only; corrected commit is not provider-deployed or hosted-proved.
+Contradictions: deployment alone would still fail while the provider row remains absent.
+Semantic owner: Design error/transaction boundary; Operational validation record.
+Target role: staging; later Architecture/Decision Log/Design State if authorized.
+History disposition: append correction after the former defect; do not erase it.
+Confidence: high locally.
+Human/Main authority: no permanent promotion or deployment authorized here.
+Required regeneration: post-deployment evidence only after cursor lifecycle materialization and reconciliation.
+Result: accepted bounded correction; hosted prerequisite unresolved.
 ```
 
-Fixture verification exists only in the fixture union branch and loopback lab root. Provider SDKs,
-callbacks, credentials, UI, event v3, cursor `c10b:*`, recovery format 1, hosted contract v1, and
-Drift v7 remain outside the change.
-
-## 6. Test seams and truthful proof ownership
-
-- **Composition:** typecheck invalid hosted/fixture combinations plus runtime branch tests; hosted
-  protected routes must be unable to reach `AuthVerifier.verify` fallback.
-- **Route registry:** `onRoute` actual inventory; injected extra route, missing descriptor,
-  duplicate method/path, wrong operation/class, health exception, all 13 current routes.
-- **Authorization barriers:** optional no-op test hook at fence/actor/target/action boundaries or
-  controlled PostgreSQL barriers; no sleeps. The privileged writer acquires the same fence before
-  identity/membership mutation. Parameterize upload/download/ack/all recovery classes and snapshot
-  protocol/security-event state before/after denial.
-- **Device management:** active owner/member, revoked target status, scoped repeated revoke, one
-  transition/event, actor/target race, and the selected self-revoke policy.
-- **JWT:** injected Clock/fetch with semantic fingerprint; unchanged unknown-key burst, distinct-key
-  pressure, changed set without requested key, genuine rotation, outage/recovery, stale ceiling,
-  timeout/abort, duplicate key, and generic error output.
-- **Flutter:** real `HttpDeviceEnrollmentTransport` against loopback Fastify, exact bearer capture,
-  conflict, connect/header/body timeout, slow trickle beyond absolute deadline, malformed/oversized
-  body, request cancellation, and borrowed-client survival. Use `LocalDatabase.file`, create a real
-  pending outbox row, close/reopen, and compare outbox/facts/enrollment request identity.
-- **Aggregation:** server/PG, JWT, and Flutter producers emit only their own machine-readable case
-  IDs. One local orchestrator may start disposable services and invoke Flutter, but terminal
-  `R3_LOCAL_SECURITY_PROVED=true` is allowed only after every required producer passed. G must use
-  Git-derived paths and final SHA.
-
-## 7. Rollback, stops and unresolved Main decisions
-
-Rollback is application rollback/hosted disablement; migration 006 remains inert forward history.
-Never edit 001–005, reset Drift, weaken grants, discard facts/outbox/security events, or use a
-destructive down migration.
-
-Stop R3 on: broad table/ledger grant; inability to make hosted fallback unrepresentable; inventory
-that cannot reject an injected extra route; renewable rather than absolute Flutter timeout;
-uncontrolled race/sleep; required provider contact; dependency upgrade without a demonstrated API
-gap; migration/history mutation; or any incomplete decisive producer. Auth0/Neon/Render, deployment,
-provider proof, permanent memory, MCG-03/04 and Cycle closure remain unauthorized.
-
-Main decisions before active D/E/F:
-
-1. Is revoke idempotence scoped to a currently active actor, or must exact self-revoke replay work?
-2. Accept the three-branch hosted/fixture/disabled composition union.
-3. Accept Fastify `onRoute` actual-inventory auditing and the named health/HEAD normalization.
-4. Accept semantic JWKS fingerprint/revision and closed Flutter transport outcomes.
-5. Freeze migration-006 identifier, exact readiness condition/function name, and R3 proof case list.
-
-Confidence: high for all six diagnoses, call paths, no-dependency conclusion, migration-006 ACL
-boundary, and route/composition recommendations; medium-high for the exact Flutter cancellation
-mechanism until compiled against the installed package; medium for product semantics of self-revoke.
+### 2.3 Account provisioning owns cursor initialization
 
 ```text
-C10-S03A_R3_DESIGN_INVESTIGATED_LOCAL_ONLY
-IMPLEMENTATION_AUTHORITY_INACTIVE
-MCG-02_PROVIDER_PROOF_NOT_AUTHORIZED
+Claim: Account provisioning must atomically establish account_cursor_state before membership/enrollment/Sync.
+Source: schema dependency, runtime grants, hosted flow inspection, fixtures that seed both rows, current failure.
+Current state: proposed Design decision.
+Evidence: accounts are prerequisite parents; runtime cannot create Accounts after migration 002; enrollment
+  requires an existing membership/Account and currently creates only Device/enrollment state.
+Evidence boundary: repository architecture; no canonical production Account-provisioning implementation exists yet.
+Contradictions: current provider Account exists without its cursor row, proving the provisioning invariant was not enforced.
+Semantic owner: Design canonical architecture.
+Target role: Main decision and a new D/E/F materialization boundary.
+History disposition: preserve the provider gap as evidence motivating the decision.
+Confidence: high for ownership; physical enforcement choice remains provisional.
+Human/Main authority: required before implementation.
+Required regeneration: Architecture, Decision Log, Model Overview and Design State only after accepted materialization.
+Result: recommended; not yet canonical or implemented.
+```
+
+### 2.4 Existing Accounts require controlled repair
+
+```text
+Claim: Existing Accounts missing cursor state require one forward-only, transactionally validated repair.
+Source: sanitized Neon baseline (Account 1, Device 1, cursor state 0, no Sync facts); migrations 001-006.
+Current state: proposed and blocked pending Main authority.
+Evidence: provider prerequisite is absent; migrations 001-006 are immutable history.
+Evidence boundary: sanitized counts only; no provider mutation or exhaustive account scan was performed here.
+Contradictions: none; ad hoc enrollment or first-Sync repair would conflict with lifecycle ownership.
+Semantic owner: Design repair boundary; Operational owns execution/check procedure.
+Target role: new D/E/F and Codex materialization, then provider gate.
+History disposition: additive migration/repair evidence; never edit 001-006 or rewrite the earlier ledger.
+Confidence: high that repair is needed; exact data-set scope requires safe provider evidence.
+Human/Main authority: required before source or provider changes.
+Required regeneration: new G/H/I and Main reconciliation before deployment.
+Result: recommended controlled repair; provider action remains unauthorized.
+```
+
+## 3. Canonical responsibility recommendation
+
+### 3.1 Account provisioning
+
+Account provisioning owns the aggregate bootstrap transaction:
+
+```text
+BEGIN
+  create Account
+  create account_cursor_state(next_cursor = 1)
+  create initial identity/membership when that workflow owns it
+COMMIT
+```
+
+The Account and cursor-state pair is one synchronization aggregate prerequisite. A successfully
+provisioned Account must never be externally visible without its cursor row. `next_cursor = 1`
+means no hosted Event has yet received a server cursor.
+
+Because no production Account-provisioning service is presently established, the next unit should
+make the invariant enforceable at the database boundary rather than depending on dashboard/manual
+discipline. The provisional preferred physical design is an additive migration after 006 that:
+
+1. installs a narrowly owned Account-initialization mechanism for future Account insertion;
+2. backfills missing cursor rows for existing Accounts;
+3. leaves existing cursor rows unchanged;
+4. records its own forward-only migration identity transactionally.
+
+A database trigger attached to Account insertion is the preferred enforcement candidate because all
+provisioning paths then receive the same atomic invariant. An explicit provisioning procedure is a
+valid alternative only if direct Account insertion is revoked from every other path and all current
+fixtures/provider setup are migrated to that procedure. Main must freeze the physical choice after
+Codex proves its privilege and upgrade behavior.
+
+### 3.2 Enrollment
+
+Enrollment owns identity-to-installation-to-Device binding. It may verify that the Account aggregate
+is provisioned and return a bounded unavailable result if not, but it must not insert cursor state.
+Making enrollment the creator would:
+
+- couple Device lifecycle to Account synchronization bootstrap;
+- leave Accounts without Devices structurally incomplete;
+- create ambiguity under concurrent first enrollments;
+- hide defective provisioning instead of correcting it;
+- require runtime authority to repair Account-level infrastructure opportunistically.
+
+Re-enrollment is likewise not a repair mechanism. It must not be used on the human Account merely to
+cause cursor initialization.
+
+### 3.3 Sync and recovery
+
+Upload advances the existing Account cursor under its transaction and returns `service-unavailable`
+without applying facts when the prerequisite is absent. Download, acknowledgement and recovery must
+likewise treat absence as an invariant failure, not infer an empty Account where that could conceal
+corruption. No client component owns initialization.
+
+## 4. Existing-Account repair boundary
+
+The repair must be additive, idempotent and safe for more than the currently observed single Account.
+For each missing row, initialize:
+
+```text
+next_cursor = max(existing sync_events.server_cursor for Account) + 1
+```
+
+with `1` when no Events exist. Although the current provider counts show zero Events, deriving from
+existing immutable facts prevents cursor reuse if another environment contains a partial historical
+state. Existing `account_cursor_state` values must never be reset, decreased or recomputed.
+
+Recommended migration transaction order:
+
+```text
+BEGIN
+  acquire the narrow locks required to exclude Account/cursor allocation races
+  install future Account-initialization enforcement
+  INSERT missing cursor rows from Accounts and per-Account event high-water
+    ON CONFLICT DO NOTHING
+  verify every Account has exactly one cursor row
+  record migration ledger entry
+COMMIT
+```
+
+The migration must fail and roll back if it detects an invalid high-water condition, duplicate
+server cursors, a non-positive next cursor, privilege/ownership drift, or an Account that remains
+without state. No destructive down migration, table reset, event rewrite, resequencing or manual
+one-row SQL patch is accepted as the canonical repair.
+
+## 5. Transaction, concurrency, RLS and privilege invariants
+
+The next design/materialization unit must preserve all of the following:
+
+- Account creation and initial cursor-state creation are atomic;
+- concurrent Account provisioning cannot create two states or expose a state-less committed Account;
+- concurrent first submissions serialize cursor allocation through the single Account row;
+- existing `next_cursor` never moves backward and each committed server cursor remains unique;
+- a failed provisioning or repair transaction leaves neither partial Account infrastructure nor a
+  false migration-ledger success;
+- runtime remains unable to create schema, roles or Accounts;
+- runtime may advance cursor state only inside authenticated, Account-scoped protected transactions;
+- RLS continues to bind `account_cursor_state.account_id` to transaction Account context;
+- the migration owner, not the hosted runtime identity, owns schema/repair materialization;
+- any trigger/function has a fixed safe `search_path`, qualified objects, minimal execute surface,
+  explicit owner and revoked `PUBLIC` access where applicable;
+- repair does not modify memberships, Devices, enrollments, submissions, events, acknowledgements,
+  local outbox rows or events 1–2.
+
+## 6. Alternatives and tradeoffs
+
+| Alternative | Benefit | Cost/risk | Design disposition |
+| --- | --- | --- | --- |
+| Provisioning transaction plus database trigger | Atomic invariant across insertion paths; smallest consumer coupling | Trigger ownership/search-path/upgrade behavior needs strong proof | Preferred candidate |
+| Exclusive provisioning procedure | Explicit API and auditable authority | Requires revoking/banning every direct insertion path and updating fixtures | Acceptable if comprehensively enforced |
+| Enrollment `INSERT ... ON CONFLICT` repair | Easy near the observed workflow | Wrong owner; races first enrollment; conceals provisioning defect | Rejected |
+| First Sync lazy initialization | Avoids separate provisioning work | Mixes repair with fact acceptance and complicates unknown/rollback semantics | Rejected |
+| One-off provider console insert | Fast for one Account | Non-repeatable, bypasses migration evidence and future invariant | Rejected as canonical route |
+| Edit migration 001 or replay 001-006 | Makes fresh schema appear complete | Rewrites forward history and does not safely repair deployed state | Rejected |
+| Additive backfill only | Repairs current Accounts | Future provisioning can regress | Insufficient alone |
+
+## 7. Contradictions and drift
+
+1. Schema intent and fixture practice treat `account_cursor_state` as mandatory, but the foreign key
+   permits an Account without it and no current production provisioning boundary enforces total
+   participation.
+2. Local harnesses explicitly insert Account and cursor rows together, so they masked the missing
+   provider provisioning step until the real protected submission.
+3. Enrollment successfully created/recognized the Device while Account synchronization state was
+   absent. This proves enrollment completion is not sufficient hosted-Sync readiness evidence.
+4. Commit `75dc7be` corrects failure behavior, not the prerequisite. Treating its terminal
+   `CAUSE_CORRECTED` as GCM02 closure would collapse implemented classification into provider readiness.
+5. The historical Closure attempt did not observe response headers before its 1000 ms deadline. It
+   remains client-side observation loss even though server logs later recorded a 500; do not rewrite
+   either evidence owner.
+
+## 8. Evidence required before any provider deployment or retry
+
+### 8.1 Local materialization evidence
+
+- fresh 001-through-new-migration path creates the invariant;
+- upgrade 001-006 to the new migration repairs a missing row;
+- existing correct cursor rows remain byte/value equivalent;
+- missing row with no Events becomes `next_cursor = 1`;
+- missing row with existing Events becomes `max(server_cursor) + 1` without collision;
+- concurrent Account provisioning and concurrent repair are idempotent;
+- concurrent first submissions allocate distinct monotonic cursors;
+- forced failure rolls back DDL/data/ledger effects as designed;
+- trigger/procedure owner, mode, ACL, fixed search path and object-shadowing resistance pass;
+- runtime Account insertion and schema creation remain denied;
+- cross-Account RLS and transaction-context probes fail closed;
+- enrollment cannot create or repair cursor state;
+- upload/download/ack/recovery absence paths remain bounded and non-applied;
+- migrations 001-006 remain unchanged;
+- full API, Flutter, convergence/recovery, platform build, secret-scan and changed-path validations pass.
+
+### 8.2 Reconciliation and deployment evidence
+
+New G/H/I must distinguish invariant materialization from provider deployment. Main and all domains
+must reconcile the new unit before provider action. Only then may a separately authorized deployment
+apply the forward migration with the migrator identity and deploy the corrected server/client.
+
+After deployment, gather only sanitized evidence:
+
+1. deployed commit/migration identity and successful startup/readiness;
+2. Account count equals cursor-state count for the scoped development environment;
+3. the existing Account has one cursor row with the expected safe next cursor;
+4. submissions/events/acknowledgements remain unchanged before retry;
+5. runtime DDL/Account creation remains denied and RLS remains scoped;
+6. one harmless health correlation passes.
+
+Only Main/human authority after those checks may permit one exact-identity retry. A retry is not part
+of the repair migration, deployment, or health verification.
+
+## 9. Accepted invariants retained from I/J
+
+- external subject, Account, membership, InstallationId and DeviceId remain distinct;
+- exact Submission identity, request hash, ordered events 1–2 and next local Device sequence 3 remain
+  unchanged;
+- immutable Event identity/content hash/device sequence and idempotent replay rules remain stable;
+- client-observed diagnostics and server-observed lifecycle logs remain separate evidence owners;
+- final `response-completed` owns terminal HTTP status; logging cannot affect transaction outcome;
+- an observed 503 is a server-declared not-applied failure, while a missed deadline remains unknown
+  until durable server evidence is reconciled;
+- JWT/JWKS, transaction-time authorization, callback validation, route inventory, runtime/migrator
+  separation and offline-first local operation are not weakened;
+- GCM02, MCG-03/04 and Cycle 11 remain outside this boundary.
+
+## 10. Recommended next Design boundary
+
+Main should stage one bounded unit provisionally named:
+
+```text
+C10-MCG02-ACCOUNT-CURSOR-PROVISIONING-REPAIR
+```
+
+Its architecture objective is:
+
+```text
+Account provisioning
+  -> atomic cursor-state invariant
+  -> additive repair of existing missing state
+  -> enrollment consumes but does not create Account state
+  -> protected Sync advances or fails closed
+```
+
+Main must freeze before Codex starts:
+
+1. trigger-backed invariant versus exclusive provisioning procedure;
+2. additive migration identifier after 006 and ledger checksum policy;
+3. high-water-derived repair rule and locking strategy;
+4. exact privilege/RLS probes and producer case list;
+5. deployment as a later, separately authorized provider gate.
+
+Current terminals:
+
+```text
+C10_MCG02_SUBMISSION_500_CAUSE_CORRECTED
+C10_MCG02_CURSOR_STATE_PREREQUISITE_UNRESOLVED
+GCM02_OPEN
+REAL_SYNC_RETRY_UNAUTHORIZED
 ```

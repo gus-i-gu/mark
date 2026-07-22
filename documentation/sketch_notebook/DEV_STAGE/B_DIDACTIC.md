@@ -1,399 +1,228 @@
-# B_DIDACTIC — C10-S03A-R3 Semantic Correction Investigation
+# B_DIDACTIC — MCG-02 Cursor-State Prerequisite Reconciliation
 
-> Sequence: FLX-INV-02
+> Sequence: FLX-PRM-04 domain reconciliation into A/B/C staging
 > Role: Didactic Chat
-> Round: C10-S03A-R3 investigation before Main restaging
 > Branch: `intermid-cycle-recovery`
-> Baseline / inspected HEAD: `06d694aa8fb88a43c47fca3eccd02c909c193f2f`
-> Authority: human R3 investigation request plus current J; no Codex authority
+> Inspected HEAD: `75dc7bed0789d693af93abb3ed15e107fd77433a`
+> Authority marker: `C10-MCG02-SUBMISSION-500-DIAGNOSIS_20260722`
+> Evidence sources: `08_CONCEPT_MAP.md`, `E_DDC_STAGE.md`, `H_DDC_CODEX.md`, current J and bounded materialization evidence
 > Writable surface: this file only
-> Evidence boundary: project-owned source, tests, manifests and R2 stage/report evidence; local-only
-> Status: **PROVISIONAL — NOT AUTHORIZED FOR CODEX OR PROMOTION**
+> Status: **RECONCILED STAGING — GCM02 OPEN; PERMANENT PROMOTION AND REAL RETRY BLOCKED**
 
-## 1. Recovery and semantic boundary
+## 1. Recovery and reconciliation boundary
 
-Recovered in the required order:
+The Didactic domain was recovered through the complete methodology route:
 
 ```text
 AGENTS → INDEX → sketch_notebook/AGENTS
 → METHOD_FOUNDATIONS → FLUX → PROMOTION_RULES → CHAT_PROTOCOL
-→ current J → D/E/F → G/H/I
+→ didactics/08_CONCEPT_MAP
+→ E_DDC_STAGE → H_DDC_CODEX → current J
 ```
 
-The current J accepts meaningful R2 progress but identifies source contradictions. D/E/F authorized
-R2 only; G/H/I are R2 observational evidence. This R3 report explains the contradictions and the
-proof needed to close them. It does not implement R3, restage D/E/F, change learner maturity,
-promote permanent memory, contact a provider or claim validation.
+This report reconciles implementation evidence into the Didactic staging surface for the next
+check-gathering phase. It does not edit permanent Didactic memory, alter KANBAN status, create a
+Lecture Register event, infer learner maturity, authorize Codex, contact providers or authorize a
+real Sync/retry. GCM02 remains open.
 
-Inspected implementation surfaces were limited to the relevant TypeScript server, migration 005,
-hosted harness/tests, Flutter hosted-enrollment ports/coordinator/HTTP adapter/tests, local Drift
-database/repository entry points and dependency/toolchain manifests. Private editor/provider helper
-files and secrets were not read.
+## 2. Reconciled learning result
 
-## 2. R3 learning result
+The protected-submission incident now teaches two separate lessons which must not be collapsed:
 
-The seven R2 problem areas share one lesson:
+1. **Failure classification was corrected.** An absent Account cursor-state prerequisite no longer
+   becomes an opaque unexpected `500`; the locally reproduced path fails closed as a sanitized,
+   observed `503 service-unavailable`, with the submission classified `not-applied`.
+2. **Prerequisite ownership remains unresolved.** The correction detects the missing
+   `account_cursor_state` row safely, but does not establish which lifecycle operation must create or
+   repair that row. Deploying the classification correction alone therefore does not establish Sync
+   readiness.
 
-> A safe component is not enough when its caller, composition type, time boundary, capability shape
-> or proof producer can still express the unsafe case.
-
-R2 added useful mechanisms, but several guarantees are weaker than their names:
-
-| Intended guarantee | Current observable meaning | R3 semantic target |
-| --- | --- | --- |
-| idempotent revoke | first revoke succeeds; repeat is denied before update | repeat reaches an equivalent terminal result; one transition/event |
-| status is authoritative | active target can be read; revoked target is hidden | authorized actor can observe the target's terminal revoked state |
-| hosted authorization is mandatory | current hosted root supplies it | hosted type cannot be built without it or fall back to fixture auth |
-| route inventory is complete | every listed descriptor is registered | every actual non-health route has exactly one descriptor |
-| unknown-`kid` cooldown is bounded | refreshes coalesce, but unchanged success clears negative state | unchanged key set activates per-key cooldown |
-| Flutter transport is bounded | send and each stream gap have timeouts | one absolute attempt deadline and typed failure closure |
-| readiness is least privilege | runtime cannot read the ledger directly | runtime can ask only the one exact readiness question |
-
-## 3. Vocabulary and closed outcomes
-
-### Idempotence
-
-Repeating the same valid request after its first success returns an equivalent terminal result and
-does not repeat the state transition or its security event. Idempotence does not mean skipping actor
-authorization: the actor must still be active and permitted on every call.
-
-### Actor-active versus target-terminal
-
-The actor Device proves present authority. The target Device is the managed object. The actor must
-remain active; the target may already be `revoked` because that is the terminal state status/revoke
-must report idempotently. Applying the actor predicate to the target erases this distinction.
-
-### Composition safety
-
-A composition is structurally safe when an invalid combination cannot be represented through the
-public constructor/type. A production entrypoint that happens to pass the right optional argument
-is conventionally safe, not structurally safe.
-
-### Actual route inventory
-
-The inventory is the set of routes Fastify actually registered, excluding the explicitly bounded
-health routes. A descriptor list is a policy declaration. Equality must be bidirectional:
+The conceptual dependency is:
 
 ```text
-descriptor → actual route exists
-actual non-health route → exactly one descriptor exists
+Account provisioned
+→ account_cursor_state exists with valid initial cursor
+→ Device enrollment/authorization
+→ first protected submission
+→ cursor update and event acceptance
 ```
 
-### Key-set identity
+The first arrow is presently a policy gap. Existing fixtures and disposable harnesses seed the row;
+the hosted human baseline contained one Account and one Device but zero Account cursor-state rows.
 
-Key-set identity means a stable comparison of the validated JWKS keys, not the time at which they
-were fetched. A successful fetch can advance freshness while returning the same key set.
+## 3. PRC-01 classification record
 
-### Absolute deadline
+| Claim | State | Semantic destination | Evidence and boundary | Reconciliation action |
+| --- | --- | --- | --- | --- |
+| Missing `account_cursor_state` locally reproduced the protected-submission crash | validated | Didactic staging candidate and later derived/checkpoint relationship | Synthetic regression and disposable PostgreSQL evidence at `75dc7be`; no provider internals inspected | accept within local evidence boundary |
+| The historical hosted `500` is consistent with the reproduced missing-row path | accepted diagnosis | checkpoint-oriented explanation | Correlated request shape plus sanitized hosted counts; consistency is not direct provider-internal proof | preserve qualified wording |
+| Missing-row handling now yields `service-unavailable`, HTTP `503`, `not-applied` | implemented and validated | terminology/concept relationship candidate | API and Flutter tests; local/disposable scope | stage for later permanent reconciliation |
+| Unexpected failure logging no longer reports `request-failed` with status `200` | implemented and validated | observational support for bounded diagnostic vocabulary | Structured lifecycle tests | stage as evidence, not a separate learner concept |
+| A client deadline and a server response are separate observation boundaries | accepted relationship | terminology/concept dependency candidate | Historical client saw no response before 1000 ms; Render later recorded final `500`; new tests preserve observed `503` | retain without rewriting history |
+| The existing hosted cursor-state prerequisite has been repaired | rejected | none | Last sanitized hosted count was zero | keep explicit blocker |
+| Account provisioning canonically owns cursor initialization | proposed, unresolved | next-phase design/didactic investigation | Suggested lifecycle order only; no accepted ownership decision | request evidence and decision |
+| Enrollment canonically owns cursor initialization | proposed, unresolved | next-phase design/didactic investigation | Possible alternative; current evidence does not select it | request evidence and decision |
+| A one-time repair is sufficient as the durable lifecycle rule | rejected as unproved | none yet | Repair may restore one environment but would not define fresh-Account behavior | prevent workaround/canon confusion |
+| Deploying `75dc7be` alone makes Sync succeed | rejected | none | It safely converts the same prerequisite failure to `503` | keep retry blocked |
+| Learner maturity changed | rejected | canonical KANBAN unchanged | No direct learner explanation, prediction, comparison or transfer evidence | do not edit maturity |
+| GCM02 is closed | rejected | none | Cursor initialization and post-correction hosted proof remain absent | retain open terminal |
 
-One deadline bounds the complete attempt: connection/send, response headers and all response-body
-chunks. An inter-chunk timeout bounds only silence between chunks; a slow trickle can keep resetting
-it indefinitely.
+No canonical concept identity or KANBAN numbering is changed by this staging pass.
 
-### Exact readiness capability
+## 4. Terminology and concept candidates
 
-An exact capability answers one fixed question, such as “is the R3-required migration state
-present?”. A function accepting any migration identifier exposes a family of questions even when it
-returns only a boolean.
+### 4.1 Prerequisite row
 
-### Closed Flutter outcomes
+A prerequisite row is relational state that must already exist before a later operation can update or
+depend on it. Its absence is not automatically a transient outage: it can expose a lifecycle or
+provisioning invariant that was never materialized.
 
-Every bounded transport failure must become an application-owned outcome. Conservative semantics:
+Candidate relationship:
 
 ```text
-conflict                     known not applied; preserve local state
-service-unavailable          known unavailable before application is possible
-unknown-outcome              commit/result cannot be known; query/replay same request identity
-duplicate-equivalent         committed terminal result already exists
+schema permits row
+!= lifecycle creates row
+!= runtime can safely assume row exists
 ```
 
-Timeout, response loss and ambiguous connection failure must not be called `not-applied` unless the
-test can establish that the server could not have committed.
+### 4.2 Fail-closed missing prerequisite
 
-## 4. Failure A — revoke and status reject the terminal target
+When required coordination state is absent, the protected operation must stop without applying the
+submission, expose only a bounded sanitized classification, and preserve retry evidence. A safe
+failure is not the same as a repaired prerequisite.
 
-### Current call path
+### 4.3 Observed service failure versus unknown outcome
+
+- `service-unavailable`: a trustworthy protocol response was observed. In the reproduced missing-row
+  case, the operation is `not-applied` and the evidence must be preserved.
+- `unknownOutcome`: transport did not provide a trustworthy protocol response before classification;
+  possible application cannot be inferred away, so exact request identity is preserved.
+- historical `sync-interrupted` / `transport-or-closure`: remains the client-observed historical
+  record and is not retroactively rewritten by later server evidence.
+
+The distinction depends on what the observer can prove, not merely on which component eventually
+logged an error.
+
+### 4.4 Deadline as an observation boundary
+
+A client deadline limits how long the client waits for evidence. It does not by itself prove that the
+server was not reached, that the server stopped, or that no transaction committed. Conversely, an
+observed bounded server response may justify a known `not-applied` classification when the server
+contract and transaction evidence support it.
+
+### 4.5 Initialization ownership
+
+Initialization ownership names the lifecycle operation responsible for establishing a required row
+exactly once and keeping its invariant valid. The owner must be selected together with transaction,
+idempotency, concurrency, RLS and least-privilege behavior; it cannot be inferred merely because a
+fixture inserts the row.
+
+Candidate dependency order:
 
 ```text
-Fastify POST /v1/devices/:deviceId/revoke
-→ HostedIdentityService.revoke
-→ principal verification
-→ inTransactionWithContext
-→ resolveOneMembership
-→ authorizeActorAndTargetDevice
-→ require actor active AND target Device status active
-→ conditional active→revoked update
-→ security event only if update changed a row
+Account lifecycle
+→ cursor-state initialization owner
+→ idempotent/concurrent creation proof
+→ enrollment compatibility
+→ first-submission proof
+→ hosted check gathering
 ```
 
-`authorizeActorAndTargetDevice` rejects a revoked target before `revoke` reaches its conditional
-update. Therefore the existing event guard is useful but unreachable on a repeat. `deviceStatus`
-uses the same helper, so an authorized owner cannot read the already-revoked target's status.
+## 5. Evidence boundaries
 
-### Learner-friendly cause map
+Accepted evidence for this staging pass:
+
+- locally reproduced zero-row cursor update followed by the former unsafe dereference;
+- failing-before/passing-after protected-submission regression;
+- bounded `service-unavailable` / HTTP `503` / `not-applied` mapping;
+- Flutter preservation of an observed service failure response;
+- correction of the misleading intermediate successful log status;
+- API 51-test pass and Flutter 178-test pass with four lab-gated skips;
+- disposable convergence/recovery harness evidence;
+- Windows release and Android debug builds;
+- unchanged migrations 001–006 and no timeout extension;
+- sanitized hosted baseline showing Account 1, Device 1 and zero cursor/submission/event/
+  acknowledgement rows before this local correction.
+
+This evidence does not establish:
+
+- that the historical provider `500` exposed its internal exception directly;
+- that the corrected commit is deployed;
+- that the hosted cursor row now exists;
+- which operation canonically owns fresh or repair initialization;
+- provider-backed first-submission success;
+- exact-identity retry success;
+- production readiness, GCM02 closure or Cycle 10 closure;
+- any learner maturity transition.
+
+## 6. Misconceptions to prevent
+
+- Correct classification is not correction of the underlying data prerequisite.
+- HTTP `503` does not mean “unknown outcome” when the response is observed and the server proves the
+  submission was not applied.
+- A client timeout does not prove that Render was never reached.
+- A later Render result does not retroactively change what the historical client observed.
+- A schema or migration defining `account_cursor_state` does not prove that every Account receives a
+  row.
+- A fixture that seeds coordination state does not identify the production lifecycle owner.
+- Enrollment success does not by itself prove all Account-scoped synchronization prerequisites exist.
+- A one-time database repair is not a substitute for an idempotent fresh-Account lifecycle rule.
+- A safe `503` is not hosted synchronization success.
+- Passing local/disposable tests does not authorize a real provider retry.
+- Implementation evidence does not manufacture learner maturity.
+
+## 7. Questions for the next check-gathering phase
+
+1. Which operation creates the Account itself, and what atomic work is performed in that same
+   transaction?
+2. Is `account_cursor_state(next_cursor = 1)` an Account invariant, an enrollment prerequisite, or a
+   lazily created synchronization coordination record?
+3. Must initialization occur at Account provisioning, at first enrollment, or at first protected
+   Sync? What failure and recovery semantics follow from each option?
+4. How are existing Accounts missing the row repaired without duplicating cursor allocation or
+   weakening RLS?
+5. Can two concurrent enrollment/first-submission attempts initialize the row idempotently?
+6. Which identity is permitted to initialize it: migrator, provisioning service, or least-privilege
+   runtime transaction under Account context?
+7. Does row creation roll back atomically when the owning lifecycle operation fails?
+8. How will tests distinguish fresh Account creation, legacy missing-row repair, duplicate request,
+   concurrency and foreign-Account denial?
+9. What sanitized evidence proves the row exists before one exact-identity hosted retry is authorized?
+10. Does post-deployment Closure observe the bounded `503` correctly if the prerequisite is still
+    missing, without changing the preserved unknown events?
+
+## 8. Staging recommendations
+
+For Main synthesis and the next D/E/F unit:
+
+- require an explicit architectural decision naming the cursor-state initialization owner;
+- require fresh-Account and existing-missing-Account paths to be defined separately;
+- preserve `next_cursor = 1` and cursor monotonicity as tested invariants;
+- require idempotent and concurrent initialization tests;
+- require transaction rollback, RLS, cross-Account denial and least-privilege probes;
+- retain the bounded `service-unavailable` fallback even after initialization is implemented;
+- do not alter the client deadline merely to hide server lifecycle defects;
+- do not update permanent Didactic memory until Main accepts the ownership model and evidence;
+- do not authorize provider mutation or a real retry until deployment, harmless correlation, fresh
+  sanitized counts and cursor-row presence are separately evidenced.
+
+Recommended Didactic candidates after that evidence exists:
 
 ```text
-shared helper means “both Devices must be active”
-→ target terminal state is treated as failed authentication
-→ repeat exits before idempotent write/result logic
-→ “one event” may hold while “idempotent revoke” does not
+prerequisite row
+initialization ownership
+safe failure versus repaired invariant
+observer-relative outcome classification
+deadline as evidence boundary
+fixture seeding versus production lifecycle
 ```
 
-R3 needs separate predicates: actor binding/activity remains strict; target existence/account/policy
-is checked without requiring target activity. Status may then return `revoked`; revoke may return a
-duplicate-equivalent terminal result without a second event. Foreign targets must remain
-non-enumerating.
-
-Project ownership: Markei SQL queries, policy helper and outcome mapping. PostgreSQL supplies row
-locks and atomic transaction behavior; `pg` supplies `PoolClient.query`. Neither defines which row
-must be active or what repeat means.
-
-## 5. Failure B — hosted authorization is optional at the composition boundary
-
-### Current call path
+## 9. Current Didactic terminal
 
 ```text
-hosted.ts
-→ buildApp({ RefusingAuthVerifier, HostedTransactionAuthorizer, database, hosted })
-→ protectedOperation(... optional hostedAuthorizer ...)
-→ if present: authorizeOperation in one transaction
-→ if absent: auth.verify then inTransaction
-```
-
-The current hosted root is safely assembled. The exported `buildApp` option object is not: `hosted`,
-`auth` and `hostedAuthorizer` are independent, and `hostedAuthorizer` is optional. Another caller can
-enable hosted identity routes while protected sync/recovery silently uses the fixture/precommitted
-branch.
-
-R3 needs a discriminated composition boundary, for example conceptually separate hosted and
-fixture variants. Hosted must require `HostedTransactionAuthorizer`; fixture must not accept hosted
-identity services. The exact API name is a Main/design choice, but the invalid combination must fail
-at TypeScript construction/type checking rather than at convention review.
-
-Project ownership: `buildApp`, its option types, composition roots and tests. Fastify constructs and
-serves the app; TypeScript checks the union/interface. No Fastify change is indicated.
-
-## 6. Failure C — the route check proves presence, not completeness
-
-### Current call path
-
-```text
-ROUTE_AUTHORIZATION_DESCRIPTORS (13 expected policies)
-↕ assertRouteDescriptors compares the project `routes` array
-routes loop → app.route(...)
-assertFastifyRouteInventory → app.hasRoute for each descriptor
-```
-
-This proves that each expected descriptor appears in the project array and each array entry exists
-in Fastify. It never asks whether Fastify contains an additional non-health route registered outside
-that array. Thus an injected bypass can coexist with all 13 passing checks.
-
-R3 must compare the actual registered non-health method/path set with the classified set, or make a
-single project-owned registration wrapper the only route-registration surface and prove the actual
-set at construction/test time. Fastify owns route registration and exposes route metadata/checks;
-Markei owns the “no unclassified route” invariant and health exclusion. `@fastify/sensible` adds
-HTTP conveniences; it does not classify authorization.
-
-## 7. Failure D — unknown-`kid` state compares time, not keys
-
-### Current call path
-
-```text
-Auth0JwtVerifier.verify
-→ jose.decodeProtectedHeader / jose.jwtVerify
-→ BoundedJwksSource.getKey
-→ jose local JWK lookup raises JWKSNoMatchingKey
-→ remember previousFreshUntil
-→ forced refresh
-→ successful fetch always recalculates freshUntil
-→ timestamp differs, so negative kid state is deleted
-→ local lookup still rejects unknown kid
-```
-
-The refresh can be successful yet unchanged. Comparing `freshUntil` mislabels it as key rotation,
-so repeated unknown keys can force repeated network refreshes after successful unchanged responses.
-
-R3 needs a stable identity/fingerprint of the validated key set. Unchanged identity sets the
-per-`kid` negative cooldown; genuine rotation changes identity and clears only the negative state
-made obsolete by the new keys. Fresh/stale timestamps continue to model time, not content.
-
-`jose` correctly owns JOSE parsing, signature verification, claims checks, local JWK selection and
-its no-matching-key error. Markei owns fetch limits, cache lifetimes, refresh/coalescing, key-set
-comparison and cooldown policy. Replacing or upgrading `jose` is not indicated.
-
-## 8. Failure E — Flutter exceptions and time are not closed
-
-### Current call path
-
-```text
-HostedEnrollmentCoordinator.enroll/replay
-→ mark state / load durable request identity
-→ HttpDeviceEnrollmentTransport.enroll/query
-→ http.Client.send(...).timeout(_timeout)
-→ streamed.stream.timeout(_timeout)
-→ bounded bytes / closed response decoder
-→ coordinator catches only DeviceEnrollmentConflict or DeviceEnrollmentUnavailable
-```
-
-`TimeoutException`, `http.ClientException` and other bounded transport failures can escape `_send`.
-The coordinator can then return no `HostedEnrollmentOutcome` and leave persisted progress at
-`enrolling`. Separately, stream `timeout` is an inter-chunk timer, so a response can exceed the
-advertised total duration by continuously producing small chunks.
-
-R3 needs one absolute deadline for the whole request and a transport boundary that translates
-expected network/timeout/response failures into project-owned typed outcomes. The coordinator must
-persist the matching terminal/unknown progress and always return its bounded outcome. Response loss
-after possible commit should remain `unknown-outcome`, preserving the request identity for query or
-replay.
-
-The Dart `http` package owns sockets, request sending, response streams and `ClientException`.
-Dart async owns `Future`, `TimeoutException` and deadline primitives. Markei owns total deadline
-composition, byte/status/schema limits, exception translation, persistence and replay meaning.
-Flutter supplies the runtime/test framework; it does not close these application semantics.
-
-## 9. Failure F — readiness can probe arbitrary migration identifiers
-
-### Current call path
-
-```text
-GET /health/ready
-→ readyStatus
-→ runtime pool.query(markei_required_migration_present($1), "005...")
-→ migration-005 security-definer function
-→ existence lookup for caller-supplied migration identifier
-```
-
-Direct ledger access is denied, but the runtime may ask the function about any identifier. That is
-narrower than ledger `SELECT` and broader than the selected exact readiness capability.
-
-R3 must preserve migration 005 and add forward migration 006. The new function should encode the
-exact required condition without a caller-selected migration identifier; runtime gets execute on
-the exact function and loses execute on the arbitrary probe. `/health/ready` calls only the exact
-capability. Migration 006 must also prove owner, ACL, safe search path, qualified lookup and rollback
-behavior.
-
-PostgreSQL owns security-definer execution, ACLs and transactional DDL. `pg` sends the query.
-Markei owns the function shape, grants/revokes, migration history and readiness meaning. No database
-driver change is indicated.
-
-## 10. Named evidence: current tests versus R3 tests
-
-Current evidence is narrower than the intended claims:
-
-- `protected route policy inventory covers hosted sync and recovery routes` checks the exported
-  operations list; it does not inject an extra Fastify route.
-- `Auth0JwtVerifier coalesces parallel refresh for one unknown key` actually verifies three valid
-  known-key requests share the initial fetch; it does not prove an unchanged unknown-`kid` cooldown.
-- `coordinator preserves local state on cancellation, rejection and outage` uses a fake adapter that
-  throws only `DeviceEnrollmentUnavailable` and uses `LocalDatabase.memory()`.
-- the hosted-local harness performs one sequential owner target revoke and later denial; it does not
-  repeat revoke, count the event under repeat, or execute barrier races.
-- the harness calls the migration-005 readiness function with the selected identifier; success does
-  not prove that other identifiers are unqueryable.
-
-R3 should add named cases equivalent to:
-
-### Device management and composition
-
-1. `duplicate_revoke_returns_equivalent_result_and_emits_one_security_event`
-2. `authorized_status_reports_revoked_target_without_reactivating_it`
-3. `revoked_actor_cannot_read_status_or_revoke_target`
-4. `foreign_revoked_target_remains_non_enumerating`
-5. `hosted_composition_requires_transaction_authorizer_at_type_boundary`
-6. `fixture_composition_cannot_accept_hosted_identity_routes`
-
-### Routes and JWT/JWKS
-
-7. `injected_extra_non_health_route_fails_actual_inventory`
-8. `health_routes_are_the_only_inventory_exclusion`
-9. `unknown_kid_unchanged_refresh_enters_per_key_cooldown`
-10. `unknown_kid_burst_performs_bounded_refresh`
-11. `genuine_rotation_changes_key_set_identity_and_accepts_new_key`
-12. `stale_expiry_and_refresh_recovery_do_not_confuse_key_set_identity`
-
-### Flutter and readiness
-
-13. `send_timeout_maps_to_typed_unknown_outcome`
-14. `client_exception_maps_to_typed_bounded_outcome`
-15. `absolute_deadline_bounds_slow_trickle_response`
-16. `coordinator_never_leaves_enrolling_after_transport_failure`
-17. `real_loopback_http_failure_preserves_pending_outbox_and_facts`
-18. `file_reopen_preserves_enrollment_request_and_unknown_outcome`
-19. `runtime_readiness_calls_exact_no_argument_capability`
-20. `runtime_cannot_execute_arbitrary_migration_probe_after_006`
-
-The wider R2 barrier floor remains required: membership/identity/actor revocation races across all
-protected route classes, owner/member management races, enrollment replay/conflict/restart cases,
-denied-state non-advancement, JWKS outage/rotation/stale-expiry pressure, security-definer shadowing
-and one aggregator that emits success only after the TypeScript, PostgreSQL/HTTP and real Flutter
-producers all pass.
-
-## 11. Framework, package and toolchain responsibility map
-
-| Imported/runtime component | Its legitimate role | Markei responsibility it cannot prove |
-| --- | --- | --- |
-| Fastify / `@fastify/sensible` | register/dispatch HTTP routes and provide HTTP helpers | route-policy completeness or hosted composition safety |
-| `pg` | pool/client access and SQL transport | transaction policy, SQL predicates, function ACL design |
-| PostgreSQL | locks, isolation, RLS, functions and privileges | application outcome vocabulary and exact capability selection |
-| `jose` | JOSE/JWT cryptography, claims and JWK selection | refresh cache, key-set identity and cooldown policy |
-| Dart `http` | HTTP request/stream mechanics | absolute application deadline and typed durable outcome |
-| Drift / SQLite | local persistence and reopen mechanics | proof that hosted failure preserves the real outbox/facts |
-| Flutter / `flutter_test` | client runtime, build and test execution | server authorization or provider acceptance |
-| npm scripts / Node test / TypeScript | invoke formatting, linting, compilation and server tests | Flutter execution or PostgreSQL/provider proof unless explicitly aggregated |
-| Gradle / Android JVM 17 toolchain | compile/package the Android host | hosted transport semantics or platform runtime acceptance |
-
-No external package, Flutter SDK, Gradle/JVM target or provider SDK change is indicated by these
-failures. The current dependencies already expose the primitives R3 needs. Package changes would
-require new evidence that an existing primitive is missing or defective; none was found here.
-
-## 12. Unsupported claims and confidence
-
-Until R3 code and named evidence exist, do not claim:
-
-```text
-revoke is idempotent
-revoked-target status is supported
-hosted fallback is structurally impossible
-every actual non-health route is classified
-unknown-kid pressure is bounded
-Flutter hosted transport has one absolute deadline
-all transport failures become typed outcomes
-runtime readiness is an exact capability
-R3 local security proof passed
-real Flutter HTTP/file-backed proof passed
-Auth0, Neon or Render accepted the system
-MCG-02 complete, production authentication ready or Cycle 10 closed
-learner maturity changed
-```
-
-Confidence:
-
-- **High** — the six source contradictions and their call paths; each is directly visible in
-  project-owned code.
-- **High** — current test/proof gaps; the named R2 tests and harness boundaries were inspected.
-- **High** — no dependency change is presently indicated; failures are in project composition,
-  policy, state and proof code.
-- **Medium-high** — the proposed semantic targets; Main must freeze exact R3 types, outcome mapping,
-  key-set identity representation and migration-006 names/grants before Codex.
-- **Not established** — any R3 implementation, local R3 validation, provider proof, deployment or
-  learner maturity.
-
-## 13. Round delta and handoff
-
-Newly established: each R2 contradiction now has an explicit call path, learner-facing cause,
-project/framework ownership boundary and named proof target. Retained: R2 is partial, provider work
-is stopped, migration 005 is immutable and permanent didactic memory is unchanged. Corrected:
-successful current production composition is not structural composition safety; a passing
-descriptor-presence test is not an actual-route completeness proof; inter-chunk timeout is not an
-absolute deadline.
-
-Performance improvement: the R3 question is reduced from seven broad symptoms to six owned source
-seams plus a bounded evidence matrix. No external dependency investigation remains open.
-
-```text
-Next sequence: FLX-INV-02 Main reconciliation, then FLX-ORD-01 only after explicit activation
-Next authority needed: Main-restaged D/E/F marked ACTIVE — CODEX IMPLEMENTATION AUTHORIZED
-Writable implementation scope: not selected by this report
-Stop condition: any provider contact, migration-005 edit, broad privilege, permanent-memory edit,
-                dependency/SDK addition without evidence, or claim beyond named local proof
+C10_MCG02_SUBMISSION_500_CAUSE_CORRECTED
+C10_MCG02_CURSOR_STATE_PREREQUISITE_UNRESOLVED
+GCM02_OPEN
+LEARNER_MATURITY_UNCHANGED
+REAL_RETRY_NOT_AUTHORIZED
 ```
