@@ -602,3 +602,147 @@ MIGRATION_007_PROVIDER_APPLICATION_UNAUTHORIZED
 REAL_SYNC_RETRY_UNAUTHORIZED
 GCM02_OPEN
 ```
+
+
+---
+
+# Legacy_Progress
+
+> Persistence rule: this section is append-only Main-stage continuity. Entries
+> under `Legacy_Progress` must survive later J refresh, reconciliation,
+> compaction, or structural mutation. Corrections are appended as new dated
+> entries; prior entries are not removed or silently rewritten.
+
+## 2026-07-23 — GRIMOIRE human-operationalisation inner sprint and Gate 02 closure
+
+### Sprint identity
+
+```text
+Sequence: FLX-ORD-01 bounded human-supervised operational materialization
+Cycle: 10
+Phase: GCM-02 closure recovery
+Gate: 02 — account cursor provisioning
+Inner sprint: GRIMOIRE human-operationalisation check-up and build
+Repository baseline: 837e9e18706b1eccb2bfafc0bf8980b69e1acf0a
+Human authority: explicit
+```
+
+### Purpose and system mechanics
+
+GRIMOIRE is the human-facing operational interface between project intent and
+reviewed automation. It implements a hemi-automated chain:
+
+```text
+human selects a minimal indexed command
+→ versioned PowerShell launcher validates local prerequisites and target role
+→ committed mitigated-risk coordinates supply non-secret endpoint identity
+→ password is entered only through a masked terminal prompt
+→ Docker supplies the pinned PostgreSQL 18 client
+→ libpq requires TLS and channel binding
+→ SQL verifies database role and database identity
+→ named SQL action or exact tracked migration is selected
+→ mutation requires an explicit human confirmation boundary
+→ sanitized evidence returns to the operator
+→ Main/Operational reconciliation records meaning and next authority
+```
+
+The operational collection separates responsibilities:
+
+- `GRIMOIRE.md` explains architecture, safety boundaries, workflow, failure
+  classification, proven checkpoints, and ends with the active minimal-command
+  index;
+- `GENERAL_SCRIPTS.md` provides expanded operator commands and validation
+  sequences;
+- `models/NEON_CHECK.ps1` owns masked credentials, Docker `psql`, role/database
+  preflight, TLS/channel-binding enforcement, action dispatch, exact migration
+  path containment, Git tracking/cleanliness checks, SHA-256 display, and
+  explicit mutation confirmation;
+- `models/NEON_ACTION.sql` owns delimited, named, predominantly read-only SQL
+  evidence blocks;
+- root `NEON_ACTION.sql`, `NEON_CHECK.ps1`, and `NEON_CRED.md` preserve the
+  user-uploaded operational originals;
+- `NEON_CRED.md` is committed under an explicit mitigated-risk decision,
+  stores only non-secret target coordinates and role names, and contains
+  neither passwords nor complete connection URLs;
+- `SECRET_INPUTS.md` remains the sole ignored private input surface.
+
+Executable mechanics, reusable models, and minimal non-secret coordinates are
+versioned. Secret inputs are not. Minimal commands are treated as stable
+interfaces into reviewed verbose mechanics; when an action or variable name
+changes, every reference must be reconciled in the same focused change.
+
+### Failure-to-system learning
+
+The sprint resolved four recurrent operator/tooling defects:
+
+1. recycled download filenames produced stale script revisions, so development
+   revisions use unique immutable names before promotion to the canonical
+   repository filename;
+2. `$PSScriptRoot` was unsafe in parameter defaults, so companion paths are
+   resolved after script initialization;
+3. server-side `pg_stat_ssl` behind Neon proxying was not authoritative for
+   the client transport, so the launcher instead enforces
+   `PGSSLMODE=require` and `PGCHANNELBINDING=require` and treats successful
+   libpq authentication under those requirements as transport evidence;
+4. textual Windows path-prefix comparison was separator-sensitive, so exact
+   migration containment uses a parent-directory walk before Git tracked/clean
+   checks.
+
+### Gate 02 applied and validated evidence
+
+Migration `007_account_cursor_provisioning.sql` was applied once with:
+
+```text
+role: markei_migrator
+database: markei_sync_dev
+client TLS/channel binding: required
+file SHA-256: 89AB11302F8B860C52AA1C74FBFEDF6A4DB3A0EE62FE7CB715B20B74AEF99AC6
+confirmation: APPLY-ONCE
+transaction terminal: COMMIT
+```
+
+Postflight returned:
+
+```text
+migration_id: 007_account_cursor_provisioning
+checksum: c10-mcg02-account-cursor-provisioning-v1
+readiness_v2: true
+provisioning function: present
+provisioning trigger count: 1
+account count: 1
+cursor-state count: 1
+accounts missing cursor state: 0
+orphan cursor-state rows: 0
+runtime SELECT: true
+runtime INSERT: false
+runtime DELETE: false
+runtime next_cursor UPDATE: true
+runtime readiness-v2 EXECUTE: true
+runtime provisioning EXECUTE: false
+inspection terminal: ROLLBACK
+action terminal: PASS
+```
+
+The false privilege values are intended least-privilege boundaries and are not
+caused by absent Flutter activity. Migration 007 must not be reapplied.
+
+### Resulting state and next authority
+
+```text
+GRIMOIRE_BASELINE_ESTABLISHED
+MIGRATION_007_APPLIED_ONCE
+GATE_02_POSTFLIGHT_PASS
+ACCOUNT_CURSOR_INVARIANT_PASS
+RUNTIME_PRIVILEGE_SHAPE_PASS_BY_MIGRATOR_INSPECTION
+GATE_02_CLOSED
+RUNTIME_ROLE_DIRECT_READINESS_CHECK_NEXT
+RENDER_CORRECTED_REVISION_NOT_YET_RECONCILED
+REAL_SYNC_RETRY_UNAUTHORIZED
+GCM02_OPEN
+```
+
+The next bounded operation is a direct runtime-role connection and
+`markei_hosted_runtime_ready_v2()` call. After that passes, reconcile GitHub
+HEAD and Render deployment revision, deploy only an explicitly authorized
+reconciled revision, and require live/ready HTTP 200 evidence before any
+controlled Sync attempt.

@@ -7,3 +7,6 @@ services/markei_sync_api/node_modules/
 services/markei_sync_api/dist/
 clients/markei_flutter/.dart_tool/
 clients/markei_flutter/build/
+# All reviewed GRIMOIRE originals and models are versioned. Only the private
+# secret-input file remains outside Git.
+documentation/SECRET_INPUTS.md
