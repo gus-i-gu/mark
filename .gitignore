@@ -7,10 +7,3 @@ services/markei_sync_api/node_modules/
 services/markei_sync_api/dist/
 clients/markei_flutter/.dart_tool/
 clients/markei_flutter/build/
-documentation/NEON_ACTION.sql
-documentation/NEON_CHECK.ps1
-documentation/NEON_CRED.md
-documentation/SECRET_INPUTS.md
-documentation/legacy/NEON_ACTION.sql
-documentation/legacy/NEON_CHECK.ps1
-documentation/legacy/NEON_CRED.md
