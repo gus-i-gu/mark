@@ -1,14 +1,14 @@
 # Markei General Scripts
 
 > User-facing command index. Short commands dispatch to reviewed scripts.
-> Repository: `gus-i-gu/markei`; branch: `intermid-cycle-recovery`.
+> Repository: `gus-i-gu/markei`; branch: `cycle10-intermid-grimoire`.
 
 ## 0. Execution model
 
 ```text
 User
 → minimal command copied from this file
-→ proven implementation in models/NEON_CHECK.ps1 / models/NEON_ACTION.sql
+→ proven implementation in NEON_CHECK.ps1 / NEON_ACTION.sql
 → masked credential or local coordinate request only when required
 → sanitized result
 ```
@@ -18,22 +18,21 @@ Keep these files together:
 ```text
 GENERAL_SCRIPTS.md
 GRIMOIRE.md
+NEON_CHECK.ps1
+NEON_ACTION.sql
 NEON_CRED.md
-models/NEON_CHECK.ps1
-models/NEON_ACTION.sql
-models/NEON_CRED.md
 ```
 
-The root `NEON_CHECK.ps1` and `NEON_ACTION.sql` are uploaded originals retained
-for inspection. Active commands use the Windows-proven model launcher; the
-root `NEON_CRED.md` supplies only non-secret coordinates.
+The root files are the active, collectively versioned interface. The
+Windows-proven launcher and corrected SQL catalogue were promoted from the
+former model layer; `NEON_CRED.md` supplies only non-secret coordinates.
 
 Run commands from the repository root. The canonical Windows launcher form is
 process-scoped and does not persistently alter PowerShell execution policy:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role <runtime|migrator|dbowner> `
   -Action <action>
@@ -48,7 +47,7 @@ Requirements: Windows PowerShell, Docker Desktop running, and PostgreSQL
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action shell
@@ -56,7 +55,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role runtime `
   -Action shell
@@ -69,7 +68,7 @@ password in a masked prompt. Exit psql with `\q`.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action connection
@@ -79,7 +78,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action gate02-preflight
@@ -108,7 +107,7 @@ stored elsewhere:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action apply-migration `
@@ -122,7 +121,7 @@ Do not copy or execute this command during ordinary recovery. Use
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action gate02-postflight
@@ -143,7 +142,7 @@ Required:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role runtime `
   -Action shell
@@ -159,17 +158,17 @@ SELECT current_user, current_database(),
 ## 1. Other Neon actions
 
 ```powershell
-.\NEON_CHECK.ps1 -Role migrator -Action migration-ledger
-.\NEON_CHECK.ps1 -Role migrator -Action schema-inventory
-.\NEON_CHECK.ps1 -Role migrator -Action runtime-privileges
-.\NEON_CHECK.ps1 -Role migrator -Action list-devices-sanitized
-.\NEON_CHECK.ps1 -Role migrator -Action verify-device
+.\documentation\NEON_CHECK.ps1 -Role migrator -Action migration-ledger
+.\documentation\NEON_CHECK.ps1 -Role migrator -Action schema-inventory
+.\documentation\NEON_CHECK.ps1 -Role migrator -Action runtime-privileges
+.\documentation\NEON_CHECK.ps1 -Role migrator -Action list-devices-sanitized
+.\documentation\NEON_CHECK.ps1 -Role migrator -Action verify-device
 ```
 
 Running without arguments opens role and action menus:
 
 ```powershell
-.\NEON_CHECK.ps1
+.\documentation\NEON_CHECK.ps1
 ```
 
 ## 2. Git alignment
@@ -178,8 +177,8 @@ Running without arguments opens role and action menus:
 git fetch --prune origin
 git status --short --branch
 git rev-parse HEAD
-git rev-parse origin/intermid-cycle-recovery
-git rev-list --left-right --count origin/intermid-cycle-recovery...HEAD
+git rev-parse origin/cycle10-intermid-grimoire
+git rev-list --left-right --count origin/cycle10-intermid-grimoire...HEAD
 ```
 
 `0 0` means local and remote agree. Record full SHAs. Stop on divergence or a

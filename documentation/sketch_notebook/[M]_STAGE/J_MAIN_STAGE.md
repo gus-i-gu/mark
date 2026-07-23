@@ -746,3 +746,133 @@ The next bounded operation is a direct runtime-role connection and
 HEAD and Render deployment revision, deploy only an explicitly authorized
 reconciled revision, and require live/ready HTTP 200 evidence before any
 controlled Sync attempt.
+
+## 2026-07-23 — Canonical five-file reconciliation and branch remodelling
+
+### Sprint identity
+
+```text
+Sequence: FLX-PRN-03 pruning + FLX-PRM-04 reconciliation
+Cycle: 10
+Phase: post-migration-007 GRIMOIRE consolidation
+Source branch: intermid-cycle-recovery
+Source HEAD: c76734e32f70702978f5c7a543c1f0ef3c63c521
+Target branch: cycle10-intermid-grimoire
+Human authority: explicit
+Write scope: GRIMOIRE five-file set, obsolete duplicates, and this append
+```
+
+### Reconciliation result
+
+The five latest uploaded files were compared with the `c76734e` tree. The
+uploads were useful source evidence but were not accepted blindly as the final
+tree: the existing repository documentation contained later Gate 02 closure
+knowledge, while the former `models/` layer contained the launcher and SQL
+corrections that had been operationally proven.
+
+The live repository interface is now one commutatively maintained set:
+
+```text
+documentation/GRIMOIRE.md
+documentation/GENERAL_SCRIPTS.md
+documentation/NEON_CHECK.ps1
+documentation/NEON_ACTION.sql
+documentation/NEON_CRED.md
+```
+
+`NEON_ACTION.sql` is the canonical filename. The occasional plural
+`NEON_ACTIONS.sql` and the uploaded numbered filenames are treated as naming
+noise, not additional repository interfaces.
+
+### Explicit tuning and pruning
+
+- `GRIMOIRE.md` now defines the root five-file set as canonical, preserves the
+  proven Gate 02 closure, keeps `GRIMOIRE_INDEX` as its final subsection, and
+  points every launcher command to `documentation/NEON_CHECK.ps1`.
+- `GENERAL_SCRIPTS.md` now uses the same root paths, identifies
+  `cycle10-intermid-grimoire` as its Git-alignment branch, and retains migration
+  007 as historical/do-not-rerun evidence.
+- `NEON_CHECK.ps1` is the Windows-proven v8 launcher promoted from the former
+  model layer. Its SHA-256 remains
+  `c4c050e3c83ba17e3ca509bd97f7d8cb7f6fdc301db02f0a3c72e6f1d98f6818`.
+- `NEON_ACTION.sql` is the aligned read-only catalogue promoted from the former
+  model layer. Its connection action reports role, database, and read-only
+  transaction state; transport assurance remains owned by the launcher's
+  enforced libpq TLS and channel-binding settings rather than proxy-sensitive
+  server-side TLS columns.
+- `NEON_CRED.md` retains the latest uploaded minimal non-secret coordinates and
+  role-name interface. Passwords, tokens, private keys, and complete connection
+  URLs remain prohibited.
+- `documentation/models/NEON_CHECK.ps1`,
+  `documentation/models/NEON_ACTION.sql`, and
+  `documentation/models/NEON_CRED.md` were removed after promotion because a
+  second live layer would duplicate semantic and executable ownership.
+- `documentation/legacy/GENERAL_SCRIPTS.md` was removed because Git already
+  preserves its history and a stale copy would remain discoverable as a false
+  operational route. `documentation/legacy/PT_INTRO.md` was retained because it
+  is unrelated to the Neon/GRIMOIRE reconciliation.
+- `documentation/SECRET_INPUTS.md` remains ignored and untracked as the sole
+  private input surface.
+
+### PRC-01 claims
+
+```text
+Claim: c76734e is the exact source coordinate for this remodelling
+Prior state: requested / remotely verified
+Evidence: GitHub comparison reports intermid-cycle-recovery identical to c76734e
+Semantic owner: Git history
+Resulting state: accepted
+
+Claim: the models folder is still required for current operation
+Prior state: accepted by the earlier 2026-07-23 Legacy_Progress entry
+Evidence: latest uploaded v8 launcher equals the proven model launcher; the
+          corrected model SQL can be promoted without losing behavior
+Contradiction: duplicate root/model paths create two competing live interfaces
+Semantic owner: GRIMOIRE operational documentation
+Resulting state: superseded; models pruned after promotion
+History disposition: earlier entry retained unchanged; this entry corrects it
+
+Claim: migration 007 should be applied during this sprint
+Prior state: already applied once and postflight-validated
+Evidence boundary: documentation and static reconciliation only
+Resulting state: rejected; do not rerun migration 007
+
+Claim: creating cycle10-intermid-grimoire authorizes Render reconfiguration
+Prior state: not authorized
+Evidence: branch work is documentation/Git reconciliation
+Resulting state: still not authorized
+```
+
+### Expected next sequence before resuming the former steps 4–14
+
+The earlier eleven-step route is not replayed literally because migration 007
+and Gate 02 have since completed. Resume through these seven bounded steps:
+
+1. pull and inspect `cycle10-intermid-grimoire` locally; verify clean `0 0`
+   divergence and review this five-file/J reconciliation;
+2. run the direct runtime-role connection and
+   `markei_hosted_runtime_ready_v2()` read-only proof;
+3. reconcile the intended application revision against the current Render
+   deployment fingerprint;
+4. decide explicitly whether the new branch remains documentation-only or
+   becomes the branch Render follows; branch creation alone changes no Render
+   setting;
+5. deploy exactly one authorized reconciled application revision and capture
+   its full Git SHA plus Render deployment fingerprint;
+6. require `/health/live = 200`, `/health/ready = 200`, and a fresh provider
+   immobility baseline;
+7. only then authorize at most one exact-identity Sync resolution attempt and
+   reconcile its correlated terminal evidence.
+
+Current terminals:
+
+```text
+GRIMOIRE_CANONICAL_FIVE_FILE_SET_RECONCILED
+MODELS_LAYER_SUPERSEDED_AND_PRUNED
+MIGRATION_007_DO_NOT_RERUN
+GATE_02_REMAINS_CLOSED
+RUNTIME_ROLE_DIRECT_READINESS_CHECK_NEXT
+RENDER_BRANCH_CHANGE_NOT_AUTHORIZED
+REAL_SYNC_RETRY_UNAUTHORIZED
+GCM02_OPEN
+```

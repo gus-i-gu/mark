@@ -6,26 +6,24 @@ This collection reduces repeated operational typing while keeping the human
 decision points visible. It is hemi-automated: scripts perform mechanical
 validation; the operator confirms provider targets and authorizes mutations.
 
-## Repository layers
+## Canonical five-file set
 
 | File | Responsibility |
 | --- | --- |
 | `GENERAL_SCRIPTS.md` | Short copy/paste commands and expected outcomes |
 | `GRIMOIRE.md` | Architecture, setup, maintenance, and failure guidance |
-| `NEON_CHECK.ps1` / `NEON_ACTION.sql` / `NEON_CRED.md` | Uploaded operational originals preserved verbatim |
-| `models/NEON_CHECK.ps1` | Windows-proven launcher with terminal prompt, enforced transport, and parent-walk containment |
-| `models/NEON_ACTION.sql` | Aligned named SQL inspection blocks |
-| `models/NEON_CRED.md` | Reusable placeholder-only coordinate model |
+| `NEON_CHECK.ps1` | Windows-proven launcher with terminal prompt, enforced transport, and parent-walk containment |
+| `NEON_ACTION.sql` | Aligned named SQL inspection blocks |
+| `NEON_CRED.md` | Minimal non-secret coordinates and aligned role names |
 
-The uploaded root launcher is preserved for source/history fidelity. It is not
-the active GRIMOIRE launcher because it predates the fixes proven during Gate
-02. Active commands use `models/NEON_CHECK.ps1` with the root
-`NEON_CRED.md`.
+These files are collectively canonical under `documentation/`. The former
+`documentation/models/` layer was pruned after its proven launcher and aligned
+SQL catalogue were promoted here. Historical source fidelity remains recorded
+in Git and J; duplicate executable copies are not retained in the live tree.
 
 ## First setup
 
-1. Keep the uploaded originals in `documentation/` and reusable counterparts
-   in `documentation/models/`.
+1. Keep the five canonical files together in `documentation/`.
 2. Keep only minimal non-secret coordinates in `documentation/NEON_CRED.md`.
 3. Keep passwords and complete URLs out of every file.
 4. Start Docker Desktop.
@@ -34,7 +32,7 @@ the active GRIMOIRE launcher because it predates the fixes proven during Gate
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role migrator `
   -Action connection
@@ -49,7 +47,7 @@ For guided selection:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md"
 ```
 
@@ -57,7 +55,7 @@ For deterministic reuse:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File ".\documentation\models\NEON_CHECK.ps1" `
+  -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
   -Role <runtime|migrator|dbowner> `
   -Action <action>
@@ -79,7 +77,7 @@ Migration and Gate 02 actions are locked to `migrator`.
 
 ## How SQL actions work
 
-Each active action in `models/NEON_ACTION.sql` is delimited by:
+Each active action in `NEON_ACTION.sql` is delimited by:
 
 ```sql
 -- ACTION: action-name
@@ -87,7 +85,7 @@ Each active action in `models/NEON_ACTION.sql` is delimited by:
 -- END ACTION
 ```
 
-`models/NEON_CHECK.ps1` extracts only the selected block. To add an action:
+`NEON_CHECK.ps1` extracts only the selected block. To add an action:
 
 1. Prefer a read-only transaction.
 2. Return sanitized evidence only.
@@ -209,7 +207,7 @@ have already completed are intentionally excluded from the active index.
 
   ```powershell
   powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File ".\documentation\models\NEON_CHECK.ps1" `
+    -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
     -Role migrator `
     -Action shell
@@ -230,7 +228,7 @@ have already completed are intentionally excluded from the active index.
 
   ```powershell
   powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File ".\documentation\models\NEON_CHECK.ps1" `
+    -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
     -Role migrator `
     -Action gate02-postflight
@@ -251,7 +249,7 @@ have already completed are intentionally excluded from the active index.
 
   ```powershell
   powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File ".\documentation\models\NEON_CHECK.ps1" `
+    -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
     -Role runtime `
     -Action shell
@@ -285,7 +283,7 @@ have already completed are intentionally excluded from the active index.
 
   ```powershell
   powershell.exe -NoProfile -ExecutionPolicy Bypass `
-    -File ".\documentation\models\NEON_CHECK.ps1" `
+    -File ".\documentation\NEON_CHECK.ps1" `
   -ConfigPath ".\documentation\NEON_CRED.md" `
     -Role migrator `
     -Action migration-ledger
@@ -306,8 +304,8 @@ have already completed are intentionally excluded from the active index.
   git fetch --prune origin
   git status --short --branch
   git rev-parse HEAD
-  git rev-parse origin/intermid-cycle-recovery
-  git rev-list --left-right --count origin/intermid-cycle-recovery...HEAD
+  git rev-parse origin/cycle10-intermid-grimoire
+  git rev-list --left-right --count origin/cycle10-intermid-grimoire...HEAD
   ```
 
 - Required/expected inputs: repository root; network access to `origin`; no

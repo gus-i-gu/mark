@@ -7,12 +7,7 @@ BEGIN TRANSACTION READ ONLY;
 SELECT
     current_user AS connected_role,
     current_database() AS connected_database,
-    current_setting('transaction_read_only') AS transaction_read_only,
-    COALESCE(s.ssl, false) AS ssl_enabled,
-    s.version AS tls_version,
-    s.cipher AS tls_cipher
-FROM pg_stat_ssl AS s
-WHERE s.pid = pg_backend_pid();
+    current_setting('transaction_read_only') AS transaction_read_only;
 ROLLBACK;
 -- END ACTION
 

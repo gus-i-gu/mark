@@ -179,17 +179,35 @@ if ($Action -eq "apply-migration") {
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
         throw "Run apply-migration from inside the Markei Git repository."
     }
-    $RepositoryRootWithSeparator =
-        $RepositoryRoot.TrimEnd("\", "/") + [IO.Path]::DirectorySeparatorChar
-    if (-not $ResolvedMigration.StartsWith(
-        $RepositoryRootWithSeparator,
-        [StringComparison]::OrdinalIgnoreCase
-    )) {
+    # Resolve both objects through PowerShell's filesystem provider. Confirm
+    # containment by walking the migration's parent directories rather than by
+    # comparing path prefixes; this is reliable in Windows PowerShell 5.1 and
+    # is unaffected by Git's forward slashes or drive-letter casing.
+    $RepositoryDirectory = Get-Item -LiteralPath $RepositoryRoot
+    $MigrationFile = Get-Item -LiteralPath $ResolvedMigration
+    $CandidateDirectory = $MigrationFile.Directory
+    $MigrationIsInsideRepository = $false
+    while ($null -ne $CandidateDirectory) {
+        if ([string]::Equals(
+            $CandidateDirectory.FullName.TrimEnd([char[]]@('\', '/')),
+            $RepositoryDirectory.FullName.TrimEnd([char[]]@('\', '/')),
+            [StringComparison]::OrdinalIgnoreCase
+        )) {
+            $MigrationIsInsideRepository = $true
+            break
+        }
+        $CandidateDirectory = $CandidateDirectory.Parent
+    }
+    if (-not $MigrationIsInsideRepository) {
         throw "MigrationPath must be inside the current Git repository."
     }
-    $RelativeMigration = [IO.Path]::GetRelativePath(
-        $RepositoryRoot,
-        $ResolvedMigration
+
+    # The parent walk proved that this substring is within the repository.
+    $RepositoryRootWithSeparator = $RepositoryDirectory.FullName.TrimEnd(
+        [char[]]@('\', '/')
+    ) + [IO.Path]::DirectorySeparatorChar
+    $RelativeMigration = $MigrationFile.FullName.Substring(
+        $RepositoryRootWithSeparator.Length
     ).Replace("\", "/")
     $Tracked = & git -C $RepositoryRoot ls-files `
         --error-unmatch -- $RelativeMigration 2>$null
@@ -212,44 +230,53 @@ if ($Action -eq "verify-device") {
     $PsqlVariables = @("-v", "device_id=$($ParsedDeviceId.ToString())")
 }
 
-$Credential = Get-Credential -UserName $DatabaseUser `
-    -Message "Enter the current Neon password for $DatabaseUser"
-if ($Credential.UserName -ne $DatabaseUser) {
-    throw "Expected username $DatabaseUser."
-}
+$SecurePassword = Read-Host `
+    "Password for Neon role $DatabaseUser" -AsSecureString
+$PasswordPointer = [IntPtr]::Zero
+$PlainPassword = $null
 
 try {
+    $PasswordPointer =
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecurePassword)
+    $PlainPassword =
+        [Runtime.InteropServices.Marshal]::PtrToStringBSTR($PasswordPointer)
+    if ([string]::IsNullOrEmpty($PlainPassword)) {
+        throw "A password is required."
+    }
+
     $env:PGHOST = $NeonHost
     $env:PGPORT = $NeonPort
     $env:PGDATABASE = $NeonDatabase
     $env:PGUSER = $DatabaseUser
-    $env:PGPASSWORD = $Credential.GetNetworkCredential().Password
+    $env:PGPASSWORD = $PlainPassword
     $env:PGSSLMODE = "require"
     $env:PGCHANNELBINDING = "require"
 
-    $DockerBase = @(
-        "run", "--rm", "-i",
+    $DockerEnvironment = @(
         "--env", "PGHOST", "--env", "PGPORT", "--env", "PGDATABASE",
         "--env", "PGUSER", "--env", "PGPASSWORD",
         "--env", "PGSSLMODE", "--env", "PGCHANNELBINDING"
     )
+    $DockerNonInteractive = @("run", "--rm", "-i") + $DockerEnvironment
+    $DockerInteractive = @("run", "--rm", "-it") + $DockerEnvironment
     $PsqlBase = @("psql", "-X", "-v", "ON_ERROR_STOP=1")
 
-    $ProbeSql = @"
-SELECT current_user, current_database(),
-       COALESCE((SELECT ssl FROM pg_stat_ssl
-                 WHERE pid = pg_backend_pid()), false);
-"@
-    $ProbeOutput = $ProbeSql | & docker @DockerBase `
+    # Identity is verified by SQL. Client-side TLS and channel binding are
+    # enforced by libpq through PGSSLMODE=require and
+    # PGCHANNELBINDING=require. If either requirement cannot be satisfied,
+    # psql exits unsuccessfully before this probe can return.
+    $ProbeSql = "SELECT current_user, current_database();"
+    $ProbeOutput = $ProbeSql | & docker @DockerNonInteractive `
         "postgres:18-alpine" @PsqlBase "-Atq"
     if ($LASTEXITCODE -ne 0) {
         throw "Connection preflight failed."
     }
-    $ProbeFields = (($ProbeOutput | Select-Object -Last 1).Trim()) -split "\|", 3
-    if ($ProbeFields.Count -ne 3 -or
+
+    $ProbeFields = (($ProbeOutput | Select-Object -Last 1).Trim()) `
+        -split "\|", 2
+    if ($ProbeFields.Count -ne 2 -or
         $ProbeFields[0] -ne $DatabaseUser -or
-        $ProbeFields[1] -ne $NeonDatabase -or
-        $ProbeFields[2] -ne "t") {
+        $ProbeFields[1] -ne $NeonDatabase) {
         $ReceivedRole = if ($ProbeFields.Count -ge 1) {
             $ProbeFields[0]
         } else {
@@ -260,48 +287,59 @@ SELECT current_user, current_database(),
         } else {
             "<missing>"
         }
-        $ReceivedTls = if ($ProbeFields.Count -ge 3) {
-            $ProbeFields[2]
-        } else {
-            "<missing>"
-        }
         throw @"
-Identity, database, or TLS preflight did not match.
+Identity preflight did not match.
 
 Expected:
   role     = $DatabaseUser
   database = $NeonDatabase
-  TLS      = t
 
 Received:
   role     = $ReceivedRole
   database = $ReceivedDatabase
-  TLS      = $ReceivedTls
 "@
     }
-    Write-Host "PASS: role=$DatabaseUser database=$NeonDatabase TLS=active" `
+
+    Write-Host `
+        "PASS: role=$DatabaseUser database=$NeonDatabase TLS=active" `
         -ForegroundColor Green
 
     if ($Action -eq "shell") {
         Write-Host "Opening psql. Use \q to exit."
-        & docker @DockerBase "-it" "postgres:18-alpine" @PsqlBase
+        & docker @DockerInteractive "postgres:18-alpine" @PsqlBase
     }
     elseif ($Action -eq "apply-migration") {
         Write-Host "Migration: $ResolvedMigration"
-        Write-Host "SHA256: $((Get-FileHash $ResolvedMigration -Algorithm SHA256).Hash)"
+        Write-Host `
+            "SHA256: $((Get-FileHash $ResolvedMigration -Algorithm SHA256).Hash)"
         $Confirmation = Read-Host `
             "Type APPLY-ONCE after confirming the Neon development branch"
         if ($Confirmation -cne "APPLY-ONCE") {
             throw "Migration cancelled."
         }
         Get-Content -LiteralPath $ResolvedMigration -Raw |
-            & docker @DockerBase "postgres:18-alpine" @PsqlBase
+            & docker @DockerNonInteractive `
+                "postgres:18-alpine" @PsqlBase
+    }
+    elseif ($Action -eq "connection") {
+        $ConnectionSql = @"
+BEGIN TRANSACTION READ ONLY;
+SELECT
+    current_user AS connected_role,
+    current_database() AS connected_database,
+    current_setting('transaction_read_only') AS transaction_read_only;
+ROLLBACK;
+"@
+        $ConnectionSql | & docker @DockerNonInteractive `
+            "postgres:18-alpine" @PsqlBase
+        Write-Host `
+            "Client TLS/channel binding: active (enforced by libpq)"
     }
     else {
         $ActionContent = Get-Content -LiteralPath $ActionPath -Raw
         $Sql = Get-ActionSql $ActionContent $Action
-        $Sql | & docker @DockerBase "postgres:18-alpine" `
-            @PsqlBase @PsqlVariables
+        $Sql | & docker @DockerNonInteractive `
+            "postgres:18-alpine" @PsqlBase @PsqlVariables
     }
     if ($LASTEXITCODE -ne 0) {
         throw "Neon action '$Action' failed. Do not retry a migration blindly."
@@ -309,12 +347,16 @@ Received:
     Write-Host "PASS: '$Action' completed." -ForegroundColor Green
 }
 finally {
+    if ($PasswordPointer -ne [IntPtr]::Zero) {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($PasswordPointer)
+    }
     @(
         "PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD",
         "PGSSLMODE", "PGCHANNELBINDING"
     ) | ForEach-Object {
         Remove-Item "Env:$_" -ErrorAction SilentlyContinue
     }
-    $Credential = $null
+    $PlainPassword = $null
+    $SecurePassword = $null
     $ProbeOutput = $null
 }
