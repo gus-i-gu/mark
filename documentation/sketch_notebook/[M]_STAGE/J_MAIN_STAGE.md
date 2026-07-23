@@ -497,3 +497,108 @@ SYNC_UNKNOWN_UNRESOLVED
 REAL_SYNC_RETRY_UNAUTHORIZED
 GCM02_OPEN
 ```
+
+
+---
+
+## Append-only reconciliation entry — 2026-07-23 — Gate 2 provider preflight blocked on target resolution
+
+> Sequence: FLX-ORD-01 Main reconciliation after bounded read-only provider preflight
+> Repository observation: `0c8b37a63c1003431474df0972b846d3c8531a1a`
+> Inputs: Codex Gate 2 in-chat report; current published G/H/I; prior J Gate 1 reconciliation
+> Status: **GATE 2 BLOCKED; REPOSITORY AND RENDER REVISION OBSERVED; NEON AND PRESERVED-REQUEST TARGETS UNRESOLVED**
+
+### Accepted observations within their evidence boundaries
+
+Main accepts the following current observations:
+
+1. branch and remote HEAD were aligned at `0c8b37a63c1003431474df0972b846d3c8531a1a`;
+2. `.gitignore` remained the only tracked dirty path and was preserved;
+3. `documentation/SECRET_INPUTS.md` was proven ignored, untracked, absent from history, non-symlinked and was not disclosed;
+4. repository migration 007 identity, checksum label, SHA-256, predecessor, readiness-v1/v2 names and trigger objects were observed from source;
+5. authenticated Render inspection succeeded and showed a live deployment at abbreviated revision `5b364216`, predating the corrected readiness-v2 code;
+6. no deployment was in progress;
+7. the selected local Drift candidate was schema version 10 and contained no `unknown` pending event or submission;
+8. Neon session validation failed before a read-only transaction or catalog observation;
+9. Render health endpoints were unavailable from the Codex host and therefore produced no HTTP-status evidence;
+10. no provider, repository, local queue or deployment mutation occurred.
+
+### Evidence conflict and consequence
+
+The prior notebook observation expected one preserved unresolved request. The currently selected local database instead reports:
+
+- pending events: pending 6, failed 2, unknown 0;
+- submissions: failed/notApplied 1, superseded/notApplied 2, unknown 0;
+- local Accounts 2, Devices 3, sync events 8 and sync attempts 6.
+
+This does not establish that the preserved request was resolved. It remains classified as one of:
+
+- selected-local-database target mismatch;
+- genuine local state change;
+- representation/status transition not yet correlated;
+- unresolved contradiction.
+
+The current evidence cannot safely choose among them. The affected Account selector, exact request identity, immutable event identities/content hashes and expected sequence comparison are unavailable. The prior comparison evidence remains historical context but is insufficient to prove unchanged identity against the currently selected database.
+
+Neon migration, readiness, six-table counts, role separation, ACL and RLS state are unavailable because the supplied Neon sessions failed before validated read-only access. Render metadata independently establishes only that the corrected revision is not deployed. Health success is not evidenced.
+
+### PRC-01 disposition
+
+```text
+Claim: repository contains migration 007 and readiness-v2 contract
+State: observed / source-validated
+
+Claim: Render currently runs the corrected readiness-v2 revision
+State: contradicted
+Evidence: authenticated deployment metadata reports older revision 5b364216
+
+Claim: Neon remains at exact migrations 001-006 with readiness-v1 only
+State: unavailable
+Evidence: session validation failed before catalog inspection
+
+Claim: the preserved sync-unknown request remains unchanged in the inspected local store
+State: contradicted / unresolved target
+Evidence: selected schema-v10 database contains zero unknown rows
+
+Claim: the preserved request has a known terminal result
+State: unresolved
+
+Claim: Gate 2 provider preflight is green
+State: rejected / blocked
+```
+
+G/H/I on GitHub remain the earlier migration-007 local materialization reports. They contain useful local implementation, didactic and design evidence, but no Gate 2 provider-preflight staging was written during this round.
+
+### Rescheduled GCM-02 route — remaining steps 4 through 14
+
+The remaining closure route contains eleven evidence-gated steps:
+
+4. **Resolve local target identity.** Keep Markei closed. Locate every bounded source-derived schema-v10 candidate and identify which database, if any, contains the historical request or a correlated terminal transition. Record candidate count, schema fingerprint, sanitized path class, status counts and last-change classification; do not retry.
+5. **Resolve historical request continuity.** Compare the prior request/event fingerprints and expected Device sequence against the correct local store. If exact fingerprints were never preserved, record comparison unavailable and establish a new current baseline without retroactively claiming unchanged state.
+6. **Repair Neon session access only.** Validate migrator and runtime connection parsing, intended development target, TLS/channel binding and distinct identities. Do not use owner access and do not apply SQL.
+7. **Repeat Neon read-only preflight.** Capture ledger 001-007, readiness-v1/v2 catalog, six-table counts, cursor/high-water, ACL, RLS and runtime denial evidence inside read-only transactions. Save sanitized success/error messages and session/target fingerprints.
+8. **Complete Render preflight evidence.** Capture deployment fingerprint plus direct `/health/live` and `/health/ready` HTTP statuses from an operator-reachable host. The old deployment may be live; ready semantics must be classified against the old readiness contract.
+9. **Reconcile and authorize the migration window.** Main compares steps 4-8. Gate 3 is authorized only if provider target, migration 006 integrity and the request baseline are sufficiently resolved. Migration, deployment and Sync remain separate authorizations.
+10. **Apply migration 007 once.** Use the migrator identity and the committed SQL file in one transactional run. Capture file SHA-256, ledger identity/checksum, transaction success/error text and provider-target fingerprint. Stop on any mismatch.
+11. **Verify post-migration database state.** Read-only verify exact 006+007 ledger, readiness-v2 metadata/callability, one cursor row per Account, high-water-derived backfill, trigger ownership/security, runtime INSERT/DELETE/DDL denial and scoped SELECT/UPDATE allowance. Capture sanitized query outcomes.
+12. **Deploy the reconciled corrected revision.** Deploy `0c8b37a` or a later explicitly reconciled descendant, without unrelated provider-secret changes. Capture full/abbreviated Git revision, Render deploy identifier fingerprint, start/finish timestamps and final status.
+13. **Correlate health and provider immobility.** Require `/health/live = 200` and `/health/ready = 200` from the same deployment fingerprint, then capture a fresh six-table baseline showing no unexplained submission, event, acknowledgement, Device or cursor movement.
+14. **Authorize and perform at most one exact-identity resolution attempt.** Only after steps 4-13 reconcile. Reuse the immutable request/event identities and hashes; capture HTTP result, sanitized response classification, request-correlation fingerprint, before/after six-table counts, cursor range and acknowledgement evidence. Conclude GCM-02 only if the request obtains a trustworthy correlated terminal result; otherwise stop with `sync-unknown` still open.
+
+### Authorization boundary
+
+Migration 007 may be prepared in the Neon SQL Editor, but it must not be executed merely because its text is visible there. The committed file identity and a green repeated preflight must precede execution.
+
+A Render API token is not an application runtime dependency. It is required only for authenticated Render management/inspection automation. The current Codex round successfully read Render deployment metadata, proving that missing Render API access was not the blocker. Markei runtime requires its configured database and authentication variables, not a Render account API token.
+
+Current terminals:
+
+```text
+GATE_2_PROVIDER_PREFLIGHT_BLOCKED
+LOCAL_PRESERVED_REQUEST_TARGET_UNRESOLVED
+NEON_READ_ONLY_SESSION_UNAVAILABLE
+RENDER_CORRECTED_REVISION_NOT_DEPLOYED
+MIGRATION_007_PROVIDER_APPLICATION_UNAUTHORIZED
+REAL_SYNC_RETRY_UNAUTHORIZED
+GCM02_OPEN
+```
