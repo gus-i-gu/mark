@@ -18,14 +18,18 @@ Keep this active five-file set together:
 
 ```text
 documentation/GRIMOIRE.md
-documentation/GENERAL_SCRIPTS.md
+documentation/G_SCRIPTS.md
 documentation/NS_COORDINATES.md
 documentation/NEON_CHECK.ps1
 documentation/NEON_ACTION.sql
 ```
 
-Run PowerShell commands from the repository root. Copy only complete fenced
-code bodies. Do not replace values already supplied by `NS_COORDINATES.md`.
+Run PowerShell commands from the repository root. `G_SCRIPTS.md` remains a
+Markdown catalogue; it is not renamed to `.ps1` and is not passed directly to
+PowerShell's `-File` parameter. A `GRIMOIRE_INDEX` block may load one exact
+reviewed `GS-*` heading and execute its fenced PowerShell body. When no indexed
+loader is provided, copy only a complete fenced code body. Do not replace
+values already supplied by `NS_COORDINATES.md`.
 
 The canonical Neon launcher form is process-scoped and does not permanently
 alter PowerShell execution policy:

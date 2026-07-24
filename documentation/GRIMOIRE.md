@@ -8,7 +8,7 @@ entry, mutation authority, or expected evidence.
 
 ```text
 human selects one indexed block
-→ block identifies its canonical GENERAL_SCRIPTS procedure
+→ block identifies its canonical G_SCRIPTS procedure
 → NS_COORDINATES supplies reviewed non-secret values
 → terminal requests only missing role/UUID/secret input
 → reviewed launcher or query performs the operation
@@ -24,7 +24,7 @@ target confirmation and mutation authority.
 | File | Responsibility |
 | --- | --- |
 | `documentation/GRIMOIRE.md` | System architecture, safety policy, usage guidance, and final concise execution index |
-| `documentation/GENERAL_SCRIPTS.md` | Canonical expanded `GS-*` procedures and validation sequences |
+| `documentation/G_SCRIPTS.md` | Canonical expanded `GS-*` procedures and validation sequences |
 | `documentation/NS_COORDINATES.md` | Strict allowlist of public/non-secret coordinates and lifecycle metadata |
 | `documentation/NEON_CHECK.ps1` | Windows-proven launcher: coordinate loading, menus, masked secret input, Docker `psql`, transport enforcement, preflight, and dispatch |
 | `documentation/NEON_ACTION.sql` | SQL-only indexed `NA-*` read-only action catalogue |
@@ -43,14 +43,14 @@ The three indexes serve different altitudes:
 | Index | Meaning |
 | --- | --- |
 | `GRM-*` | Human-facing concise invocation block in `GRIMOIRE_INDEX` |
-| `GS-*` | Canonical expanded command/query in `GENERAL_SCRIPTS.md` |
+| `GS-*` | Canonical expanded command/query in `G_SCRIPTS.md` |
 | `NA-*` | SQL-only action block in `NEON_ACTION.sql` |
 
 Example:
 
 ```text
 GRM-NEON-04
-→ GENERAL_SCRIPTS.md / GS-NEON-04
+→ G_SCRIPTS.md / GS-NEON-04
 → NEON_CHECK.ps1 -Action gate02-postflight
 → NEON_ACTION.sql / NA-03
 ```
@@ -212,7 +212,7 @@ environment/branch/database coordinates, and requires the exact phrase
 
 Migration `007_account_cursor_provisioning` was applied once on 2026-07-23 and
 passed postflight. Its command remains historical evidence in
-`GENERAL_SCRIPTS.md` and is intentionally absent from `GRIMOIRE_INDEX`.
+`G_SCRIPTS.md` and is intentionally absent from `GRIMOIRE_INDEX`.
 
 ## 11. Gate 02 proven checkpoint
 
@@ -256,7 +256,7 @@ Search the active five-file interface after every change:
 ```powershell
 rg "NS_COORDINATES|NEON_CHECK|NEON_ACTION|GRM-|GS-|NA-" `
   documentation\GRIMOIRE.md `
-  documentation\GENERAL_SCRIPTS.md `
+  documentation\G_SCRIPTS.md `
   documentation\NS_COORDINATES.md `
   documentation\NEON_CHECK.ps1 `
   documentation\NEON_ACTION.sql
@@ -284,8 +284,8 @@ Index policy:
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-00`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-00`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Dispatcher: `documentation/NEON_CHECK.ps1`
 
 #### Copy-paste-ready body
@@ -315,8 +315,8 @@ output, and final action `PASS`; otherwise a terminal error before continuation.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-01`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-01`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-01`
 
 #### Copy-paste-ready body
@@ -347,8 +347,8 @@ Current `markei_migrator` password in the masked terminal prompt.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-02`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-02`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Dispatcher: `documentation/NEON_CHECK.ps1` → `shell`
 
 #### Copy-paste-ready body
@@ -378,8 +378,8 @@ Target summary, connection `PASS`, then a `psql` prompt. Exit with `\q`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-03`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-03`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Dispatcher: `documentation/NEON_CHECK.ps1` → `shell`
 
 #### Copy-paste-ready body
@@ -410,8 +410,8 @@ then a `psql` prompt. Exit with `\q`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-04`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-04`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-03`
 
 #### Copy-paste-ready body
@@ -443,8 +443,8 @@ missing/orphan counts `0`; intended runtime allow/deny shape; `ROLLBACK`; action
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-05`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-05`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-04`
 
 #### Copy-paste-ready body
@@ -474,8 +474,8 @@ by `ROLLBACK` and action `PASS`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-06`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-06`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-06`
 
 #### Copy-paste-ready body
@@ -504,8 +504,8 @@ Committed public table/policy inventory, `ROLLBACK`, and action `PASS`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-07`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-07`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-05`
 
 #### Copy-paste-ready body
@@ -535,8 +535,8 @@ and action `PASS`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-08`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-08`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-07`
 
 #### Copy-paste-ready body
@@ -566,8 +566,8 @@ Sanitized status/sequence counts, `ROLLBACK`, and action `PASS`.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-NEON-09`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-NEON-09`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - SQL block: `documentation/NEON_ACTION.sql` → `NA-08`
 
 #### Copy-paste-ready body
@@ -599,8 +599,8 @@ Sanitized submission count, sync-event count, next expected sequence,
 
 #### 01 — Canonical command/query
 
-- Canonical query: `GENERAL_SCRIPTS.md` → `GS-NEON-10`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical query: `G_SCRIPTS.md` → `GS-NEON-10`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Required host: runtime `psql` opened by `GRM-NEON-03`
 
 #### Copy-paste-ready body
@@ -631,8 +631,8 @@ No additional variable after the runtime `psql` session is open.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-GIT-01`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-GIT-01`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Coordinate source: `documentation/NS_COORDINATES.md`
 
 #### Copy-paste-ready body
@@ -687,53 +687,47 @@ Expected branch, identical full SHAs, `Behind=0`, `Ahead=0`, and
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-HOST-01`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-HOST-01`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Coordinate source: `documentation/NS_COORDINATES.md`
 
 #### Copy-paste-ready body
 
 ```powershell
-$Ns = Get-Content ".\documentation\NS_COORDINATES.md" -Raw
-function Read-NsValue([string]$Name) {
-    $Match = [regex]::Match(
-        $Ns,
-        "(?m)^$([regex]::Escape($Name)):\s*(.+?)\s*$"
-    )
-    if (-not $Match.Success -or $Match.Groups[1].Value.Trim() -match '^<') {
-        throw "'$Name' is missing or unresolved."
-    }
-    $Match.Groups[1].Value.Trim()
+$ProcedureId = "GS-HOST-01"
+$CataloguePath = Resolve-Path ".\documentation\G_SCRIPTS.md"
+$Catalogue = Get-Content -LiteralPath $CataloguePath -Raw
+
+$HeadingPattern = '(?ms)^### `' +
+    [regex]::Escape($ProcedureId) +
+    '`[^\r\n]*\r?\n(?<Section>.*?)(?=^### `GS-|\z)'
+$SectionMatch = [regex]::Match($Catalogue, $HeadingPattern)
+
+if (-not $SectionMatch.Success) {
+    throw "Canonical procedure '$ProcedureId' was not found in $CataloguePath."
 }
-$Origin = (Read-NsValue "RenderPublicOrigin").TrimEnd("/")
-$LivePath = Read-NsValue "RenderLivePath"
-$ReadyPath = Read-NsValue "RenderReadyPath"
-$OriginUri = [uri]$Origin
-if ($OriginUri.Scheme -ne "https" -or $OriginUri.UserInfo) {
-    throw "RenderPublicOrigin must be a secret-free HTTPS origin."
+
+$FencePattern =
+    '(?ms)^```powershell[ \t]*\r?\n(?<Code>.*?)^```[ \t]*\r?$'
+$FenceMatch = [regex]::Match(
+    $SectionMatch.Groups["Section"].Value,
+    $FencePattern
+)
+
+if (-not $FenceMatch.Success) {
+    throw "Canonical procedure '$ProcedureId' has no PowerShell body."
 }
-$Live = Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 `
-  -Uri "$Origin$LivePath" -Method Get
-$Ready = Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 `
-  -Uri "$Origin$ReadyPath" -Method Get
-$LiveBody = $Live.Content | ConvertFrom-Json
-$ReadyBody = $Ready.Content | ConvertFrom-Json
-if ($Live.StatusCode -ne 200 -or $LiveBody.status -ne "live" -or
-    $Ready.StatusCode -ne 200 -or $ReadyBody.status -ne "ready") {
-    throw "Hosted health contract did not pass."
-}
-[pscustomobject]@{
-    LiveStatus = [int]$Live.StatusCode
-    LiveClass = $LiveBody.status
-    ReadyStatus = [int]$Ready.StatusCode
-    ReadyClass = $ReadyBody.status
-}
+
+& ([scriptblock]::Create($FenceMatch.Groups["Code"].Value))
 ```
 
 #### What this does
 
-Loads the public Render origin and health paths, performs two redirect-blocked
-HTTPS requests, parses the JSON contract, and fails closed on disagreement.
+Loads the exact canonical `GS-HOST-01` fenced PowerShell body from
+`G_SCRIPTS.md`, then runs it. That procedure loads the public Render origin and
+health paths, performs two redirect-blocked HTTPS requests, parses the JSON
+contract, and fails closed on disagreement. The index no longer duplicates the
+canonical health-check implementation.
 
 #### Variables required
 
@@ -748,8 +742,8 @@ No terminal input after verified Render coordinates replace their placeholders.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-AUTH-01`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-AUTH-01`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Coordinate source: `documentation/NS_COORDINATES.md`
 
 #### Copy-paste-ready body
@@ -812,8 +806,8 @@ one matching signing key. This does not prove a real token was issued.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-BUILD-01`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-BUILD-01`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Package root: `services/markei_sync_api`
 
 #### Copy-paste-ready body
@@ -857,8 +851,8 @@ failures, followed by a successful TypeScript build.
 
 #### 01 — Canonical command/query
 
-- Canonical procedure: `GENERAL_SCRIPTS.md` → `GS-BUILD-02`
-- Hosting path: `documentation/GENERAL_SCRIPTS.md`
+- Canonical procedure: `G_SCRIPTS.md` → `GS-BUILD-02`
+- Hosting path: `documentation/G_SCRIPTS.md`
 - Project root: repository root
 
 #### Copy-paste-ready body
